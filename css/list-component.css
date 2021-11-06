@@ -1,0 +1,42 @@
+#schema_dir {
+	margin: 10px;
+}
+
+#schema_dir h2 {
+	color: green;
+}
+
+#schema_dir ul {
+	list-style-type: none;
+}
+
+#schema_dir li {
+	margin-left: 10px;
+}
+
+#schema_dir li::before {
+    display:inline-block;
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.25rem;
+    content:"";
+}
+
+#schema_dir .open::before, #schema_dir .closed::before {
+    background-size: 1rem 1rem;
+    position: relative;
+    top: 0.25rem;
+    opacity: 0.3;
+}
+
+#schema_dir .open::before {
+    background-image: url(img/down-white.png);
+}
+
+#schema_dir .closed::before {
+    background-image: url(img/right-white.png);
+}
+
+#schema_dir .closed #schema_dir .closed::before, #schema_dir .closed #schema_dir .open::before {
+    display: none;
+}

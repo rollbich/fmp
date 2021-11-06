@@ -1,0 +1,229 @@
+body {
+	background: rgb(78,191,198);
+	background: radial-gradient(circle, rgba(78,181,198,1) 0%, rgba(69,82,97,1) 100%);
+}
+
+@font-face {
+  font-family: 'Dosis';
+  font-style: normal;
+  font-weight: 400;
+  src:url(fonts/dosis-v19-latin-700.woff2)format("woff2"),
+	url(fonts/dosis-v19-latin-700.woff)format("woff"),
+	url(fonts/dosis-v19-latin-700.ttf)format("truetype")
+}
+
+
+@font-face {
+  font-family: 'RussoOne';
+  font-style: normal;
+  font-weight: 400;
+  src: url('fonts/Russo_One.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Azonix';
+  font-style: normal;
+  font-weight: 400;
+  src: url('fonts/Azonix.otf') format('opentype');
+}
+
+/* Bandeau de navigation */
+
+nav{
+    width: 100%;
+    margin: 0px auto;
+    background-color: white;
+    position: sticky;
+    top: 0px;
+	background-image:url(../images/bandeau-fond3.png);
+}
+
+nav ul{
+	margin: 0px auto;
+	width: 50%;
+    list-style-type: none;
+	
+}
+
+nav li{
+    float: left;
+    width: 33%;/*100% divisé par le nombre d'éléments de menu*/
+    text-align: center;/*Centre le texte dans les éléments de menu*/
+}
+
+/*Evite que le menu n'ait une hauteur nulle*/
+nav ul::after{
+    content: "";
+    display: table;
+    clear: both;
+}
+
+nav a{
+    display: block; /*Toute la surface sera cliquable*/
+    text-decoration: none;
+    color: #EEE;
+    border-bottom: 2px solid transparent;/*Evite le décalage des éléments sous le menu à cause de la bordure en :hover*/
+    padding: 10px 0px;
+	font-family: "RussoOne",sans-serif;
+	font-size: 18px;
+}
+
+nav a:hover{
+    color: orange;
+    border-bottom: 2px solid gold;
+}
+
+/* --------- fin bandeau nav ------------ */
+
+.accueil {
+  display: block;
+  margin: 0px auto;
+  width: 400px;
+  min-height: 345px;
+  box-sizing: border-box;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  padding-bottom: 20px;
+  background: #fff;
+  -webkit-animation: fadeup 0.5s 0.5s ease both;
+          animation: fadeup 0.5s 0.5s ease both;
+  transform: translateY(90px);
+  opacity: 0;
+}
+
+::placeholder {
+    color: #dfa167;
+    font-family: 'Roboto';
+    font-weight: 100;
+}
+
+.accueil2 input {
+    border: none;
+    border-bottom-color: currentcolor;
+    border-bottom-style: none;
+    border-bottom-width: medium;
+    border-bottom: 1px solid #ffc185;
+    width: 75%;
+    font-family: 'Roboto';
+    color: #6db3d9;
+    text-align: center;
+    font-size: 21px;
+    font-weight: 100;
+	margin-top: 20px;
+    margin-bottom: 25px;
+}
+
+.accueil2 input:focus {
+	outline: none;
+}
+
+.form-btn {
+	text-align: center;	
+    width: 50%;
+    height: 40px;
+    bottom: 0;
+    border: 0;
+    font-family: 'Dosis';
+    font-size: 24px;
+    text-transform: uppercase;
+    cursor: pointer;
+	right: 0;
+	border-radius: 5px;
+	background-color: #e1ab78;
+	color: #fff;
+}
+
+.accueil .accueil2 header {
+  font-family: 'Azonix';
+  text-align: center;
+  background: rgba(59,112,137,1);
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.accueil .accueil2 header p {
+  color: #eee;
+  font-size: 40px;
+  margin: 0;
+  padding: 50px 0;
+  margin-top: 30px;
+}
+
+.accueil .accueil2 header p .lfmm {
+  font-weight: bold;
+  transform: translateX(-20px);
+  display: inline-block;
+  opacity: 0;
+  -webkit-animation: faderight 0.6s 1s ease both;
+          animation: faderight 0.6s 1s ease both;
+}
+.accueil .accueil2 header p .fmp {
+  display: inline-block;
+  font-weight: 100;
+  margin-left: 12px;
+  transform: translateX(0px);
+  opacity: 0;
+  -webkit-animation: fadeup 0.6s 0s ease both;
+          animation: fadeup 0.6s 0s ease both;
+}
+
+.body {
+  position: relative;
+  margin-top: 40px;
+  font-family: 'Dosis';
+  font-size : 28px;
+  text-align: center;
+  opacity: 0;
+  -webkit-animation: fade 0.6s 0s ease both;
+          animation: fade 0.6s 0s ease both;
+}
+
+form {
+	text-align: center;
+}
+
+button {
+	margin: 0 auto;
+}
+
+@-webkit-keyframes fadeup {
+  to {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+}
+@keyframes fadeup {
+  to {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+}
+@-webkit-keyframes faderight {
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes faderight {
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@-webkit-keyframes fade {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes fade {
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 400px) {
+  .accueil {
+    width: 100%;
+    height: 100%;
+  }
+}

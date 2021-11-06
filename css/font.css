@@ -1,0 +1,74 @@
+/* Titre principal */
+@font-face {
+  font-family: 'RussoOne';
+  font-style: normal;
+  font-weight: 400;
+  src: url('fonts/Russo_One.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Azonix';
+  font-style: normal;
+  font-weight: 400;
+  src: url('fonts/Azonix.otf') format('opentype');
+}
+
+/* Sous-titre ou texte */
+@font-face {
+  font-family: 'CaviarDreams-italic';
+  font-style: italic;
+  font-weight: 400;
+  src: url('fonts/CaviarDreams_italic.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'CaviarDreams';
+  font-style: normal;
+  font-weight: 400;
+  src: url('fonts/CaviarDreams.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Sansation';
+  font-style: normal;
+  font-weight: 400;
+  src: url('fonts/Sansation.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Sansation-italic';
+  font-style: italic;
+  font-weight: 400;
+  src: url('fonts/Sansation_Italic.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Sansation-light';
+  font-style: italic;
+  font-weight: 400;
+  src: url('fonts/Sansation_Light.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Sansation-bold';
+  font-style: bold;
+  font-weight: 400;
+  src: url('fonts/Sansation_Bold.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: url('fonts/Roboto.ttf') format('truetype');
+}
+
+@font-face {
+ font-family:"Avenir Next Regular";
+ src:url(fonts/Avenir-regular.woff2)format("woff2"),
+ url(fonts/Avenir-regular.woff)format("woff"),
+ url(fonts/Avenir-regular.ttf)format("truetype")
+}
+
+@font-face {
+ font-family:"Avenir Next Bold";
+ src: url(fonts/Avenir-bold.woff2)format("woff2"),
+ url(fonts/Avenir-bold.woff)format("woff"),
+ url(fonts/Avenir-bold.ttf)format("truetype")
+}

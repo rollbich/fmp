@@ -1,0 +1,757 @@
+<?php
+ini_set('memory_limit', '1G');
+require("B2B_params.php");
+require_once("xlsxwriter.class.php");
+require_once("mail-msg.php");
+
+/*  -------------------------------------------
+		LFMM-FMP.FR : tâche CRON à 23h42 loc
+    ------------------------------------------- */
+
+/*  ----------------------------------------
+		instanciation contexte
+	---------------------------------------- */
+$context = stream_context_create(
+array(
+    'ssl' => array(
+    'verify_peer' => false,
+    'verify_peer_name' => false,
+    'allow_self_signed' => true)
+	)
+);
+
+/*  -----------------------------------------------------------------------
+		instanciation soap FLOW Services
+		
+		Range de requête : 24h max
+		trafficWindow (OPERATIONAL)	 : [yesterday .. tomorrow]
+		trafficWindow (FORECAST)	 : [yesterday 21:00 UTC .. today+5d]
+	----------------------------------------------------------------------- */
+ 
+$soapClientFlow = new SoapClient(
+	$wsdl_flow_services_MM,
+	array('cache_wsdl'   => WSDL_CACHE_NONE,
+	'wsdl_cache' => 0,
+       'local_cert' => $local_cert_MM,
+		'passphrase'=>$passphrase_MM,
+		'stream_context' => $context,
+		'trace'=>1,
+		'exceptions'=>1,
+		'location' => $vLocation_MM
+	)
+);
+
+/*  --------------------------------------------------
+					Appel b2b
+		récupère le H20 (duration 60, step 20)
+		dans la plage horaire $wef-$unt en heure UTC
+	-------------------------------------------------- */
+function query_entry_count($tv, $wef, $unt) {
+	
+	global $soapClientFlow;
+	
+	$params = array(
+		'sendTime'=>gmdate("Y-m-d H:i:s"),
+		'dataset'=>array('type'=>'OPERATIONAL'),
+		'trafficTypes'=>array('item'=>'LOAD'),
+		'includeProposalFlights'=>false,
+		'includeForecastFlights'=>false,
+		'trafficWindow'=>array('wef'=>$wef,'unt'=>$unt),
+		'computeSubTotals'=>false,
+		'countsInterval'=>array('duration'=>'0060','step'=>'0020'),
+		'trafficVolume'=>$tv,
+		'calculationType'=>'ENTRY'
+	);
+	
+	try {
+		$output = $soapClientFlow->__soapCall('queryTrafficCountsByTrafficVolume', array('parameters'=>$params));
+		return $output;
+	}
+
+	catch (Exception $e) {echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";}
+}
+
+/*  ------------------------------------------------------------
+					Appel b2b
+		récupère l'occ (duration en fonction du TV, step 1)
+		dans la plage horaire $wef-$unt en heure UTC
+	------------------------------------------------------------ */
+function query_occ_count($tv, $tv_duration, $wef, $unt) {
+	
+	global $soapClientFlow;
+	
+	$params = array(
+		'sendTime'=>gmdate("Y-m-d H:i:s"),
+		'dataset'=>array('type'=>'OPERATIONAL'),
+		'trafficTypes'=>array('item'=>'LOAD'),
+		'includeProposalFlights'=>false,
+		'includeForecastFlights'=>false,
+		'trafficWindow'=>array('wef'=>$wef,'unt'=>$unt),
+		'computeSubTotals'=>false,
+		'countsInterval'=>array('duration'=>$tv_duration,'step'=>'0001'),
+		'trafficVolume'=>$tv,
+		'calculationType'=>'OCCUPANCY'
+	);
+							
+	try {
+		$output = $soapClientFlow->__soapCall('queryTrafficCountsByTrafficVolume', array('parameters'=>$params));
+		return $output;
+	}
+
+	catch (Exception $e) {echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";}
+	
+}
+
+/*  --------------------------------------------------------
+			récupère le H20 de la zone "est" ou "west"
+		dans la plage horaire $wef-$unt en heure UTC
+	-------------------------------------------------------- */
+function get_entry($zone, $wef, $unt) {
+	
+	global $tvs_est;
+	global $tvs_west;
+	global $tve;
+	global $tvw;
+	
+	$arr = array();
+	
+	if ($zone !== "est" && $zone !== "west") throw new Exception("La zone doit être \"est\" ou \"west\" !");
+	
+	if ($zone === "est") {
+		$tv_group = $tvs_est;
+		$tv_prefix = $tve;
+	} 
+	if ($zone === "west") {
+		$tv_group = $tvs_west;
+		$tv_prefix = $tvw;
+	}
+
+	foreach($tv_group as $tv) {
+		
+		if (isset($tv_prefix[$tv]["MV"])) { $tv_mv = $tv_prefix[$tv]["MV"]; } else { throw new Exception("Le TV ".$tv." a une MV non defini dans MV.json"); }
+		
+		$date = new DateTime($wef);
+		$timestamp = $date->getTimestamp();
+		$result = query_entry_count("LFM".$tv, $wef, $unt);
+
+		for ($i=0; $i<count($result->data->counts->item); $i++) {
+			  $date->setTimestamp($timestamp+$i*60*20);
+			  array_push($arr, array($tv, $date->format('Y-m-d'), $date->format('H:i'), $tv_mv, $result->data->counts->item[$i]->value->item->value->totalCounts));
+		}
+	}
+	return $arr;
+}
+
+/*  ------------------------------------------------------------
+			récupère l'occ de la zone "est" ou "west"
+		dans la plage horaire $wef-$unt en heure UTC
+	------------------------------------------------------------ */
+
+function get_occ($zone, $wef, $unt) {
+	
+	global $tvs_est;
+	global $tvs_west;
+	global $tve;
+	global $tvw;
+	$tv_duration = 0;
+	
+	$arr = array();
+	
+	if ($zone !== "est" && $zone !== "west") throw new Exception("La zone doit être \"est\" ou \"west\" !");
+	
+	if ($zone === "est") {
+		$tv_group = $tvs_est;
+		$tv_prefix = $tve;
+	} 
+	if ($zone === "west") {
+		$tv_group = $tvs_west;
+		$tv_prefix = $tvw;
+	}
+
+	foreach($tv_group as $tv) {
+		
+		if (isset($tv_prefix[$tv]["peak"])) { $tv_peak = $tv_prefix[$tv]["peak"]; } else { throw new Exception("Le TV ".$tv." a un peak non defini dans MV.json"); }
+		if (isset($tv_prefix[$tv]["sustain"])) { $tv_sustain = $tv_prefix[$tv]["sustain"]; } else { throw new Exception("Le TV ".$tv." a un sustain non defini dans MV.json"); }
+		if (isset($tv_prefix[$tv]["duration"])) { $tv_duration = str_pad($tv_prefix[$tv]["duration"], 4, '0', STR_PAD_LEFT); } else { throw new Exception("Le TV ".$tv." a une duration non defini dans MV.json"); }
+		
+		$date = new DateTime($wef);
+		$timestamp = $date->getTimestamp();
+		$result = query_occ_count("LFM".$tv, $tv_duration, $wef, $unt);
+	
+		for ($i=0; $i<count($result->data->counts->item); $i++) {
+			  $date->setTimestamp($timestamp+$i*60);
+			  array_push($arr, array($tv, $date->format('Y-m-d'), $date->format('H:i'), $tv_peak, $tv_sustain, $result->data->counts->item[$i]->value->item->value->totalCounts));
+		}
+	}
+	return $arr;
+}
+
+/*  ----------------------------------------------------------------------
+		récupère les reguls d'une zone définie par un trigramme
+				$area : 3 premières lettres (ex : LFM)
+				$wef-$unt : plage en heure UTC
+		Note :  queryRegulations ne récupère pas les delais des TV
+				c'est pourquoi, on effectue une requete atfcm_situation
+				
+		On récupère un tableau pour sauvegarde simple en xls et csv
+		On créé un objet global json plus complet $json_reg
+		pour la sauvegarde json
+	---------------------------------------------------------------------- */
+function get_regulations($area, $wef, $unt) {
+	
+	global $soapClientFlow;
+	
+	$params = array(
+		'sendTime'=>gmdate("Y-m-d H:i:s"),
+		'dataset'=>array('type'=>'OPERATIONAL'),
+		'requestedRegulationFields'=>array('item'=>array('applicability', 'initialConstraints', 'delayTVSet', 'reason', 'location', 'lastUpdate')),
+		'queryPeriod'=>array('wef'=>$wef,'unt'=>$unt),
+		'tvs'=>array($area."*")
+	);
+	
+	$reg = [];
+	$reg["LFMMFMPE"] = array();
+	$reg["LFMMFMPW"] = array();
+	$reg["LFMMAPP"] = array();
+	
+	$reg["LFBBFMP"] = array();
+	$reg["LFBBAPP"] = array();
+	
+	$reg["LFEEFMP"] = array();
+	$reg["LFEEAPP"] = array();
+	
+	$reg["LFFFFMPE"] = array();
+	$reg["LFFFFMPW"] = array();
+	$reg["LFFFAD"] = array();
+	
+	$reg["LFRRFMP"] = array();
+	$reg["LFRRAPP"] = array();
+	
+	$reg["LFDSNA"] = array();
+	
+	global $json_reg;
+	
+	try {
+		$output = $soapClientFlow->__soapCall('queryRegulations', array('parameters'=>$params));
+		$situation_ATFCM = get_ATFCM_situation();
+		$situation = get_area_situation($situation_ATFCM, $area);
+		for ($i=0; $i<count($output->data->regulations->item); $i++) {
+			$r = $output->data->regulations->item[$i];
+			$id = $r->regulationId;
+			$lastUpdateDate = substr($r->lastUpdate->userUpdateEventTime, 0, 10);
+			$lastUpdateTime = substr($r->lastUpdate->userUpdateEventTime, 11, 5);
+			$delay = 0;
+			$nbrImpactedFlight = 0;
+			foreach ($situation as $regul) {
+				if ($regul[0] == $id) {
+					$delay = (int) $regul[1];
+					$nbrImpactedFlight = (int) $regul[2];
+				}
+			}
+			$tvset = $r->delayTVSet;
+			$c = $r->initialConstraints;
+			if (is_array($c)) {
+				// pour export Excel
+				for($j=0; $j<count($c); $j++) {
+					$date = substr($r->initialConstraints[$j]->constraintPeriod->wef, 0, 10);
+					$hdeb = substr($r->initialConstraints[$j]->constraintPeriod->wef, -5);
+					$hfin = substr($r->initialConstraints[$j]->constraintPeriod->unt, -5);
+					array_push($reg[$tvset], array($r->regulationId, $r->location->id, $date, $hdeb, $hfin, $r->reason, $r->initialConstraints[$j]->normalRate, $r->initialConstraints[$j]->pendingRate, $r->initialConstraints[$j]->equipmentRate, $delay, $nbrImpactedFlight, $r->delayTVSet, $r->lastUpdate->userUpdateType, $lastUpdateDate, $lastUpdateTime));
+				}
+				// pour export json
+				$obj = new stdClass();
+				$obj->regId = $r->regulationId;
+				$obj->tv = $r->location->id;
+				$obj->lastUpdate = $r->lastUpdate;
+				$obj->applicability = $r->applicability;
+				$obj->constraints = $r->initialConstraints;
+				$obj->reason = $r->reason;
+				$obj->delay = $delay;
+				$obj->impactedFlights = $nbrImpactedFlight;
+				$obj->TVSet = $r->delayTVSet;
+				array_push($json_reg->$tvset, $obj);
+			} else {
+				// pour export Excel
+				$init_c = array($r->initialConstraints->constraintPeriod, $r->initialConstraints->normalRate, $r->initialConstraints->pendingRate, $r->initialConstraints->equipmentRate);
+				$date = substr($r->initialConstraints->constraintPeriod->wef, 0, 10);
+				$hdeb = substr($r->initialConstraints->constraintPeriod->wef, -5);
+				$hfin = substr($r->initialConstraints->constraintPeriod->unt, -5);
+				array_push($reg[$tvset], array($r->regulationId, $r->location->id, $date, $hdeb, $hfin, $r->reason, $r->initialConstraints->normalRate, $r->initialConstraints->pendingRate, $r->initialConstraints->equipmentRate, $delay, $nbrImpactedFlight, $r->delayTVSet, $r->lastUpdate->userUpdateType, $lastUpdateDate, $lastUpdateTime));
+				// pour export json
+				$obj = new stdClass();
+				$obj->regId = $r->regulationId;
+				$obj->tv = $r->location->id;
+				$obj->lastUpdate = $r->lastUpdate;
+				$obj->applicability = $r->applicability;
+				$obj->constraints = array($r->initialConstraints);
+				$obj->reason = $r->reason;
+				$obj->delay = $delay;
+				$obj->impactedFlights = $nbrImpactedFlight;
+				$obj->TVSet = $r->delayTVSet;
+				array_push($json_reg->$tvset, $obj);
+			}
+			
+		}
+		return $reg;
+	}
+	
+	catch (Exception $e) {echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";}
+		
+}
+
+/*  -----------------------------------------------------------------------------------
+		récupère la situation ATFCM en europe
+		- delai, nbre vols (landed, suspendus...), reason globaux europe
+		- reguls europe avec delai de chaque TV (format string HHMM), vols impactés
+	----------------------------------------------------------------------------------- */
+
+function get_ATFCM_situation() {
+
+	global $soapClientFlow;
+	
+	$params = array(
+		'sendTime'=>gmdate("Y-m-d H:i:s"),
+		'dataset'=>array('type'=>'OPERATIONAL'),
+		'day'=>gmdate("Y-m-d")
+	);
+						
+	try {
+		$output = $soapClientFlow->__soapCall('retrieveATFCMSituation', array('parameters'=>$params));
+		return $output;
+	}
+
+	catch (Exception $e) {echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";}	
+}
+
+/*  ---------------------------------------------------------------------
+		Extrait la situation ATFCM europe une zone précise d'europe
+		définies par un bigramme (ex : LF)
+		-> reguls de la zone avec delai de chaque TV, vols impactés
+	--------------------------------------------------------------------- */
+function get_area_situation($output, $area) {
+	$arr = array();
+	
+	for ($i=0; $i<count($output->data->regulations->item); $i++) {
+		$r = $output->data->regulations->item[$i];
+		$delay_h = (int) substr($r->delay, 0, 2);
+		$delay_mn = (int) substr($r->delay, -2);
+		$delay = $delay_h*60 + $delay_mn;
+		if (substr($r->trafficVolumeId, 0, 2) == $area) {
+			array_push($arr, array($r->regulationId, $delay, $r->nrImpactedFlights));
+		}
+	}
+	return $arr;
+}
+
+/*  ---------------------------------------------------------------------
+		Nombre de vols d'un TV par jour
+	--------------------------------------------------------------------- */
+function get_nb_vols($tv, $wef, $unt) {
+	
+	global $soapClientFlight;
+	global $receptionTime;
+	
+	$params = array(
+		'sendTime'=>gmdate("Y-m-d H:i:s"),
+		'dataset'=>array('type'=>'OPERATIONAL'),
+		'trafficType'=>'LOAD',
+		'includeProposalFlights'=>false,
+		'includeForecastFlights'=>false,
+		'trafficWindow'=>array('wef'=>$wef,'unt'=>$unt),
+		'requestedFlightFields'=>array('timeAtReferenceLocationEntry','aircraftType','aircraftOperator','actualTakeOffTime','actualTimeOfArrival'),
+		'trafficVolume'=>$tv,
+		'calculationType'=>'ENTRY'
+	);
+						
+	try {
+		$output = $soapClientFlight->__soapCall('queryFlightsByTrafficVolume', array('parameters'=>$params));
+		$receptionTime = $output->requestReceptionTime;
+		return $output;
+		}
+
+	catch (Exception $e) {echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";}
+}
+
+/*  ------------------------------------------
+		Ecriture du fichier Excel XLS
+		4 onglets H20, Occ, Regul et flights
+	------------------------------------------ */
+function write_xls($zone, $wef) {
+
+	global $occ_est;
+	global $occ_west;
+	global $h20_est;
+	global $h20_west;
+	global $regul;
+	global $flights_per_TV;
+		
+	$header_occ = array(
+	  'TV'=>'string',
+	  'Date'=>'date',
+	  'Time'=>'string',
+	  'Peak'=>'integer',
+	  'Sustain'=>'integer',
+	  'Occ'=>'integer'
+	);
+	
+	$header_h20 = array(
+	  'TV'=>'string',
+	  'Date'=>'date',
+	  'Time'=>'string',
+	  'MV'=>'integer',
+	  'H20'=>'integer'
+	);
+	
+	$header_reg = array(
+	  'Reg-Id'=>'string',
+	  'TV'=>'string',
+	  'Date'=>'date',
+	  'Début'=>'string',
+	  'Fin'=>'string',
+	  'Raison'=>'string',
+	  'Normal Rate'=>'integer',
+	  'Pending Rate'=>'integer',
+	  'Equipment Rate'=>'integer',
+	  'Total delay'=>'integer',
+	  'Vols impactés'=>'integer',
+	  'TV-Set'=>'string',
+	  'Update Type'=>'string',
+	  'Date update'=>'date',
+	  'Heure update'=>'string'
+	);
+	
+	$header_flights = array(
+	  'TV'=>'string',
+	  'Date'=>'date',
+	  'Vols'=>'integer',
+	);
+	
+	$style_header = array( 'font'=>'Arial','font-size'=>12,'font-style'=>'bold', 'halign'=>'center');
+	$style = array('halign'=>'center');
+
+	$writer = new XLSXWriter();
+	$writer->setAuthor('LFMM-FMP'); 
+	
+	// Occ
+	$writer->writeSheetHeader('Occ', $header_occ, $style_header );
+		
+	foreach(${"occ_".$zone} as $row) {
+		$writer->writeSheetRow('Occ', $row, $style);
+	}
+	
+	// H20
+	$writer->writeSheetHeader('H20', $header_h20, $style_header );
+		
+	foreach(${"h20_".$zone} as $row) {
+		$writer->writeSheetRow('H20', $row, $style);
+	}
+	
+	// Reg
+	$writer->writeSheetHeader('Regul', $header_reg, $style_header );
+	if ($zone == "est") {
+		foreach($regul["LFMMFMPE"] as $row) {
+			$writer->writeSheetRow('Regul', $row, $style);
+		}
+	}
+	if ($zone == "west") {	
+		foreach($regul["LFMMFMPW"] as $row) {
+			$writer->writeSheetRow('Regul', $row, $style);
+		}
+	}
+	$writer->writeSheetHeader('Regul-App', $header_reg, $style_header );
+	foreach($regul["LFMMAPP"] as $row) {
+		$writer->writeSheetRow('Regul-App', $row, $style);
+	}
+	
+	// Vols
+	$writer->writeSheetHeader('Vols jour', $header_flights, $style_header );
+	if ($zone == "est") {
+		foreach($flights["LFMMFMPE"] as $row) {
+			$writer->writeSheetRow('Vols jour', $row, $style);
+		}
+	}
+	if ($zone == "west") {
+		foreach($flights["LFMMFMPW"] as $row) {
+			$writer->writeSheetRow('Vols jour', $row, $style);
+		}
+	}
+	
+	$date = new DateTime($wef);
+	$d = $date->format('Ymd');
+	$dir = dirname(__FILE__)."/xls/";
+	
+	if (!file_exists($dir)) {
+		mkdir($dir, 0777, true);
+	}
+	
+	$writer->writeToFile($dir.$d."-Occ-H20-".$zone.".xlsx");
+
+}
+
+/*  ------------------------------------------
+		Ecriture du fichier générique csv
+		$arr : tableau contenant les données
+		$zone : est ou west
+		$type : H20, Occ, Reg
+		$wef : pour la date du jour
+		ex : 20210621-H20-est.csv
+	------------------------------------------ */
+function write_csv($arr, $zone, $type, $wef) {
+	
+	$date = new DateTime($wef);
+	$d = $date->format('Ymd');
+	$dir = dirname(__FILE__)."/csv/";
+	
+	if (!file_exists($dir)) {
+		mkdir($dir, 0777, true);
+	}
+	
+	// Open a file in write mode ('w')
+	$fp = fopen($dir.$d.$type.$zone.".csv", 'w');
+	  
+	foreach ($arr as $fields) {
+		fputcsv($fp, $fields);
+	}
+	  
+	fclose($fp);
+	
+}
+/*  ------------------------------------------
+		Ecriture du fichier générique json
+		$arr : tableau contenant les données
+		$zone : est ou west
+		$type : H20, Occ, Reg
+		$wef : pour la date du jour
+		ex : 20210621-H20-est.csv
+	------------------------------------------ */
+function write_json($arr, $zone, $type, $wef) {
+	
+	$date = new DateTime($wef);
+	$d = $date->format('Ymd');
+	$dir = dirname(__FILE__)."/json/";
+	
+	if (!file_exists($dir)) {
+		mkdir($dir, 0777, true);
+	}
+	
+	$fp = fopen($dir.$d.$type.$zone.".json", 'w');
+	fwrite($fp, json_encode($arr));
+	fclose($fp);
+
+}
+/*  ------------------------------------------
+		Ecriture d'un log
+		ex : 20210621-log.csv
+	------------------------------------------ */
+function write_log($occ_text, $reg_text, $vol_text) {
+	
+	$date = new DateTime();
+	$d = $date->format('Ymd');
+	$dir = dirname(__FILE__)."/log/";
+	
+	if (!file_exists($dir)) {
+		mkdir($dir, 0777, true);
+	}
+	
+	// Open a file in write mode ('w')
+	$fp = fopen($dir.$d."-log.csv", 'w');
+	  
+	fwrite($fp, $occ_text."\n");
+	fwrite($fp, $reg_text."\n");
+	fwrite($fp, $vol_text."\n");
+		  
+	fclose($fp);
+	
+}
+
+
+/*  ---------------------------------------------------------- */
+/* 						début du programme
+/*  ---------------------------------------------------------- */
+
+// objet contenant les reguls de LF*
+$json_reg = new stdClass();
+$json_reg->LFMMFMPE = array();
+$json_reg->LFMMFMPW = array();
+$json_reg->LFMMAPP = array();
+
+$json_reg->LFBBFMP = array();
+$json_reg->LFBBAPP = array();
+
+$json_reg->LFEEFMP = array();
+$json_reg->LFEEAPP = array();
+
+$json_reg->LFDSNA = array();
+
+$json_reg->LFFFFMPE = array();
+$json_reg->LFFFFMPW = array();
+$json_reg->LFFFAD = array();
+
+$json_reg->LFRRFMP = array();
+$json_reg->LFRRAPP = array();
+
+// dernier dimanche d'octobre => heure d'hiver
+$date_hiver = new DateTime('2021-10-31');
+$date_ete = new DateTime('2022-03-27');
+$dat = new DateTime();
+
+// date.timezone = "Europe/Paris" sur le serveur
+// On donne l'heure (locale puisque le serveur est sur le fuseau Paris) et on récupère $wef_counts et $unt_counts en UTC
+// 	ex : today 04:00 = 4h locale
+//		date   => 04:00 (date du serveur)
+//		gmdate => 02:00 (heure transformée en UTC)
+// si le serveur est configuré date.timezone = "UTC" alors date et gmdate donne la même heure qui est l'heure UTC
+//
+// en php pas scope dans if
+if ($dat < $date_hiver || $dat >= $date_ete) {
+	echo "Heure ete<br/>";
+	// Plage horaire de récupération du H20 et Occ (6h loc à minuit loc)
+	$wef_counts = gmdate('Y-m-d H:i', strtotime("today 06:00"));
+	$unt_counts = gmdate('Y-m-d H:i', strtotime("today 23:59"));
+
+	// Plage horaire de récupération des reguls (minuit UTC à minuit UTC)
+	$wef_regs = gmdate('Y-m-d H:i', strtotime("today 02:00"));
+	$unt_regs = gmdate('Y-m-d H:i', strtotime("tomorrow 01:59"));
+
+	// Plage horaire de récupération du nombre de vol par TV (minuit UTC à minuit UTC)
+	$wef_flights = gmdate('Y-m-d H:i', strtotime("today 02:00"));
+	$unt_flights = gmdate('Y-m-d H:i', strtotime("tomorrow 01:59"));
+} else {
+	echo "Heure hiver<br/>";
+	// Plage horaire de récupération du H20 et Occ (6h loc à minuit loc)
+	$wef_counts = gmdate('Y-m-d H:i', strtotime("today 06:00"));
+	$unt_counts = gmdate('Y-m-d H:i', strtotime("today 23:59"));
+
+	// Plage horaire de récupération des reguls (minuit UTC à minuit UTC)
+	$wef_regs = gmdate('Y-m-d H:i', strtotime("today 01:00"));
+	$unt_regs = gmdate('Y-m-d H:i', strtotime("tomorrow 00:59"));
+
+	// Plage horaire de récupération du nombre de vol par TV (minuit UTC à minuit UTC)
+	$wef_flights = gmdate('Y-m-d H:i', strtotime("today 01:00"));
+	$unt_flights = gmdate('Y-m-d H:i', strtotime("tomorrow 00:59"));
+}
+	
+/*
+$wef=gmdate("Y-m-d H:i", mktime(15, 0, 0, 5, 16, 2021));
+$unt=gmdate("Y-m-d H:i", mktime(17, 0, 0, 5, 16, 2021));
+*/
+
+// récupère les données MV, duration, sustain, peak des TV LFMM
+// données du fichier MV.json
+// $tve : données de la zone est et $tvw : données west
+$fichier_mv = file_get_contents(dirname(__FILE__)."/MV.json");
+$obj = json_decode($fichier_mv, true);
+$tve = $obj["TV-EST"];
+$tvw = $obj["TV-OUEST"];
+
+// récupère les TV que l'on veut compter
+// données du fichier TV_count.json
+$fichier_tv_count = file_get_contents(dirname(__FILE__)."/TV_count.json");
+$obj2 = json_decode($fichier_tv_count, true);
+$tvs_est = $obj2["TV-EST"];
+$tvs_west = $obj2["TV-OUEST"];
+
+// récupère les données H20, Occ et Reg
+$occ_est = get_occ("est", $wef_counts, $unt_counts);
+$occ_west = get_occ("west", $wef_counts, $unt_counts);
+$h20_est = get_entry("est", $wef_counts, $unt_counts);
+$h20_west = get_entry("west", $wef_counts, $unt_counts);
+$regul = get_regulations("LF", $wef_regs, $unt_regs);
+// objet contenant les reguls Europe
+$json_atfcm_reg = get_ATFCM_situation();
+
+
+/*  -----------------------------------------------------------------------
+		instanciation soap FLIGHT Services
+		
+		Range de requête : 24h max
+		trafficWindow (OPERATIONAL)	 : [yesterday .. tomorrow]
+		trafficWindow (FORECAST)	 : [yesterday 21:00 UTC .. today+5d]
+	----------------------------------------------------------------------- */
+
+$soapClientFlight = new SoapClient(
+	$wsdl_flight_services_MM,
+	array('cache_wsdl'   => WSDL_CACHE_NONE,
+	'wsdl_cache' => 0,
+       'local_cert' => $local_cert_MM,
+		'passphrase'=>$passphrase_MM,
+		'stream_context' => $context,
+		'trace'=>1,
+		'exceptions'=>1,
+		'location' => $vLocation_MM
+	)
+);
+
+function get_vols_Est($obj, $tv_arr, $wef, $unt) {
+	$obj->LFMMFMPE = array();
+	$date = new DateTime($wef);
+	foreach($tv_arr as $tv) {
+		$res = get_nb_vols($tv, $wef, $unt);
+		if ($tv == "LFMRAE") { // la 1ère fois, on remplit ces 2 propriétés
+			$obj->requestReceptionTime = $res->requestReceptionTime;
+			$obj->status = $res->status;
+		}
+		array_push($obj->LFMMFMPE, array($tv, $date->format('Y-m-d'), count($res->data->flights)));
+		if ($tv == "LFMRAE") $obj->VOLS_RAE = $res->data->flights;
+	}
+}
+
+function get_vols_West($obj, $tv_arr, $wef, $unt) {
+	$obj->LFMMFMPW = array();
+	$obj->VOLS_RAW = array();
+	$date = new DateTime($wef);
+	foreach($tv_arr as $tv) {
+		$res = get_nb_vols($tv, $wef, $unt);
+		array_push($obj->LFMMFMPW, array($tv, $date->format('Y-m-d'), count($res->data->flights)));
+		if ($tv == "LFMRAW") $obj->VOLS_RAW = $res->data->flights;
+	}
+}
+
+$tab_TVE = ["LFMRAE", "LFMSBAM", "LFMGY", "LFMAB", "LFMEK"];
+$tab_TVW = ["LFMRAW", "LFMMALY", "LFMWW", "LFMMF", "LFMDZ"];
+
+$flights = new stdClass();
+get_vols_Est($flights, $tab_TVE, $wef_flights, $unt_flights);
+get_vols_West($flights, $tab_TVW, $wef_flights, $unt_flights);
+
+
+// Sauvegarde des fichiers
+// Affichage d'un message suivant la réussite de la sauvegarde
+// écriture d'un log
+// Envoi d'un email en cas d'erreur
+try {	
+	
+	write_xls("est", $wef_counts);
+	write_xls("west", $wef_counts);
+	
+	write_json($occ_est, "est", "-Occ-", $wef_counts);
+	write_json($occ_west, "west", "-Occ-", $wef_counts);
+	write_json($h20_est, "est", "-H20-", $wef_counts);
+	write_json($h20_west, "west", "-H20-", $wef_counts);
+	
+	write_json($json_reg, "", "-reg", $wef_counts);
+	write_json($json_atfcm_reg->data, "", "-atfcm-reg", $wef_counts);
+
+	write_json($flights, "", "-vols", $wef_counts);
+
+	// logs
+	$nbr_vols_rae = $flights->LFMMFMPE[0][2];
+	$nbr_vols_raw = $flights->LFMMFMPW[0][2];
+	$heure = gmdate('Y-m-d H:i');
+	$req_vols = "requete VOLS recue le ".$receptionTime." UTC pour la date du ".$wef_flights." UTC a ".$unt_flights." UTC\n";
+	$req_vols = $req_vols."test nbr vols    RAE: ".$nbr_vols_rae."   RAW: ".$nbr_vols_raw."\n\n";
+	$req_vols = $req_vols."Export du ".$heure." UTC terminé";
+	echo $req_vols;
+	write_log("", "", $req_vols);
+	
+}
+catch (Exception $e) {
+	$err = "Erreur, verifier les sauvegardes\n"."Exception reçue : ".$e->getMessage()."\n";
+	echo "Erreur, verifier les sauvegardes\n<br>";
+	echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";
+	write_log("", "", $err);
+	send_mail();
+}
+
+
+?>

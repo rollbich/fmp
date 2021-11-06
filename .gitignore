@@ -1,0 +1,10 @@
+b2b/B2B/
+b2b/json/
+b2b/log/
+b2b/B2B_params.php
+Realise/
+php/config.inc.php
+php/check_login.inc.php
+php/check_ok.inc.php
+php/get_capa.php
+overload/xls/
