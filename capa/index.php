@@ -7,22 +7,16 @@
 		<link rel="icon" href="favicon.ico" />
 		<script type="text/javascript" src="../js/base.js"></script>
 		<script type="text/javascript" src="../js/utils.js"></script>
-		<script type="text/javascript" src="../js/list-component.js"></script>
-		<script type="text/javascript" src="../js/graph.js"></script>
 		<script type="text/javascript" src="../js/ouverture.js"></script>
 		<script type="text/javascript" src="../js/upload.js"></script>
 		<script type="text/javascript" src="../js/olaf.js"></script>
 		<script type="text/javascript" src="../js/capa.js"></script>
-		<script src="../js/dragger.js"></script>
-		<script src="../js/echarts.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="../css/font.css" />
-		<link rel="stylesheet" type="text/css" href="../css/list-component.css" />
 		<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
-		<link rel="stylesheet" type="text/css" href="../css/style.css" />
+		<link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
 		<link rel="stylesheet" type="text/css" href="../css/upload.css" />
 		<script>
 			document.addEventListener('DOMContentLoaded', (event) => {
-
 				
 				$('close_button').addEventListener('click', e => {
 					$("help_frame").classList.add('off');
@@ -37,7 +31,7 @@
 				$('bouton_feuille').addEventListener('click', async e => {
 					let zone = $('zone').value;
 					let day = $('start').value;
-					show_feuille_capa("feuille_capa_tour", "feuille_capa_uceso", day, zone);
+					show_feuille_capa("feuille_capa_tour", day, zone);
 				});
 				
 				document.querySelector('.popup-close').addEventListener('click', e => {
@@ -80,22 +74,6 @@
 <div id='feuille_capa_tour'>
 </div>
 <div id='feuille_capa_uceso'>
-</div>
-<div id="glob_container">
-	<div id='result'>
-	</div>
-	
-	<div id="graph-container">
-		<div id="graph-container-h20" draggable="true" class="off">
-		Drag me
-		<div id="graph_h20" class=""></div>
-		</div>
-
-		<div id="graph-container-occ" draggable="true" class="off">
-		Drag me
-		<div id="graph_occ" class=""></div>
-		</div>
-	</div>
 </div>
 
 <div id="popup-wrap" class="off" >
