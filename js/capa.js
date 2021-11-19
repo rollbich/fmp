@@ -1,5 +1,3 @@
-const tour_json = "tour_de_service.json";
-
 /*  ------------------------------------------------
 				Feuille de Capa
 	------------------------------------------------ */
@@ -35,22 +33,23 @@ const get_vac_eq = day => {
 	 Return : un string du nom du tour de service
 	 - "ete", "hiver", "mi-saison-basse", "mi-saison-haute"
    -------------------------------------------------------------- */
-function get_date_tour(tour, day) {
+function get_date_tour(tour, day, zone) {
+	console.log("zz: "+zone);
 	const d = day.split("-");
 	const annee = parseInt(d[0]);
 	const mois = parseInt(d[1]);
 	const jour = d[2];
 	const dat = new Date(annee, mois-1, jour); // index du mois commence à 0
 	
-	const d_hiver = tour["hiver"]["plage"][0][0].split("-");
-	const f_hiver = tour["hiver"]["plage"][0][1].split("-");
-	const d_ete = tour["ete"]["plage"][0][0].split("-");
-	const f_ete = tour["ete"]["plage"][0][1].split("-");
+	const d_hiver = tour[zone]["hiver"]["plage"][0][0].split("-");
+	const f_hiver = tour[zone]["hiver"]["plage"][0][1].split("-");
+	const d_ete = tour[zone]["ete"]["plage"][0][0].split("-");
+	const f_ete = tour[zone]["ete"]["plage"][0][1].split("-");
 	const index = mois < 7 ? 0 : 1;
-	const d_msb = tour["mi-saison-basse"]["plage"][index][0].split("-");
-	const f_msb = tour["mi-saison-basse"]["plage"][index][1].split("-");
-	const d_msh = tour["mi-saison-haute"]["plage"][index][0].split("-");
-	const f_msh = tour["mi-saison-haute"]["plage"][index][1].split("-");
+	const d_msb = tour[zone]["mi-saison-basse"]["plage"][index][0].split("-");
+	const f_msb = tour[zone]["mi-saison-basse"]["plage"][index][1].split("-");
+	const d_msh = tour[zone]["mi-saison-haute"]["plage"][index][0].split("-");
+	const f_msh = tour[zone]["mi-saison-haute"]["plage"][index][1].split("-");
 	
 	const decembre = new Date(annee, 11, 31); // 31 decembre
 	const janvier = new Date(annee, 0, 1); // 1er janvier
@@ -86,14 +85,14 @@ function get_date_tour(tour, day) {
 	   return :
 		tour_utc : { [ ["00:00", 0, 1, 1], ["hh:mm", cds, A, B], ... ] }
 */
-const get_tour_utc = async (tour_local, day) => {
+const get_tour_utc = async (tour_local, day, zone) => {
 	
 	// récupère le décalage utc/local en heure
 	const diff = Math.abs(new Date(day).getTimezoneOffset()) / 60;
-	
-	const saison = get_date_tour(tour_local, day);
+	console.log('yyy: '+zone);
+	const saison = get_date_tour(tour_local, day, zone);
 	//console.log(saison);
-	const tour = tour_local[saison];	
+	const tour = tour_local[zone][saison];	
 	
 	const index_deb = diff*4 - 1;
 	const tour_utc = {};
@@ -144,6 +143,7 @@ const get_tour_utc = async (tour_local, day) => {
    ---------------------------------------------------------------------- */
 async function get_nbpc_dispo(day, zone) {
 	const zon = zone.substr(1,1); // récupère la 2è lettre de la zone
+	const zone_str = zon === "E" ? "est" : "ouest";
 	const tab_vac_eq = get_vac_eq(day);
 	const eff = await get_olaf(zon, day);
 	// récupère l'objet contenant les propriétés equipes
@@ -152,7 +152,8 @@ async function get_nbpc_dispo(day, zone) {
 	const effectifNmoins1 = effN1[Object.keys(effN1)[0]];
 	
 	const tour_local = await loadJson(tour_json);
-	const tour_utc = await get_tour_utc(tour_local, day);
+	console.log("zstr: "+zone_str);
+	const tour_utc = await get_tour_utc(tour_local, day, zone_str);
 	
 	// Calcul du nombre de pc à afficher 
 	// On récupère l'effectif total, donc on doit enlever le cds sur les vacations sauf J2 et S1
@@ -246,7 +247,6 @@ function compact_ligne(pcs, ind) {
 		fonction d'affichage de la feuille de capa
 			Paramètre en entrée :
 			* id du container pour le tour
-			* id du container pour le socle Uceso
 			* day : yyyy-mm-jj
 			* zone : AE ou AW
 	-------------------------------------------------- */
@@ -258,8 +258,9 @@ async function show_feuille_capa(containerIdTour, day, zone) {
 	const pc_vac = pc["pc_vac"];
 	const tab_vac_eq = get_vac_eq(day);
 	
+	const zone_str = zone === "AE" ? "est" : "ouest";
 	const tour_local = await loadJson(tour_json);
-	const tour_utc = await get_tour_utc(tour_local, day);
+	const tour_utc = await get_tour_utc(tour_local, day, zone_str);
 	
 	// Fabrique la ligne du tour de service
 	// on teste si le cds travaille(il est bien compté dans ce cas mais on l'affiche pas sur l'ecran)

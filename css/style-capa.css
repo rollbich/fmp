@@ -44,6 +44,14 @@ body {
 	cursor: pointer;
 }
 
+#selection {
+	margin: 10px;
+}
+
+#button_save {
+	margin-top: 5px;
+}
+
 /* Bandeau de navigation */
 
 nav{
@@ -175,7 +183,9 @@ select, option {
 
 #zone.select {
 	margin-left: 0px;
-	margin-top: 6px;
+	line-height: 20px;
+	height: 25px;
+	margin-top: 0;
 	z-index: 1;
 	width: 100px;
 }
@@ -252,6 +262,10 @@ td, th {
 	width: 15px;
 	/*padding: 5px;*/
 	text-align: center;
+}
+
+td[data-col] {
+	cursor: pointer;
 }
 
 .max {

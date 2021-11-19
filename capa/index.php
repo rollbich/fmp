@@ -6,6 +6,7 @@
         <title>Feuille Capa</title>
 		<link rel="icon" href="favicon.ico" />
 		<script type="text/javascript" src="../js/base.js"></script>
+		<script type="text/javascript" src="../js/tds-name.js"></script>
 		<script type="text/javascript" src="../js/utils.js"></script>
 		<script type="text/javascript" src="../js/ouverture.js"></script>
 		<script type="text/javascript" src="../js/upload.js"></script>

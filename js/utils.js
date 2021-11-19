@@ -1,3 +1,5 @@
+/* ------- Généralité ------ */
+
 // short getElementById
 const $ = (id) => {
 	var el = document.getElementById(id);
@@ -13,11 +15,17 @@ function isObjEmpty(obj) {
   return Object.keys(obj).length === 0;
 }
 
-// inverse le sens de la date: 2021-12-25 => 25-12-2012
-const reverse_date = day => {
-	let d = day.split("-");
-	return `${d[2]}-${d[1]}-${d[0]}`
+// arrondi à 2 chiffres après la virgule
+const round = value => {
+	return Math.round(value*100)/100;
 }
+
+// force un affichage à 2 chiffres : 2 => 02 (utile pour formater les h ou les min)
+const formattedNumber = (valueint) => {
+	return fnb = ("0".repeat(1) + valueint).slice(-2);
+}
+
+/* ------- array ------- */
 
 // supprime toutes les valeurs d'un tableau
 const removeItemAll = (arr, value) => {
@@ -32,9 +40,50 @@ const removeItemAll = (arr, value) => {
   return arr;
 }
 
-// force un affichage à 2 chiffres : 2 => 02 (utile pour formater les h ou les min)
-const formattedNumber = (valueint) => {
-	return fnb = ("0".repeat(1) + valueint).slice(-2);
+/*  -----------------------------------
+ 				 date 
+	----------------------------------- */
+
+// convertit une date en yyyy-mm-dd
+function convertDate(date) {
+	var yyyy = date.getFullYear().toString();
+	var mm = (date.getMonth()+1).toString();
+	var dd  = date.getDate().toString();
+  
+	var mmChars = mm.split('');
+	var ddChars = dd.split('');
+  
+	return yyyy + '-' + (mmChars[1]?mm:"0"+mmChars[0]) + '-' + (ddChars[1]?dd:"0"+ddChars[0]);
+  }
+
+// inverse le sens de la date: 2021-12-25 => 25-12-2012
+const reverse_date = day => {
+	let d = day.split("-");
+	return `${d[2]}-${d[1]}-${d[0]}`
+}
+
+// ecart entre 2 dates en jours
+Date.prototype.ecartJour = function(dat) {
+	return Math.round((dat.getTime()-this.getTime())/(1000*3600*24));
+}
+
+// ajoute x jours à une date
+Date.prototype.addDays= function(nb_day) {
+	this.setDate(this.getDate() + nb_day);
+	return this;
+}
+
+// enlève 1 journée à une date "2021-12-25" => "2021-12-24"
+const jmoins1 = day => {
+	return new Date(day).addDays(-1).toISOString().split('T')[0];
+}
+  
+const jmoins7 = day => {
+	return new Date(day).addDays(-7).toISOString().split('T')[0];
+}
+  
+const jmoins728 = day => {
+	return new Date(day).addDays(-728).toISOString().split('T')[0];
 }
 
 // récupère dans un tableau les dates entre 2 dates
@@ -79,42 +128,19 @@ const get_ouv_1h = str_time => {
 	return result;
 }
 
-// arrondi à 2 chiffres après la virgule
-const round = value => {
-	return Math.round(value*100)/100;
+/* utils dates regulations */
+/* ------- extrait l'heure d'un string du type	"2021-07-17 11:40" ------- */
+const extract_time = date => {
+	return date.substr(11,5);
 }
-
-// convertit une date en yyyy-mm-dd
-function convertDate(date) {
-  var yyyy = date.getFullYear().toString();
-  var mm = (date.getMonth()+1).toString();
-  var dd  = date.getDate().toString();
-
-  var mmChars = mm.split('');
-  var ddChars = dd.split('');
-
-  return yyyy + '-' + (mmChars[1]?mm:"0"+mmChars[0]) + '-' + (ddChars[1]?dd:"0"+ddChars[0]);
-}
-
-Date.prototype.ecartJour = function(dat) {
-  return Math.round((dat.getTime()-this.getTime())/(1000*3600*24));
-}
-
-Date.prototype.addDays= function(nb_day) {
-  this.setDate(this.getDate() + nb_day);
-  return this;
-}
-
-const jmoins1 = day => {
-	return new Date(day).addDays(-1).toISOString().split('T')[0];
-}
-
-const jmoins7 = day => {
-	return new Date(day).addDays(-7).toISOString().split('T')[0];
-}
-
-const jmoins728 = day => {
-	return new Date(day).addDays(-728).toISOString().split('T')[0];
+	
+/* utils graph.js  */
+/* ------- formate la date: 20211225 => 25-12-2021 ------- */
+const hyphen_date = day => {
+	let y = day.substr(0,4);
+	let m = day.substr(4,2);
+	let d = day.substr(6,2);
+	return `${d}-${m}-${y}`
 }
 
 /* ------------ JSON ------------- */
@@ -142,6 +168,7 @@ async function loadJson(url) {
   }
 }
 
+// util overload
 // stocke dans fmp/overload/xls/2021
 function export_json_to_xls(url, json) {
 	var data = {
@@ -162,13 +189,18 @@ function export_json_to_xls(url, json) {
 	});
 }
 
-function download_file(url, json) {
+function post_tds_json(url, json) {
 	var data = {
 		method: "post",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(json)
 	};
-	fetch( url, data);
+	fetch( url, data)
+	.then(function(response) {
+		return response.text().then(function(texte) {
+
+		});
+	});
 }
 
 /* -------------- Pop-up -------------- */
@@ -194,22 +226,4 @@ const get_date_from_courage_file = fichier => {
 	let month = file[1].substr(4,2);
 	let day = file[1].substr(6,2);
 	return [day, month, year].join('-');
-}
-
-/* utils regul */
-/*  ---------------------------------------
-	  extrait l'heure d'un string du type
-		"2021-07-17 11:40"
-	--------------------------------------- */
-const extract_time = date => {
-	return date.substr(11,5);
-}
-
-/* utils graph */
-// formate la date: 20211225 => 25-12-2021
-const hyphen_date = day => {
-	let y = day.substr(0,4);
-	let m = day.substr(4,2);
-	let d = day.substr(6,2);
-	return `${d}-${m}-${y}`
 }

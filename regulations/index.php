@@ -9,7 +9,6 @@
         <meta name="robots" content="noindex">
         <title>Regulations</title>
 		<link rel="icon" href="favicon.ico" />
-		<script type="text/javascript" src="../js/base.js"></script>
 		<script type="text/javascript" src="../js/utils.js"></script>
 		<script type="text/javascript" src="../js/list-component.js"></script>
 		<script type="text/javascript" src="../js/graph.js"></script>
