@@ -1,10 +1,9 @@
 /* ------------------------------------------------------
 	Charge le json OLAF
-	Paramètres en entrée
-	- zone : E ou W
-	- day  : yyyy-mm-jj
+	@param {string} zone - "E" ou "W"
+	@param {string} day - "yyyy-mm-dd"
 	
-	return :
+	@returns :
 	{"2021-10-02":
 		{"6-E":
 			{

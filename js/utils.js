@@ -1,4 +1,6 @@
-/* ------- Généralité ------ */
+/*  --------------------------
+		Utils Généraux
+	-------------------------- */
 
 // short getElementById
 const $ = (id) => {
@@ -25,9 +27,7 @@ const formattedNumber = (valueint) => {
 	return fnb = ("0".repeat(1) + valueint).slice(-2);
 }
 
-/* ------- array ------- */
-
-// supprime toutes les valeurs d'un tableau
+// supprime toutes les occurences de la valeur value d'un tableau
 const removeItemAll = (arr, value) => {
   var i = 0;
   while (i < arr.length) {
@@ -40,9 +40,9 @@ const removeItemAll = (arr, value) => {
   return arr;
 }
 
-/*  -----------------------------------
- 				 date 
-	----------------------------------- */
+/*  -----------------------------------------
+ 				 Utils date 
+	----------------------------------------- */
 
 // convertit une date en yyyy-mm-dd
 function convertDate(date) {
@@ -86,26 +86,6 @@ const jmoins728 = day => {
 	return new Date(day).addDays(-728).toISOString().split('T')[0];
 }
 
-// récupère dans un tableau les dates entre 2 dates
-// start_date et end_date sont des objets Date (pas des string)
-// return : tableau de string ["2021-06-21", "2021-06-22", ...]
-const get_dates_array = (start_date, end_date) => {
-	const arr = [];
-	for(dt=new Date(start_date); dt<=end_date; dt.setDate(dt.getDate()+1)){
-		month = '' + (dt.getMonth() + 1),
-		day = '' + dt.getDate(),
-		year = dt.getFullYear();
-
-		if (month.length < 2) 
-			month = '0' + month;
-		if (day.length < 2) 
-			day = '0' + day;
-		
-		arr.push([year, month, day].join('-'));
-	}
-    return arr;
-}
-
 // minutes depuis minuit => return "xx:xx"
 const min_to_time = time => {
 	return formattedNumber(Math.floor(time/60))+":"+formattedNumber(time%60);
@@ -128,14 +108,41 @@ const get_ouv_1h = str_time => {
 	return result;
 }
 
-/* utils dates regulations */
-/* ------- extrait l'heure d'un string du type	"2021-07-17 11:40" ------- */
+/*	-------------------------------------------------------
+	Récupère dans un tableau les dates entre 2 dates
+	  @param {object} start_date - Objet Date
+	  @param {object} end_date - Objet Date 
+	  @returns {array} - ["2021-06-21", "2021-06-22", ...]
+	------------------------------------------------------- */
+const get_dates_array = (start_date, end_date) => {
+	const arr = [];
+	for(dt=new Date(start_date); dt<=end_date; dt.setDate(dt.getDate()+1)){
+		month = '' + (dt.getMonth() + 1),
+		day = '' + dt.getDate(),
+		year = dt.getFullYear();
+
+		if (month.length < 2) 
+			month = '0' + month;
+		if (day.length < 2) 
+			day = '0' + day;
+		
+		arr.push([year, month, day].join('-'));
+	}
+	return arr;
+}
+
+//  utils dates regulations
+/*  -----------------------------------------------------------
+	 extrait l'heure d'un string du type "2021-07-17 11:40" 
+	----------------------------------------------------------- */
 const extract_time = date => {
 	return date.substr(11,5);
 }
 	
-/* utils graph.js  */
-/* ------- formate la date: 20211225 => 25-12-2021 ------- */
+//  utils graph.js  
+/*  --------------------------------------------
+	 formate la date: 20211225 => 25-12-2021 
+	-------------------------------------------- */
 const hyphen_date = day => {
 	let y = day.substr(0,4);
 	let m = day.substr(4,2);
@@ -143,20 +150,10 @@ const hyphen_date = day => {
 	return `${d}-${m}-${y}`
 }
 
-/* ------------ JSON ------------- */
-
-// vérifie la réception du fichier
-function rep_status(response) {
-  if (response.ok) { // entre 200 et 300
-    return Promise.resolve(response)
-  } else {
-	// l'erreur est transmise au bloc catch de loadJson
-	if (response.status == 404) { return Promise.reject(new Error(`Le fichier ${response.url} n'existe pas`)); }
-    return Promise.reject(new Error('Erreur: '+response.statusText))
-  }
-}
-
-// charge un fichier json
+/*	---------------------------------------------------------
+		Charge un fichier json  
+			@param {string} url
+	--------------------------------------------------------- */
 async function loadJson(url) { 
   try {
 	let response = await fetch(url).then(rep_status); 
@@ -168,8 +165,24 @@ async function loadJson(url) {
   }
 }
 
-// util overload
-// stocke dans fmp/overload/xls/2021
+// vérifie la réception du fichier
+function rep_status(response) {
+	if (response.ok) { // entre 200 et 300
+	  return Promise.resolve(response)
+	} else {
+	  // l'erreur est transmise au bloc catch de loadJson
+	  if (response.status == 404) { return Promise.reject(new Error(`Le fichier ${response.url} n'existe pas`)); }
+	  return Promise.reject(new Error('Erreur: '+response.statusText))
+	}
+  }
+
+/*	---------------------------------------------------------
+		Exporte le fichier json au format Excel xlsx 
+			@param {string} url
+			@param {object} json - son à sauvegarder
+		util overload
+	 	stocke dans fmp/overload/xls/2021
+	--------------------------------------------------------- */
 function export_json_to_xls(url, json) {
 	var data = {
 		method: "post",
@@ -189,6 +202,11 @@ function export_json_to_xls(url, json) {
 	});
 }
 
+/*	---------------------------------------------------------
+		Sauve le fichier json du tds 
+			@param {string} url
+			@param {object} json - son à sauvegarder
+	--------------------------------------------------------- */
 function post_tds_json(url, json) {
 	var data = {
 		method: "post",
@@ -203,8 +221,11 @@ function post_tds_json(url, json) {
 	});
 }
 
-/* -------------- Pop-up -------------- */
-// Show pop-up 
+/*	---------------------------------------------------------
+		Affiche une Pop-up générique 
+			@param {string} text1 - Titre
+			@param {string} text2 - Contenu HTML
+	--------------------------------------------------------- */
 function show_popup(text1, text2) {
 	
 	document.getElementById('popup-wrap').classList.remove('off');
@@ -216,14 +237,29 @@ function show_popup(text1, text2) {
 	
 }
 
-/* utils ouverture et upload
-// example nom_fichier : "COUR-20210516.AE.sch.rea";
-// récupère la date contenue dans le nom du fichier courage : return yyyy-mm-dd
-*/
+/*  ------------------------------------------------------------
+	  récupère la date contenue dans le nom du fichier courage 
+	  utils ouverture et upload
+		@param {string} fichier - Nom du fichier
+	 	@returns {string} - "yyyy-mm-dd"
+	 example nom_fichier : "COUR-20210516.AE.sch.rea";
+	------------------------------------------------------------ */
 const get_date_from_courage_file = fichier => {
 	let file = fichier.split('COUR-');
 	let year = file[1].substr(0,4);
 	let month = file[1].substr(4,2);
 	let day = file[1].substr(6,2);
 	return [day, month, year].join('-');
+}
+
+/*  ------------------------------------------------------------------------------
+	  récupère l'heure en fonction du numéro de colonne (ne sert pas finalement)
+	 	@param {integer} col - Numéro de la colonne du tds
+		@returns {string} - "hh:mm"
+	------------------------------------------------------------------------------ */
+function get_time(col) {
+    const h = Math.floor(col/4);
+    let min = col%4 === 0 ? "00" : parseInt((col/4).toString().split('.')[1])*15/25;
+    min = min === 3 ? "30" : min;
+    return h.toString()+":"+min.toString();
 }

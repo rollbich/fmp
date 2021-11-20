@@ -11,8 +11,9 @@
     <link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
     <script>
 		document.addEventListener('DOMContentLoaded', (event) => { 	
-      let zone = $('zone').value;
-			affiche_tds(zone);
+      const zone = $('zone').value;
+      const saison = $('saison').value;
+			affiche_tds("result", zone, saison);
 		});
 	</script>
 </head>
@@ -21,6 +22,12 @@
 <select id="zone" class="select">
 		<option selected value="est">Zone EST</option>
 		<option value="ouest">Zone WEST</option>
+</select>
+<select id="saison" class="select">
+		<option selected value="hiver">Hiver</option>
+		<option value="mi-saison-basse">Mi-saison-basse</option>
+    <option value="mi-saison-haute">Mi-saison-basse</option>
+    <option value="ete">Ete</option>
 </select>
 <button id="button_save">Save</button>
 </div>

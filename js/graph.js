@@ -1,20 +1,13 @@
-/* ------------ JSON B2B------------- */
+/*	------------------------------ 
+------------ JSON B2B----------------- 
+	------------------------------	*/
 
-// vérifie la réception du fichier H20/Occ
-function rep_status_B2B(response) {
-  if (response.ok) { // entre 200 et 300
-    return Promise.resolve(response)
-  } else {
-	const d = response.url.split('json/');
-	const date = hyphen_date(d[1].substr(0,8));
-	// l'erreur est transmise au bloc catch de loadJsonB2B
-	if (response.status == 404) { return Promise.reject(new Error(`Le fichier B2B du ${date} n'existe pas`)); }
-    return Promise.reject(new Error('Erreur: '+response.statusText))
-  }
-}
-
-// charge un fichier json
-// type = H20 ou OCC
+/*	-------------------------------------------------
+		Charge un fichier json H20 ou OCC
+			@param {string} url
+			@param {string} type - "H20" ou "Occ"
+			@param {zone} zone - "AE ou "AW"
+	------------------------------------------------- */
 async function loadJsonB2B(url, type, zone) { 
   try {
 	let response = await fetch(url).then(rep_status_B2B); 
@@ -27,19 +20,41 @@ async function loadJsonB2B(url, type, zone) {
   }
 }
 
-// marge pour montrer le H20 : 15 minutes
-// ex : si un TV ouvre à 15h45, on va afficher le H20 à partir de 15h30 la donnée H20 de 15h40 sera affichée
+/*	-------------------------------------------
+	  vérifie la réception du fichier H20/Occ
+	  	@param {promise} response
+		@returns {promise}
+	------------------------------------------- */
+function rep_status_B2B(response) {
+	if (response.ok) { // entre 200 et 300
+		return Promise.resolve(response)
+	} else {
+		const d = response.url.split('json/');
+		const date = hyphen_date(d[1].substr(0,8));
+		// l'erreur est transmise au bloc catch de loadJsonB2B
+		if (response.status == 404) { return Promise.reject(new Error(`Le fichier B2B du ${date} n'existe pas`)); }
+		return Promise.reject(new Error('Erreur: '+response.statusText))
+	}
+}
+
+/*  -----------------------------------------------------------------------
+	marge pour montrer le H20 : 15 minutes
+	ex : si un TV ouvre à 15h45, on va afficher le H20 à partir de 15h30
+		 pour que la donnée H20 de 15h40 soit affichée
+	----------------------------------------------------------------------- */
 const h20_margin = 15;
 
-// get H20 depuis nos fichiers récupérés en B2B à partir de 04:00 UTC 
-// on charge un tableau [ [TV, yyyy-mm-dd, hh:mm, mv, h20], ...]
-// on stocke le résultat dans l'object result_h20
-// result : {
-	
-//		date: { tv: [ ["heure:min": trafic], ... ] }
-
-//	ex	"2021-06-21": { RAE: [ ["04:00": "4"], ["04:20": "15"] ... ], AB: [ ["00:00": "5"], ... }
-// }
+/*	---------------------------------------------------------------------------------------------------
+	 get H20 depuis nos fichiers récupérés en B2B à partir de 06:00 local (05:00 ou 04:00 UTC) 
+		 on charge le tableau [ [TV, yyyy-mm-dd, hh:mm, mv, h20], ...] du json H20
+		@param {string} day - "yyyy-mm-dd"
+		@param {string} zone - "AE" ou "AW"
+		@returns {object} 
+		 result : {
+			date: { tv: [ ["heure:min": trafic], ... ] }
+		 }
+	//	ex	"2021-06-21": { RAE: [ ["04:00": "4"], ["04:20": "15"] ... ], AB: [ ["00:00": "5"], ... }
+	-------------------------------------------------------------------------------------------------- */
 async function get_h20_b2b(day, zone) {
 	const courage = await read_schema_realise(day, zone);
 	const date = day.replace(/-/g, ''); // yyyymmdd
@@ -81,7 +96,17 @@ async function get_h20_b2b(day, zone) {
 	return result;
 }
 
-// on charge un tableau [ [TV, yyyy-mm-dd, hh:mm, peak, sustain, occ], ...]
+/*	---------------------------------------------------------------------------------------------------
+	 get Occ depuis nos fichiers récupérés en B2B à partir de 06:00 local (05:00 ou 04:00 UTC) 
+		 on charge le tableau [ [TV, yyyy-mm-dd, hh:mm, peak, sustain, occ], ...] du json Occ
+		@param {string} day - "yyyy-mm-dd"
+		@param {string} zone - "AE" ou "AW"
+		@returns {object} 
+		 result : {
+			date: { tv: [ ["heure:min": trafic], ... ] }
+		 }
+	//	ex	"2021-06-21": { RAE: [ ["04:00": "4"], ["04:01": "5"] ... ], AB: [ ["00:00": "5"], ... }
+	-------------------------------------------------------------------------------------------------- */
 async function get_occ_b2b(day, zone) {
 	const courage = await read_schema_realise(day, zone);
 	const date = day.replace(/-/g, ''); // yyyymmdd
@@ -123,6 +148,14 @@ async function get_occ_b2b(day, zone) {
 	
 }
 
+/*	--------------------------------------------------------------------------
+	 	Affiche le graph H20
+			@param {string} containerId - Id de l'HTML Element conteneur
+			@param {array} dataAxis - ["heure:min",...]
+			@param {array} data - [load,...]
+			@param {integer} mv - valeur de la MV
+			@param {string} tv - nom du TV
+	-------------------------------------------------------------------------- */
 function show_h20_graph(containerId, dataAxis, data, mv, tv) {
 	let myChart = echarts.init(document.getElementById(containerId));
 	let yMax = mv*1.6;
@@ -251,6 +284,15 @@ function show_h20_graph(containerId, dataAxis, data, mv, tv) {
 	
 }
 
+/*	--------------------------------------------------------------------------
+	 	Affiche le graph Occ
+			@param {string} containerId - Id de l'HTML Element conteneur
+			@param {array} dataAxis - ["heure:min",...]
+			@param {array} data - [load,...]
+			@param {integer} peak - valeur du peak
+			@param {integer} sustain - valeur du sustain
+			@param {string} tv - nom du TV
+	-------------------------------------------------------------------------- */
 function show_occ_graph(containerId, dataAxis, data, peak, sustain, tv) {
 	let myChart = echarts.init(document.getElementById(containerId));
 	let yMax = peak*1.5;

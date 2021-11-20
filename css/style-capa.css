@@ -190,6 +190,15 @@ select, option {
 	width: 100px;
 }
 
+#saison.select {
+	margin-left: 0px;
+	line-height: 20px;
+	height: 25px;
+	margin-top: 0;
+	z-index: 1;
+	width: 120px;
+}
+
 /* ------- Date Picker ------- */
 
 #dates {
@@ -264,8 +273,12 @@ td, th {
 	text-align: center;
 }
 
-td[data-col] {
+td[data-col], td.pc {
 	cursor: pointer;
+}
+
+td.pc:hover {
+	background-color:rgb(245, 213, 153);
 }
 
 .max {
@@ -286,6 +299,10 @@ td.f8px {
 
 td.bg {
 	background-color:rgb(153, 223, 245);
+}
+
+td.bg_red {
+	background-color:rgb(245, 213, 153);
 }
 
 th.bordure, td.bordure {
@@ -431,7 +448,7 @@ th.bordure, td.bordure {
 	padding:30px;
 	transform:translate(-50%, -50%) scale(0.5);
 	position:absolute;
-	top:280px;
+	top:380px;
 	left:50%;
 	box-shadow:0px 2px 16px rgba(0,0,0,0.5);
 	border-radius:3px;

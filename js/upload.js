@@ -1,3 +1,7 @@
+/*  ----------------------------------------------------------------------
+		Upload les schémas réalisés sur le serveur
+			@param {string} formId - Id de l'HTML Element Form
+	---------------------------------------------------------------------- */
 function init_upload(formId) {
   const upForm = $(formId);
  
@@ -92,6 +96,10 @@ function init_upload(formId) {
   $$("input[type=file]").addEventListener("change", handleFileSelect);
 }
 
+/*  ----------------------------------------------------------------------
+		Affiche les dossiers des schémas réalisés présents
+			@param {string} containerId - Id de l'HTML Element conteneur
+	---------------------------------------------------------------------- */
 async function init_dir(containerId) {
 	const dir = $(containerId);
 	

@@ -4,15 +4,27 @@ let result_h20 = {};
 // Json du dépassement de capa
 let result_capa = {};
 
-
+/*  -------------------------------------------------
+	 fonction factory qui affiche les dépassement
+		@param {string} type - "H20" ou "H5" 
+		Seul le H20 est possible, H5 supprimé
+	------------------------------------------------ */
 function show_result_capa(containerId, type, start_day, end_day, zone, selected_percent) {
 	const fonc_name = "show_capa_"+type;
 	window[fonc_name](containerId, zone, start_day, end_day, selected_percent);
 }
 
-/* result_capa {	"filtre": % du filtre,
-					"data" : [ [date, tv, heure, count, mv, pourcentage_mv], ... ]
-*/
+/*  ----------------------------------------------------------------------------------
+	 Calcule le dépassement Capa
+		@param {string} zone - "AE" ou "AW"
+		@param {string} start_day - "yyyy-mm-dd"
+		@param {string} end_day - "yyyy-mm-dd"
+		@param {integer} selected_pourcent - pourcentage de dépassement de MV
+		@results {object} - {
+			"filtre": % du filtre (= selected_pourcent),
+			"data" : [ [date, tv, heure, count, mv, pourcentage_mv], ... ]
+		}
+	---------------------------------------------------------------------------------- */
 async function calc_capa_H20(zone, start_day, end_day, selected_percent) {
 	const nom_fichier = "../b2b/MV.json";
 	const mv_json = await loadJson(nom_fichier);
@@ -53,6 +65,14 @@ async function calc_capa_H20(zone, start_day, end_day, selected_percent) {
 	return result_capa;
 }
 
+/*  ----------------------------------------------------------------------------------
+	 Affiche le dépassement Capa
+		@param {string} containerId - Id du conteneur
+	 	@param {string} zone - "AE" ou "AW"
+		@param {string} start_day - "yyyy-mm-dd"
+		@param {string} end_day - "yyyy-mm-dd"
+		@param {integer} selected_pourcent - pourcentage de dépassement de MV
+	---------------------------------------------------------------------------------- */
 async function show_capa_H20(containerId, zone, start_day, end_day, selected_percent) {
 	const result_capa = await calc_capa_H20(zone, start_day, end_day, selected_percent);
 		
@@ -82,21 +102,27 @@ async function show_capa_H20(containerId, zone, start_day, end_day, selected_per
 
 /*  ----------------------------------------------------------------
 	  récupère un tableau des dates où il y a un dépassement
-	  sert à ne charger que ces ddates là pour l'affichage H20:Occ
+	  sert à ne charger que ces dates là pour l'affichage H20:Occ
+	  	@param {nodeList} td_tv - liste des élément <td>
 	---------------------------------------------------------------- */
+// 	ex : <td class="capa tv" data-date="2021-06-21" data-tv="RAEE" data-deb="06:19" data-fin="07:19">RAEE</td>
 
-const extract_date = tds => {
+const extract_date = td_tv => {
 	let arr = [];
-	for (const td of tds) {
+	for (const td of td_tv) {
 		arr.push(td.dataset.date);
 	}
 	// enlève les doublons
 	return [...new Set(arr)];
 }
 
+/*  ----------------------------------------
+	  Ajoute les clicks sur TV
+		@param {string} zone - "AE"ou "AW"
+	---------------------------------------- */
 async function add_capa_listener(zone) {
-	const tds = document.querySelectorAll('.capa');
-	const date_arr = extract_date(tds);
+	const td_tv = document.querySelectorAll('.capa');
+	const date_arr = extract_date(td_tv);
 	
 	let h = {}, o = {}, reg;
 	
@@ -105,7 +131,7 @@ async function add_capa_listener(zone) {
 		o[d] = await get_occ_b2b(d, zone);
 	}
 	
-	for (const td of tds) {
+	for (const td of td_tv) {
 		let dat = td.dataset.date;
 		let deb = td.dataset.deb;
 		let fin = td.dataset.fin;

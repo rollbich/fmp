@@ -74,8 +74,6 @@
 </header>
 <div id='feuille_capa_tour'>
 </div>
-<div id='feuille_capa_uceso'>
-</div>
 
 <div id="popup-wrap" class="off" >
     <div class="popup-box">

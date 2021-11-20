@@ -1,7 +1,8 @@
 <?php
 
 /*  --------------------------------------------------------------
-			sauvegarde le fichier json du tds
+		sauvegarde le fichier json du tds
+			@param {object} $json - objet json à sauver
 	--------------------------------------------------------------  */
 
 $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
@@ -13,7 +14,7 @@ if ($contentType === "application/json") {
 } else { echo "Erreur : données non json<br/>"; }
 
 function write_json($json) {
-	$fp = fopen("tour_de_service.json", 'w');
+	$fp = fopen("../tour_de_service.json", 'w');
 	fwrite($fp, $json);
 	fclose($fp);
 }
