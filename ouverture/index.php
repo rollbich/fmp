@@ -18,6 +18,7 @@
 		<script type="text/javascript" src="../js/upload.js"></script>
 		<script type="text/javascript" src="../js/olaf.js"></script>
 		<script type="text/javascript" src="../js/capa.js"></script>
+		<script type="text/javascript" src="../js/confs.js"></script>
 		<script src="../js/dragger.js"></script>
 		<script src="../js/echarts.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="../css/font.css" />
@@ -58,6 +59,11 @@
 				$('bouton_h20occ').addEventListener('click', e => {
 					show_popup("Graph", "Cette fonctionnalité n'est pas encore implémentée");
 				});
+
+				$('bouton_conf').addEventListener('click', e => {
+					let day = $('start').value;
+					show_result_confs("result", day);
+				});
 				
 				$('bouton_uceso').addEventListener('click', async e => {
 					let zone = $('zone').value;
@@ -92,6 +98,7 @@
 <ul class="menu">
 	<li id="bouton_ouverture" class="pointer"><span>Ouverture</span></li>
 	<li id="bouton_uceso" class="pointer"><span>UCESO</span></li>
+	<li id="bouton_conf" class="pointer"><span>Conf NM</span></li>
 	<li id="bouton_h20occ" class="pointer"><span>Graph</span></li>
 	<li><button class="help_button">Help</button></li>
 </ul>

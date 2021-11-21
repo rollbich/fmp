@@ -129,7 +129,7 @@ h1 {
 ul.menu {
 	margin: 12px auto 0;
 	position: relative;
-	width: 600px;
+	width: 700px;
 	height: 50px;
 	background-color: var(--menu-bg-color);
 	border-radius: 8px;
@@ -314,6 +314,10 @@ table td.tv:hover {
 	width: 140px;
 	margin-top: 20px;
 	font-size: 16px;
+}
+
+div.conf th {
+	width: 100px;
 }
 
 /* ------- Graphes ------- */
