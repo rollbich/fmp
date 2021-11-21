@@ -524,7 +524,8 @@ async function show_courage_graph(containerId, day, zone, pc_15mn) {
 	const schema = await read_schema_realise(day, zone);
 	const schema7 = await read_schema_realise(day7, zone);
 	const schema728 = await read_schema_realise(day728, zone);
-	var chartDom = document.getElementById(containerId);
+	var chartDom = $(containerId);
+	chartDom.style.height = "400px";
 	var myChart = echarts.init(chartDom);
 	
 	data_series_uceso = [];

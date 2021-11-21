@@ -1,24 +1,12 @@
 <?php
 ini_set('memory_limit', '1G');
-require("B2B_params.php");
 require_once("xlsxwriter.class.php");
 require_once("mail-msg.php");
+require_once("B2B.php");
 
 /*  -------------------------------------------
 		LFMM-FMP.FR : tâche CRON à 23h42 loc
     ------------------------------------------- */
-
-/*  ----------------------------------------
-		instanciation contexte
-	---------------------------------------- */
-$context = stream_context_create(
-array(
-    'ssl' => array(
-    'verify_peer' => false,
-    'verify_peer_name' => false,
-    'allow_self_signed' => true)
-	)
-);
 
 /*  -----------------------------------------------------------------------
 		instanciation soap FLOW Services
@@ -28,18 +16,8 @@ array(
 		trafficWindow (FORECAST)	 : [yesterday 21:00 UTC .. today+5d]
 	----------------------------------------------------------------------- */
  
-$soapClientFlow = new SoapClient(
-	$wsdl_flow_services_MM,
-	array('cache_wsdl'   => WSDL_CACHE_NONE,
-	'wsdl_cache' => 0,
-       'local_cert' => $local_cert_MM,
-		'passphrase'=>$passphrase_MM,
-		'stream_context' => $context,
-		'trace'=>1,
-		'exceptions'=>1,
-		'location' => $vLocation_MM
-	)
-);
+$soapFlow = new B2B("flow");
+$soapClientFlow = $soapFlow->get_client();
 
 /*  --------------------------------------------------
 					Appel b2b
@@ -344,7 +322,7 @@ function get_area_situation($output, $area) {
 }
 
 /*  ---------------------------------------------------------------------
-		Nombre de vols d'un TV par jour
+		Nombre de vols d'un TV par jour : FlightService
 	--------------------------------------------------------------------- */
 function get_nb_vols($tv, $wef, $unt) {
 	
@@ -366,6 +344,31 @@ function get_nb_vols($tv, $wef, $unt) {
 	try {
 		$output = $soapClientFlight->__soapCall('queryFlightsByTrafficVolume', array('parameters'=>$params));
 		$receptionTime = $output->requestReceptionTime;
+		return $output;
+		}
+
+	catch (Exception $e) {echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";}
+}
+
+/* -----------------------------------------------------------------
+	Récupère les confs déclarés
+	@param {string} $airspace - "LFMMCTAE"
+	@param {gmdate} $day - gmdate('Y-m-d', strtotime("tomorrow"));
+		possible : yesterday, today, tomorrow 
+   -----------------------------------------------------------------*/
+function get_atc_conf($airspace, $day) {
+	
+	global $soapClientFlow;
+	
+	$params = array(
+		'sendTime'=>gmdate("Y-m-d H:i:s"),
+		'dataset'=>array('type'=>'OPERATIONAL'),
+		'day'=> $day,
+		'airspace' => $airspace
+	);
+						
+	try {
+		$output = $soapClientFlow->__soapCall('retrieveSectorConfigurationPlan', array('parameters'=>$params));
 		return $output;
 		}
 
@@ -613,6 +616,7 @@ $obj2 = json_decode($fichier_tv_count, true);
 $tvs_est = $obj2["TV-EST"];
 $tvs_west = $obj2["TV-OUEST"];
 
+
 // récupère les données H20, Occ et Reg
 $occ_est = get_occ("est", $wef_counts, $unt_counts);
 $occ_west = get_occ("west", $wef_counts, $unt_counts);
@@ -622,6 +626,15 @@ $regul = get_regulations("LF", $wef_regs, $unt_regs);
 // objet contenant les reguls Europe
 $json_atfcm_reg = get_ATFCM_situation();
 
+// ATC conf du lendemain
+$airspace1 = "LFMMCTAE";
+$airspace2 = "LFMMCTAW";
+$tomorrow = gmdate('Y-m-d', strtotime("tomorrow"));
+$plan_e = get_atc_conf($airspace1, $tomorrow);
+$plan_w = get_atc_conf($airspace2, $tomorrow);
+$atc_confs = new stdClass();
+$atc_confs->est = $plan_e->data->plan->nmSchedule->item;
+$atc_confs->ouest = $plan_w->data->plan->nmSchedule->item;
 
 /*  -----------------------------------------------------------------------
 		instanciation soap FLIGHT Services
@@ -631,18 +644,8 @@ $json_atfcm_reg = get_ATFCM_situation();
 		trafficWindow (FORECAST)	 : [yesterday 21:00 UTC .. today+5d]
 	----------------------------------------------------------------------- */
 
-$soapClientFlight = new SoapClient(
-	$wsdl_flight_services_MM,
-	array('cache_wsdl'   => WSDL_CACHE_NONE,
-	'wsdl_cache' => 0,
-       'local_cert' => $local_cert_MM,
-		'passphrase'=>$passphrase_MM,
-		'stream_context' => $context,
-		'trace'=>1,
-		'exceptions'=>1,
-		'location' => $vLocation_MM
-	)
-);
+$soapFlight = new B2B("flight");
+$soapClientFlight = $soapFlight->get_client();
 
 function get_vols_Est($obj, $tv_arr, $wef, $unt) {
 	$obj->LFMMFMPE = array();
@@ -681,6 +684,7 @@ get_vols_West($flights, $tab_TVW, $wef_flights, $unt_flights);
 // Affichage d'un message suivant la réussite de la sauvegarde
 // écriture d'un log
 // Envoi d'un email en cas d'erreur
+
 try {	
 	
 	write_xls("est", $wef_counts);
@@ -695,6 +699,7 @@ try {
 	write_json($json_atfcm_reg->data, "", "-atfcm-reg", $wef_counts);
 
 	write_json($flights, "", "-vols", $wef_counts);
+	write_json($atc_confs, "", "-confs", $wef_counts);
 
 	// logs
 	$nbr_vols_rae = $flights->LFMMFMPE[0][2];

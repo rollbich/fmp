@@ -181,7 +181,7 @@ select, option {
 	width: 70px;
 }
 
-#zone.select {
+#zone.select, #saison.select {
 	margin-left: 0px;
 	line-height: 20px;
 	height: 25px;
@@ -191,11 +191,6 @@ select, option {
 }
 
 #saison.select {
-	margin-left: 0px;
-	line-height: 20px;
-	height: 25px;
-	margin-top: 0;
-	z-index: 1;
 	width: 120px;
 }
 
