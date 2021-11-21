@@ -67,7 +67,7 @@ async function read_schema_realise(day, zone) {
 		// sert pour tv_h
 		const tv_h_d = Math.max(parseInt(h[1]), 0);
 		const tv_h_f = parseInt(h[2]);
-		//console.log("deb:  "+tvd+"   fin: "+tvf);
+
 		// teste si ouverture > ouv_tech
 		//if (parseInt(h[2]) - parseInt(h[1]) > ouv_tech) { 
 			
@@ -101,7 +101,9 @@ async function read_schema_realise(day, zone) {
 			ouverture.forEach( el => {
 				if (el != '') {
 					sub_tv = el.substr(7,5).trimStart();
-					if (sub_tv === '?????') { isOk = false; } 
+					// Correctif il peut arriver que la position s'apelle P10 et le TV = ????
+					// dans ce cas on 10 ???? alors que ce n'est pas une nouvelle ligne et une ouverture et h[1] = '-1'
+					if (sub_tv === '?????' || (h[1] === '-1' && parseInt(h[2]) < 27)) { isOk = false; } 
 					else { // ajoute dans la liste des tv
 					  schema.tv.push(sub_tv);
 					  // remplit les heures ouverts pour chaque TV
@@ -191,7 +193,7 @@ async function add_ouverture_listener(day, zone) {
 	const tds = document.querySelectorAll('.tv');
 	
 	let h, o, reg;
-	h = await get_h20_b2b(day, zone);
+	h = await get_h20_b2b(day, zone); //  {	date: { tv: [ ["heure:min": trafic], ... ] } }
 	o = await get_occ_b2b(day, zone);
 	
 	for (const td of tds) {
