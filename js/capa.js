@@ -127,7 +127,7 @@ const get_tour_utc = async (tour_local, day, zone) => {
 		@param {object} update	- {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N1":0}
 								- Nombre de pc à retrancher à l'effectif OLAF
 	 	@returns {object} 
-			{ "pc_vac": {"vac": nbre_pc, ...}, 
+			{ "pc_vac": {"vac": {"nbpc": nbre_pc, "BV", "RO"}, ...}, 
 			  "pc_total_dispo_15mn":[ ["hh:mm", nb_pc_dispo], [...], ... ] }
    --------------------------------------------------------------------------------------- */
 async function get_nbpc_dispo(day, zone, update) {
@@ -146,14 +146,18 @@ async function get_nbpc_dispo(day, zone, update) {
 	
 	// Calcul du nombre de pc à afficher 
 	// On récupère l'effectif total, donc on doit enlever le cds sur les vacations sauf J2 et S1	
-	const pc = {};
+	const pc = {"J1":{}, "J3":{}, "S2":{}, "J2":{}, "S1":{}, "N":{}, "N1":{}};
 	for(vac in tab_vac_eq) {
 		let p = tab_vac_eq[vac]+"-"+zon;
 		if (vac !== "N1") {
 			const cds = (vac == "J2" || vac == "S1") ? 0 : 1; // cds=0 en J2 et S1
-			pc[vac] = parseInt(effectif[p]["teamReserve"]["teamQuantity"]) - cds - update[vac]; 
+			pc[vac]["nbpc"] = parseInt(effectif[p]["teamReserve"]["teamQuantity"]) - cds - update[vac]; 
+			pc[vac]["BV"] = parseInt(effectif[p]["teamReserve"]["BV"]);
+			pc[vac]["RO"] = parseInt(effectif[p]["teamReserve"]["roQuantity"]);
 		} else {
-			pc[vac] = parseInt(effectifNmoins1[p]["teamReserve"]["teamQuantity"]) - 1 - update[vac]; // le cds ne compte pas dans le nb de pc => -1
+			pc[vac]["nbpc"] = parseInt(effectifNmoins1[p]["teamReserve"]["teamQuantity"]) - 1 - update[vac]; // le cds ne compte pas dans le nb de pc => -1
+			pc[vac]["BV"] = parseInt(effectifNmoins1[p]["teamReserve"]["BV"]);
+			pc[vac]["RO"] = parseInt(effectifNmoins1[p]["teamReserve"]["roQuantity"]);
 		}
 	}
 	
@@ -163,21 +167,21 @@ async function get_nbpc_dispo(day, zone, update) {
 	let nb_pc = 0;
 	let pcs = [];
 	for(var i=0;i<96;i++) {
-		if (tour_utc["J1"][i][2] === 1) nb_pc += Math.floor(pc["J1"]/2);
-		if (tour_utc["J1"][i][3] === 1) nb_pc += ((Math.floor(pc["J1"]/2) + (pc["J1"])%2));
-		if (tour_utc["J3"][i][2] === 1) nb_pc += Math.floor(pc["J3"]/2);
-		if (tour_utc["J3"][i][3] === 1) nb_pc += ((Math.floor(pc["J3"]/2) + (pc["J3"])%2));
+		if (tour_utc["J1"][i][2] === 1) nb_pc += Math.floor(pc["J1"]["nbpc"]/2);
+		if (tour_utc["J1"][i][3] === 1) nb_pc += ((Math.floor(pc["J1"]["nbpc"]/2) + (pc["J1"]["nbpc"])%2));
+		if (tour_utc["J3"][i][2] === 1) nb_pc += Math.floor(pc["J3"]["nbpc"]/2);
+		if (tour_utc["J3"][i][3] === 1) nb_pc += ((Math.floor(pc["J3"]["nbpc"]/2) + (pc["J3"]["nbpc"])%2));
 		if (tour_utc["S2"][i][1] === 1) nb_pc += 1; // cds de S2 qui bosse sur secteur
-		if (tour_utc["S2"][i][2] === 1) nb_pc += Math.floor(pc["S2"]/2);
-		if (tour_utc["S2"][i][3] === 1) nb_pc += ((Math.floor(pc["S2"]/2) + (pc["S2"])%2));
-		if (tour_utc["J2"][i][2] === 1) nb_pc += Math.floor(pc["J2"]/2);
-		if (tour_utc["J2"][i][3] === 1) nb_pc += ((Math.floor(pc["J2"]/2) + (pc["J2"])%2));
-		if (tour_utc["S1"][i][2] === 1) nb_pc += Math.floor(pc["S1"]/2);
-		if (tour_utc["S1"][i][3] === 1) nb_pc += ((Math.floor(pc["S1"]/2) + (pc["S1"])%2));
-		if (tour_utc["N"][i][2] === 1 && i>48) nb_pc += Math.floor(pc["N"]/2);
-		if (tour_utc["N"][i][3] === 1 && i>48) nb_pc += ((Math.floor(pc["N"]/2) + (pc["N"])%2));
-		if (tour_utc["N"][i][2] === 1 && i<48) nb_pc += Math.floor(pc["N1"]/2);
-		if (tour_utc["N"][i][3] === 1 && i<48) nb_pc += ((Math.floor(pc["N1"]/2) + (pc["N1"])%2));
+		if (tour_utc["S2"][i][2] === 1) nb_pc += Math.floor(pc["S2"]["nbpc"]/2);
+		if (tour_utc["S2"][i][3] === 1) nb_pc += ((Math.floor(pc["S2"]["nbpc"]/2) + (pc["S2"]["nbpc"])%2));
+		if (tour_utc["J2"][i][2] === 1) nb_pc += Math.floor(pc["J2"]["nbpc"]/2);
+		if (tour_utc["J2"][i][3] === 1) nb_pc += ((Math.floor(pc["J2"]["nbpc"]/2) + (pc["J2"]["nbpc"])%2));
+		if (tour_utc["S1"][i][2] === 1) nb_pc += Math.floor(pc["S1"]["nbpc"]/2);
+		if (tour_utc["S1"][i][3] === 1) nb_pc += ((Math.floor(pc["S1"]["nbpc"]/2) + (pc["S1"]["nbpc"])%2));
+		if (tour_utc["N"][i][2] === 1 && i>48) nb_pc += Math.floor(pc["N"]["nbpc"]/2);
+		if (tour_utc["N"][i][3] === 1 && i>48) nb_pc += ((Math.floor(pc["N"]["nbpc"]/2) + (pc["N"]["nbpc"])%2));
+		if (tour_utc["N"][i][2] === 1 && i<48) nb_pc += Math.floor(pc["N1"]["nbpc"]/2);
+		if (tour_utc["N"][i][3] === 1 && i<48) nb_pc += ((Math.floor(pc["N1"]["nbpc"]/2) + (pc["N1"]["nbpc"])%2));
 		pcs.push([tour_utc["J1"][i][0], nb_pc]);
 		nb_pc = 0;
 	}	
@@ -256,8 +260,8 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 		const comp = tour_utc[vac].map( elem => [
 			elem[0], 
 			parseInt(elem[1]), 
-			parseInt(elem[2])*Math.floor(pc_vac[vac]/2), 
-			parseInt(elem[3])*(Math.floor(pc_vac[vac]/2)+(pc_vac[vac])%2)
+			parseInt(elem[2])*Math.floor(pc_vac[vac]["nbpc"]/2), 
+			parseInt(elem[3])*(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2)
 		]);
 		/* Sans compactage */
 		comp.forEach( (elem, index) => {
@@ -279,13 +283,13 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 		return `
 		<tr data-vac='${vac}'>
 			<td class='left_2px right_1px'></td><td class='right_1px'></td>
-			<td class='right_1px'>cds</td><td>${cds}</td><td class='pc right_2px' data-vac='${vac}'>${pc_vac[vac]}</td>${res1}</tr>
+			<td class='right_1px'>cds</td><td>${cds}</td><td class='pc right_1px' data-vac='${vac}'>${pc_vac[vac]["nbpc"]}</td><td class='right_2px'>${pc_vac[vac]["RO"]}</td>${res1}</tr>
 		<tr data-vac='${vac}'>
 			<td class='left_2px right_1px'>${tab_vac_eq[vac]}</td>
-			<td class='right_1px'>${vac}</td><td class='right_1px'>A</td><td class='right_2px' colspan="2"></td>${res2}</tr>
+			<td class='right_1px'>${vac}</td><td class='right_1px'>A</td><td class='right_1px' colspan="2"></td><td class='right_2px'></td>${res2}</tr>
 		<tr data-vac='${vac}'>
 			<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
-			<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_2px' colspan="2"></td>${res3}</tr>`;
+			<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px' colspan="2"></td><td class='bottom_2px right_2px'></td>${res3}</tr>`;
 	}
 	
 	// Fabrique la ligne du tour de service pour la nuit du soir
@@ -295,8 +299,8 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 		const comp = tour_utc[vac].map( elem => [
 			elem[0], 
 			parseInt(elem[1]), 
-			parseInt(elem[2])*Math.floor(pc_vac[vac]/2), 
-			parseInt(elem[3])*(Math.floor(pc_vac[vac]/2)+(pc_vac[vac])%2)
+			parseInt(elem[2])*Math.floor(pc_vac[vac]["nbpc"]/2), 
+			parseInt(elem[3])*(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2)
 		]);
 		comp.forEach( (elem, index) => {
 			let cl = "";
@@ -318,13 +322,13 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 		<tr data-vac='N'>
 			<td class='left_2px right_1px'></td><td class='right_1px'></td>
 			<td class='right_1px'>cds</td><td>1</td>
-			<td class='pc right_2px' data-vac='N'>${pc_vac[vac]}</td>${res1}</tr>
+			<td class='pc right_1px' data-vac='N'>${pc_vac[vac]["nbpc"]}</td><td class='right_2px'>${pc_vac[vac]["RO"]}</td>${res1}</tr>
 		<tr data-vac='N'>
 			<td class='left_2px right_1px'>${tab_vac_eq[vac]}</td><td class='right_1px'>N</td>
-			<td class='right_1px'>A</td><td class='right_2px' colspan="2"></td>${res2}</tr>
+			<td class='right_1px'>A</td><td class='right_1px' colspan="2"></td><td class='right_2px'></td>${res2}</tr>
 		<tr data-vac='N'>
 			<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
-			<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_2px' colspan="2"></td>${res3}</tr>`;
+			<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px' colspan="2"></td><td class='bottom_2px right_2px'></td>${res3}</tr>`;
 	}
 	
 	// Fabrique la ligne du tour de service pour le début de nuit
@@ -334,8 +338,8 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 		const comp = tour_utc["N"].map( elem => [
 			elem[0], 
 			parseInt(elem[1]), 
-			parseInt(elem[2])*Math.floor(pc_vac[vac]/2), 
-			parseInt(elem[3])*(Math.floor(pc_vac[vac]/2)+(pc_vac[vac])%2)
+			parseInt(elem[2])*Math.floor(pc_vac[vac]["nbpc"]/2), 
+			parseInt(elem[3])*(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2)
 		]);
 		comp.forEach( (elem, index) => {
 			let cl = "";
@@ -356,13 +360,13 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 		return `
 		<tr data-vac='N1'>
 			<td class='left_2px right_1px'></td><td class='right_1px'></td><td class='right_1px'>cds</td><td>1</td>
-			<td class='pc right_2px' data-vac='N1'>${pc_vac[vac]}</td>${res1}</tr>
+			<td class='pc right_1px' data-vac='N1'>${pc_vac[vac]["nbpc"]}</td><td class='right_2px'>${pc_vac[vac]["RO"]}</td>${res1}</tr>
 		<tr data-vac='N1'>
 			<td class='left_2px right_1px'>${tab_vac_eq[vac]}</td><td class='right_1px'>N-1</td>
-			<td class='right_1px'>A</td><td class='right_2px' colspan="2"></td>${res2}</tr>
+			<td class='right_1px'>A</td><td class='right_1px' colspan="2"></td><td class='right_2px'></td>${res2}</tr>
 		<tr data-vac='N1'>
 			<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
-			<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_2px' colspan="2"></td>${res3}</tr>`;
+			<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px' colspan="2"></td><td class='bottom_2px right_2px'></td>${res3}</tr>`;
 	}
 	
 	// fabrique la ligne du nbre de pc dispo
@@ -376,7 +380,7 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 			//console.log(elem);
 		});
 		
-		let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="5">Nb PC</td>${res2}</tr>`;
+		let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="6">Nb PC</td>${res2}</tr>`;
 		return res;
 	}
 	
@@ -390,7 +394,7 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 			res3 += `<td class="bordure_uc" colspan="${nb_occ}">${elem[2]}</td>`;
 		});
 		
-		let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="5">UCESO</td>${res3}</tr>`;
+		let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="6">UCESO</td>${res3}</tr>`;
 		return res;
 	}
 	
@@ -409,7 +413,7 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 	let res = `<table class="ouverture">
 				 <caption>Journée du ${day}</caption>
 				 <thead>
-					<tr class="titre"><th class="top_2px left_2px bottom_2px">Eq</th><th class="top_2px bottom_2px">Vac</th><th class="top_2px bottom_2px">Part</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px right_2px">PC</th><th class="top_2px bottom_2px right_2px" colspan="96">...</th></tr>
+					<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px right_1px">PC</th><th class="top_2px bottom_2px right_2px">BV</th><th class="top_2px bottom_2px right_2px" colspan="96">...</th></tr>
 				</thead>
 				<tbody>`;
 	res += `${affiche_vac("J1")}`;
@@ -419,7 +423,7 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 	res += `${affiche_vac("S1")}`;
 	res += `${affiche_vac_nuit()}`;
 	res += `${affiche_vac_nuitmoins1()}`;
-	res += `<tr class="titre"><th class='bottom_2px left_2px right_2px' colspan="5">Heures UTC</th>${heure()}`;
+	res += `<tr class="titre"><th class='bottom_2px left_2px right_2px' colspan="6">Heures UTC</th>${heure()}`;
 	res += `${affiche_nbpc()}`;
 	res += `${affiche_uceso()}`;
 	res += '</tbody></table>';
@@ -428,7 +432,6 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 	
 	// ajoute les clicks sur la case du nbre de pc de la vac
 	const td_pc = document.querySelectorAll('.pc');
-	console.log("U: "+update);
 	for (const td of td_pc) {
 		let vac = td.dataset.vac;
 		// teste si le nbr de pc a été modifié par un update
@@ -488,7 +491,6 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 			</div>`;
 			show_popup("Modification", ih);
 			const sel = [$$('select[data-vac="J1"]'), $$('select[data-vac="J3"]'), $$('select[data-vac="S2"]'), $$('select[data-vac="J2"]'), $$('select[data-vac="S1"]'), $$('select[data-vac="N"]'), $$('select[data-vac="N1"]')];
-			console.log("U: "+update);
 			sel.forEach(elem => {
 				const s = parseInt(update[elem.dataset.vac]);
 				elem.getElementsByTagName('option')[s].selected = 'selected'
