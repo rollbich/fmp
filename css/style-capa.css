@@ -36,6 +36,20 @@ body {
   	padding: 0;
 }
 
+body.editor header {
+	margin: 0 auto;
+	width: 180px;
+	font-size: 32px;
+}
+
+body.editor span a {
+	margin-left: 30px;
+}
+
+#button_save {
+	margin-left: 10px;
+}
+
 .off {
 	display: none;
 }
@@ -121,7 +135,7 @@ h1 {
 ul.menu {
 	margin: 12px auto 0;
 	position: relative;
-	width: 600px;
+	width: 740px;
 	height: 50px;
 	background-color: var(--menu-bg-color);
 	border-radius: 8px;
@@ -139,6 +153,10 @@ ul.menu li {
 	text-decoration: none;
 	text-transform: uppercase;
 	text-align: center;
+	color: var(--table-titre-color);
+}
+
+ul.menu li.feuille a, ul.menu li.feuille a:visited {
 	color: var(--table-titre-color);
 }
 
@@ -184,7 +202,7 @@ select, option {
 #zone.select, #saison.select {
 	margin-left: 0px;
 	line-height: 20px;
-	height: 25px;
+	height: 24px;
 	margin-top: 0;
 	z-index: 1;
 	width: 100px;
@@ -214,7 +232,7 @@ select, option {
 }
 
 #dates label {
-	line-height: 24px;
+	line-height: 28px;
 	font-size: 14px;
 	margin-left: 0px;
 	margin-top: 5px;
@@ -359,6 +377,20 @@ th.right_1px, td.right_1px {
 
 th.bordure, td.bordure {
 	border: 1px solid rgb(20, 20, 20);
+}
+
+table.plage th, table.plage td {
+	width: 180px;
+	border: 1px solid rgb(20, 20, 20);
+}
+
+table.plage td:hover {
+	background-color: orange;
+	cursor: pointer;
+}
+
+input.date {
+	width: 110px;
 }
 
 /* border */

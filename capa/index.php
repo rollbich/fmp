@@ -23,8 +23,6 @@
 					$("help_frame").classList.add('off');
 				});
 				
-				<?php include("../php/upload.js.php"); ?>
-				
 				document.querySelector('.help_button').addEventListener('click', e => {
 					$("help_frame").classList.remove('off');
 				});
@@ -49,7 +47,7 @@
 
 <header>
 <?php include("../php/nav.inc.php"); ?>
-<h1>FEUILLE CAPA (expé)</h1>
+<h1>FEUILLE CAPA V1.0</h1>
 <div id="help_frame" class="off">
 	<h2>Help</h2>
 	<p><span>Le bouton "Ouverture"</span> :<br>Il permet d'afficher graphiquement le fichier schéma réalisé de Courage. On peut ensuite cliquer sur un TV pour afficher la courbe de H20 et l'Occupancy pendant la période d'ouverture.<br>Si le TV n'est pas resté ouvert assez longtemps, le graphique H20 ne sera pas affiché.</p>
@@ -68,6 +66,7 @@
 		<option value="AW">Zone WEST</option>
 	  </select>
 	</li>
+	<li class ="feuille"><a href="./edit.php">Edit TDS</a></li>
 	<li class="feuille"><button class="help_button">Help</button></li>
 </ul>
 
@@ -82,8 +81,6 @@
       <a class="close-btn popup-close" href="#">x</a>
     </div>
 </div>
-
-<?php include("../php/upload.inc.php"); ?>
 
 <div id="scroll_to_top">
     <a href="#top"><img src="../images/bouton-scroll-top.jpg" alt="Retourner en haut" /></a>

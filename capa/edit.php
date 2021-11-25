@@ -11,27 +11,44 @@
     <link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
     <script>
 		document.addEventListener('DOMContentLoaded', (event) => { 	
-      const zone = $('zone').value;
-      const saison = $('saison').value;
-			affiche_tds("result", zone, saison);
+      $('button_validate').addEventListener('click', e => {
+        const zone = $('zone').value;
+        const saison = $('saison').value;
+			  affiche_tds("result", zone, saison);
+			});
+      document.querySelector('.popup-close').addEventListener('click', e => {
+					e.preventDefault();
+					document.querySelector('.popup-box').classList.remove('transform-in');
+					document.querySelector('.popup-box').classList.add('transform-out');
+				});
 		});
 	</script>
 </head>
-<body>
-<div id="selection">
-<select id="zone" class="select">
-		<option selected value="est">Zone EST</option>
-		<option value="ouest">Zone WEST</option>
-</select>
-<select id="saison" class="select">
-		<option selected value="hiver">Hiver</option>
-		<option value="mi-saison-basse">Mi-saison-basse</option>
-    <option value="mi-saison-haute">Mi-saison-basse</option>
-    <option value="ete">Ete</option>
-</select>
-<button id="button_save">Save</button>
-</div>
-<div id="result"></div>
+<body class="editor">
+  <header>TDS Editor</header>
+  <div id="selection">
+  <select id="zone" class="select">
+      <option selected value="est">Zone EST</option>
+      <option value="ouest">Zone WEST</option>
+  </select>
+  <select id="saison" class="select">
+      <option selected value="hiver">Hiver</option>
+      <option value="mi-saison-basse">Mi-saison-basse</option>
+      <option value="mi-saison-haute">Mi-saison-basse</option>
+      <option value="ete">Ete</option>
+  </select>
+  <button id="button_validate">Validate</button>
+  </div>
+  <button id="button_save">Save</button>
+  <span><a href="./">back to TDS</a></span>
+  <div id="result"></div>
 
+<div id="popup-wrap" class="off" >
+  <div class="popup-box">
+    <h2></h2>
+    <h3></h3>
+    <a class="close-btn popup-close" href="#">x</a>
+  </div>
+</div>
 </body>
 </html>

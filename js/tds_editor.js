@@ -26,9 +26,74 @@ async function affiche_tds(containerId, zone, saison) {
     res += `${affiche_vac("N", saison, tour_local, zone)}`;
     res += `<tr class="titre"><th class='bottom_2px left_2px right_1px' colspan="2">Heures UTC</th>${heure()}`;
     res += '</tbody></table>';
+    res += '<table class="plage">';
+    res += `<caption>Plage Horaire ${saison}</caption>`;
+    res += '<thead><tr><th>Début</th><th>Fin</th></tr></thead>';
+    res += '<tbody>';
+    res += `${affiche_plage(tour_local, zone, saison)}`;
+    res += '</tbody></table>';
     $(containerId).innerHTML = res;
     add_listener(tour_local, saison, zone);
+    add_listener_plage(tour_local, saison, zone);
 }	
+
+/*  --------------------------------------------------------------------------------------------- 
+	  Affiche les plages horaires   
+	    @param {object} tour_local  - objet json du tour local
+		@param {string} zone        - "est" ou "ouest"
+		@param {string} saison      - "hiver" ou "mi-saison-basse" ou "mi-saison-haute" ou "ete"
+	--------------------------------------------------------------------------------------------- */
+
+function affiche_plage(tour_local, zone, saison) {
+    const plage = tour_local[zone][saison]["plage"];
+    let res = "";
+    plage.forEach((elem, index) => {
+        res += `<tr><td class="pl" data-col="0" data-ligne=${index}>${elem[0]}</td><td class="pl" data-col="1" data-ligne=${index}>${elem[1]}</td></tr>`;
+    });
+    return res;
+}
+
+/*  --------------------------------------------------------------------------------------------- 
+	  Ajout la gestion des clicks sur les cases du tds   
+	    @param {object} tour_local  - objet json du tour local
+		@param {string} zone        - "est" ou "ouest"
+		@param {string} saison      - "hiver" ou "mi-saison-basse" ou "mi-saison-haute" ou "ete"
+	--------------------------------------------------------------------------------------------- */
+
+function add_listener_plage(tour_local, saison, zone) {
+    const cases = document.querySelectorAll('.pl');
+    for (const td of cases) {
+        td.addEventListener('click', function(event) {
+            let lig = parseInt(this.dataset.ligne);
+            let col = parseInt(this.dataset.col);
+            const dd = new Date();
+            const d = reverse_date(td.innerHTML + '-' + dd.getUTCFullYear());
+            console.log(d);
+            let ih = `<div id="modif">
+			<p>
+	        <input type="date" id="ch_date" class="date" value="${d}" data-cl="${col}" data-lig="${lig}">
+			</p>
+			<button id="ch">Changer</button>
+			</div>`;
+			show_popup("Modification", ih);
+            $('ch').addEventListener('click', function(event) {
+				const sel = $('ch_date');
+                if (typeof sel.value != 'undefined') {
+                    const v = reverse_date(sel.value).substr(0,5);
+                    td.innerHTML = v;
+                    if (col === 0) {
+                        const v2 = tour_local[zone][saison]["plage"][lig][1];
+                        tour_local[zone][saison]["plage"][lig] = [v, v2];
+                    } else {
+                        const v2 = tour_local[zone][saison]["plage"][lig][0];
+                        tour_local[zone][saison]["plage"][lig] = [v2, v];
+                    }
+                }
+			})
+            
+        });
+    }
+}
 
 /*  --------------------------------------------------------------------------------------------- 
 	  Ajout la gestion des clicks sur les cases du tds   

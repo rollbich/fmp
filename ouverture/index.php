@@ -77,7 +77,6 @@
 					e.preventDefault();
 					document.querySelector('.popup-box').classList.remove('transform-in');
 					document.querySelector('.popup-box').classList.add('transform-out');
-					
 				});
 				
 			});		

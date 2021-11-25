@@ -73,6 +73,10 @@ Date.prototype.addDays= function(nb_day) {
 	return this;
 }
 
+const jplus1 = day => {
+	return new Date(day).addDays(1).toISOString().split('T')[0];
+}
+
 // enlève 1 journée à une date "2021-12-25" => "2021-12-24"
 const jmoins1 = day => {
 	return new Date(day).addDays(-1).toISOString().split('T')[0];
