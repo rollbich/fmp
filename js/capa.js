@@ -130,7 +130,7 @@ const get_tour_utc = async (tour_local, day, zone) => {
 			{ "pc_vac": {"vac": nbre_pc, ...}, 
 			  "pc_total_dispo_15mn":[ ["hh:mm", nb_pc_dispo], [...], ... ] }
    --------------------------------------------------------------------------------------- */
-async function get_nbpc_dispo(day, zone, update = {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N1":0}) {
+async function get_nbpc_dispo(day, zone, update) {
 	
 	const zon = zone.substr(1,1); // récupère la 2è lettre de la zone
 	const zone_str = zon === "E" ? "est" : "ouest";
@@ -237,7 +237,7 @@ function compact_ligne(pcs, ind) {
 			@param {object} update - {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N1":0}
 	----------------------------------------------------------------------------------------- */
 	
-async function show_feuille_capa(containerIdTour, day, zone, update) {
+async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N1":0}) {
 
 	const pc = await get_nbpc_dispo(day, zone, update);
 	const pc_15mn = pc["pc_total_dispo_15mn"];
@@ -428,7 +428,7 @@ async function show_feuille_capa(containerIdTour, day, zone, update) {
 	
 	// ajoute les clicks sur la case du nbre de pc de la vac
 	const td_pc = document.querySelectorAll('.pc');
-
+	console.log("U: "+update);
 	for (const td of td_pc) {
 		let vac = td.dataset.vac;
 		// teste si le nbr de pc a été modifié par un update
@@ -470,7 +470,7 @@ async function show_feuille_capa(containerIdTour, day, zone, update) {
 				<option value="2">-2</option>
 			</select>
 			</p>
-			<p><label>N</label>
+			<p><label>&nbsp;&nbsp;N</label>
 			<select class="modif select" data-vac="N">
 				<option selected value="0">Changer</option>
 				<option value="1">-1</option>
@@ -487,10 +487,14 @@ async function show_feuille_capa(containerIdTour, day, zone, update) {
 			<button id="ch">Changer</button>
 			</div>`;
 			show_popup("Modification", ih);
-
+			const sel = [$$('select[data-vac="J1"]'), $$('select[data-vac="J3"]'), $$('select[data-vac="S2"]'), $$('select[data-vac="J2"]'), $$('select[data-vac="S1"]'), $$('select[data-vac="N"]'), $$('select[data-vac="N1"]')];
+			console.log("U: "+update);
+			sel.forEach(elem => {
+				const s = parseInt(update[elem.dataset.vac]);
+				elem.getElementsByTagName('option')[s].selected = 'selected'
+			});
 			// click sur le bouton "Changer"
 			$('ch').addEventListener('click', function(event) {
-				const sel = [$$('select[data-vac="J1"]'), $$('select[data-vac="J3"]'), $$('select[data-vac="S2"]'), $$('select[data-vac="J2"]'), $$('select[data-vac="S1"]'), $$('select[data-vac="N"]'), $$('select[data-vac="N1"]')];
 				// on reconstruit l'objet update { "vac": nb_pc en moins, etc... }
 				const val = {};
 				sel.forEach(elem => {
