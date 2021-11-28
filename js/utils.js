@@ -219,9 +219,7 @@ function post_tds_json(url, json) {
 	};
 	fetch( url, data)
 	.then(function(response) {
-		return response.text().then(function(texte) {
-
-		});
+		return response;
 	});
 }
 
@@ -257,12 +255,12 @@ const get_date_from_courage_file = fichier => {
 }
 
 /*  ------------------------------------------------------------------------------
-	  récupère l'heure en fonction du numéro de colonne (ne sert pas finalement)
+	  récupère l'heure en fonction du numéro de colonne 
 	 	@param {integer} col - Numéro de la colonne du tds
 		@returns {string} - "hh:mm"
 	------------------------------------------------------------------------------ */
 function get_time(col) {
-    const h = Math.floor(col/4);
+    const h = formattedNumber(Math.floor(col/4));
     let min = col%4 === 0 ? "00" : parseInt((col/4).toString().split('.')[1])*15/25;
     min = min === 3 ? "30" : min;
     return h.toString()+":"+min.toString();

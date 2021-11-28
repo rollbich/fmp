@@ -135,6 +135,7 @@ async function get_nbpc_dispo(day, zone, update) {
 	const zon = zone.substr(1,1); // récupère la 2è lettre de la zone
 	const zone_str = zon === "E" ? "est" : "ouest";
 	const tab_vac_eq = get_vac_eq(day);
+	const instr = await loadJson("instruction.json");
 	const eff = await get_olaf(zon, day);
 	// récupère l'objet contenant les propriétés equipes
 	const effectif = eff[Object.keys(eff)[0]]; 
@@ -166,6 +167,7 @@ async function get_nbpc_dispo(day, zone, update) {
 	// [ ["hh:mm", nb_pc_dispo], [...], ... ]
 	let nb_pc = 0;
 	let pcs = [];
+	const in15mn = []; // nbre de pc instruction par 15 mn
 	for(var i=0;i<96;i++) {
 		if (tour_utc["J1"][i][2] === 1) nb_pc += Math.floor(pc["J1"]["nbpc"]/2);
 		if (tour_utc["J1"][i][3] === 1) nb_pc += ((Math.floor(pc["J1"]["nbpc"]/2) + (pc["J1"]["nbpc"])%2));
@@ -184,8 +186,26 @@ async function get_nbpc_dispo(day, zone, update) {
 		if (tour_utc["N"][i][3] === 1 && i<48) nb_pc += ((Math.floor(pc["N1"]["nbpc"]/2) + (pc["N1"]["nbpc"])%2));
 		pcs.push([tour_utc["J1"][i][0], nb_pc]);
 		nb_pc = 0;
-	}	
-	return {"pc_vac": pc, "pc_total_dispo_15mn": pcs};
+
+		in15mn[i] = [0, ""];
+		instr.forEach( (elem, index) => {
+			const debut = elem["debut"];
+			const fin = elem["fin"];
+			const d = elem["date"];
+			const zone = elem["zone"];
+			const type = elem["type"];
+			let t = get_time(i);
+			if (d === day && zone.toLowerCase() === zone_str) {
+				//console.log(debut+" "+fin+" "+d+" t: "+t+"  day: "+day+"  type: "+type);
+				if (t >= debut && t< fin) {
+					if (type === "Inst") { in15mn[i][0] += 2; in15mn[i][1] = "Inst"; }
+					if (type === "Eleve") { in15mn[i][1] = "Eleve"; }
+				} 
+			}
+		});
+	}
+
+	return {"pc_vac": pc, "pc_total_dispo_15mn": pcs, "pc_instr_15mn": in15mn};
 }
 
 /* ----------------------------------------------------------------------------
@@ -245,6 +265,7 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 
 	const pc = await get_nbpc_dispo(day, zone, update);
 	const pc_15mn = pc["pc_total_dispo_15mn"];
+	const pc_instr_15mn = pc["pc_instr_15mn"];
 	const pc_vac = pc["pc_vac"];
 	const tab_vac_eq = get_vac_eq(day);
 	
@@ -369,6 +390,21 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 			<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px' colspan="2"></td><td class='bottom_2px right_2px'></td>${res3}</tr>`;
 	}
 	
+	// fabrique la ligne du supplément instruction
+	function affiche_inst() {
+		
+		let res2 = "";
+		for(let i=0;i<95;i++) {	
+			//console.log("Time: "+get_time(i)+"  "+in15mn[i]);
+			if (pc_instr_15mn[i][1] != "") res2 += `<td class='bg bottom_2px'>${pc_instr_15mn[i][0]}</td>`;
+			else res2 += `<td class='bottom_2px'></td>`;
+		} 
+		res2 += `<td class='bottom_2px right_2px'></td>`;
+		let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="6">Instruction</td>${res2}</tr>`;
+		return res;
+		
+	}
+
 	// fabrique la ligne du nbre de pc dispo
 	function affiche_nbpc() {
 		let res2 = "";
@@ -376,10 +412,10 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 			let cl = "left_1px";
 			if (index%4 === 0) cl = "left_2px";
 			if (index === 95) cl += " right_2px";
-			res2 += `<td class='${cl} bottom_2px'>${elem[1]}</td>`;
+			res2 += `<td class='${cl} bottom_2px'>${elem[1]+pc_instr_15mn[index][0]}</td>`;
 			//console.log(elem);
 		});
-		
+		//affiche_inst();
 		let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="6">Nb PC</td>${res2}</tr>`;
 		return res;
 	}
@@ -387,7 +423,7 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 	// fabrique la ligne du nbre d'uceso dispo
 	//	uceso = partie entière nbr_pc/2
 	function affiche_uceso() {
-		const uc = pc_15mn.map( elem => [elem[0], Math.floor(elem[1]/2)]);
+		const uc = pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn[index][0]) / 2) ]);
 		let res3 = "";
 		compact(uc).forEach( elem => {
 			let nb_occ = elem[1] - elem[0] + 1;
@@ -423,6 +459,7 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 	res += `${affiche_vac("S1")}`;
 	res += `${affiche_vac_nuit()}`;
 	res += `${affiche_vac_nuitmoins1()}`;
+	res += `${affiche_inst()}`;
 	res += `<tr class="titre"><th class='bottom_2px left_2px right_2px' colspan="6">Heures UTC</th>${heure()}`;
 	res += `${affiche_nbpc()}`;
 	res += `${affiche_uceso()}`;

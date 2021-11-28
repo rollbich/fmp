@@ -212,6 +212,10 @@ select, option {
 	width: 120px;
 }
 
+input {
+	line-height: 20px;
+}
+
 /* ------- Date Picker ------- */
 
 #dates {
@@ -271,12 +275,8 @@ caption {
 table thead > tr.titre {
   background-color: var(--table-titre-color);
 }
-/*
-table tr:nth-child(3n-2), table tr:nth-child(3n-1), table tr:nth-child(3n) {
-  background-color: transparent;
-}
-*/
-table tr:nth-child(6n+1), table tr:nth-child(6n+2), table tr:nth-child(6n+3) {
+
+table.ouverture tr:nth-child(6n+1), table tr:nth-child(6n+2), table tr:nth-child(6n+3) {
   background-color: var(--ligne-paire-color);
 }
 
@@ -302,7 +302,7 @@ td.pc:hover {
 }
 
 /* feuille capa */
-tr:nth-child(3n+3) {
+table.ouverture tr:nth-child(3n+3) {
 	border-bottom: 2px solid rgb(20, 20, 20);
 }
 
@@ -542,4 +542,107 @@ input.date {
 
 #scroll_to_top img {
   width: 45px;
+}
+
+/* --------- Instruction ------------- */
+.glob {
+	display: flex;
+}
+
+table.creneaux {
+	margin-right: 160px;
+}
+
+table.creneaux th, table creneaux td {
+	width: 120px;
+}
+
+table.creneaux tr:nth-child(2n) {
+	background-color: var(--ligne-paire-color);
+}
+
+table.creneaux tr:nth-child(2n+1) {
+	background-color: var(--ligne-impaire-color);
+}
+
+td.supprime {
+	color: red;
+	cursor: pointer;
+}
+
+.formu form {
+    margin: 30px auto;
+	overflow: hidden;
+	width: 250px;
+}
+
+.form-group {
+    margin-bottom: 10px;
+	width: 200px;
+}
+
+.form-label {
+    border: 0 none;
+    /*
+	clip: rect(0px, 0px, 0px, 0px);
+	height: 1px;
+	width: 1px;
+	*/
+	font-size : 1.2rem;
+	margin-left: -80px;
+	margin-top: 7px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+}
+
+label {
+    display: inline-block;
+    max-width: 100%;
+}
+
+.formu .form-control {
+    background-color: transparent;
+    background-image: none;
+    border: 2px solid #0a0909;
+    border-radius: 0;
+    box-shadow: none;
+    color: #555;
+    display: block;
+    font-size: 14px;
+    height: 36px;
+    line-height: 1.42857;
+    padding: 0px 12px;
+    transition: border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;
+    width: 180px;
+}
+
+.form-control option {
+	background-color: var(--table-titre-color);
+}
+
+.formu textarea.form-control {
+	height: 87px;
+}
+
+.formu select.form-control {
+	margin-left: 0;
+	width: 208px;
+}
+
+.btn {
+    -moz-user-select: none;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.42857;
+    margin-bottom: 0;
+    padding: 6px 12px;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
 }

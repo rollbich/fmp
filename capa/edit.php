@@ -34,7 +34,7 @@
   <select id="saison" class="select">
       <option selected value="hiver">Hiver</option>
       <option value="mi-saison-basse">Mi-saison-basse</option>
-      <option value="mi-saison-haute">Mi-saison-basse</option>
+      <option value="mi-saison-haute">Mi-saison-haute</option>
       <option value="ete">Ete</option>
   </select>
   <button id="button_validate">Validate</button>
