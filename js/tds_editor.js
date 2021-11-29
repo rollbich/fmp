@@ -6,6 +6,8 @@
 		@param {string} saison      - "hiver" ou "mi-saison-basse" ou "mi-saison-haute" ou "ete"
 	--------------------------------------------------------------------------------------------- */
 
+let store_save_Listener = false;
+
 async function affiche_tds(containerId, zone, saison) {
     const tour_local = await loadJson(tour_json);
     let res = `<table class="ouverture">
@@ -35,6 +37,16 @@ async function affiche_tds(containerId, zone, saison) {
     $(containerId).innerHTML = res;
     add_listener(tour_local, saison, zone);
     add_listener_plage(tour_local, saison, zone);
+
+    function post_tds() {
+        post_tds_json("export_to_json.php", tour_local);
+    }
+
+    // sauvegarde le fichier json du tds
+    if (store_save_Listener === false) {
+        $('button_save').addEventListener('click', post_tds);
+        store_save_Listener = true;
+    }
 }	
 
 /*  --------------------------------------------------------------------------------------------- 
@@ -127,10 +139,6 @@ function add_listener(tour_local, saison, zone) {
             }
         });
     }
-    // sauvegarde le fichier json du tds
-    $('button_save').addEventListener('click', function(event) {
-        post_tds_json("export_to_json.php", tour_local);
-    })
 }
     
 /*  ------------------------------------------------------------------------------------------
