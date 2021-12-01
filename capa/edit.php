@@ -52,14 +52,14 @@
   <span><a href="./">back to TDS</a></span>
   <div id="plage_est" class="est off"></div>
   <div id="plage_ouest" class="ouest off"></div>
-  <div id="result_h_est" class="est off"></div>
-  <div id="result_msb_est" class="est off"></div>
-  <div id="result_msh_est" class="est off"></div>
-  <div id="result_e_est" class="est off"></div>
-  <div id="result_h_ouest" class="ouest off"></div>
-  <div id="result_msb_ouest" class="ouest off"></div>
-  <div id="result_msh_ouest" class="ouest off"></div>
-  <div id="result_e_ouest" class="ouest off"></div>
+  <div id="result_hiver_est" class="est off"></div>
+  <div id="result_mi-saison-basse_est" class="est off"></div>
+  <div id="result_mi-saison-haute_est" class="est off"></div>
+  <div id="result_ete_est" class="est off"></div>
+  <div id="result_hiver_ouest" class="ouest off"></div>
+  <div id="result_mi-saison-basse_ouest" class="ouest off"></div>
+  <div id="result_mi-saison-haute_ouest" class="ouest off"></div>
+  <div id="result_ete_ouest" class="ouest off"></div>
 
 <div id="popup-wrap" class="off" >
   <div class="popup-box">

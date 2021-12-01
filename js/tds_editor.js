@@ -6,15 +6,12 @@
 		@param {string} saison      - "hiver" ou "mi-saison-basse" ou "mi-saison-haute" ou "ete"
 	--------------------------------------------------------------------------------------------- */
 
-let store_saison_listener = {"hiver": false, "mi-saison-basse": false, "mi-saison-haute": false, "ete": false};
-let store_save_listener = false;
-
 async function affiche_tds() {
     const tour_local = await loadJson(tour_json);
     
     function aff(containerId, zone, saison) {
         let res = `<table class="ouverture">
-        <caption>TDS ${saison} - ${zone}</caption>
+        <caption>TDS ${saison} - ${capitalizeFirstLetter(zone)}</caption>
         <thead>
             <tr class="titre">
                 <th class="top_2px left_2px right_1px bottom_2px">Vac</th>
@@ -37,7 +34,7 @@ async function affiche_tds() {
     function aff_plage(containerId, zone, saison) {
         let res = $(containerId).innerHTML;
         res += '<table class="plage">';
-        res += `<caption>Plage Horaire ${saison} - ${zone}</caption>`;
+        res += `<caption>Plage Horaire ${saison} - ${capitalizeFirstLetter(zone)}</caption>`;
         res += '<thead><tr><th>Début</th><th>Fin</th></tr></thead>';
         res += '<tbody>';
         res += `${affiche_plage(tour_local, zone, saison)}`;
@@ -45,24 +42,13 @@ async function affiche_tds() {
         $(containerId).innerHTML = res;
     }
 
-    aff_plage("plage_est", "est", "hiver");
-    aff_plage("plage_est", "est", "mi-saison-basse");
-    aff_plage("plage_est", "est", "mi-saison-haute");
-    aff_plage("plage_est", "est", "ete");
-    aff_plage("plage_ouest", "ouest", "hiver");
-    aff_plage("plage_ouest", "ouest", "mi-saison-basse");
-    aff_plage("plage_ouest", "ouest", "mi-saison-haute");
-    aff_plage("plage_ouest", "ouest", "ete");
-
-    aff("result_h_est", "est", "hiver");
-    aff("result_msb_est", "est", "mi-saison-basse");
-    aff("result_msh_est", "est", "mi-saison-haute");
-    aff("result_e_est", "est", "ete");
-
-    aff("result_h_ouest", "ouest", "hiver");
-    aff("result_msb_ouest", "ouest", "mi-saison-basse");
-    aff("result_msh_ouest", "ouest", "mi-saison-haute");
-    aff("result_e_ouest", "ouest", "ete");
+    const saisons = ["hiver", "mi-saison-basse", "mi-saison-haute", "ete"];
+    for (s of saisons) {
+        aff_plage("plage_est", "est", s);
+        aff_plage("plage_ouest", "ouest", s);
+        aff("result_"+s+"_est", "est", s);
+        aff("result_"+s+"_ouest", "ouest", s);
+    }
 
     add_listener(tour_local, "hiver", "est");
     add_listener_plage(tour_local, "hiver", "est");
@@ -82,15 +68,9 @@ async function affiche_tds() {
     add_listener(tour_local, "ete", "ouest");
     add_listener_plage(tour_local, "ete", "ouest");
 
-    function post_tds() {
+    $('button_save').addEventListener('click', e => {
         post_tds_json("export_to_json.php", tour_local);
-    }
-
-    // sauvegarde le fichier json du tds
-    if (store_save_listener === false) {
-        $('button_save').addEventListener('click', post_tds);
-        store_save_listener = true;
-    }
+    })
 }	
 
 /*  --------------------------------------------------------------------------------------------- 
@@ -172,21 +152,15 @@ function add_listener(tour_local, saison, zone) {
             const val = (td.innerHTML === '1') ? 0 : 1;
             td.innerHTML = (td.innerHTML === '1') ? '' : '1';
             td.classList.toggle('bg');
-            console.log("saison: "+saison+"  vac: "+vac+"  col: "+col+"  lig: "+lig);
-            console.log("bef: "+tour_local[zone][saison][vac][col]);
             if (lig == '1') {
                 tour_local[zone][saison][vac][col] = [t0, val, t2, t3];
-                console.log("bef1: "+tour_local[zone][saison][vac][col]);
             }
             if (lig == '2') {
                 tour_local[zone][saison][vac][col] = [t0, t1, val, t3];
-                console.log("bef2: "+tour_local[zone][saison][vac][col]);
             }
             if (lig == '3') {
                 tour_local[zone][saison][vac][col] = [t0, t1, t2, val];
-                console.log("bef3: "+tour_local[zone][saison][vac][col]);
             }
-            console.log("aft: "+tour_local[zone][saison][vac][col]);
         });
     }
 }

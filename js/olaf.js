@@ -36,6 +36,6 @@ async function get_olaf(zone, day) {
 	}
 	
 	catch (err) {
-		alert('Load json error: '+err.message);
+		alert('Get OLAF Load json error: '+err.message);
 	}
 }

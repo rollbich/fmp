@@ -17,6 +17,10 @@ function isObjEmpty(obj) {
   return Object.keys(obj).length === 0;
 }
 
+function capitalizeFirstLetter(string) {
+	return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 // arrondi à 2 chiffres après la virgule
 const round = value => {
 	return Math.round(value*100)/100;

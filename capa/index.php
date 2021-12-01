@@ -46,19 +46,19 @@
 <body id="drag-container">
 
 <header>
-<?php include("../php/nav.inc.php"); ?>
+
 <h1>FEUILLE CAPA V1.0</h1>
 <div id="help_frame" class="off">
 	<h2>Help</h2>
-	<p><span>Le bouton "Ouverture"</span> :<br>Il permet d'afficher graphiquement le fichier schéma réalisé de Courage. On peut ensuite cliquer sur un TV pour afficher la courbe de H20 et l'Occupancy pendant la période d'ouverture.<br>Si le TV n'est pas resté ouvert assez longtemps, le graphique H20 ne sera pas affiché.</p>
-	<p><span>Le bouton "Graph"</span> :<br>Il permet d'afficher les courbes H20/Occ d'une date pendant la plage horaire choisie.</p>
-	<p><span>Le bouton Capa</span> :<br>Il affiche la feuille de capa. Une latence de 4 à 5s est posible le temps du chargement des données.<br>Le nombre de pc tient compte du cds travaillant sur position en S2.<br>Il se peut donc que le total du nbre de pc affiché ne soit pas égal dans ce cas au total des 2 lignes de la vacation</p>
+	<p><span>Feuille</span> :<br>Cliquez sur ce bouton pour afficher la feuille de capa correspondante à la date et la zone choisie</p>
+	<p><span>Modification de l'effectif</span> :<br>Cliquez sur le nombre de pc dans la colonne PC afin de mettre à jour localement ce nombre. La case est alors surlignée pour montrer que l'effectif est différent de l'effectif OLAF</p>
+	<p><span>Edit TDS</span> :<br>Ce bouton permet de modifier le tour de service ainsi que sa plage d'utilisation</p>
 	<button id="close_button" class="pointer">Close</button>
 </div>
 <ul class="menu">
 	<li id="bouton_feuille" class="pointer"><span>Feuille</span></li>
 	<li><label for="start" class="dates">Date:</label>
-	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2021-06-14" max="2030-12-31">
+	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="2021-09-14" max="2030-12-31">
 	</li>
 	<li class="feuille">
 	  <select id="zone" class="select">

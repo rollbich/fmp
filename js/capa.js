@@ -413,10 +413,22 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 			if (index%4 === 0) cl = "left_2px";
 			if (index === 95) cl += " right_2px";
 			res2 += `<td class='${cl} bottom_2px'>${elem[1]+pc_instr_15mn[index][0]}</td>`;
-			//console.log(elem);
 		});
-		//affiche_inst();
 		let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="6">Nb PC</td>${res2}</tr>`;
+		return res;
+	}
+
+	// fabrique la ligne du nbre de 1/2 pc
+	function affiche_demi_uc() {
+		let res2 = "";
+		pc_15mn.forEach( (elem, index) => {
+			let cl = "left_1px";
+			if (index%4 === 0) cl = "left_2px";
+			if (index === 95) cl += " right_2px";
+			const demi = ((elem[1]+pc_instr_15mn[index][0])%2 === 0) ? "" : "\u00bd";
+			res2 += `<td class='${cl} bottom_2px'>${demi}</td>`;
+		});
+		let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="6">Demi UC</td>${res2}</tr>`;
 		return res;
 	}
 	
@@ -462,6 +474,7 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 	res += `${affiche_inst()}`;
 	res += `<tr class="titre"><th class='bottom_2px left_2px right_2px' colspan="6">Heures UTC</th>${heure()}`;
 	res += `${affiche_nbpc()}`;
+	res += `${affiche_demi_uc()}`;
 	res += `${affiche_uceso()}`;
 	res += '</tbody></table>';
 	const containerTour = $(containerIdTour);
