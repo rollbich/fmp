@@ -11,10 +11,25 @@
     <link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
     <script>
 		document.addEventListener('DOMContentLoaded', (event) => { 	
+      affiche_tds();
       $('button_validate').addEventListener('click', e => {
         const zone = $('zone').value;
-        const saison = $('saison').value;
-			  affiche_tds("result", zone, saison);
+        if (zone === "est") {
+          for (z of document.querySelectorAll('.est')) {
+            z.classList.remove('off');
+          }
+          for (z of document.querySelectorAll('.ouest')) {
+            z.classList.add('off');
+          }
+        }
+        if (zone === "ouest") {
+          for (z of document.querySelectorAll('.ouest')) {
+            z.classList.remove('off');
+          }
+          for (z of document.querySelectorAll('.est')) {
+            z.classList.add('off');
+          }
+        }
 			});
       document.querySelector('.popup-close').addEventListener('click', e => {
 					e.preventDefault();
@@ -31,17 +46,18 @@
       <option selected value="est">Zone EST</option>
       <option value="ouest">Zone WEST</option>
   </select>
-  <select id="saison" class="select">
-      <option selected value="hiver">Hiver</option>
-      <option value="mi-saison-basse">Mi-saison-basse</option>
-      <option value="mi-saison-haute">Mi-saison-haute</option>
-      <option value="ete">Ete</option>
-  </select>
   <button id="button_validate">Validate</button>
   </div>
   <button id="button_save">Save</button>
   <span><a href="./">back to TDS</a></span>
-  <div id="result"></div>
+  <div id="result_h_est" class="est off"></div>
+  <div id="result_msb_est" class="est off"></div>
+  <div id="result_msh_est" class="est off"></div>
+  <div id="result_e_est" class="est off"></div>
+  <div id="result_h_ouest" class="ouest off"></div>
+  <div id="result_msb_ouest" class="ouest off"></div>
+  <div id="result_msh_ouest" class="ouest off"></div>
+  <div id="result_e_ouest" class="ouest off"></div>
 
 <div id="popup-wrap" class="off" >
   <div class="popup-box">

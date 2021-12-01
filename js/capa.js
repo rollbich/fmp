@@ -130,12 +130,12 @@ const get_tour_utc = async (tour_local, day, zone) => {
 			{ "pc_vac": {"vac": {"nbpc": nbre_pc, "BV", "RO"}, ...}, 
 			  "pc_total_dispo_15mn":[ ["hh:mm", nb_pc_dispo], [...], ... ] }
    --------------------------------------------------------------------------------------- */
-async function get_nbpc_dispo(day, zone, update) {
+async function get_nbpc_dispo(day, zone, update = {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N1":0}) {
 	
 	const zon = zone.substr(1,1); // récupère la 2è lettre de la zone
 	const zone_str = zon === "E" ? "est" : "ouest";
 	const tab_vac_eq = get_vac_eq(day);
-	const instr = await loadJson("instruction.json");
+	const instr = await loadJson("../instruction.json");
 	const eff = await get_olaf(zon, day);
 	// récupère l'objet contenant les propriétés equipes
 	const effectif = eff[Object.keys(eff)[0]]; 
@@ -560,8 +560,11 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 		 @param {string} zone - "AE" ou "AW"
 		 @param {array} pc_15mn - array des crénaux horaires associés aux pc dispo
 	-------------------------------------------------------------------------------- */
-async function show_courage_graph(containerId, day, zone, pc_15mn) {
-	const uceso = pc_15mn.map( elem => [elem[0],Math.floor(elem[1]/2)]);
+async function show_courage_graph(containerId, day, zone, pc) {
+	const pc_15mn = pc["pc_total_dispo_15mn"];
+	const pc_instr_15mn = pc["pc_instr_15mn"];
+	const uceso = pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn[index][0]) / 2) ]);
+	//const uceso = pc_15mn.map( elem => [elem[0],Math.floor(elem[1]/2)]);
 	const day7 = jmoins7(day);
 	const day728 = jmoins728(day);
 	const schema = await read_schema_realise(day, zone);

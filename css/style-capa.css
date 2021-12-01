@@ -39,7 +39,11 @@ body {
 body.editor header {
 	margin: 0 auto;
 	width: 180px;
-	font-size: 32px;
+	font-size: 36px;
+}
+
+body.editor #save {
+	font-size: 16px;
 }
 
 body.editor span a {
@@ -379,8 +383,12 @@ th.bordure, td.bordure {
 	border: 1px solid rgb(20, 20, 20);
 }
 
+table.plage {
+	margin-bottom: 70px;
+}
+
 table.plage th, table.plage td {
-	width: 180px;
+	width: 200px;
 	border: 1px solid rgb(20, 20, 20);
 }
 
@@ -391,6 +399,14 @@ table.plage td:hover {
 
 input.date {
 	width: 110px;
+}
+
+.case {
+	cursor: pointer;
+}
+
+.case:hover {
+	background-color: rgb(208, 231, 252);
 }
 
 /* border */

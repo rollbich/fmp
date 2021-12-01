@@ -70,7 +70,7 @@
 					let day = $('start').value;
 					//show_feuille_capa("feuille_capa_tour", "feuille_capa_uceso", start_day, zone);
 					const pc = await get_nbpc_dispo(day, zone);
-					show_courage_graph("courage_container", day, zone, pc["pc_total_dispo_15mn"]);
+					show_courage_graph("courage_container", day, zone, pc);
 				});
 				
 				document.querySelector('.popup-close').addEventListener('click', e => {

@@ -10,7 +10,7 @@ $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) 
 if ($contentType === "application/json") {
 	$content = trim(file_get_contents("php://input"));
 	write_json($content);
-	echo "OK";
+	echo $content;
 } else { echo "Erreur : données non json<br/>"; }
 
 function write_json($json) {

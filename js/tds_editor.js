@@ -6,46 +6,76 @@
 		@param {string} saison      - "hiver" ou "mi-saison-basse" ou "mi-saison-haute" ou "ete"
 	--------------------------------------------------------------------------------------------- */
 
-let store_save_Listener = false;
+let store_saison_listener = {"hiver": false, "mi-saison-basse": false, "mi-saison-haute": false, "ete": false};
+let store_save_listener = false;
 
-async function affiche_tds(containerId, zone, saison) {
+async function affiche_tds() {
     const tour_local = await loadJson(tour_json);
-    let res = `<table class="ouverture">
-    <caption>TDS ${saison}</caption>
-    <thead>
-        <tr class="titre">
-            <th class="top_2px left_2px right_1px bottom_2px">Vac</th>
-            <th class="top_2px bottom_2px right_1px">Part</th>
-            <th class="top_2px bottom_2px left_2px right_2px" colspan="96">...</th>
-        </tr>
-    </thead>
-    <tbody>`;
-    res += `${affiche_vac("J1", saison, tour_local, zone)}`;
-    res += `${affiche_vac("J3", saison, tour_local, zone)}`;
-    res += `${affiche_vac("S2", saison, tour_local, zone)}`;
-    res += `${affiche_vac("J2", saison, tour_local, zone)}`;
-    res += `${affiche_vac("S1", saison, tour_local, zone)}`;
-    res += `${affiche_vac("N", saison, tour_local, zone)}`;
-    res += `<tr class="titre"><th class='bottom_2px left_2px right_1px' colspan="2">Heures UTC</th>${heure()}`;
-    res += '</tbody></table>';
-    res += '<table class="plage">';
-    res += `<caption>Plage Horaire ${saison}</caption>`;
-    res += '<thead><tr><th>Début</th><th>Fin</th></tr></thead>';
-    res += '<tbody>';
-    res += `${affiche_plage(tour_local, zone, saison)}`;
-    res += '</tbody></table>';
-    $(containerId).innerHTML = res;
-    add_listener(tour_local, saison, zone);
-    add_listener_plage(tour_local, saison, zone);
+    
+    function aff(containerId, zone, saison) {
+        let res = `<table class="ouverture">
+        <caption>TDS ${saison} - ${zone}</caption>
+        <thead>
+            <tr class="titre">
+                <th class="top_2px left_2px right_1px bottom_2px">Vac</th>
+                <th class="top_2px bottom_2px right_1px">Part</th>
+                <th class="top_2px bottom_2px left_2px right_2px" colspan="96">...</th>
+            </tr>
+        </thead>
+        <tbody>`;
+        res += `${affiche_vac("J1", saison, tour_local, zone)}`;
+        res += `${affiche_vac("J3", saison, tour_local, zone)}`;
+        res += `${affiche_vac("S2", saison, tour_local, zone)}`;
+        res += `${affiche_vac("J2", saison, tour_local, zone)}`;
+        res += `${affiche_vac("S1", saison, tour_local, zone)}`;
+        res += `${affiche_vac("N", saison, tour_local, zone)}`;
+        res += `<tr class="titre"><th class='bottom_2px left_2px right_1px' colspan="2">Heures UTC</th>${heure()}`;
+        res += '</tbody></table>';
+        res += '<table class="plage">';
+        res += `<caption>Plage Horaire ${saison} - ${zone}</caption>`;
+        res += '<thead><tr><th>Début</th><th>Fin</th></tr></thead>';
+        res += '<tbody>';
+        res += `${affiche_plage(tour_local, zone, saison)}`;
+        res += '</tbody></table>';
+        $(containerId).innerHTML = res;
+    }
+    
+    aff("result_h_est", "est", "hiver");
+    aff("result_msb_est", "est", "mi-saison-basse");
+    aff("result_msh_est", "est", "mi-saison-haute");
+    aff("result_e_est", "est", "ete");
+
+    aff("result_h_ouest", "ouest", "hiver");
+    aff("result_msb_ouest", "ouest", "mi-saison-basse");
+    aff("result_msh_ouest", "ouest", "mi-saison-haute");
+    aff("result_e_ouest", "ouest", "ete");
+
+    add_listener(tour_local, "hiver", "est");
+    add_listener_plage(tour_local, "hiver", "est");
+    add_listener(tour_local, "mi-saison-basse", "est");
+    add_listener_plage(tour_local, "mi-saison-basse", "est");
+    add_listener(tour_local, "mi-saison-haute", "est");
+    add_listener_plage(tour_local, "mi-saison-haute", "est");
+    add_listener(tour_local, "ete", "est");
+    add_listener_plage(tour_local, "ete", "est");
+
+    add_listener(tour_local, "hiver", "ouest");
+    add_listener_plage(tour_local, "hiver", "ouest");
+    add_listener(tour_local, "mi-saison-basse", "ouest");
+    add_listener_plage(tour_local, "mi-saison-basse", "ouest");
+    add_listener(tour_local, "mi-saison-haute", "ouest");
+    add_listener_plage(tour_local, "mi-saison-haute", "ouest");
+    add_listener(tour_local, "ete", "ouest");
+    add_listener_plage(tour_local, "ete", "ouest");
 
     function post_tds() {
         post_tds_json("export_to_json.php", tour_local);
     }
 
     // sauvegarde le fichier json du tds
-    if (store_save_Listener === false) {
+    if (store_save_listener === false) {
         $('button_save').addEventListener('click', post_tds);
-        store_save_Listener = true;
+        store_save_listener = true;
     }
 }	
 
@@ -60,7 +90,7 @@ function affiche_plage(tour_local, zone, saison) {
     const plage = tour_local[zone][saison]["plage"];
     let res = "";
     plage.forEach((elem, index) => {
-        res += `<tr><td class="pl" data-col="0" data-ligne=${index}>${elem[0]}</td><td class="pl" data-col="1" data-ligne=${index}>${elem[1]}</td></tr>`;
+        res += `<tr><td class="pl" data-col="0" data-ligne=${index} data-saison='${saison+"-"+zone}'>${elem[0]}</td><td class="pl" data-col="1" data-ligne=${index} data-saison='${saison+"-"+zone}'>${elem[1]}</td></tr>`;
     });
     return res;
 }
@@ -73,14 +103,14 @@ function affiche_plage(tour_local, zone, saison) {
 	--------------------------------------------------------------------------------------------- */
 
 function add_listener_plage(tour_local, saison, zone) {
-    const cases = document.querySelectorAll('.pl');
+    const cases = document.querySelectorAll(`td.pl[data-saison=${saison+"-"+zone}]`);
     for (const td of cases) {
         td.addEventListener('click', function(event) {
             let lig = parseInt(this.dataset.ligne);
             let col = parseInt(this.dataset.col);
             const dd = new Date();
             const d = reverse_date(td.innerHTML + '-' + dd.getUTCFullYear());
-            console.log(d);
+            //console.log(d);
             let ih = `<div id="modif">
 			<p>
 	        <input type="date" id="ch_date" class="date" value="${d}" data-cl="${col}" data-lig="${lig}">
@@ -115,28 +145,34 @@ function add_listener_plage(tour_local, saison, zone) {
 	--------------------------------------------------------------------------------------------- */
 
 function add_listener(tour_local, saison, zone) {
-    const cases = document.querySelectorAll('.case');
+    const cases = document.querySelectorAll(`td.case[data-saison=${saison+"-"+zone}]`);
     for (const td of cases) {
         td.addEventListener('click', function(event) {
-            let lig = this.dataset.ligne;
-            let col = this.dataset.col;
-            let vac = this.dataset.vac;	
+            let lig = td.dataset.ligne;
+            let col = td.dataset.col;
+            let vac = td.dataset.vac;	
             let t0 = tour_local[zone][saison][vac][col][0];
             let t1 = tour_local[zone][saison][vac][col][1];
             let t2 = tour_local[zone][saison][vac][col][2];
             let t3 = tour_local[zone][saison][vac][col][3];
-            const val = (this.innerHTML === '1') ? 0 : 1;
-            this.innerHTML = (this.innerHTML === '1') ? '' : '1';
-            this.classList.toggle('bg');
-            if (lig === '1') {
+            const val = (td.innerHTML === '1') ? 0 : 1;
+            td.innerHTML = (td.innerHTML === '1') ? '' : '1';
+            td.classList.toggle('bg');
+            console.log("saison: "+saison+"  vac: "+vac+"  col: "+col+"  lig: "+lig);
+            console.log("bef: "+tour_local[zone][saison][vac][col]);
+            if (lig == '1') {
                 tour_local[zone][saison][vac][col] = [t0, val, t2, t3];
+                console.log("bef1: "+tour_local[zone][saison][vac][col]);
             }
-            if (lig === '2') {
+            if (lig == '2') {
                 tour_local[zone][saison][vac][col] = [t0, t1, val, t3];
+                console.log("bef2: "+tour_local[zone][saison][vac][col]);
             }
-            if (lig === '3') {
+            if (lig == '3') {
                 tour_local[zone][saison][vac][col] = [t0, t1, t2, val];
+                console.log("bef3: "+tour_local[zone][saison][vac][col]);
             }
+            console.log("aft: "+tour_local[zone][saison][vac][col]);
         });
     }
 }
@@ -171,9 +207,9 @@ function affiche_td_vac(vac, saison, tour_local, zone) {
 		if (r3 != 0) cl3 = "case bg";
 		if (index === 95) { cl1 += " right_2px"; cl2 += " right_2px"; cl3+= " right_2px"; }
 		if (index%4 === 0) { cl1 += " left_2px"; cl2 += " left_2px"; cl3+= " left_2px"; }
-		res1 += `<td class='${cl1}' data-vac='${vac}' data-ligne='1' data-col='${index}'>${r1 || ''}</td>`; // CDS travaille sur position ?
-		res2 += `<td class='${cl2}' data-vac='${vac}' data-ligne='2' data-col='${index}'>${r2 || ''}</td>`; // partie A
-		res3 += `<td class='${cl3} bottom_2px' data-vac='${vac}' data-ligne='3' data-col='${index}'>${r3 || ''}</td>`; // partie B
+		res1 += `<td class='${cl1}' data-vac='${vac}' data-ligne='1' data-col='${index}' data-saison='${saison+"-"+zone}'>${r1 || ''}</td>`; // CDS travaille sur position ?
+		res2 += `<td class='${cl2}' data-vac='${vac}' data-ligne='2' data-col='${index}' data-saison='${saison+"-"+zone}'>${r2 || ''}</td>`; // partie A
+		res3 += `<td class='${cl3} bottom_2px' data-vac='${vac}' data-ligne='3' data-col='${index}' data-saison='${saison+"-"+zone}'>${r3 || ''}</td>`; // partie B
 	});
     return [res1, res2, res3];
 }
