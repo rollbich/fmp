@@ -259,6 +259,7 @@ table {
 	margin-top: 20px;
 	margin-left: 10px;
 	margin-right: 10px;
+	margin-bottom: 10px;
 }
 
 table.uceso {
@@ -384,7 +385,7 @@ th.bordure, td.bordure {
 }
 
 table.plage {
-	margin-bottom: 70px;
+	margin-bottom: 20px;
 }
 
 table.plage th, table.plage td {

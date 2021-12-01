@@ -50,6 +50,8 @@
   </div>
   <button id="button_save">Save</button>
   <span><a href="./">back to TDS</a></span>
+  <div id="plage_est" class="est off"></div>
+  <div id="plage_ouest" class="ouest off"></div>
   <div id="result_h_est" class="est off"></div>
   <div id="result_msb_est" class="est off"></div>
   <div id="result_msh_est" class="est off"></div>

@@ -304,7 +304,7 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 		return `
 		<tr data-vac='${vac}'>
 			<td class='left_2px right_1px'></td><td class='right_1px'></td>
-			<td class='right_1px'>cds</td><td>${cds}</td><td class='pc right_1px' data-vac='${vac}'>${pc_vac[vac]["nbpc"]}</td><td class='right_2px'>${pc_vac[vac]["RO"]}</td>${res1}</tr>
+			<td class='right_1px'>cds</td><td>${cds}</td><td class='pc right_1px' data-vac='${vac}'>${pc_vac[vac]["nbpc"]}</td><td class='right_2px'>${pc_vac[vac]["BV"]}</td>${res1}</tr>
 		<tr data-vac='${vac}'>
 			<td class='left_2px right_1px'>${tab_vac_eq[vac]}</td>
 			<td class='right_1px'>${vac}</td><td class='right_1px'>A</td><td class='right_1px' colspan="2"></td><td class='right_2px'></td>${res2}</tr>
@@ -343,7 +343,7 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 		<tr data-vac='N'>
 			<td class='left_2px right_1px'></td><td class='right_1px'></td>
 			<td class='right_1px'>cds</td><td>1</td>
-			<td class='pc right_1px' data-vac='N'>${pc_vac[vac]["nbpc"]}</td><td class='right_2px'>${pc_vac[vac]["RO"]}</td>${res1}</tr>
+			<td class='pc right_1px' data-vac='N'>${pc_vac[vac]["nbpc"]}</td><td class='right_2px'>${pc_vac[vac]["BV"]}</td>${res1}</tr>
 		<tr data-vac='N'>
 			<td class='left_2px right_1px'>${tab_vac_eq[vac]}</td><td class='right_1px'>N</td>
 			<td class='right_1px'>A</td><td class='right_1px' colspan="2"></td><td class='right_2px'></td>${res2}</tr>
@@ -381,7 +381,7 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 		return `
 		<tr data-vac='N1'>
 			<td class='left_2px right_1px'></td><td class='right_1px'></td><td class='right_1px'>cds</td><td>1</td>
-			<td class='pc right_1px' data-vac='N1'>${pc_vac[vac]["nbpc"]}</td><td class='right_2px'>${pc_vac[vac]["RO"]}</td>${res1}</tr>
+			<td class='pc right_1px' data-vac='N1'>${pc_vac[vac]["nbpc"]}</td><td class='right_2px'>${pc_vac[vac]["BV"]}</td>${res1}</tr>
 		<tr data-vac='N1'>
 			<td class='left_2px right_1px'>${tab_vac_eq[vac]}</td><td class='right_1px'>N-1</td>
 			<td class='right_1px'>A</td><td class='right_1px' colspan="2"></td><td class='right_2px'></td>${res2}</tr>

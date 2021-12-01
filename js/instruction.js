@@ -1,5 +1,5 @@
 async function inst(containerId) {
-    let instr = await loadJson("instruction.json");
+    let instr = await loadJson("../instruction.json");
     
     affiche(containerId, instr);
 

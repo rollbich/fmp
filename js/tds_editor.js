@@ -31,6 +31,11 @@ async function affiche_tds() {
         res += `${affiche_vac("N", saison, tour_local, zone)}`;
         res += `<tr class="titre"><th class='bottom_2px left_2px right_1px' colspan="2">Heures UTC</th>${heure()}`;
         res += '</tbody></table>';
+        $(containerId).innerHTML = res;
+    }
+    
+    function aff_plage(containerId, zone, saison) {
+        let res = $(containerId).innerHTML;
         res += '<table class="plage">';
         res += `<caption>Plage Horaire ${saison} - ${zone}</caption>`;
         res += '<thead><tr><th>Début</th><th>Fin</th></tr></thead>';
@@ -39,7 +44,16 @@ async function affiche_tds() {
         res += '</tbody></table>';
         $(containerId).innerHTML = res;
     }
-    
+
+    aff_plage("plage_est", "est", "hiver");
+    aff_plage("plage_est", "est", "mi-saison-basse");
+    aff_plage("plage_est", "est", "mi-saison-haute");
+    aff_plage("plage_est", "est", "ete");
+    aff_plage("plage_ouest", "ouest", "hiver");
+    aff_plage("plage_ouest", "ouest", "mi-saison-basse");
+    aff_plage("plage_ouest", "ouest", "mi-saison-haute");
+    aff_plage("plage_ouest", "ouest", "ete");
+
     aff("result_h_est", "est", "hiver");
     aff("result_msb_est", "est", "mi-saison-basse");
     aff("result_msh_est", "est", "mi-saison-haute");
