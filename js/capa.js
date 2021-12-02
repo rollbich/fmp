@@ -168,22 +168,23 @@ async function get_nbpc_dispo(day, zone, update = {"J1":0, "J3":0, "S2":0, "J2":
 	let nb_pc = 0;
 	let pcs = [];
 	const in15mn = []; // nbre de pc instruction par 15 mn
+	const cds = 1;
 	for(var i=0;i<96;i++) {
-		if (tour_utc["J1"][i][2] === 1) nb_pc += Math.floor(pc["J1"]["nbpc"]/2);
-		if (tour_utc["J1"][i][3] === 1) nb_pc += ((Math.floor(pc["J1"]["nbpc"]/2) + (pc["J1"]["nbpc"])%2));
-		if (tour_utc["J3"][i][2] === 1) nb_pc += Math.floor(pc["J3"]["nbpc"]/2);
-		if (tour_utc["J3"][i][3] === 1) nb_pc += ((Math.floor(pc["J3"]["nbpc"]/2) + (pc["J3"]["nbpc"])%2));
+		if (tour_utc["J1"][i][2] === 1) nb_pc += Math.min(Math.floor(pc["J1"]["nbpc"]/2), Math.floor((pc["J1"]["BV"]-cds)/2));
+		if (tour_utc["J1"][i][3] === 1) nb_pc += Math.min(Math.floor(pc["J1"]["nbpc"]/2)+(pc["J1"]["nbpc"])%2, Math.floor((pc["J1"]["BV"]-cds)/2)+(pc["J1"]["BV"]-cds)%2);
+		if (tour_utc["J3"][i][2] === 1) nb_pc += Math.min(Math.floor(pc["J3"]["nbpc"]/2), Math.floor((pc["J3"]["BV"]-cds)/2));
+		if (tour_utc["J3"][i][3] === 1) nb_pc += Math.min(Math.floor(pc["J3"]["nbpc"]/2)+(pc["J3"]["nbpc"])%2, Math.floor((pc["J3"]["BV"]-cds)/2)+(pc["J3"]["BV"]-cds)%2);
 		if (tour_utc["S2"][i][1] === 1) nb_pc += 1; // cds de S2 qui bosse sur secteur
-		if (tour_utc["S2"][i][2] === 1) nb_pc += Math.floor(pc["S2"]["nbpc"]/2);
-		if (tour_utc["S2"][i][3] === 1) nb_pc += ((Math.floor(pc["S2"]["nbpc"]/2) + (pc["S2"]["nbpc"])%2));
-		if (tour_utc["J2"][i][2] === 1) nb_pc += Math.floor(pc["J2"]["nbpc"]/2);
-		if (tour_utc["J2"][i][3] === 1) nb_pc += ((Math.floor(pc["J2"]["nbpc"]/2) + (pc["J2"]["nbpc"])%2));
-		if (tour_utc["S1"][i][2] === 1) nb_pc += Math.floor(pc["S1"]["nbpc"]/2);
-		if (tour_utc["S1"][i][3] === 1) nb_pc += ((Math.floor(pc["S1"]["nbpc"]/2) + (pc["S1"]["nbpc"])%2));
-		if (tour_utc["N"][i][2] === 1 && i>48) nb_pc += Math.floor(pc["N"]["nbpc"]/2);
-		if (tour_utc["N"][i][3] === 1 && i>48) nb_pc += ((Math.floor(pc["N"]["nbpc"]/2) + (pc["N"]["nbpc"])%2));
-		if (tour_utc["N"][i][2] === 1 && i<48) nb_pc += Math.floor(pc["N1"]["nbpc"]/2);
-		if (tour_utc["N"][i][3] === 1 && i<48) nb_pc += ((Math.floor(pc["N1"]["nbpc"]/2) + (pc["N1"]["nbpc"])%2));
+		if (tour_utc["S2"][i][2] === 1) nb_pc += Math.min(Math.floor(pc["S2"]["nbpc"]/2), Math.floor((pc["S2"]["BV"]-cds)/2));
+		if (tour_utc["S2"][i][3] === 1) nb_pc += Math.min(Math.floor(pc["S2"]["nbpc"]/2)+(pc["S2"]["nbpc"])%2, Math.floor((pc["S2"]["BV"]-cds)/2)+(pc["S2"]["BV"]-cds)%2);
+		if (tour_utc["J2"][i][2] === 1) nb_pc += Math.min(Math.floor(pc["J2"]["nbpc"]/2), Math.floor((pc["J2"]["BV"])/2));
+		if (tour_utc["J2"][i][3] === 1) nb_pc += Math.min(Math.floor(pc["J2"]["nbpc"]/2)+(pc["J2"]["nbpc"])%2, Math.floor((pc["J2"]["BV"])/2)+(pc["J2"]["BV"])%2);
+		if (tour_utc["S1"][i][2] === 1) nb_pc += Math.min(Math.floor(pc["S1"]["nbpc"]/2), Math.floor((pc["S1"]["BV"])/2));
+		if (tour_utc["S1"][i][3] === 1) nb_pc += Math.min(Math.floor(pc["S1"]["nbpc"]/2)+(pc["S1"]["nbpc"])%2, Math.floor((pc["S1"]["BV"])/2)+(pc["S1"]["BV"])%2);
+		if (tour_utc["N"][i][2] === 1 && i>48) nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2), Math.floor((pc["N"]["BV"]-cds)/2));
+		if (tour_utc["N"][i][3] === 1 && i>48) nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2, Math.floor((pc["N"]["BV"]-cds)/2)+(pc["N"]["BV"]-cds)%2);
+		if (tour_utc["N"][i][2] === 1 && i<48) nb_pc += Math.min(Math.floor(pc["N1"]["nbpc"]/2), Math.floor((pc["N1"]["BV"]-cds)/2));
+		if (tour_utc["N"][i][3] === 1 && i<48) nb_pc += Math.min(Math.floor(pc["N1"]["nbpc"]/2)+(pc["N1"]["nbpc"])%2, Math.floor((pc["N1"]["BV"]-cds)/2)+(pc["N1"]["BV"]-cds)%2);
 		pcs.push([tour_utc["J1"][i][0], nb_pc]);
 		nb_pc = 0;
 
@@ -278,11 +279,14 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 		let res1 = "", res2 = "", res3 = "";
 		// A = effectif/2
 		// B = effectif/2 (+1)
+		const cds = (vac == "J2" || vac == "S1") ? 0 : 1
+		const dispoA = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2), Math.floor((pc_vac[vac]["BV"]-cds)/2));
+		const dispoB = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2, Math.floor((pc_vac[vac]["BV"]-cds)/2)+(pc_vac[vac]["BV"]-cds)%2);
 		const comp = tour_utc[vac].map( elem => [
 			elem[0], 
 			parseInt(elem[1]), 
-			parseInt(elem[2])*Math.floor(pc_vac[vac]["nbpc"]/2), 
-			parseInt(elem[3])*(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2)
+			parseInt(elem[2])*dispoA,
+			parseInt(elem[3])*dispoB
 		]);
 		/* Sans compactage */
 		comp.forEach( (elem, index) => {
@@ -300,7 +304,6 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 			res3 += `<td class='${cl3} bottom_2px'>${r3 || ''}</td>`; 	// partie B
 		});
 			
-		const cds = (vac == "J2" || vac == "S1") ? 0 : 1;
 		return `
 		<tr data-vac='${vac}'>
 			<td class='left_2px right_1px'></td><td class='right_1px'></td>
@@ -317,11 +320,16 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 	function affiche_vac_nuit() {
 		let res1 = "", res2 = "", res3 = "";
 		const vac = "N";
+		const cds = 1;
+		const dispoA = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2), Math.floor((pc_vac[vac]["BV"]-cds)/2));
+		const dispoB = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2, Math.floor((pc_vac[vac]["BV"]-cds)/2)+(pc_vac[vac]["BV"]-cds)%2);
 		const comp = tour_utc[vac].map( elem => [
 			elem[0], 
 			parseInt(elem[1]), 
-			parseInt(elem[2])*Math.floor(pc_vac[vac]["nbpc"]/2), 
-			parseInt(elem[3])*(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2)
+			parseInt(elem[2])*dispoA,
+			parseInt(elem[3])*dispoB
+			//parseInt(elem[2])*Math.floor(pc_vac[vac]["nbpc"]/2), 
+			//parseInt(elem[3])*(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2)
 		]);
 		comp.forEach( (elem, index) => {
 			let cl = "";
@@ -356,11 +364,16 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 	function affiche_vac_nuitmoins1() {
 		let res1 ="", res2 = "", res3 = "";
 		const vac = "N1";
+		const cds = 1;
+		const dispoA = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2), Math.floor((pc_vac[vac]["BV"]-cds)/2));
+		const dispoB = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2, Math.floor((pc_vac[vac]["BV"]-cds)/2)+(pc_vac[vac]["BV"]-cds)%2);
 		const comp = tour_utc["N"].map( elem => [
 			elem[0], 
-			parseInt(elem[1]), 
-			parseInt(elem[2])*Math.floor(pc_vac[vac]["nbpc"]/2), 
-			parseInt(elem[3])*(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2)
+			parseInt(elem[1]),
+			parseInt(elem[2])*dispoA,
+			parseInt(elem[3])*dispoB 
+			//parseInt(elem[2])*Math.floor(pc_vac[vac]["nbpc"]/2), 
+			//parseInt(elem[3])*(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2)
 		]);
 		comp.forEach( (elem, index) => {
 			let cl = "";
