@@ -136,11 +136,9 @@ async function get_nbpc_dispo(day, zone, update = {"J1":0, "J3":0, "S2":0, "J2":
 	const zone_str = zon === "E" ? "est" : "ouest";
 	const tab_vac_eq = get_vac_eq(day);
 	const instr = await loadJson("../instruction.json");
-	const eff = await get_olaf(zon, day);
+	const yesterday = jmoins1(day);
 	// récupère l'objet contenant les propriétés equipes
-	const effectif = eff[Object.keys(eff)[0]]; 
-	const effN1 = await get_olaf(zon, jmoins1(day));
-	const effectifNmoins1 = effN1[Object.keys(effN1)[0]];
+	const effectif = await get_olaf(zon, day, yesterday);
 	
 	const tour_local = await loadJson(tour_json);
 	const tour_utc = await get_tour_utc(tour_local, day, zone_str);
@@ -152,15 +150,19 @@ async function get_nbpc_dispo(day, zone, update = {"J1":0, "J3":0, "S2":0, "J2":
 		let p = tab_vac_eq[vac]+"-"+zon;
 		if (vac !== "N1") {
 			const cds = (vac == "J2" || vac == "S1") ? 0 : 1; // cds=0 en J2 et S1
-			pc[vac]["nbpc"] = parseInt(effectif[p]["teamReserve"]["teamQuantity"]) - cds - update[vac]; 
-			pc[vac]["BV"] = parseInt(effectif[p]["teamReserve"]["BV"]);
-			pc[vac]["RO"] = parseInt(effectif[p]["teamReserve"]["roQuantity"]);
+			pc[vac]["nbpc"] = parseInt(effectif[day][p]["teamReserve"]["teamQuantity"]) - cds - update[vac]; 
+			pc[vac]["BV"] = parseInt(effectif[day][p]["teamReserve"]["BV"]);
+			pc[vac]["RO"] = parseInt(effectif[day][p]["teamReserve"]["roQuantity"]);
+			pc[vac]["userList"] = effectif[day][p]["userList"];
 		} else {
-			pc[vac]["nbpc"] = parseInt(effectifNmoins1[p]["teamReserve"]["teamQuantity"]) - 1 - update[vac]; // le cds ne compte pas dans le nb de pc => -1
-			pc[vac]["BV"] = parseInt(effectifNmoins1[p]["teamReserve"]["BV"]);
-			pc[vac]["RO"] = parseInt(effectifNmoins1[p]["teamReserve"]["roQuantity"]);
+			pc[vac]["nbpc"] = parseInt(effectif[yesterday][p]["teamReserve"]["teamQuantity"]) - 1 - update[vac]; // le cds ne compte pas dans le nb de pc => -1
+			pc[vac]["BV"] = parseInt(effectif[yesterday][p]["teamReserve"]["BV"]);
+			pc[vac]["RO"] = parseInt(effectif[yesterday][p]["teamReserve"]["roQuantity"]);
+			pc[vac]["userList"] = effectif[yesterday][p]["userList"];
 		}
-	}
+		console.log("VAC: "+vac);
+		console.log(pc[vac]["userList"]);
+	} 
 	
 	// array du nombre de pc dispo associé au créneau horaire du tour de service
 	// En 24h, il y a 96 créneaux de 15mn.
@@ -309,7 +311,7 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 			<td class='left_2px right_1px'></td><td class='right_1px'></td>
 			<td class='right_1px'>cds</td><td>${cds}</td><td class='pc right_1px' data-vac='${vac}'>${pc_vac[vac]["nbpc"]}</td><td class='right_2px'>${pc_vac[vac]["BV"]}</td>${res1}</tr>
 		<tr data-vac='${vac}'>
-			<td class='left_2px right_1px'>${tab_vac_eq[vac]}</td>
+			<td class='eq left_2px right_1px'>${tab_vac_eq[vac]}</td>
 			<td class='right_1px'>${vac}</td><td class='right_1px'>A</td><td class='right_1px' colspan="2"></td><td class='right_2px'></td>${res2}</tr>
 		<tr data-vac='${vac}'>
 			<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
@@ -353,7 +355,7 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 			<td class='right_1px'>cds</td><td>1</td>
 			<td class='pc right_1px' data-vac='N'>${pc_vac[vac]["nbpc"]}</td><td class='right_2px'>${pc_vac[vac]["BV"]}</td>${res1}</tr>
 		<tr data-vac='N'>
-			<td class='left_2px right_1px'>${tab_vac_eq[vac]}</td><td class='right_1px'>N</td>
+			<td class='eq left_2px right_1px'>${tab_vac_eq[vac]}</td><td class='right_1px'>N</td>
 			<td class='right_1px'>A</td><td class='right_1px' colspan="2"></td><td class='right_2px'></td>${res2}</tr>
 		<tr data-vac='N'>
 			<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
@@ -396,7 +398,7 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 			<td class='left_2px right_1px'></td><td class='right_1px'></td><td class='right_1px'>cds</td><td>1</td>
 			<td class='pc right_1px' data-vac='N1'>${pc_vac[vac]["nbpc"]}</td><td class='right_2px'>${pc_vac[vac]["BV"]}</td>${res1}</tr>
 		<tr data-vac='N1'>
-			<td class='left_2px right_1px'>${tab_vac_eq[vac]}</td><td class='right_1px'>N-1</td>
+			<td class='eq left_2px right_1px'>${tab_vac_eq[vac]}</td><td class='right_1px'>N-1</td>
 			<td class='right_1px'>A</td><td class='right_1px' colspan="2"></td><td class='right_2px'></td>${res2}</tr>
 		<tr data-vac='N1'>
 			<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
