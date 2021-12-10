@@ -281,7 +281,7 @@ table thead > tr.titre {
   background-color: var(--table-titre-color);
 }
 
-table.ouverture tr:nth-child(6n+1), table tr:nth-child(6n+2), table tr:nth-child(6n+3) {
+table.ouverture tr:nth-child(6n+1), table.ouverture tr:nth-child(6n+2), table.ouverture tr:nth-child(6n+3) {
   background-color: var(--ligne-paire-color);
 }
 
@@ -297,6 +297,17 @@ td[data-col], td.pc {
 
 td.pc:hover {
 	background-color:rgb(245, 213, 153);
+	cursor: pointer;
+}
+
+td.typeOK:hover, td.typedetache:hover {
+	background-color: var(--table-titre-color);
+	cursor: pointer;
+}
+
+.barre {
+	text-decoration: red double line-through;
+	color: red;
 }
 
 .max {
@@ -500,6 +511,23 @@ input.date {
 	text-align:center;
 	opacity: 0;
 } 
+
+.popup-modif {
+	width: 1600px;
+}
+
+#modif_eq {
+	display: flex;
+	flex-direction: row;
+}
+
+#modif_eq table {
+	width: 320px;
+}
+
+#modif_eq table thead {
+	background-color: var(--table-titre-color);
+}
 
 .popup-box h2 {
 	color:#1a1a1a;

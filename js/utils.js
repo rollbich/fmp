@@ -243,6 +243,22 @@ function show_popup(text1, text2) {
 	
 }
 
+/*	---------------------------------------------------------
+		Affiche une Pop-up générique 
+			@param {string} text1 - Titre
+			@param {string} text2 - Contenu HTML
+	--------------------------------------------------------- */
+	function show_popup_modif(text1, text2) {
+	
+		document.getElementById('popup-modif').classList.remove('off');
+		document.querySelector('.popup-box h2').innerHTML = text1;
+		document.querySelector('.popup-box h3').innerHTML = text2;
+		
+		document.querySelector('.popup-box').classList.remove('transform-out');
+		document.querySelector('.popup-box').classList.add('transform-in');
+		
+	}
+
 /*  ------------------------------------------------------------
 	  récupère la date contenue dans le nom du fichier courage 
 	  utils ouverture et upload
@@ -268,4 +284,39 @@ function get_time(col) {
     let min = col%4 === 0 ? "00" : parseInt((col/4).toString().split('.')[1])*15/25;
     min = min === 3 ? "30" : min;
     return h.toString()+":"+min.toString();
+}
+
+/* -------------------------------------------------------------------------------------
+		Cookie 
+	ex : setCookie({ name: 'count', value: 100, duration: 300 });   // 300s, 5 minutes
+		 const count = getCookie('count', parseInt);
+		
+		 For storing array inside cookie : 
+		setter : var json_str = JSON.stringify(arr); setCookie('mycookie', json_str);
+		getter : getCookie('mycookie'); var arr = JSON.parse(json_str);
+   ------------------------------------------------------------------------------------- */
+
+const setCookie = (options) => {
+  	const { name, value = '', path = '/', duration = 3600 } = options;
+  	const durationMs = duration * 1000;
+  	const expires = new Date(Date.now() + durationMs);
+  	document.cookie = `${name}=${escape(value)}; expires=${expires.toUTCString()}; path=${path}`;
+}
+
+const getCookie = (name, cast = String) => {
+  	if (document.cookie.length == 0) return;
+
+  	const match = document.cookie.match(`${name}=(?<value>[\\w]*);?`);
+  	if (!match) return;
+
+  	const value = match?.groups?.value ?? '';
+	return cast(unescape(value));
+}
+
+const cookieExists = (name) => {
+  return getCookie(name) !== undefined;
+}
+
+const deleteCookie = (name) => {
+  setCookie({ name: name, value: undefined, duration: -1});
 }

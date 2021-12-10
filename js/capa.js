@@ -2,12 +2,12 @@
 				Feuille de Capa
 	------------------------------------------------ */
 
-/* -------------------------------------------------
+/* ---------------------------------------------------
 	Calcule les équipes qui travaillent et leur vac
 	Paramètres
 		@param {string} day - yyyy-mm-jj
-		@returns {object} { "J1": 5, "vac": eq ... }
-   -------------------------------------------------- */
+		@returns {object} { "J1": 5, "vac": n°eq ... }
+   ---------------------------------------------------- */
 const get_vac_eq = day => {
 	const tabvac = ["J2","S1","N","","","","","J1","J3","S2","",""];
 	const dep = new Date(2019, 0, 8);  // J2 le 8 janvier 2019 à 12heures pour eq11
@@ -16,10 +16,10 @@ const get_vac_eq = day => {
 	for (let eq=1;eq<13;eq++) {
 		let debvac = (ecartj - parseInt(eq) + 11) % 12;
 		if (tabvac[(debvac) % 12] !== "" && tabvac[(debvac) % 12] !== "N") tab[tabvac[(debvac) % 12]] = eq;
-		if (tabvac[(debvac) % 12] == "N") {
+		if (tabvac[(debvac) % 12] === "N") {
 			tab[tabvac[(debvac) % 12]] = eq;
 			const eqN1 = eq == 1 ? 12 : eq - 1; // equipe de nuit de la veille
-			tab["N1"] = eqN1; 
+			tab["N-1"] = eqN1; 
 		}
 	}
 	return tab;
@@ -124,13 +124,13 @@ const get_tour_utc = async (tour_local, day, zone) => {
 	 *Calcul du nbre de PC total dispo par pas de 15mn à la date choisie
 	 	@param {string} day 	- "yyyy-mm-jj"
 	  	@param {string} zone	- "AE" ou "AW"
-		@param {object} update	- {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N1":0}
+		@param {object} update	- {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0}
 								- Nombre de pc à retrancher à l'effectif OLAF
 	 	@returns {object} 
 			{ "pc_vac": {"vac": {"nbpc": nbre_pc, "BV", "RO"}, ...}, 
 			  "pc_total_dispo_15mn":[ ["hh:mm", nb_pc_dispo], [...], ... ] }
    --------------------------------------------------------------------------------------- */
-async function get_nbpc_dispo(day, zone, update = {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N1":0}) {
+async function get_nbpc_dispo(day, zone, update = {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0}) {
 	
 	const zon = zone.substr(1,1); // récupère la 2è lettre de la zone
 	const zone_str = zon === "E" ? "est" : "ouest";
@@ -145,23 +145,25 @@ async function get_nbpc_dispo(day, zone, update = {"J1":0, "J3":0, "S2":0, "J2":
 	
 	// Calcul du nombre de pc à afficher 
 	// On récupère l'effectif total, donc on doit enlever le cds sur les vacations sauf J2 et S1	
-	const pc = {"J1":{}, "J3":{}, "S2":{}, "J2":{}, "S1":{}, "N":{}, "N1":{}};
+	const pc = {"J1":{}, "J3":{}, "S2":{}, "J2":{}, "S1":{}, "N":{}, "N-1":{}};
 	for(vac in tab_vac_eq) {
 		let p = tab_vac_eq[vac]+"-"+zon;
-		if (vac !== "N1") {
+		if (vac !== "N-1") {
 			const cds = (vac == "J2" || vac == "S1") ? 0 : 1; // cds=0 en J2 et S1
-			pc[vac]["nbpc"] = parseInt(effectif[day][p]["teamReserve"]["teamQuantity"]) - cds - update[vac]; 
+			pc[vac]["nbpc"] = parseInt(effectif[day][p]["teamReserve"]["teamQuantity"]) - cds + update[vac]; 
 			pc[vac]["BV"] = parseInt(effectif[day][p]["teamReserve"]["BV"]);
 			pc[vac]["RO"] = parseInt(effectif[day][p]["teamReserve"]["roQuantity"]);
 			pc[vac]["userList"] = effectif[day][p]["userList"];
+			pc[vac]["teamData"] = effectif[day][p]["teamData"];
+			pc[vac]["html"] = effectif[day][p]["html"][day][p];
 		} else {
-			pc[vac]["nbpc"] = parseInt(effectif[yesterday][p]["teamReserve"]["teamQuantity"]) - 1 - update[vac]; // le cds ne compte pas dans le nb de pc => -1
+			pc[vac]["nbpc"] = parseInt(effectif[yesterday][p]["teamReserve"]["teamQuantity"]) - 1 + update[vac]; // le cds ne compte pas dans le nb de pc => -1
 			pc[vac]["BV"] = parseInt(effectif[yesterday][p]["teamReserve"]["BV"]);
 			pc[vac]["RO"] = parseInt(effectif[yesterday][p]["teamReserve"]["roQuantity"]);
 			pc[vac]["userList"] = effectif[yesterday][p]["userList"];
+			pc[vac]["teamData"] = effectif[yesterday][p]["teamData"];
+			pc[vac]["html"] = effectif[yesterday][p]["html"][yesterday][p];
 		}
-		console.log("VAC: "+vac);
-		console.log(pc[vac]["userList"]);
 	} 
 	
 	// array du nombre de pc dispo associé au créneau horaire du tour de service
@@ -185,8 +187,8 @@ async function get_nbpc_dispo(day, zone, update = {"J1":0, "J3":0, "S2":0, "J2":
 		if (tour_utc["S1"][i][3] === 1) nb_pc += Math.min(Math.floor(pc["S1"]["nbpc"]/2)+(pc["S1"]["nbpc"])%2, Math.floor((pc["S1"]["BV"])/2)+(pc["S1"]["BV"])%2);
 		if (tour_utc["N"][i][2] === 1 && i>48) nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2), Math.floor((pc["N"]["BV"]-cds)/2));
 		if (tour_utc["N"][i][3] === 1 && i>48) nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2, Math.floor((pc["N"]["BV"]-cds)/2)+(pc["N"]["BV"]-cds)%2);
-		if (tour_utc["N"][i][2] === 1 && i<48) nb_pc += Math.min(Math.floor(pc["N1"]["nbpc"]/2), Math.floor((pc["N1"]["BV"]-cds)/2));
-		if (tour_utc["N"][i][3] === 1 && i<48) nb_pc += Math.min(Math.floor(pc["N1"]["nbpc"]/2)+(pc["N1"]["nbpc"])%2, Math.floor((pc["N1"]["BV"]-cds)/2)+(pc["N1"]["BV"]-cds)%2);
+		if (tour_utc["N"][i][2] === 1 && i<48) nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2), Math.floor((pc["N-1"]["BV"]-cds)/2));
+		if (tour_utc["N"][i][3] === 1 && i<48) nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2, Math.floor((pc["N-1"]["BV"]-cds)/2)+(pc["N-1"]["BV"]-cds)%2);
 		pcs.push([tour_utc["J1"][i][0], nb_pc]);
 		nb_pc = 0;
 
@@ -261,18 +263,18 @@ function compact_ligne(pcs, ind) {
 			@param {string} containerIdTour - id du container pour le tour
 			@param {string} day  - "yyyy-mm-jj"
 			@param {string} zone - "AE" ou "AW"
-			@param {object} update - {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N1":0}
+			@param {object} update - {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0}
 	----------------------------------------------------------------------------------------- */
 	
-async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N1":0}) {
-
-	const pc = await get_nbpc_dispo(day, zone, update);
+async function show_feuille_capa(containerIdTour, day, zone) {
+	const zone_str = zone === "AE" ? "est" : "ouest";
+	const update = await loadJson("../update.json");
+	if (typeof update[zone_str][day] === 'undefined') update[zone_str][day] = {"update_count": {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0}, "update_name": {"J1":[], "J3":[], "S2":[], "J2":[], "S1":[], "N":[], "N-1":[]}};
+	const pc = await get_nbpc_dispo(day, zone, update[zone_str][day]['update_count']);
 	const pc_15mn = pc["pc_total_dispo_15mn"];
 	const pc_instr_15mn = pc["pc_instr_15mn"];
 	const pc_vac = pc["pc_vac"];
 	const tab_vac_eq = get_vac_eq(day);
-	
-	const zone_str = zone === "AE" ? "est" : "ouest";
 	const tour_local = await loadJson(tour_json);
 	const tour_utc = await get_tour_utc(tour_local, day, zone_str);
 	
@@ -284,130 +286,65 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 		const cds = (vac == "J2" || vac == "S1") ? 0 : 1
 		const dispoA = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2), Math.floor((pc_vac[vac]["BV"]-cds)/2));
 		const dispoB = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2, Math.floor((pc_vac[vac]["BV"]-cds)/2)+(pc_vac[vac]["BV"]-cds)%2);
-		const comp = tour_utc[vac].map( elem => [
-			elem[0], 
-			parseInt(elem[1]), 
-			parseInt(elem[2])*dispoA,
-			parseInt(elem[3])*dispoB
-		]);
-		/* Sans compactage */
+		
+		// comp : { [ ["00:00", 0, 3, 4], ["hh:mm", cds, A, B], ... ] }
+		const vacation = (vac === "N-1") ? "N" : vac;
+		const comp = tour_utc[vacation].map( elem => [elem[0], parseInt(elem[1]), parseInt(elem[2])*dispoA, parseInt(elem[3])*dispoB]);
+		
+		// array d'index 0 à 95
 		comp.forEach( (elem, index) => {
-			let r1 = elem[1];
-			let r2 = elem[2];
-			let r3 = elem[3];
+			let nb_cds = elem[1], nb_A = elem[2], nb_B = elem[3];
 			let cl1 = "", cl2 = "", cl3="";
-			if (r1 != 0) cl1 = "bg";
-			if (r2 != 0) cl2 = "bg"; 
-			if (r3 != 0) cl3 = "bg";
-			if (index == 95) { cl1 += " right_2px"; cl2 += " right_2px"; cl3+= " right_2px"; }
-			if (index%4 === 0) { cl1 += " left_2px"; cl2 += " left_2px"; cl3+= " left_2px"; }
-			res1 += `<td class='${cl1}'>${r1 || ''}</td>`; 				// CDS travaille sur position ?
-			res2 += `<td class='${cl2}'>${r2 || ''}</td>`; 				// partie A
-			res3 += `<td class='${cl3} bottom_2px'>${r3 || ''}</td>`; 	// partie B
+			if (vac != "N" && vac != "N-1") {
+				if (nb_cds != 0) cl1 = "bg";
+				if (nb_A != 0) cl2 = "bg"; 
+				if (nb_B != 0) cl3 = "bg";
+				if (index === 95) { cl1 += " right_2px"; cl2 += " right_2px"; cl3+= " right_2px"; }
+				if (index%4 === 0) { cl1 = (cl1+" left_2px").trimLeft(); cl2 = (cl2+" left_2px").trimLeft(); cl3 = (cl3+" left_2px").trimLeft(); }
+				res1 += `<td class='${cl1}'>${nb_cds || ''}</td>`; 				// CDS travaille sur position ?
+				res2 += `<td class='${cl2}'>${nb_A || ''}</td>`; 				// partie A
+				res3 += `<td class='${cl3} bottom_2px'>${nb_B || ''}</td>`; 	// partie B
+			}
+			if (vac === "N") {
+				if (nb_cds != 0 && index >= 48) cl1 = "bg";
+				if (nb_A != 0 && index >= 48) cl2 = "bg"; 
+				if (nb_B != 0 && index >= 48) cl3 = "bg"; 
+				if (index == 95) { cl1 += " right_2px"; cl2 += " right_2px"; cl3+= " right_2px"; }
+				if (index%4 === 0) { cl1 = (cl1+" left_2px").trimLeft(); cl2 = (cl2+" left_2px").trimLeft(); cl3 = (cl3+" left_2px").trimLeft(); }
+				// index 48 = midi donc >48 est le tour de nuit de soirée
+				if (index > 48) res1 += `<td class='${cl1}'>${nb_cds || ''}</td>`; else res1 += `<td class='${cl1}'></td>`; // CDS travaille sur position ?
+				if (index > 48) res2 += `<td class='${cl2}'>${nb_A || ''}</td>`; else res2 += `<td class='${cl2}'></td>`;
+				if (index > 48) res3 += `<td class='${cl3} bottom_2px'>${nb_B || ''}</td>`; else res3 += `<td class='${cl3} bottom_2px'></td>`;
+			} 
+			if (vac === "N-1") {
+				if (nb_cds != 0 && index < 48) cl1 = "bg";
+				if (nb_A != 0 && index < 48) cl2 = "bg"; 
+				if (nb_B != 0 && index < 48) cl3 = "bg"; 
+				if (index == 95) { cl1 += " right_2px"; cl2 += " right_2px"; cl3+= " right_2px"; }
+				if (index%4 === 0) { cl1 = (cl1+" left_2px").trimLeft(); cl2 = (cl2+" left_2px").trimLeft(); cl3 = (cl3+" left_2px").trimLeft(); }
+				// index 48 = midi donc <48 est le tour de nuit de la matinée
+				if (index < 48) res1 += `<td class='${cl1}'>${nb_cds || ''}</td>`; else res1 += `<td class='${cl1}'></td>`; // CDS travaille sur position ?
+				if (index < 48) res2 += `<td class='${cl2}'>${nb_A || ''}</td>`; else res2 += `<td class='${cl2}'></td>`;
+				if (index < 48) res3 += `<td class='${cl3} bottom_2px'>${nb_B || ''}</td>`; else res3 += `<td class='${cl3} bottom_2px'></td>`;
+			}
 		});
 			
 		return `
 		<tr data-vac='${vac}'>
 			<td class='left_2px right_1px'></td><td class='right_1px'></td>
-			<td class='right_1px'>cds</td><td>${cds}</td><td class='pc right_1px' data-vac='${vac}'>${pc_vac[vac]["nbpc"]}</td><td class='right_2px'>${pc_vac[vac]["BV"]}</td>${res1}</tr>
+			<td class='right_1px'>cds</td><td>${cds}</td>
+			<td class='pc right_1px' data-vac='${vac}'>${pc_vac[vac]["nbpc"]}</td><td class='right_2px'>${pc_vac[vac]["BV"]}</td>${res1}</tr>
 		<tr data-vac='${vac}'>
-			<td class='eq left_2px right_1px'>${tab_vac_eq[vac]}</td>
+			<td class='eq left_2px right_1px' data-vac='${vac}'>${tab_vac_eq[vac]}</td>
 			<td class='right_1px'>${vac}</td><td class='right_1px'>A</td><td class='right_1px' colspan="2"></td><td class='right_2px'></td>${res2}</tr>
 		<tr data-vac='${vac}'>
 			<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
-			<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px' colspan="2"></td><td class='bottom_2px right_2px'></td>${res3}</tr>`;
-	}
-	
-	// Fabrique la ligne du tour de service pour la nuit du soir
-	function affiche_vac_nuit() {
-		let res1 = "", res2 = "", res3 = "";
-		const vac = "N";
-		const cds = 1;
-		const dispoA = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2), Math.floor((pc_vac[vac]["BV"]-cds)/2));
-		const dispoB = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2, Math.floor((pc_vac[vac]["BV"]-cds)/2)+(pc_vac[vac]["BV"]-cds)%2);
-		const comp = tour_utc[vac].map( elem => [
-			elem[0], 
-			parseInt(elem[1]), 
-			parseInt(elem[2])*dispoA,
-			parseInt(elem[3])*dispoB
-			//parseInt(elem[2])*Math.floor(pc_vac[vac]["nbpc"]/2), 
-			//parseInt(elem[3])*(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2)
-		]);
-		comp.forEach( (elem, index) => {
-			let cl = "";
-			let r1 = elem[1];
-			let r2 = elem[2];
-			let r3 = elem[3];
-			let cl1 = "", cl2 = "", cl3="";
-			if (r1 != 0 && index > 48) cl1 = "bg";
-			if (r2 != 0 && index > 48) cl2 = "bg"; 
-			if (r3 != 0 && index > 48) cl3 = "bg"; 
-			if (index == 95) { cl1 += " right_2px"; cl2 += " right_2px"; cl3+= " right_2px"; }
-			if (index%4 === 0) { cl1 = (cl1+" left_2px").trimLeft(); cl2 = (cl2+" left_2px").trimLeft(); cl3 = (cl3+" left_2px").trimLeft(); }
-			// index 48 = midi donc >48 est le tour de nuit de soirée
-			if (index > 48) res1 += `<td class='${cl1}'>${r1 || ''}</td>`; else res1 += `<td class='${cl1}'></td>`; // CDS travaille sur position ?
-			if (index > 48) res2 += `<td class='${cl2}'>${r2 || ''}</td>`; else res2 += `<td class='${cl2}'></td>`;
-			if (index > 48) res3 += `<td class='${cl3} bottom_2px'>${r3 || ''}</td>`; else res3 += `<td class='${cl3} bottom_2px'></td>`;
-		});
-		return `
-		<tr data-vac='N'>
-			<td class='left_2px right_1px'></td><td class='right_1px'></td>
-			<td class='right_1px'>cds</td><td>1</td>
-			<td class='pc right_1px' data-vac='N'>${pc_vac[vac]["nbpc"]}</td><td class='right_2px'>${pc_vac[vac]["BV"]}</td>${res1}</tr>
-		<tr data-vac='N'>
-			<td class='eq left_2px right_1px'>${tab_vac_eq[vac]}</td><td class='right_1px'>N</td>
-			<td class='right_1px'>A</td><td class='right_1px' colspan="2"></td><td class='right_2px'></td>${res2}</tr>
-		<tr data-vac='N'>
-			<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
-			<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px' colspan="2"></td><td class='bottom_2px right_2px'></td>${res3}</tr>`;
-	}
-	
-	// Fabrique la ligne du tour de service pour le début de nuit
-	function affiche_vac_nuitmoins1() {
-		let res1 ="", res2 = "", res3 = "";
-		const vac = "N1";
-		const cds = 1;
-		const dispoA = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2), Math.floor((pc_vac[vac]["BV"]-cds)/2));
-		const dispoB = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2, Math.floor((pc_vac[vac]["BV"]-cds)/2)+(pc_vac[vac]["BV"]-cds)%2);
-		const comp = tour_utc["N"].map( elem => [
-			elem[0], 
-			parseInt(elem[1]),
-			parseInt(elem[2])*dispoA,
-			parseInt(elem[3])*dispoB 
-			//parseInt(elem[2])*Math.floor(pc_vac[vac]["nbpc"]/2), 
-			//parseInt(elem[3])*(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2)
-		]);
-		comp.forEach( (elem, index) => {
-			let cl = "";
-			let r1 = elem[1];
-			let r2 = elem[2];
-			let r3 = elem[3];
-			let cl1 = "", cl2 = "", cl3="";
-			if (r1 != 0 && index < 48) cl1 = "bg";
-			if (r2 != 0 && index < 48) cl2 = "bg"; 
-			if (r3 != 0 && index < 48) cl3 = "bg"; 
-			if (index == 95) { cl1 = "right_2px"; cl2 = "right_2px"; cl3 = "right_2px"; }
-			if (index%4 === 0) { cl1 += " left_2px"; cl2 += " left_2px"; cl3+= " left_2px"; }
-			// index<48 = tour de nuit du matin (eq de la veille)
-			if (index < 48) res1 += `<td class='${cl1}'>${r1 || ''}</td>`; else res1 += `<td class='${cl1}'></td>`; // CDS travaille sur position ?
-			if (index < 48) res2 += `<td class='${cl2}'>${r2 || ''}</td>`; else res2 += `<td class='${cl2}'></td>`;
-			if (index < 48) res3 += `<td class='${cl3} bottom_2px'>${r3 || ''}</td>`; else res3 += `<td class='${cl3} bottom_2px'></td>`;
-		});
-		return `
-		<tr data-vac='N1'>
-			<td class='left_2px right_1px'></td><td class='right_1px'></td><td class='right_1px'>cds</td><td>1</td>
-			<td class='pc right_1px' data-vac='N1'>${pc_vac[vac]["nbpc"]}</td><td class='right_2px'>${pc_vac[vac]["BV"]}</td>${res1}</tr>
-		<tr data-vac='N1'>
-			<td class='eq left_2px right_1px'>${tab_vac_eq[vac]}</td><td class='right_1px'>N-1</td>
-			<td class='right_1px'>A</td><td class='right_1px' colspan="2"></td><td class='right_2px'></td>${res2}</tr>
-		<tr data-vac='N1'>
-			<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
-			<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px' colspan="2"></td><td class='bottom_2px right_2px'></td>${res3}</tr>`;
+			<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px' colspan="2"></td>
+			<td class='bottom_2px right_2px'></td>${res3}</tr>`;
 	}
 	
 	// fabrique la ligne du supplément instruction
 	function affiche_inst() {
-		
 		let res2 = "";
 		for(let i=0;i<95;i++) {	
 			//console.log("Time: "+get_time(i)+"  "+in15mn[i]);
@@ -417,7 +354,6 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 		res2 += `<td class='bottom_2px right_2px'></td>`;
 		let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="6">Instruction</td>${res2}</tr>`;
 		return res;
-		
 	}
 
 	// fabrique la ligne du nbre de pc dispo
@@ -474,7 +410,7 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 	
 	// Construit le tableau
 	let res = `<table class="ouverture">
-				 <caption>Journée du ${day}</caption>
+				 <caption>Journée du ${day} - Zone ${zone_str}</caption>
 				 <thead>
 					<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px right_1px">PC</th><th class="top_2px bottom_2px right_2px">BV</th><th class="top_2px bottom_2px right_2px" colspan="96">...</th></tr>
 				</thead>
@@ -484,8 +420,8 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 	res += `${affiche_vac("S2")}`;
 	res += `${affiche_vac("J2")}`;
 	res += `${affiche_vac("S1")}`;
-	res += `${affiche_vac_nuit()}`;
-	res += `${affiche_vac_nuitmoins1()}`;
+	res += `${affiche_vac("N")}`;
+	res += `${affiche_vac("N-1")}`;
 	res += `${affiche_inst()}`;
 	res += `<tr class="titre"><th class='bottom_2px left_2px right_2px' colspan="6">Heures UTC</th>${heure()}`;
 	res += `${affiche_nbpc()}`;
@@ -495,84 +431,98 @@ async function show_feuille_capa(containerIdTour, day, zone, update = {"J1":0, "
 	const containerTour = $(containerIdTour);
 	containerTour.innerHTML = res;
 	
+	function add_RO_det(vac, present) {
+		const values = Object.values(pc_vac[vac]["html"]);
+		for (const obj of values) {
+			//console.log(values[obj]);
+			for (const user in obj) {
+				if (obj[user].search(/<sup>RO/) != -1) present.push([user, "RO"]);
+				if (obj[user].search(/detache/) != -1) present.push([user, "detache"]);
+			}
+		}
+	}
+	
 	// ajoute les clicks sur la case du nbre de pc de la vac
 	const td_pc = document.querySelectorAll('.pc');
-	for (const td of td_pc) {
-		let vac = td.dataset.vac;
-		// teste si le nbr de pc a été modifié par un update
-		if (typeof update != 'undefined' && update[vac] !== 0) $$(`td[data-vac=${vac}].pc`).classList.add('bg_red');	
-		td.addEventListener('click', function(event) {
-			let ih = `<div id="modif">
-			<p><label>J1</label>
-			<select class="modif select" data-vac="J1">
-				<option selected value="0">Changer</option>
-				<option value="1">-1</option>
-				<option value="2">-2</option>
-			</select>
-			</p>
-			<p><label>J3</label>
-			<select class="modif select" data-vac="J3">
-				<option selected value="0">Changer</option>
-				<option value="1">-1</option>
-				<option value="2">-2</option>
-			</select>
-			</p>
-			<p><label>S2</label>
-			<select class="modif select" data-vac="S2">
-				<option selected value="0">Changer</option>
-				<option value="1">-1</option>
-				<option value="2">-2</option>
-			</select>
-			</p>
-			<p><label>J2</label>
-			<select class="modif select" data-vac="J2">
-				<option selected value="0">Changer</option>
-				<option value="1">-1</option>
-				<option value="2">-2</option>
-			</select>
-			</p>
-			<p><label>S1</label>
-			<select class="modif select" data-vac="S1">
-				<option selected value="0">Changer</option>
-				<option value="1">-1</option>
-				<option value="2">-2</option>
-			</select>
-			</p>
-			<p><label>&nbsp;&nbsp;N</label>
-			<select class="modif select" data-vac="N">
-				<option selected value="0">Changer</option>
-				<option value="1">-1</option>
-				<option value="2">-2</option>
-			</select>
-			</p>
-			<p><label>N1</label>
-			<select class="modif select" data-vac="N1">
-				<option selected value="0">Changer</option>
-				<option value="1">-1</option>
-				<option value="2">-2</option>
-			</select>
-			</p>
-			<button id="ch">Changer</button>
-			</div>`;
+	const vacs = ["J1", "J3", "S2", "J2", "S1", "N", "N-1"];
+	
+	function add_stage_conge(vac, present) {
+		const cles = Object.keys(pc_vac[vac]["teamData"]);
+		for (const k of cles) {
+			for (const user in pc_vac[vac]["teamData"][k]) {
+					present.push([user, k]);
+			}
+		}
+	}
+
+	function add_pers(vac) {
+		let res = `<table><caption>${vac} : <span data-vac='${vac}'>${update[zone_str][day]['update_count'][vac]}</span></caption><thead><tr><th>Nom</th><th>Type</th></tr></thead><tbody>`;
+		const pres = [];
+		const present = [];
+		add_RO_det(vac, present);
+		add_stage_conge(vac, present);
+		present.forEach(elem => {
+			pres.push(elem[0]);
+		})
+		for (const user in pc_vac[vac]["userList"]) {
+			const name = pc_vac[vac]["userList"][user].screen_unique_name || pc_vac[vac]["userList"][user].nom;
+			if (pres.includes(name) === false) present.push([name, "OK"]);
+		}
+
+		for (p of present) {
+			let cl = `type${p[1]}`;
+			if (update[zone_str][day]['update_name'][vac].includes(p[0])) cl += ' barre';
+			res += `<tr><td>${p[0]}</td><td class='${cl}' data-vac='${vac}' data-nom='${p[0]}'>${p[1]}</td><tr>`;
+		}
+		res += `</tbody></table>`;
+		return res;
+	}
+	
+
+	td_pc.forEach(td_el => {
+		let vac = td_el.dataset.vac;
+		if (update[zone_str][day]['update_count'][vac] !== 0) $$(`td[data-vac=${vac}].pc`).classList.add('bg_red');	
+		td_el.addEventListener('click', function(event) {
+			$('popup-wrap').classList.add('popup-modif');
+			$$('.popup-box').classList.add('popup-modif');
+			for (const user in pc_vac[vac]["userList"]) {
+				let ih = `
+				<div id="modif_eq">
+				${add_pers("J1")}
+				${add_pers("J3")}
+				${add_pers("S2")}
+				${add_pers("J2")}
+				${add_pers("S1")}
+				${add_pers("N")}
+				${add_pers("N-1")}
+				<button id="ch">Changer</button>
+				</div>`;
 			show_popup("Modification", ih);
-			const sel = [$$('select[data-vac="J1"]'), $$('select[data-vac="J3"]'), $$('select[data-vac="S2"]'), $$('select[data-vac="J2"]'), $$('select[data-vac="S1"]'), $$('select[data-vac="N"]'), $$('select[data-vac="N1"]')];
-			sel.forEach(elem => {
-				const s = parseInt(update[elem.dataset.vac]);
-				elem.getElementsByTagName('option')[s].selected = 'selected'
+			}
+			const type = document.querySelectorAll('.typeOK');
+			type.forEach(type_el => {
+				type_el.addEventListener('click', function(event) {
+					const vac = type_el.dataset.vac;
+					if (type_el.classList.contains('barre')) { 
+						update[zone_str][day]['update_count'][vac]++;
+						const n = update[zone_str][day]['update_name'][vac].indexOf(type_el.dataset.nom);
+						update[zone_str][day]['update_name'][vac].splice(n,1);
+					} else {
+						update[zone_str][day]['update_count'][vac]--;
+						update[zone_str][day]['update_name'][vac].push(type_el.dataset.nom);
+					}
+					type_el.classList.toggle('barre');
+					$$(`span[data-vac='${vac}']`).innerHTML = update[zone_str][day]['update_count'][vac];
+				});
 			});
 			// click sur le bouton "Changer"
 			$('ch').addEventListener('click', function(event) {
-				// on reconstruit l'objet update { "vac": nb_pc en moins, etc... }
-				const val = {};
-				sel.forEach(elem => {
-					val[elem.dataset.vac] = parseInt(elem.value);
-					console.log(val[elem.dataset.vac]);
-				});
+				post_tds_json('export_update_to_json.php', update);
 				containerTour.innerHTML = '';
-				show_feuille_capa(containerIdTour, day, zone, val);
+				show_feuille_capa(containerIdTour, day, zone);
 			})
 		});
-	}
+	});
 }
 
 
