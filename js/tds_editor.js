@@ -68,9 +68,18 @@ async function edit_tds() {
     add_listener(tour_local, "ete", "ouest");
     add_listener_plage(tour_local, "ete", "ouest");
 
-    $('button_save').addEventListener('click', e => {
-        post_tds_json("export_to_json.php", tour_local);
-    })
+    $('button_save').addEventListener('click', (e) => {
+        var data = {
+            method: "post",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(tour_local)
+        };
+        show_popup("Patientez !", "Sauvegarde du TDS en cours...<br>Cela peut prendre 30s");
+        fetch("export_to_json.php", data)
+        .then(function(response) {
+            document.querySelector('.popup-close').click();
+        });
+    });
 }	
 
 /*  --------------------------------------------------------------------------------------------- 
@@ -104,7 +113,6 @@ function add_listener_plage(tour_local, saison, zone) {
             let col = parseInt(this.dataset.col);
             const dd = new Date();
             const d = reverse_date(td.innerHTML + '-' + dd.getUTCFullYear());
-            //console.log(d);
             let ih = `<div id="modif">
 			<p>
 	        <input type="date" id="ch_date" class="date" value="${d}" data-cl="${col}" data-lig="${lig}">

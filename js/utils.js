@@ -235,11 +235,22 @@ function post_tds_json(url, json) {
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(json)
 	};
+	show_popup("Patientez !", "Sauvegarde du TDS en cours...");
 	fetch( url, data)
 	.then(function(response) {
+		document.querySelector('.popup-close').click();
 		return response;
 	});
 }
+
+/*	---------------------------------------------------------
+		Sauve le fichier json des updates temps reel
+			@param {string} url
+			@param {object} json - json à sauvegarder
+	--------------------------------------------------------- */
+	function post_update_json(url, json) {
+		
+	}
 
 /*	---------------------------------------------------------
 		Affiche une Pop-up générique 

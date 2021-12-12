@@ -517,10 +517,19 @@ async function show_feuille_capa(containerIdTour, day, zone) {
 				});
 			});
 			// click sur le bouton "Changer"
-			$('ch').addEventListener('click', async function(event) {
-				await post_tds_json('export_update_to_json.php', update);
-				containerTour.innerHTML = '';
-				show_feuille_capa(containerIdTour, day, zone);
+			$('ch').addEventListener('click', function(event) {
+				var data = {
+					method: "post",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(update)
+				};
+				show_popup("Patientez !", "Sauvegarde des maj effectif en cours...");
+				fetch( 'export_update_to_json.php', data)
+				.then(function(response) {
+					document.querySelector('.popup-close').click();
+					containerTour.innerHTML = '';
+					show_feuille_capa(containerIdTour, day, zone);
+				});
 			})
 		});
 	});
