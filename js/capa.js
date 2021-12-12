@@ -264,10 +264,12 @@ function compact_ligne(pcs, ind) {
 	----------------------------------------------------------------------------------------- */
 	
 async function show_feuille_capa(containerIdTour, day, zone) {
+	show_popup("Patientez !", "Chargement en cours...");
 	const zone_str = zone === "AE" ? "est" : "ouest";
 	const update = await loadJson("../update.json");
 	if (typeof update[zone_str][day] === 'undefined') update[zone_str][day] = {"update_count": {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0}, "update_name": {"J1":[], "J3":[], "S2":[], "J2":[], "S1":[], "N":[], "N-1":[]}};
 	const pc = await get_nbpc_dispo(day, zone, update[zone_str][day]['update_count']);
+	document.querySelector('.popup-close').click();
 	const pc_15mn = pc["pc_total_dispo_15mn"];
 	const pc_instr_15mn = pc["pc_instr_15mn"];
 	const pc_vac = pc["pc_vac"];
@@ -462,13 +464,15 @@ async function show_feuille_capa(containerIdTour, day, zone) {
 		})
 		for (const user in pc_vac[vac]["userList"]) {
 			const name = pc_vac[vac]["userList"][user].screen_unique_name || pc_vac[vac]["userList"][user].nom;
-			if (pres.includes(name) === false) present.push([name, "OK"]);
+			const stagiaire = pc_vac[vac]["userList"][user].details;
+			if (pres.includes(name) === false && stagiaire != "Stagiaire") present.push([name, "PC"]);
+			if (pres.includes(name) === false && stagiaire === "Stagiaire") present.push([name, "Mod"]);
 		}
 
 		for (p of present) {
 			let cl = `type${p[1]}`;
 			if (update[zone_str][day]['update_name'][vac].includes(p[0])) cl += ' barre';
-			res += `<tr><td>${p[0]}</td><td class='${cl}' data-vac='${vac}' data-nom='${p[0]}'>${p[1]}</td><tr>`;
+			res += `<tr><td class='${cl}'>${p[0]}</td><td class='${cl}' data-vac='${vac}' data-nom='${p[0]}'>${p[1]}</td><tr>`;
 		}
 		res += `</tbody></table>`;
 		return res;
@@ -495,7 +499,7 @@ async function show_feuille_capa(containerIdTour, day, zone) {
 				</div>`;
 			show_popup("Modification", ih);
 			}
-			const type = document.querySelectorAll('.typeOK');
+			const type = document.querySelectorAll('.typePC,.typedetache');
 			type.forEach(type_el => {
 				type_el.addEventListener('click', function(event) {
 					const vac = type_el.dataset.vac;
@@ -508,6 +512,7 @@ async function show_feuille_capa(containerIdTour, day, zone) {
 						update[zone_str][day]['update_name'][vac].push(type_el.dataset.nom);
 					}
 					type_el.classList.toggle('barre');
+					type_el.parentNode.classList.toggle('barre');
 					$$(`span[data-vac='${vac}']`).innerHTML = update[zone_str][day]['update_count'][vac];
 				});
 			});

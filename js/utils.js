@@ -248,22 +248,6 @@ function show_popup(text1, text2) {
 	
 }
 
-/*	---------------------------------------------------------
-		Affiche une Pop-up générique 
-			@param {string} text1 - Titre
-			@param {string} text2 - Contenu HTML
-	--------------------------------------------------------- */
-	function show_popup_modif(text1, text2) {
-	
-		document.getElementById('popup-modif').classList.remove('off');
-		document.querySelector('.popup-box h2').innerHTML = text1;
-		document.querySelector('.popup-box h3').innerHTML = text2;
-		
-		document.querySelector('.popup-box').classList.remove('transform-out');
-		document.querySelector('.popup-box').classList.add('transform-in');
-		
-	}
-
 /*  ------------------------------------------------------------
 	  récupère la date contenue dans le nom du fichier courage 
 	  utils ouverture et upload

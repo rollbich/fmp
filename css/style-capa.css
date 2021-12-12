@@ -300,14 +300,15 @@ td.pc:hover {
 	cursor: pointer;
 }
 
-td.typeOK:hover, td.typedetache:hover {
+td.typePC:hover, td.typedetache:hover {
 	background-color: var(--table-titre-color);
 	cursor: pointer;
 }
 
 .barre {
-	text-decoration: red double line-through;
+	text-decoration: red line-through;
 	color: red;
+	background-color: aquamarine;
 }
 
 .max {
