@@ -77,6 +77,11 @@ Date.prototype.addDays= function(nb_day) {
 	return this;
 }
 
+// ajoute x jours à un string yyyy-mm-dd
+const addDays_toString = (day, nb_day) => {
+	return new Date(day).addDays(nb_day).toISOString().split('T')[0];
+}
+
 const jplus1 = day => {
 	return new Date(day).addDays(1).toISOString().split('T')[0];
 }
@@ -213,7 +218,7 @@ function export_json_to_xls(url, json) {
 /*	---------------------------------------------------------
 		Sauve le fichier json du tds 
 			@param {string} url
-			@param {object} json - son à sauvegarder
+			@param {object} json - json à sauvegarder
 	--------------------------------------------------------- */
 function post_tds_json(url, json) {
 	var data = {

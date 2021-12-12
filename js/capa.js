@@ -172,21 +172,19 @@ async function get_nbpc_dispo(day, zone, update = {"J1":0, "J3":0, "S2":0, "J2":
 	let nb_pc = 0;
 	let pcs = [];
 	const in15mn = []; // nbre de pc instruction par 15 mn
+	const vacs = ["J1", "J3", "S2", "J2", "S1"];
 	const cds = 1;
 	for(var i=0;i<96;i++) {
-		if (tour_utc["J1"][i][2] === 1) nb_pc += Math.min(Math.floor(pc["J1"]["nbpc"]/2), Math.floor((pc["J1"]["BV"]-cds)/2));
-		if (tour_utc["J1"][i][3] === 1) nb_pc += Math.min(Math.floor(pc["J1"]["nbpc"]/2)+(pc["J1"]["nbpc"])%2, Math.floor((pc["J1"]["BV"]-cds)/2)+(pc["J1"]["BV"]-cds)%2);
-		if (tour_utc["J3"][i][2] === 1) nb_pc += Math.min(Math.floor(pc["J3"]["nbpc"]/2), Math.floor((pc["J3"]["BV"]-cds)/2));
-		if (tour_utc["J3"][i][3] === 1) nb_pc += Math.min(Math.floor(pc["J3"]["nbpc"]/2)+(pc["J3"]["nbpc"])%2, Math.floor((pc["J3"]["BV"]-cds)/2)+(pc["J3"]["BV"]-cds)%2);
-		if (tour_utc["S2"][i][1] === 1) nb_pc += 1; // cds de S2 qui bosse sur secteur
-		if (tour_utc["S2"][i][2] === 1) nb_pc += Math.min(Math.floor(pc["S2"]["nbpc"]/2), Math.floor((pc["S2"]["BV"]-cds)/2));
-		if (tour_utc["S2"][i][3] === 1) nb_pc += Math.min(Math.floor(pc["S2"]["nbpc"]/2)+(pc["S2"]["nbpc"])%2, Math.floor((pc["S2"]["BV"]-cds)/2)+(pc["S2"]["BV"]-cds)%2);
-		if (tour_utc["J2"][i][2] === 1) nb_pc += Math.min(Math.floor(pc["J2"]["nbpc"]/2), Math.floor((pc["J2"]["BV"])/2));
-		if (tour_utc["J2"][i][3] === 1) nb_pc += Math.min(Math.floor(pc["J2"]["nbpc"]/2)+(pc["J2"]["nbpc"])%2, Math.floor((pc["J2"]["BV"])/2)+(pc["J2"]["BV"])%2);
-		if (tour_utc["S1"][i][2] === 1) nb_pc += Math.min(Math.floor(pc["S1"]["nbpc"]/2), Math.floor((pc["S1"]["BV"])/2));
-		if (tour_utc["S1"][i][3] === 1) nb_pc += Math.min(Math.floor(pc["S1"]["nbpc"]/2)+(pc["S1"]["nbpc"])%2, Math.floor((pc["S1"]["BV"])/2)+(pc["S1"]["BV"])%2);
+		vacs.forEach(vacation => {
+			const cds = (vacation == "J2" || vacation == "S1") ? 0 : 1;
+			if (tour_utc[vacation][i][1] === 1) nb_pc += cds; // cds qui bosse sur secteur
+			if (tour_utc[vacation][i][2] === 1) nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2), Math.floor((pc[vacation]["BV"]-cds)/2));
+			if (tour_utc[vacation][i][3] === 1) nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2, Math.floor((pc[vacation]["BV"]-cds)/2)+(pc[vacation]["BV"]-cds)%2);
+		})
+		if (tour_utc["N"][i][1] === 1 && i>48) nb_pc += cds; // cds qui bosse sur secteur
 		if (tour_utc["N"][i][2] === 1 && i>48) nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2), Math.floor((pc["N"]["BV"]-cds)/2));
 		if (tour_utc["N"][i][3] === 1 && i>48) nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2, Math.floor((pc["N"]["BV"]-cds)/2)+(pc["N"]["BV"]-cds)%2);
+		if (tour_utc["N"][i][1] === 1 && i<48) nb_pc += cds; // cds qui bosse sur secteur
 		if (tour_utc["N"][i][2] === 1 && i<48) nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2), Math.floor((pc["N-1"]["BV"]-cds)/2));
 		if (tour_utc["N"][i][3] === 1 && i<48) nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2, Math.floor((pc["N-1"]["BV"]-cds)/2)+(pc["N-1"]["BV"]-cds)%2);
 		pcs.push([tour_utc["J1"][i][0], nb_pc]);
@@ -201,7 +199,6 @@ async function get_nbpc_dispo(day, zone, update = {"J1":0, "J3":0, "S2":0, "J2":
 			const type = elem["type"];
 			let t = get_time(i);
 			if (d === day && zone.toLowerCase() === zone_str) {
-				//console.log(debut+" "+fin+" "+d+" t: "+t+"  day: "+day+"  type: "+type);
 				if (t >= debut && t< fin) {
 					if (type === "Inst") { in15mn[i][0] += 2; in15mn[i][1] = "Inst"; }
 					if (type === "Eleve") { in15mn[i][1] = "Eleve"; }
@@ -444,7 +441,6 @@ async function show_feuille_capa(containerIdTour, day, zone) {
 	
 	// ajoute les clicks sur la case du nbre de pc de la vac
 	const td_pc = document.querySelectorAll('.pc');
-	const vacs = ["J1", "J3", "S2", "J2", "S1", "N", "N-1"];
 	
 	function add_stage_conge(vac, present) {
 		const cles = Object.keys(pc_vac[vac]["teamData"]);

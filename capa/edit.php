@@ -11,7 +11,7 @@
     <link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
     <script>
 		document.addEventListener('DOMContentLoaded', (event) => { 	
-      affiche_tds();
+      edit_tds();
       $('button_validate').addEventListener('click', e => {
         const zone = $('zone').value;
         if (zone === "est") {

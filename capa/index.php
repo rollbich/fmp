@@ -8,8 +8,6 @@
 		<script type="text/javascript" src="../js/base.js"></script>
 		<script type="text/javascript" src="../js/tds-name.js"></script>
 		<script type="text/javascript" src="../js/utils.js"></script>
-		<script type="text/javascript" src="../js/ouverture.js"></script>
-		<script type="text/javascript" src="../js/upload.js"></script>
 		<script type="text/javascript" src="../js/olaf.js"></script>
 		<script type="text/javascript" src="../js/capa.js"></script>
 		<link rel="stylesheet" type="text/css" href="../css/font.css" />
@@ -46,7 +44,7 @@
 
 <header>
 
-<h1>FEUILLE CAPA V1.0</h1>
+<h1>FEUILLE CAPA v1.1</h1>
 <div id="help_frame" class="off">
 	<h2>Help</h2>
 	<p><span>Feuille</span> :<br>Cliquez sur ce bouton pour afficher la feuille de capa correspondante à la date et la zone choisie</p>

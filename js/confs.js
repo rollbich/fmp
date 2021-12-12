@@ -1,7 +1,6 @@
 /*  ---------------------------------------------
 		Lit le fichier json de conf
 			@param {string} day - "yyyy-mm-dd"
-			@param {string} zone - "AE" ou "AW"
 	--------------------------------------------- */
 async function get_conf(day) {
 	const date = day.replace(/-/g, ''); // yyyymmdd

@@ -6,10 +6,29 @@
 		@param {string} saison      - "hiver" ou "mi-saison-basse" ou "mi-saison-haute" ou "ete"
 	--------------------------------------------------------------------------------------------- */
 
-async function affiche_tds() {
+async function edit_tds() {
     const tour_local = await loadJson(tour_json);
-    
-    function aff(containerId, zone, saison) {
+
+    const saisons = ["hiver", "mi-saison-basse", "mi-saison-haute", "ete"];
+    for (s of saisons) {
+        affiche_plages("plage_est", "est", s);
+        affiche_plages("plage_ouest", "ouest", s);
+        affiche_tds("result_"+s+"_est", "est", s);
+        affiche_tds("result_"+s+"_ouest", "ouest", s);
+    }
+
+    function affiche_plages(containerId, zone, saison) {
+        let res = $(containerId).innerHTML;
+        res += '<table class="plage">';
+        res += `<caption>Plage Horaire ${saison} - ${capitalizeFirstLetter(zone)}</caption>`;
+        res += '<thead><tr><th>Début</th><th>Fin</th></tr></thead>';
+        res += '<tbody>';
+        res += `${affiche_lignes_plage(tour_local, zone, saison)}`;
+        res += '</tbody></table>';
+        $(containerId).innerHTML = res;
+    }
+
+    function affiche_tds(containerId, zone, saison) {
         let res = `<table class="ouverture">
         <caption>TDS ${saison} - ${capitalizeFirstLetter(zone)}</caption>
         <thead>
@@ -26,28 +45,9 @@ async function affiche_tds() {
         res += `${affiche_vac("J2", saison, tour_local, zone)}`;
         res += `${affiche_vac("S1", saison, tour_local, zone)}`;
         res += `${affiche_vac("N", saison, tour_local, zone)}`;
-        res += `<tr class="titre"><th class='bottom_2px left_2px right_1px' colspan="2">Heures UTC</th>${heure()}`;
+        res += `<tr class="titre"><th class='bottom_2px left_2px right_1px' colspan="2">Heures loc</th>${heure()}`;
         res += '</tbody></table>';
         $(containerId).innerHTML = res;
-    }
-    
-    function aff_plage(containerId, zone, saison) {
-        let res = $(containerId).innerHTML;
-        res += '<table class="plage">';
-        res += `<caption>Plage Horaire ${saison} - ${capitalizeFirstLetter(zone)}</caption>`;
-        res += '<thead><tr><th>Début</th><th>Fin</th></tr></thead>';
-        res += '<tbody>';
-        res += `${affiche_plage(tour_local, zone, saison)}`;
-        res += '</tbody></table>';
-        $(containerId).innerHTML = res;
-    }
-
-    const saisons = ["hiver", "mi-saison-basse", "mi-saison-haute", "ete"];
-    for (s of saisons) {
-        aff_plage("plage_est", "est", s);
-        aff_plage("plage_ouest", "ouest", s);
-        aff("result_"+s+"_est", "est", s);
-        aff("result_"+s+"_ouest", "ouest", s);
     }
 
     add_listener(tour_local, "hiver", "est");
@@ -80,13 +80,13 @@ async function affiche_tds() {
 		@param {string} saison      - "hiver" ou "mi-saison-basse" ou "mi-saison-haute" ou "ete"
 	--------------------------------------------------------------------------------------------- */
 
-function affiche_plage(tour_local, zone, saison) {
+function affiche_lignes_plage(tour_local, zone, saison) {
     const plage = tour_local[zone][saison]["plage"];
-    let res = "";
+    let lignes = "";
     plage.forEach((elem, index) => {
-        res += `<tr><td class="pl" data-col="0" data-ligne=${index} data-saison='${saison+"-"+zone}'>${elem[0]}</td><td class="pl" data-col="1" data-ligne=${index} data-saison='${saison+"-"+zone}'>${elem[1]}</td></tr>`;
+        lignes += `<tr><td class="pl" data-col="0" data-ligne=${index} data-saison='${saison+"-"+zone}'>${elem[0]}</td><td class="pl" data-col="1" data-ligne=${index} data-saison='${saison+"-"+zone}'>${elem[1]}</td></tr>`;
     });
-    return res;
+    return lignes;
 }
 
 /*  --------------------------------------------------------------------------------------------- 
@@ -166,7 +166,7 @@ function add_listener(tour_local, saison, zone) {
 }
     
 /*  ------------------------------------------------------------------------------------------
-      Fabrique la ligne du tour de service avec les entêtes (partie gauche)
+      Fabrique la ligne du tour de service avec les entêtes 
 	    @param {string} vac         - "J1" "J3" "N" (nuit soirée) "N1" (nuit du matin) etc...
 	    @param {string} saison      - "hiver" "ete" "mi-saison-basse" "mi-saison-haute"
         @param {object} tour_local  - objet json du tour local
