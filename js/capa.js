@@ -470,9 +470,9 @@ async function show_feuille_capa(containerIdTour, day, zone) {
 		}
 
 		for (p of present) {
-			let cl = `type${p[1]}`;
-			if (update[zone_str][day]['update_name'][vac].includes(p[0])) cl += ' barre';
-			res += `<tr><td class='${cl}'>${p[0]}</td><td class='${cl}' data-vac='${vac}' data-nom='${p[0]}'>${p[1]}</td><tr>`;
+			let cl = `type${p[1]}`, cl_previous;
+			if (update[zone_str][day]['update_name'][vac].includes(p[0])) { cl += ' barre'; cl_previous = 'surligne'; }
+			res += `<tr><td class='${cl_previous}'>${p[0]}</td><td class='${cl}' data-vac='${vac}' data-nom='${p[0]}'>${p[1]}</td><tr>`;
 		}
 		res += `</tbody></table>`;
 		return res;
@@ -512,13 +512,13 @@ async function show_feuille_capa(containerIdTour, day, zone) {
 						update[zone_str][day]['update_name'][vac].push(type_el.dataset.nom);
 					}
 					type_el.classList.toggle('barre');
-					type_el.parentNode.classList.toggle('barre');
+					type_el.parentNode.firstChild.classList.toggle('surligne');
 					$$(`span[data-vac='${vac}']`).innerHTML = update[zone_str][day]['update_count'][vac];
 				});
 			});
 			// click sur le bouton "Changer"
-			$('ch').addEventListener('click', function(event) {
-				post_tds_json('export_update_to_json.php', update);
+			$('ch').addEventListener('click', async function(event) {
+				await post_tds_json('export_update_to_json.php', update);
 				containerTour.innerHTML = '';
 				show_feuille_capa(containerIdTour, day, zone);
 			})

@@ -168,8 +168,17 @@ const hyphen_date = day => {
 			@param {string} url
 	--------------------------------------------------------- */
 async function loadJson(url) { 
+  
+  var myHeaders = new Headers();
+  myHeaders.append('pragma', 'no-cache');
+  myHeaders.append('cache-control', 'no-cache');
+
+  var myInit = {
+    method: 'GET',
+    headers: myHeaders,
+  };
   try {
-	let response = await fetch(url).then(rep_status); 
+	let response = await fetch(url, myInit).then(rep_status); 
     let json = await response.json(); 
     return json;
   }

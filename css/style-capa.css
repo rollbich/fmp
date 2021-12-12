@@ -308,6 +308,9 @@ td.typePC:hover, td.typedetache:hover {
 .barre {
 	text-decoration: red line-through;
 	color: red;
+}
+
+.surligne {
 	background-color: aquamarine;
 }
 
