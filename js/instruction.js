@@ -56,7 +56,7 @@ function affiche(containerId, instr) {
 } 
 
 async function ajoute(containerId, ajout) {
-    let instr = await loadJson("instruction.json");
+    let instr = await loadJson("../instruction.json");
     let id;
     for(let i=1;i<100;i++) {
         const k = instr.every( elem => elem["id"] != i );
@@ -64,12 +64,14 @@ async function ajoute(containerId, ajout) {
     }
     ajout["id"] = id;
     instr.push(ajout);
-    console.log(instr);
+    //affiche(containerId, instr);
     const data = {
         method: "post",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(instr)
     };
-    fetch("export_inst_to_json.php", data);
-    affiche(containerId, instr);
+    fetch("export_inst_to_json.php", data).then(function(response) {
+        inst(containerId);
+    })
+    
 }

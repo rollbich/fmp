@@ -14,7 +14,7 @@ if ($contentType === "application/json") {
 } else { echo "Erreur : données non json<br/>"; }
 
 function write_json($json) {
-	$fp = fopen("instruction.json", 'w');
+	$fp = fopen("../instruction.json", 'w');
 	fwrite($fp, $json);
 	fclose($fp);
 }
