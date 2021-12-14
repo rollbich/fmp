@@ -202,6 +202,7 @@ async function get_nbpc_dispo(day, zone, update = {"J1":0, "J3":0, "S2":0, "J2":
 				if (t >= debut && t< fin) {
 					if (type === "Inst") { in15mn[i][0] += 2; in15mn[i][1] = "Inst"; }
 					if (type === "Eleve") { in15mn[i][1] = "Eleve"; }
+					if (type === "Asa") { in15mn[i][0] -= 1; in15mn[i][1] = "Asa"; }
 				} 
 			}
 		});
@@ -351,7 +352,7 @@ async function show_feuille_capa(containerIdTour, day, zone) {
 			else res2 += `<td class='bottom_2px'></td>`;
 		} 
 		res2 += `<td class='bottom_2px right_2px'></td>`;
-		let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="6">Instruction</td>${res2}</tr>`;
+		let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="6">Instru/Asa</td>${res2}</tr>`;
 		return res;
 	}
 

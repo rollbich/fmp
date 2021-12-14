@@ -27,7 +27,7 @@
 </head>
 <body>
 
-<header><h1>Créneaux Instruction</h1></header>
+<header><h1>Créneaux/Absences Supplémentaires</h1></header>
 <div class="glob">
     <div id="result"></div>
     <div class="formu">     
@@ -56,6 +56,7 @@
             <select id="type_in" class="form-control">
                 <option selected value="Eleve">Eleves</option>
                 <option value="Inst">Instrus</option>
+                <option value="Asa">Asa</option>
             </select>
         </div>
         <button id='button_ajout' type='button' class="btn">Ajouter</button>
