@@ -9,7 +9,7 @@
 		<script type="text/javascript" src="../js/tds-name.js"></script>
 		<script type="text/javascript" src="../js/utils.js"></script>
 		<script type="text/javascript" src="../js/olaf.js"></script>
-		<script type="text/javascript" src="../js/capa.js"></script>
+		<script type="text/javascript" src="../js/capa_class.js"></script>
 		<link rel="stylesheet" type="text/css" href="../css/font.css" />
 		<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
 		<link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
@@ -28,7 +28,8 @@
 				$('bouton_feuille').addEventListener('click', async e => {
 					let zone = $('zone').value;
 					let day = $('start').value;
-					show_feuille_capa("feuille_capa_tour", day, zone);
+                    const capa = new feuille_capa("feuille_capa_tour", day, zone);
+					capa.show_feuille_capa();
 				});
 				
 				document.querySelector('.popup-close').addEventListener('click', e => {

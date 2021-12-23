@@ -12,9 +12,10 @@
 		<script type="text/javascript" src="../js/base.js"></script>
 		<script type="text/javascript" src="../js/utils.js"></script>
 		<script type="text/javascript" src="../js/list-component.js"></script>
+		<script type="text/javascript" src="../js/mixin.js"></script>
+		<script type="text/javascript" src="../js/schema.js"></script>
 		<script type="text/javascript" src="../js/graph.js"></script>
-		<script type="text/javascript" src="../js/ouverture.js"></script>
-        <script type="text/javascript" src="../js/overload.js"></script>
+        <script type="text/javascript" src="../js/overload_class.js"></script>
 		<script type="text/javascript" src="../js/upload.js"></script>
 		<script src="../js/dragger.js"></script>
 		<script src="../js/echarts.min.js"></script>
@@ -25,6 +26,8 @@
 		<link rel="stylesheet" type="text/css" href="../css/upload.css" />
 		<script>
 			document.addEventListener('DOMContentLoaded', (event) => {
+				let depassement = undefined;
+
 				new dragger('graph-container-h20', 'drag-container');
 				new dragger('graph-container-occ', 'drag-container');
 
@@ -54,17 +57,18 @@
 				$('bouton_capa').addEventListener('click', e => {
 					$('graph-container-h20').classList.add('off');
 					$('graph-container-occ').classList.add('off');
-					result_h20 = {};
+					//result_h20 = {};
 					let zone = $('zone').value;
 					let start_day = $('start').value; // yyyy-mm-dd
 					let end_day = $('end').value; // yyyy-mm-dd
 					let sel_percent = parseInt($('selection').value);
-					show_result_capa('result', "H20", start_day, end_day, zone, sel_percent);
+					depassement = new overload('result', "H20", start_day, end_day, zone, sel_percent);
+					//show_result_capa('result', "H20", start_day, end_day, zone, sel_percent);
 				});
 				
 				$('bouton_export').addEventListener('click', e => {
-					if (isObjEmpty(result_capa) === false) {
-						export_json_to_xls('php/export_to_excel.php', result_capa);
+					if (isObjEmpty(depassement.result_capa) === false) {
+						export_json_to_xls('php/export_to_excel.php', depassement.result_capa);
 					} else {
 						show_popup("Il n'y a rien à exporter", "Il faut cliquer sur le bouton CAPA avant");
 					}

@@ -7,36 +7,36 @@
     <title>Editor</title>
     <script type="text/javascript" src="../js/tds-name.js"></script>
     <script type="text/javascript" src="../js/utils.js"></script>
-    <script type="text/javascript" src="../js/tds_editor.js"></script>
+    <script type="text/javascript" src="../js/tds_editor_class.js"></script>
     <link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
     <script>
-		document.addEventListener('DOMContentLoaded', (event) => { 	
-      edit_tds();
+	document.addEventListener('DOMContentLoaded', async (event) => { 	
+      new tds_editor();
       $('button_validate').addEventListener('click', e => {
-        const zone = $('zone').value;
-        if (zone === "est") {
-          for (z of document.querySelectorAll('.est')) {
-            z.classList.remove('off');
-          }
-          for (z of document.querySelectorAll('.ouest')) {
-            z.classList.add('off');
-          }
-        }
-        if (zone === "ouest") {
-          for (z of document.querySelectorAll('.ouest')) {
-            z.classList.remove('off');
-          }
-          for (z of document.querySelectorAll('.est')) {
-            z.classList.add('off');
-          }
-        }
-			});
-      document.querySelector('.popup-close').addEventListener('click', e => {
-					e.preventDefault();
-					document.querySelector('.popup-box').classList.remove('transform-in');
-					document.querySelector('.popup-box').classList.add('transform-out');
-				});
+            const zone = $('zone').value;
+            if (zone === "est") {
+            for (const z of document.querySelectorAll('.est')) {
+                z.classList.remove('off');
+            }
+            for (const z of document.querySelectorAll('.ouest')) {
+                z.classList.add('off');
+            }
+            }
+            if (zone === "ouest") {
+            for (const z of document.querySelectorAll('.ouest')) {
+                z.classList.remove('off');
+            }
+            for (const z of document.querySelectorAll('.est')) {
+                z.classList.add('off');
+            }
+            }
 		});
+      document.querySelector('.popup-close').addEventListener('click', e => {
+			e.preventDefault();
+			document.querySelector('.popup-box').classList.remove('transform-in');
+			document.querySelector('.popup-box').classList.add('transform-out');
+	  });
+	});
 	</script>
 </head>
 <body class="editor">

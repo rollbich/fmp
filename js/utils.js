@@ -225,34 +225,6 @@ function export_json_to_xls(url, json) {
 }
 
 /*	---------------------------------------------------------
-		Sauve le fichier json du tds 
-			@param {string} url
-			@param {object} json - json à sauvegarder
-	--------------------------------------------------------- */
-function post_tds_json(url, json) {
-	var data = {
-		method: "post",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(json)
-	};
-	show_popup("Patientez !", "Sauvegarde du TDS en cours...");
-	fetch( url, data)
-	.then(function(response) {
-		document.querySelector('.popup-close').click();
-		return response;
-	});
-}
-
-/*	---------------------------------------------------------
-		Sauve le fichier json des updates temps reel
-			@param {string} url
-			@param {object} json - json à sauvegarder
-	--------------------------------------------------------- */
-	function post_update_json(url, json) {
-		
-	}
-
-/*	---------------------------------------------------------
 		Affiche une Pop-up générique 
 			@param {string} text1 - Titre
 			@param {string} text2 - Contenu HTML
@@ -329,3 +301,21 @@ const cookieExists = (name) => {
 const deleteCookie = (name) => {
   setCookie({ name: name, value: undefined, duration: -1});
 }
+
+/* ----------------------------------------
+		tester existence url 
+   ---------------------------------------- */
+async function isUrlFound(url) {
+	try {
+	  const response = await fetch(url, {
+		method: 'HEAD',
+		cache: 'no-cache'
+	  });
+  
+	  return response.status === 200;
+  
+	} catch(error) {
+	  // console.log(error);
+	  return false;
+	}
+  }

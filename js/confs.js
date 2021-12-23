@@ -15,37 +15,42 @@ async function get_conf(day) {
 		@param {string} day - "yyyy-mm-dd"
 	------------------------------------------------------------------ */
 async function show_result_confs(containerId, day) {
-	const confs = await get_conf(day, zone);
-	let res = "<div class='conf'>";
-	res += `
-	<table class="regulation sortable">
-		<caption>LFMM-EST : ${reverse_date(day)}</caption>
-		<thead><tr class="titre"><th>Début</th><th>Fin</th><th>Conf</th></tr></thead>
-		<tbody>`;
-	confs["est"].forEach( value => {
-		let deb = extract_time(value.applicabilityPeriod.wef);
-		let fin = extract_time(value.applicabilityPeriod.unt);
-		res += '<tr>'; 
-		res +=`<td>${deb} TU</td><td>${fin} TU</td><td>${value.sectorConfigurationId}</td>`;
-		res += '</tr>';	
-	});
-	res += '</tbody></table>';
-	res += `
-	<table class="regulation sortable">
-		<caption>LFMM-OUEST : ${reverse_date(day)}</caption>
-		<thead><tr class="titre"><th>Début</th><th>Fin</th><th>Conf</th></tr></thead>
-		<tbody>`;
-	confs["ouest"].forEach( value => {
-		let deb = extract_time(value.applicabilityPeriod.wef);
-		let fin = extract_time(value.applicabilityPeriod.unt);
-		res += '<tr>'; 
-		res +=`<td>${deb} TU</td><td>${fin} TU</td><td>${value.sectorConfigurationId}</td>`;
-		res += '</tr>';	
-	});
-	res += '</tbody></table>';
-    res += '</div>';
-	
-	$(containerId).innerHTML = res;
+	try {
+		const confs = await get_conf(day, zone);
+		let res = "<div class='conf'>";
+		res += `
+		<table class="regulation sortable">
+			<caption>LFMM-EST : ${reverse_date(day)}</caption>
+			<thead><tr class="titre"><th>Début</th><th>Fin</th><th>Conf</th></tr></thead>
+			<tbody>`;
+		confs["est"].forEach( value => {
+			let deb = extract_time(value.applicabilityPeriod.wef);
+			let fin = extract_time(value.applicabilityPeriod.unt);
+			res += '<tr>'; 
+			res +=`<td>${deb} TU</td><td>${fin} TU</td><td>${value.sectorConfigurationId}</td>`;
+			res += '</tr>';	
+		});
+		res += '</tbody></table>';
+		res += `
+		<table class="regulation sortable">
+			<caption>LFMM-OUEST : ${reverse_date(day)}</caption>
+			<thead><tr class="titre"><th>Début</th><th>Fin</th><th>Conf</th></tr></thead>
+			<tbody>`;
+		confs["ouest"].forEach( value => {
+			let deb = extract_time(value.applicabilityPeriod.wef);
+			let fin = extract_time(value.applicabilityPeriod.unt);
+			res += '<tr>'; 
+			res +=`<td>${deb} TU</td><td>${fin} TU</td><td>${value.sectorConfigurationId}</td>`;
+			res += '</tr>';	
+		});
+		res += '</tbody></table>';
+		res += '</div>';
+		
+		$(containerId).innerHTML = res;
+	}
+	catch(err) {
+		alert(`Erreur : ${err.message}`);
+	}
 	
 }
 

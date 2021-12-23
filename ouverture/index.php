@@ -14,10 +14,11 @@
 		<script type="text/javascript" src="../js/utils.js"></script>
 		<script type="text/javascript" src="../js/list-component.js"></script>
 		<script type="text/javascript" src="../js/graph.js"></script>
-		<script type="text/javascript" src="../js/ouverture.js"></script>
+		<script type="text/javascript" src="../js/schema.js"></script>
+		<script type="text/javascript" src="../js/ouverture_class.js"></script>
 		<script type="text/javascript" src="../js/upload.js"></script>
 		<script type="text/javascript" src="../js/olaf.js"></script>
-		<script type="text/javascript" src="../js/capa.js"></script>
+		<script type="text/javascript" src="../js/capa_class.js"></script>
 		<script type="text/javascript" src="../js/confs.js"></script>
 		<script src="../js/dragger.js"></script>
 		<script src="../js/echarts.min.js"></script>
@@ -28,6 +29,7 @@
 		<link rel="stylesheet" type="text/css" href="../css/upload.css" />
 		<script>
 			document.addEventListener('DOMContentLoaded', (event) => {
+
 				new dragger('graph-container-h20', 'drag-container');
 				new dragger('graph-container-occ', 'drag-container');
 
@@ -53,7 +55,7 @@
 					$('graph-container-occ').classList.add('off');
 					let zone = $('zone').value;
 					let start_day = $('start').value;
-					show_ouverture('result', start_day, zone);	
+					new ouverture('result', start_day, zone);	
 				});
 				
 				$('bouton_h20occ').addEventListener('click', e => {
@@ -68,7 +70,8 @@
 				$('bouton_uceso').addEventListener('click', async e => {
 					let zone = $('zone').value;
 					let day = $('start').value;
-					const pc = await get_nbpc_dispo(day, zone);
+					const cap = new capa(day, zone);
+					const pc = await cap.get_nbpc_dispo();
 					show_courage_graph("courage_container", day, zone, pc);
 				});
 				

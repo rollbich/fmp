@@ -235,12 +235,12 @@ function compact(pcs) {
 
 /* --------------------------------------------------------------------------------------------------
  	Combiner les cases pour un affichage plus lisible
-	Calcul des nombres d'ucesos identiques qui se suivent
+	Calcul des nombres de pc identiques qui se suivent
 	but : 3 3 3 3 => 1 grande case affichant 3
 		@param {array}	 - nbpc_dispo : [ ["hh:mm", cds, A, B], [...], ... ], index (1=cds, 2=A, 3=B)
 		@returns {array} - [ [index_debut, index_fin, nb_pc_dispo], ... ]
    -------------------------------------------------------------------------------------------------- */
-function compact_ligne(pcs, ind) {
+function compact_ligne(pcs, ind) { // non utilisé
 	const counts = [];
 	let index_ini = 0;
 	for(var j=0;j<95;j++) {
@@ -277,7 +277,88 @@ async function show_feuille_capa(containerIdTour, day, zone) {
 	const tab_vac_eq = get_vac_eq(day);
 	const tour_local = await loadJson(tour_json);
 	const tour_utc = await get_tour_utc(tour_local, day, zone_str);
+
+	// Construit le tableau
+	let res = `<table class="ouverture">
+				 <caption>Journée du ${day} - Zone ${zone_str}</caption>
+				 <thead>
+					<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px right_1px">PC</th><th class="top_2px bottom_2px right_2px">BV</th><th class="top_2px bottom_2px right_2px" colspan="96">...</th></tr>
+				</thead>
+				<tbody>`;
+	res += `${affiche_vac("J1")}`;
+	res += `${affiche_vac("J3")}`;
+	res += `${affiche_vac("S2")}`;
+	res += `${affiche_vac("J2")}`;
+	res += `${affiche_vac("S1")}`;
+	res += `${affiche_vac("N")}`;
+	res += `${affiche_vac("N-1")}`;
+	res += `${affiche_inst()}`;
+	res += `<tr class="titre"><th class='bottom_2px left_2px right_2px' colspan="6">Heures UTC</th>${heure()}`;
+	res += `${affiche_nbpc()}`;
+	res += `${affiche_demi_uc()}`;
+	res += `${affiche_uceso()}`;
+	res += '</tbody></table>';
+	const containerTour = $(containerIdTour);
+	containerTour.innerHTML = res;
 	
+	// ajoute les clicks sur la case du nbre de pc de la vac
+	const td_pc = document.querySelectorAll('.pc');
+
+	td_pc.forEach(td_el => {
+		let vac = td_el.dataset.vac;
+		if (update[zone_str][day]['update_count'][vac] !== 0) $$(`td[data-vac=${vac}].pc`).classList.add('bg_red');	
+		td_el.addEventListener('click', function(event) {
+			$('popup-wrap').classList.add('popup-modif');
+			$$('.popup-box').classList.add('popup-modif');
+			for (const user in pc_vac[vac]["userList"]) {
+				let ih = `
+				<div id="modif_eq">
+				${add_pers("J1")}
+				${add_pers("J3")}
+				${add_pers("S2")}
+				${add_pers("J2")}
+				${add_pers("S1")}
+				${add_pers("N")}
+				${add_pers("N-1")}
+				<button id="ch">Changer</button>
+				</div>`;
+			show_popup("Modification", ih);
+			}
+			const type = document.querySelectorAll('.typePC,.typedetache');
+			type.forEach(type_el => {
+				type_el.addEventListener('click', function(event) {
+					const vac = type_el.dataset.vac;
+					if (type_el.classList.contains('barre')) { 
+						update[zone_str][day]['update_count'][vac]++;
+						const n = update[zone_str][day]['update_name'][vac].indexOf(type_el.dataset.nom);
+						update[zone_str][day]['update_name'][vac].splice(n,1);
+					} else {
+						update[zone_str][day]['update_count'][vac]--;
+						update[zone_str][day]['update_name'][vac].push(type_el.dataset.nom);
+					}
+					type_el.classList.toggle('barre');
+					type_el.parentNode.firstChild.classList.toggle('surligne');
+					$$(`span[data-vac='${vac}']`).innerHTML = update[zone_str][day]['update_count'][vac];
+				});
+			});
+			// click sur le bouton "Changer"
+			$('ch').addEventListener('click', function(event) {
+				var data = {
+					method: "post",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(update)
+				};
+				show_popup("Patientez !", "Sauvegarde des maj effectif en cours...");
+				fetch( 'export_update_to_json.php', data)
+				.then(function(response) {
+					document.querySelector('.popup-close').click();
+					containerTour.innerHTML = '';
+					show_feuille_capa(containerIdTour, day, zone);
+				});
+			})
+		});
+	});
+
 	// Fabrique la ligne du tour de service
 	function affiche_vac(vac) {
 		let res1 = "", res2 = "", res3 = "";
@@ -300,7 +381,7 @@ async function show_feuille_capa(containerIdTour, day, zone) {
 				if (nb_A != 0) cl2 = "bg"; 
 				if (nb_B != 0) cl3 = "bg";
 				if (index === 95) { cl1 += " right_2px"; cl2 += " right_2px"; cl3+= " right_2px"; }
-				if (index%4 === 0) { cl1 = (cl1+" left_2px").trimLeft(); cl2 = (cl2+" left_2px").trimLeft(); cl3 = (cl3+" left_2px").trimLeft(); }
+				if (index%4 === 0) { cl1 = (cl1+" left_2px").trimStart(); cl2 = (cl2+" left_2px").trimStart(); cl3 = (cl3+" left_2px").trimStart(); }
 				res1 += `<td class='${cl1}'>${nb_cds || ''}</td>`; 				// CDS travaille sur position ?
 				res2 += `<td class='${cl2}'>${nb_A || ''}</td>`; 				// partie A
 				res3 += `<td class='${cl3} bottom_2px'>${nb_B || ''}</td>`; 	// partie B
@@ -310,7 +391,7 @@ async function show_feuille_capa(containerIdTour, day, zone) {
 				if (nb_A != 0 && index >= 48) cl2 = "bg"; 
 				if (nb_B != 0 && index >= 48) cl3 = "bg"; 
 				if (index == 95) { cl1 += " right_2px"; cl2 += " right_2px"; cl3+= " right_2px"; }
-				if (index%4 === 0) { cl1 = (cl1+" left_2px").trimLeft(); cl2 = (cl2+" left_2px").trimLeft(); cl3 = (cl3+" left_2px").trimLeft(); }
+				if (index%4 === 0) { cl1 = (cl1+" left_2px").trimStart(); cl2 = (cl2+" left_2px").trimStart(); cl3 = (cl3+" left_2px").trimStart(); }
 				// index 48 = midi donc >48 est le tour de nuit de soirée
 				if (index > 48) res1 += `<td class='${cl1}'>${nb_cds || ''}</td>`; else res1 += `<td class='${cl1}'></td>`; // CDS travaille sur position ?
 				if (index > 48) res2 += `<td class='${cl2}'>${nb_A || ''}</td>`; else res2 += `<td class='${cl2}'></td>`;
@@ -321,14 +402,13 @@ async function show_feuille_capa(containerIdTour, day, zone) {
 				if (nb_A != 0 && index < 48) cl2 = "bg"; 
 				if (nb_B != 0 && index < 48) cl3 = "bg"; 
 				if (index == 95) { cl1 += " right_2px"; cl2 += " right_2px"; cl3+= " right_2px"; }
-				if (index%4 === 0) { cl1 = (cl1+" left_2px").trimLeft(); cl2 = (cl2+" left_2px").trimLeft(); cl3 = (cl3+" left_2px").trimLeft(); }
+				if (index%4 === 0) { cl1 = (cl1+" left_2px").trimStart(); cl2 = (cl2+" left_2px").trimStart(); cl3 = (cl3+" left_2px").trimStart(); }
 				// index 48 = midi donc <48 est le tour de nuit de la matinée
 				if (index < 48) res1 += `<td class='${cl1}'>${nb_cds || ''}</td>`; else res1 += `<td class='${cl1}'></td>`; // CDS travaille sur position ?
 				if (index < 48) res2 += `<td class='${cl2}'>${nb_A || ''}</td>`; else res2 += `<td class='${cl2}'></td>`;
 				if (index < 48) res3 += `<td class='${cl3} bottom_2px'>${nb_B || ''}</td>`; else res3 += `<td class='${cl3} bottom_2px'></td>`;
 			}
-		});
-			
+		});	
 		return `
 		<tr data-vac='${vac}'>
 			<td class='left_2px right_1px'></td><td class='right_1px'></td>
@@ -408,29 +488,6 @@ async function show_feuille_capa(containerIdTour, day, zone) {
 		return res;
 	}
 	
-	// Construit le tableau
-	let res = `<table class="ouverture">
-				 <caption>Journée du ${day} - Zone ${zone_str}</caption>
-				 <thead>
-					<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px right_1px">PC</th><th class="top_2px bottom_2px right_2px">BV</th><th class="top_2px bottom_2px right_2px" colspan="96">...</th></tr>
-				</thead>
-				<tbody>`;
-	res += `${affiche_vac("J1")}`;
-	res += `${affiche_vac("J3")}`;
-	res += `${affiche_vac("S2")}`;
-	res += `${affiche_vac("J2")}`;
-	res += `${affiche_vac("S1")}`;
-	res += `${affiche_vac("N")}`;
-	res += `${affiche_vac("N-1")}`;
-	res += `${affiche_inst()}`;
-	res += `<tr class="titre"><th class='bottom_2px left_2px right_2px' colspan="6">Heures UTC</th>${heure()}`;
-	res += `${affiche_nbpc()}`;
-	res += `${affiche_demi_uc()}`;
-	res += `${affiche_uceso()}`;
-	res += '</tbody></table>';
-	const containerTour = $(containerIdTour);
-	containerTour.innerHTML = res;
-	
 	function add_RO_det(vac, present) {
 		const values = Object.values(pc_vac[vac]["html"]);
 		for (const obj of values) {
@@ -441,9 +498,6 @@ async function show_feuille_capa(containerIdTour, day, zone) {
 			}
 		}
 	}
-	
-	// ajoute les clicks sur la case du nbre de pc de la vac
-	const td_pc = document.querySelectorAll('.pc');
 	
 	function add_stage_conge(vac, present) {
 		const cles = Object.keys(pc_vac[vac]["teamData"]);
@@ -479,61 +533,6 @@ async function show_feuille_capa(containerIdTour, day, zone) {
 		return res;
 	}
 	
-
-	td_pc.forEach(td_el => {
-		let vac = td_el.dataset.vac;
-		if (update[zone_str][day]['update_count'][vac] !== 0) $$(`td[data-vac=${vac}].pc`).classList.add('bg_red');	
-		td_el.addEventListener('click', function(event) {
-			$('popup-wrap').classList.add('popup-modif');
-			$$('.popup-box').classList.add('popup-modif');
-			for (const user in pc_vac[vac]["userList"]) {
-				let ih = `
-				<div id="modif_eq">
-				${add_pers("J1")}
-				${add_pers("J3")}
-				${add_pers("S2")}
-				${add_pers("J2")}
-				${add_pers("S1")}
-				${add_pers("N")}
-				${add_pers("N-1")}
-				<button id="ch">Changer</button>
-				</div>`;
-			show_popup("Modification", ih);
-			}
-			const type = document.querySelectorAll('.typePC,.typedetache');
-			type.forEach(type_el => {
-				type_el.addEventListener('click', function(event) {
-					const vac = type_el.dataset.vac;
-					if (type_el.classList.contains('barre')) { 
-						update[zone_str][day]['update_count'][vac]++;
-						const n = update[zone_str][day]['update_name'][vac].indexOf(type_el.dataset.nom);
-						update[zone_str][day]['update_name'][vac].splice(n,1);
-					} else {
-						update[zone_str][day]['update_count'][vac]--;
-						update[zone_str][day]['update_name'][vac].push(type_el.dataset.nom);
-					}
-					type_el.classList.toggle('barre');
-					type_el.parentNode.firstChild.classList.toggle('surligne');
-					$$(`span[data-vac='${vac}']`).innerHTML = update[zone_str][day]['update_count'][vac];
-				});
-			});
-			// click sur le bouton "Changer"
-			$('ch').addEventListener('click', function(event) {
-				var data = {
-					method: "post",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify(update)
-				};
-				show_popup("Patientez !", "Sauvegarde des maj effectif en cours...");
-				fetch( 'export_update_to_json.php', data)
-				.then(function(response) {
-					document.querySelector('.popup-close').click();
-					containerTour.innerHTML = '';
-					show_feuille_capa(containerIdTour, day, zone);
-				});
-			})
-		});
-	});
 }
 
 
@@ -547,7 +546,7 @@ async function show_feuille_capa(containerIdTour, day, zone) {
 		 @param {string} containerId - id du container d'affichage
 		 @param {string} day - "yyyy-mm-jj"
 		 @param {string} zone - "AE" ou "AW"
-		 @param {array} pc_15mn - array des crénaux horaires associés aux pc dispo
+		 @param {array} pc - objet d'array des crénaux horaires associés aux pc dispo
 	-------------------------------------------------------------------------------- */
 async function show_courage_graph(containerId, day, zone, pc) {
 	const pc_15mn = pc["pc_total_dispo_15mn"];
@@ -556,9 +555,17 @@ async function show_courage_graph(containerId, day, zone, pc) {
 	//const uceso = pc_15mn.map( elem => [elem[0],Math.floor(elem[1]/2)]);
 	const day7 = jmoins7(day);
 	const day728 = jmoins728(day);
+	/*
 	const schema = await read_schema_realise(day, zone);
 	const schema7 = await read_schema_realise(day7, zone);
 	const schema728 = await read_schema_realise(day728, zone);
+	*/
+	const sch = new schema_rea(day, zone);
+    const schema = await sch.read_schema_realise();
+	const sch7 = new schema_rea(day7, zone);
+    const schema7 = await sch7.read_schema_realise();
+	const sch728 = new schema_rea(day728, zone);
+    const schema728 = await sch728.read_schema_realise();
 	var chartDom = $(containerId);
 	chartDom.style.height = "400px";
 	var myChart = echarts.init(chartDom);

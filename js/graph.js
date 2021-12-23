@@ -42,7 +42,7 @@ function rep_status_B2B(response) {
 	ex : si un TV ouvre à 15h45, on va afficher le H20 à partir de 15h30
 		 pour que la donnée H20 de 15h40 soit affichée
 	----------------------------------------------------------------------- */
-const h20_margin = 15;
+const graph_margin = 15;
 
 /*	---------------------------------------------------------------------------------------------------
 	 get H20 depuis nos fichiers récupérés en B2B à partir de 06:00 local (05:00 ou 04:00 UTC) 
@@ -55,8 +55,10 @@ const h20_margin = 15;
 		 }
 	//	ex	"2021-06-21": { RAE: [ ["04:00": "4"], ["04:20": "15"] ... ], AB: [ ["00:00": "5"], ... }
 	-------------------------------------------------------------------------------------------------- */
-async function get_h20_b2b(day, zone) {
-	const courage = await read_schema_realise(day, zone);
+async function get_h20_b2b(day, zone, schema = undefined) {
+	console.log("get_h20");
+	console.log(schema);
+	if (typeof schema === 'undefined') schema = await read_schema_realise(day, zone);
 	const date = day.replace(/-/g, ''); // yyyymmdd
 	const area = zone === "AE" ? "est" : "west";
 	
@@ -74,16 +76,16 @@ async function get_h20_b2b(day, zone) {
 		const mv = arr[3];
 		const h20 = arr[4];
 			
-		if (courage["tv_h"].hasOwnProperty(tv)) {
+		if (schema["tv_h"].hasOwnProperty(tv)) {
 							
 			if (!(result[day].hasOwnProperty(tv))) { 
 				result[day][tv] = [];
 			}
 								
-			let open = courage["tv_h"][tv].some( elem => {
+			let open = schema["tv_h"][tv].some( elem => {
 				const deb = elem[0];
 				const fin = elem[1];
-				if (time_min>= deb-h20_margin && time_min+59 < fin+h20_margin) return true;
+				if (time_min>= deb-graph_margin && time_min+59 < fin+graph_margin) return true;
 				return false;
 			});
 			
@@ -107,8 +109,8 @@ async function get_h20_b2b(day, zone) {
 		 }
 	//	ex	"2021-06-21": { RAE: [ ["04:00": "4"], ["04:01": "5"] ... ], AB: [ ["00:00": "5"], ... }
 	-------------------------------------------------------------------------------------------------- */
-async function get_occ_b2b(day, zone) {
-	const courage = await read_schema_realise(day, zone);
+async function get_occ_b2b(day, zone, schema = undefined) {
+	if (typeof schema === 'undefined') schema = await read_schema_realise(day, zone);
 	const date = day.replace(/-/g, ''); // yyyymmdd
 	const area = zone === "AE" ? "est" : "west";
 	
@@ -127,15 +129,15 @@ async function get_occ_b2b(day, zone) {
 		const sustain = arr[4];
 		const occ = arr[5];
 					
-		if (courage["tv_h"].hasOwnProperty(tv)) {
+		if (schema["tv_h"].hasOwnProperty(tv)) {
 							
 			if (!(result[day].hasOwnProperty(tv))) { 
 				result[day][tv] = [];
 			}
-			let open = courage["tv_h"][tv].some( elem => {
+			let open = schema["tv_h"][tv].some( elem => {
 				const deb = elem[0];
 				const fin = elem[1];
-				if (time_min>= deb-h20_margin && time_min < fin+h20_margin) return true;
+				if (time_min>= deb-graph_margin && time_min < fin+graph_margin) return true;
 				return false;
 			});
 			

@@ -208,13 +208,13 @@ async function add_ouverture_listener(day, zone) {
 			let dataAxis_occ = [];
 			//try {
 				h[day][tv].forEach(value => {
-					if (time_to_min(value[0]) > time_to_min(deb)-h20_margin && time_to_min(value[0]) < time_to_min(fin)+h20_margin) {
+					if (time_to_min(value[0]) > time_to_min(deb)-graph_margin && time_to_min(value[0]) < time_to_min(fin)+graph_margin) {
 						dataAxis.push(value[0]);
 						data.push(value[1]);
 					}
 				});	
 				o[day][tv].forEach(value => {
-					if (time_to_min(value[0]) > time_to_min(deb)-h20_margin && time_to_min(value[0]) < time_to_min(fin)+h20_margin) {
+					if (time_to_min(value[0]) > time_to_min(deb)-graph_margin && time_to_min(value[0]) < time_to_min(fin)+graph_margin) {
 						dataAxis_occ.push(value[0]);
 						data_occ.push(value[1]);
 					}
