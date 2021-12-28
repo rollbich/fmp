@@ -71,7 +71,9 @@
 					let zone = $('zone').value;
 					let day = $('start').value;
 					const cap = new capa(day, zone);
+					show_popup("Patientez !", "Chargement en cours...");
 					const pc = await cap.get_nbpc_dispo();
+					document.querySelector('.popup-close').click();
 					show_courage_graph("courage_container", day, zone, pc);
 				});
 				

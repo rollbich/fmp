@@ -220,19 +220,17 @@ class capa {
 }
 
 class feuille_capa extends capa {
-
+	/* ----------------------------------------------------------------
+		@param {string} containerIdTour - id du container pour le tour
+	   ---------------------------------------------------------------- */
 	constructor(containerIdTour, day, zone) {
 		super(day, zone);
 		this.containerTour = $(containerIdTour);
 	}
 
-	/*	-----------------------------------------------------------------------------------------
-			Affichage de la feuille de capa
-				@param {string} containerIdTour - id du container pour le tour
-				@param {string} day  - "yyyy-mm-jj"
-				@param {string} zone - "AE" ou "AW"
-				@param {object} update - {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0}
-		----------------------------------------------------------------------------------------- */
+	/*	------------------------------------------
+			Affichage de la feuille de capa		
+		------------------------------------------ */
 		
 	async show_feuille_capa() {
 		show_popup("Patientez !", "Chargement en cours...");
@@ -568,11 +566,7 @@ async function show_courage_graph(containerId, day, zone, pc) {
 	//const uceso = pc_15mn.map( elem => [elem[0],Math.floor(elem[1]/2)]);
 	const day7 = jmoins7(day);
 	const day728 = jmoins728(day);
-	/*
-	const schema = await read_schema_realise(day, zone);
-	const schema7 = await read_schema_realise(day7, zone);
-	const schema728 = await read_schema_realise(day728, zone);
-	*/
+	
 	const sch = new schema_rea(day, zone);
     const schema = await sch.read_schema_realise();
 	const sch7 = new schema_rea(day7, zone);

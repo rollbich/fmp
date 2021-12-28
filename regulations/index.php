@@ -13,7 +13,7 @@
 		<script type="text/javascript" src="../js/list-component.js"></script>
 		<script type="text/javascript" src="../js/graph.js"></script>
 		<script type="text/javascript" src="../js/upload.js"></script>
-        <script type="text/javascript" src="../js/regulations.js"></script>
+        <script type="text/javascript" src="../js/regulations_class.js"></script>
 		<script src="../js/dragger.js"></script>
 		<script src="../js/echarts.min.js"></script>
 		<script src="../js/sortable.min.js"></script>
@@ -52,12 +52,17 @@
 				});
 				
 				
-				document.getElementById('bouton_regul').addEventListener('click', e => {
+				document.getElementById('bouton_regul').addEventListener('click', async e => {
 					result_h20 = {};
 					let zone = document.getElementById('zone').value;
 					let start_day = document.getElementById('start').value; // yyyy-mm-dd
 					let end_day = document.getElementById('end').value; // yyyy-mm-dd
-					show_result_reg('result', start_day, end_day, zone);
+					//const r = new regul(start_day, zone);
+					//await r.init();
+					//r.show_result_reg("result");
+					const r = new period_regul(start_day, end_day, zone);
+					await r.init();
+					r.show_result_reg("result");
 					$('glob_container').classList.remove('off');
 				});
 				
