@@ -14,6 +14,7 @@
 		<script type="text/javascript" src="../js/graph.js"></script>
 		<script type="text/javascript" src="../js/upload.js"></script>
         <script type="text/javascript" src="../js/regulations_class.js"></script>
+		 <script type="text/javascript" src="../js/vols_class.js"></script>
 		<script src="../js/dragger.js"></script>
 		<script src="../js/echarts.min.js"></script>
 		<script src="../js/sortable.min.js"></script>
@@ -38,7 +39,8 @@
 				document.getElementById('start').addEventListener('change', function (e) {
 					let start_date = Date.parse(this.value);
 					let end_date = Date.parse(document.getElementById('end').value);
-					if (start_date > end_date) { document.getElementById('end').value = this.value; }
+					//if (start_date > end_date) { document.getElementById('end').value = this.value; }
+					document.getElementById('end').value = this.value;
 				});
 				
 				document.getElementById('close_button').addEventListener('click', e => {
@@ -51,18 +53,21 @@
 					document.getElementById("help_frame").classList.remove('off');
 				});
 				
-				
 				document.getElementById('bouton_regul').addEventListener('click', async e => {
-					result_h20 = {};
 					let zone = document.getElementById('zone').value;
 					let start_day = document.getElementById('start').value; // yyyy-mm-dd
 					let end_day = document.getElementById('end').value; // yyyy-mm-dd
-					//const r = new regul(start_day, zone);
-					//await r.init();
-					//r.show_result_reg("result");
 					const r = new period_regul(start_day, end_day, zone);
 					await r.init();
 					r.show_result_reg("result");
+					$('glob_container').classList.remove('off');
+				});
+				
+				document.getElementById('bouton_vols').addEventListener('click', async e => {
+					let day = document.getElementById('start').value; // yyyy-mm-dd
+					const r = new vols(day);
+					await r.init();
+					r.show_result_daily_vols("result");
 					$('glob_container').classList.remove('off');
 				});
 				
@@ -84,19 +89,19 @@
 	<h2>Help</h2>
 	<p><span>Origine des données H20 et Occ</span> :<br>Elles sont récupérées quotidiennement en B2B sur le serveur du NM et stockées sous forme de fichiers. <br>La période de récupération des données se situe entre 4h UTC et 22h00 UTC. Par conséquent, il n'est pas possible de visualiser les graphes en dehors de cette plage horaire.<br>D'autre part, comme tous les TV ne sont pas récupérés, certains graphiques (principalement les TV très peu ouverts) ne peuvent pas être affichés.</p>
 	<p><span>Le bouton "Regulation"</span> :<br>Il permet d'afficher un récapitulatif des reulations de la date choisie.</p>
-	<p><span>Le bouton "--------"</span> :<br>Il ne fait rien pour l'instant</p>
+	<p><span>Le bouton "Vols"</span> :<br>Il affiche le nombre de vols</p>
 	<button id="close_button" class="pointer">Close</button>
 </div>
 <ul class="menu">
 	<li id="bouton_regul" class="pointer"><span>Regulations</span></li>
-	<li id="bouton_regul2" class="pointer"><span>-------</span></li>
+	<li id="bouton_vols" class="pointer"><span>Nombre de Vols</span></li>
 	<li><button class="help_button">Help</button></li>
 </ul>
 <div id="dates">
 	<label for="start" class="dates">D&eacute;but:</label>
-	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2021-07-22" max="2030-12-31">
+	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2019-01-01">
 	<label for="end" class="dates">Fin:</label>
-	<input type="date" id="end" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2021-07-22" max="2030-12-31">
+	<input type="date" id="end" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2019-01-01">
 	<span>
 	  <select id="zone" class="select">
 		<option selected value="AE">Zone EST</option>
