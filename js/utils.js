@@ -162,6 +162,13 @@ const hyphen_date = day => {
 	let d = day.substr(6,2);
 	return `${d}-${m}-${y}`
 }
+  
+/*  --------------------------------------------
+	 formate la date: 2021-12-25 => 25122021 
+	-------------------------------------------- */
+const remove_hyphen_date = day => {
+	return day.replace(/-/g, '');
+}
 
 /*	---------------------------------------------------------
 		Charge un fichier json  
