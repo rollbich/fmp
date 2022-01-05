@@ -19,6 +19,40 @@ require_once("B2B.php");
 $soapFlow = new B2B("flow");
 $soapClientFlow = $soapFlow->get_client();
 
+/*  ---------------------------------------------------------
+					Appel b2b
+		récupère le nbre de vols d'une journée d'un airspace
+		(marche aussi pour un TV en changeant la requete par
+		queryTrafficCountsByTrafficVolume et en remplacant
+		airspace par trafficVolume)
+	--------------------------------------------------------- */
+function query_entry_day_count($airspace) {
+	
+	global $soapClientFlow;
+	global $wef_flights;
+	global $unt_flights;
+	
+	$params = array(
+		'sendTime'=>gmdate("Y-m-d H:i:s"),
+		'dataset'=>array('type'=>'OPERATIONAL'),
+		'trafficTypes'=>array('item'=>'LOAD'),
+		'includeProposalFlights'=>false,
+		'includeForecastFlights'=>false,
+		'trafficWindow'=>array('wef'=>$wef_flights,'unt'=>$unt_flights),
+		'computeSubTotals'=>false,
+		'countsInterval'=>array('duration'=>'2400','step'=>'2400'),
+		'airspace'=>$airspace,
+		'calculationType'=>'ENTRY'
+	);
+	
+	try {
+		$output = $soapClientFlow->__soapCall('queryTrafficCountsByAirspace', array('parameters'=>$params));
+		return $output;
+	}
+
+	catch (Exception $e) {echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";}
+}
+
 /*  --------------------------------------------------
 					Appel b2b
 		récupère le H20 (duration 60, step 20)
@@ -618,6 +652,7 @@ $tvs_west = $obj2["TV-OUEST"];
 
 
 // récupère les données H20, Occ et Reg
+
 $occ_est = get_occ("est", $wef_counts, $unt_counts);
 $occ_west = get_occ("west", $wef_counts, $unt_counts);
 $h20_est = get_entry("est", $wef_counts, $unt_counts);
@@ -635,6 +670,11 @@ $plan_w = get_atc_conf($airspace2, $tomorrow);
 $atc_confs = new stdClass();
 $atc_confs->est = $plan_e->data->plan->nmSchedule->item;
 $atc_confs->ouest = $plan_w->data->plan->nmSchedule->item;
+
+// Counts de LFMMCTAE
+$query_LFMMCTA = query_entry_day_count("LFMMCTA");
+$today = substr($query_LFMMCTA->data->effectiveTrafficWindow->wef, 0, 10) ;
+$counts_LFMMCTA = $query_LFMMCTA->data->counts->item->value->item->value->totalCounts;
 
 /*  -----------------------------------------------------------------------
 		instanciation soap FLIGHT Services
@@ -676,6 +716,7 @@ $tab_TVE = ["LFMRAE", "LFMSBAM", "LFMGY", "LFMAB", "LFMEK"];
 $tab_TVW = ["LFMRAW", "LFMMALY", "LFMWW", "LFMMF", "LFMDZ"];
 
 $flights = new stdClass();
+$flights->LFMMCTA = ["LFMMCTA", $today, $counts_LFMMCTA];
 get_vols_Est($flights, $tab_TVE, $wef_flights, $unt_flights);
 get_vols_West($flights, $tab_TVW, $wef_flights, $unt_flights);
 
