@@ -19,7 +19,7 @@
 		<script type="text/javascript" src="../js/upload.js"></script>
 		<script type="text/javascript" src="../js/olaf.js"></script>
 		<script type="text/javascript" src="../js/capa_class.js"></script>
-		<script type="text/javascript" src="../js/confs.js"></script>
+		<script type="text/javascript" src="../js/confs_class.js"></script>
 		<script src="../js/dragger.js"></script>
 		<script src="../js/echarts.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="../css/font.css" />
@@ -62,9 +62,11 @@
 					show_popup("Graph", "Cette fonctionnalité n'est pas encore implémentée");
 				});
 
-				$('bouton_conf').addEventListener('click', e => {
+				$('bouton_conf').addEventListener('click', async e => {
 					let day = $('start').value;
-					show_result_confs("result", day);
+					const c = new conf(day);
+					await c.init();
+					c.show_result_confs("result");
 				});
 				
 				$('bouton_uceso').addEventListener('click', async e => {

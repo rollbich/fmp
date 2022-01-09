@@ -62,7 +62,7 @@
 					r.show_result_reg("result");
 					$('glob_container').classList.remove('off');
 				});
-				
+				/*
 				document.getElementById('bouton_vols').addEventListener('click', async e => {
 					let day = document.getElementById('start').value; // yyyy-mm-dd
 					const r = new vols(day);
@@ -70,7 +70,30 @@
 					r.show_result_daily_vols("result");
 					$('glob_container').classList.remove('off');
 				});
+				*/
+				document.getElementById('bouton_vols').addEventListener('click', async e => {
+					let start_day = document.getElementById('start').value; // yyyy-mm-dd
+					let end_day = document.getElementById('end').value; // yyyy-mm-dd
+					const r = new period_vols(start_day, end_day);
+					await r.init();
+					r.show_result_vols("result");
+					$('glob_container').classList.remove('off');
+				});
 				
+				document.getElementById('bouton_year_vols').addEventListener('click', async e => {
+					let start_day = document.getElementById('start').value; // yyyy-mm-dd
+					let end_day = document.getElementById('end').value; // yyyy-mm-dd
+					const r = new period_vols(start_day, end_day);
+					await r.init();
+					const listWeek = [];
+					for(let i=1;i<53;i++) {
+						listWeek.push(i);
+					}
+					const data = [];
+					
+					$('glob_container').classList.remove('off');
+				});
+
 				document.querySelector('.popup-close').addEventListener('click', e => {
 					document.querySelector('.popup-box').classList.remove('transform-in');
 					document.querySelector('.popup-box').classList.add('transform-out');
@@ -95,6 +118,7 @@
 <ul class="menu">
 	<li id="bouton_regul" class="pointer"><span>Regulations</span></li>
 	<li id="bouton_vols" class="pointer"><span>Nombre de Vols</span></li>
+	<li id="bouton_year_vols" class="pointer"><span>Vols Année</span></li>
 	<li><button class="help_button">Help</button></li>
 </ul>
 <div id="dates">

@@ -64,12 +64,12 @@ class period_regul {
         this.dates_arr = get_dates_array(new Date(start_day), new Date(end_day));
 	}
 	
-    /*  -------------------------------------------------------------
+    /*  ----------------------------------------------------------------------
 		Lit le fichier json de regul
 			@param {string} day - "yyyy-mm-dd"
 			@param {string} zone - "AE" ou "AW"
-            @returns {"LFMMFMPE":[],"LFMMFMPW":[],"LFMMAPP":[],...}
-	----------------------------------------------------------------- */
+            @returns {date1:objet regul, date2:objet regul,...}
+	-------------------------------------------------------------------------- */
     async init() {
 		this.reguls = await this.get_reguls();
 		console.log(this.reguls);

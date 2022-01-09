@@ -1,4 +1,13 @@
 /*  ---------------------------------------------
+		Lit le fichier json des confs Est-West
+	--------------------------------------------- */
+async function get_confs_list(zone) {
+	const url = `conf-est.json`;	
+	const resp = await loadJson(url);
+	return resp;
+}
+
+/*  ---------------------------------------------
 		Lit le fichier json de conf
 			@param {string} day - "yyyy-mm-dd"
 	--------------------------------------------- */

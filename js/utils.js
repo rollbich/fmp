@@ -121,6 +121,67 @@ const get_ouv_1h = str_time => {
 	return result;
 }
 
+// jour de la semaine
+// "2021-02-28" => monday
+const jour_sem = day => {
+	const jours = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+	return jours[new Date(day).getDay()];
+}
+
+/* For a given date, get the ISO week number
+ *
+ * Based on information at:
+ *
+ *    http://www.merlyn.demon.co.uk/weekcalc.htm#WNR
+ *
+ * Algorithm is to find nearest thursday, it's year
+ * is the year of the week number. Then get weeks
+ * between that date and the first day of that year.
+ *
+ * Note that dates in one year can be weeks of previous
+ * or next year, overlap is up to 3 days.
+ *
+ * e.g. 2014/12/29 is Monday in week  1 of 2015
+ *      2012/1/1   is Sunday in week 52 of 2011
+ */
+function getWeekNumber(d) {
+    // Copy date so don't modify original
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    // Set to nearest Thursday: current date + 4 - current day number
+    // Make Sunday's day number 7
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+    // Get first day of year
+    var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    // Calculate full weeks to nearest Thursday
+    var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+    // Return array of year and week number
+    return [d.getUTCFullYear(), weekNo];
+}
+
+function isLeapYear(year) {
+	if (year % 400 === 0) return true;
+	if (year % 100 === 0) return false;
+	return year % 4 === 0;
+}
+
+//calcul du nbre de semaine de l'année
+function isoWeeksInYear(year) {
+    const isLeapYearr = isLeapYear(year);
+    const last = new Date(year, 11, 31);
+    const day = last.getDay();
+    if (day === 4 || (isLeapYearr && day === 5)) {
+      return 53
+    }
+    return 52
+}
+
+// idem (testée : résultat identique à la précédente)
+function weeksInYear(year) {
+    let d = new Date(year, 11, 31);
+    let week = getWeekNumber(d)[1];
+    return week == 1 ? 52 : week;
+}
+
 /*	-------------------------------------------------------
 	Récupère dans un tableau les dates entre 2 dates
 	  @param {object} start_date - Objet Date

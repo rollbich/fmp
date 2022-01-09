@@ -443,3 +443,113 @@ function show_occ_graph(containerId, dataAxis, data, peak, sustain, tv) {
 	
 	document.querySelector('#graph-container-occ').classList.remove('off');;
 }
+
+/*	--------------------------------------------------------------------------
+	 	Affiche le graph Traffic Year
+			@param {string} containerId - Id de l'HTML Element conteneur
+			@param {array} dataAxis - [1, 2, 3, week...]
+			@param {array} data - [load,...]
+	-------------------------------------------------------------------------- */
+function show_traffic_graph(containerId, listWeek, data) {
+	let myChart = echarts.init(document.getElementById(containerId));
+	
+	let option;
+	
+	option = {
+		title: {
+			text: "Weekly ER traffic throughout the year for LFMM",
+			textStyle: {
+				fontSize: '100%'
+			},
+			x: 'center',
+			y: 'top'
+		},
+		tooltip: {
+			trigger: 'axis',
+			axisPointer: {
+				type: 'shadow',
+				label: {
+					show: true
+				}
+			}
+		},
+		toolbox: {
+			feature: {
+				saveAsImage: {
+					name: "Weekly traffic throughout the year LFMM",
+					show: true
+				}
+			}
+		},
+		grid: {
+			containLabel: true
+		},
+		/*
+		legend: {
+			x: 'center', // 'center' | 'left' | {number},
+			y: 'top' | 30, // 'center' | 'bottom' | {number}
+			padding: -1,
+			data: [this_week.split("_")[1], range[1].split("_")[1], range[2].split("_")[1]]
+		},
+		*/
+		calculable: true,
+		xAxis: {
+			type: 'category',
+			name: 'Week of the year',
+			nameLocation: 'middle',
+			axisLabel: {
+				show: true,
+				interval: 'auto',    // {number}
+				margin: 8,
+			},
+			nameGap: 30,
+			data: listWeek
+		},
+		yAxis: {
+			type: 'value',
+			axisLabel: {
+				formatter: '{value}'
+			},
+			name: 'No. of flights',
+			nameLocation: 'middle'
+			/*,
+			nameGap: nameGap / 0.90*/
+		},
+		series: [
+			/*{
+				name: range[2].split("_")[1],
+				type: 'line',
+				color: '#342D7E',
+				areaStyle: {},
+				data: previousYear2,
+			},
+			{
+				name: range[1].split("_")[1],
+				type: 'line',
+				color: 'yellow',
+				areaStyle: {},
+				data: previousYear,
+			},*/
+			{
+				name: "2020",
+				type: 'line',
+				color: '#4CC417',
+				areaStyle: {},
+				data: data,
+			}]
+	};
+	
+		
+	myChart.setOption(option);
+
+	// Enable data zoom when user click bar.
+	let zoomSize = 6;
+	myChart.on('click', function (params) {
+		myChart.dispatchAction({
+			type: 'dataZoom',
+			startValue: dataAxis[Math.max(params.dataIndex - zoomSize / 2, 0)],
+			endValue: dataAxis[Math.min(params.dataIndex + zoomSize / 2, data.length - 1)]
+		});
+	});
+	
+}

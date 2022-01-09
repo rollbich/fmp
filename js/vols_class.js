@@ -63,23 +63,37 @@ class period_vols {
 	}
 	
     /*  -------------------------------------------------------------
-		Lit le fichier json de regul
+		Lit le fichier json des vols
 			@param {string} day - "yyyy-mm-dd"
 			@param {string} zone - "AE" ou "AW"
-            @returns {"LFMMFMPE":[],"LFMMFMPW":[],"LFMMAPP":[],...}
+            @returns {date1: objet_vol, date2: objet_vol,...}
 	----------------------------------------------------------------- */
     async init() {
 		this.vols = await this.get_vols();
-		console.log(this.reguls);
+		console.log(this.vols);
 	}
 
 	async get_vols() {
-        const vols = {};
+        const plage_vols = {};
         for (const date of this.dates_arr) {
              const v = new vols(date);
 			 await v.init();
-             vols[date] = v.get_daily_vols();
+             plage_vols[date] = v.get_daily_vols();
         }
+		return plage_vols;
+	}
+
+	get_period_vols() {
+		const vols = {};
+		let total_vols_est = 0, total_vols_west = 0, total_vols_cta = 0; 
+		for (const date of this.dates_arr) {
+			total_vols_est += parseInt(this.vols[date]['LFMRAE']);
+			total_vols_west += parseInt(this.vols[date]['LFMRAW']);
+			total_vols_cta += parseInt(this.vols[date]['LFMMCTA']);
+		}
+		vols['est'] = total_vols_est;
+		vols['west'] = total_vols_west;
+		vols['cta'] = total_vols_cta;
 		return vols;
 	}
 
@@ -88,60 +102,27 @@ class period_vols {
 		------------------------------------------------------------------ */	 
         
 	async show_result_vols(containerId) {
-		let delays = "<div class='delay'>";
+		let result_vols = `<h2>Nombre de vols : ${reverse_date(this.start_day)} au ${reverse_date(this.end_day)}</h2><br>`;
+		result_vols += "<div class='delay'>";
 		let res = `
 		<table class="regulation sortable">
-			<caption>LFMM-EST : ${reverse_date(this.start_day)} au ${reverse_date(this.end_day)}</caption>
-			<thead><tr class="titre"><th class="space">Date</th><th>Regul Id</th><th>TV</th><th>Début</th><th>Fin</th><th>Délai</th><th>Raison</th><th>vols</th></tr></thead>
+			<thead><tr class="titre"><th class="space">Date</th><th>Jour</th><th>CTA</th><th>Est</th><th>West</th></tr></thead>
 			<tbody>`;
-		let total_delay_est = 0, total_delay_west = 0, total_delay_app = 0; 
+		let total_vols_est = 0, total_vols_west = 0, total_vols_cta = 0; 
         for (const date of this.dates_arr) {
-            this.reguls[date]["LFMMFMPE"].forEach( value => {
-                let deb = extract_time(value.applicability.wef);
-                let fin = extract_time(value.applicability.unt);
                 res += '<tr>'; 
-                res +=`<td>${reverse_date(date)}</td><td>${value.regId}</td><td>${value.tv}</td><td>${deb} TU</td><td>${fin} TU</td><td>${value.delay}</td><td>${value.reason}</td><td>${value.impactedFlights}</td>`;
+                res +=`<td>${reverse_date(date)}</td><td>${jour_sem(date)}</td><td>${this.vols[date]['LFMMCTA']}</td><td>${this.vols[date]['LFMRAE']}</td><td>${this.vols[date]['LFMRAW']}</td>`;
                 res += '</tr>';	
-                total_delay_est += value.delay;
-            });
+				total_vols_est += parseInt(this.vols[date]['LFMRAE']);
+				total_vols_west += parseInt(this.vols[date]['LFMRAW']);
+				total_vols_cta += parseInt(this.vols[date]['LFMMCTA']);
         }
         res += '</tbody></table>';
-		res += `
-		<table class="regulation sortable">
-			<caption>LFMM-OUEST : ${reverse_date(this.start_day)} au ${reverse_date(this.end_day)}</caption>
-			<thead><tr class="titre"><th class="space">Date</th><th>Regul Id</th><th>TV</th><th>Début</th><th>Fin</th><th>Délai</th><th>Raison</th><th>vols</th></tr></thead>
-			<tbody>`;
-        for (const date of this.dates_arr) {
-            this.reguls[date]["LFMMFMPW"].forEach( value => {
-                let deb = extract_time(value.applicability.wef);
-                let fin = extract_time(value.applicability.unt);
-                res += '<tr>'; 
-                res +=`<td>${reverse_date(date)}</td><td>${value.regId}</td><td>${value.tv}</td><td>${deb} TU</td><td>${fin} TU</td><td>${value.delay}</td><td>${value.reason}</td><td>${value.impactedFlights}</td>`;
-                res += '</tr>';	
-                total_delay_west += value.delay;
-            });
-        }
-        res += '</tbody></table>';
-		res += `
-		<table class="regulation sortable">
-			<caption>LFMM-APP : ${reverse_date(this.start_day)} au ${reverse_date(this.end_day)}</caption>
-			<thead><tr class="titre"><th class="space">Date</th><th>Regul Id</th><th>TV</th><th>Début</th><th>Fin</th><th>Délai</th><th>Raison</th><th>vols</th></tr></thead>
-			<tbody>`;
-        for (const date of this.dates_arr) {
-            this.reguls[date]["LFMMAPP"].forEach( value => {
-                let deb = extract_time(value.applicability.wef);
-                let fin = extract_time(value.applicability.unt);
-                res += '<tr>'; 
-                res +=`<td>${reverse_date(date)}</td><td>${value.regId}</td><td>${value.tv}</td><td>${deb} TU</td><td>${fin} TU</td><td>${value.delay}</td><td>${value.reason}</td><td>${value.impactedFlights}</td>`;
-                res += '</tr>';	
-                total_delay_app += value.delay;
-            });
-        }
-		res += '</tbody></table>';
-		delays += `<span class="reg-tot">LFMM Est : ${total_delay_est} mn</span><span class="reg-tot">LFMM West : ${total_delay_west} mn</span><span class="reg-tot">LFMM App : ${total_delay_app} mn</span>`;
-		delays += "</div>";
-		delays += res;
-		$(containerId).innerHTML = delays;
+		
+		result_vols += `<span class="reg-tot">LFMM Est : ${total_vols_est} vols</span><span class="reg-tot">LFMM West : ${total_vols_west} vols</span><span class="reg-tot">LFMM CTA : ${total_vols_cta} vols</span>`;
+		result_vols += "</div>";
+		result_vols += res;
+		$(containerId).innerHTML = result_vols;
 		
 	}
 }
