@@ -511,13 +511,11 @@ class feuille_capa extends capa {
 			let index_ini = 0;
 			for(var j=0;j<95;j++) {
 				if (pcs[j][1] !== pcs[j+1][1]) {
-					//console.log(ouv[j][0]);
 					counts.push([index_ini, j, pcs[j][1]]);
 					index_ini = j+1;
 				}
 			}
 			counts.push([index_ini, 95, pcs[95][1]]);
-			console.log(counts);
 			return counts;
 		}
 		
@@ -536,13 +534,12 @@ class feuille_capa extends capa {
 		let index_ini = 0;
 		for(var j=0;j<95;j++) {
 			if (pcs[j][ind] !== pcs[j+1][ind]) {
-				//console.log(ouv[j][0]);
 				counts.push([index_ini, j, pcs[j][ind]]);
 				index_ini = j+1;
 			}
 		}
 		counts.push([index_ini, 95, pcs[95][ind]]);
-		//console.log(counts);
+
 		return counts;
 	}
 }
@@ -594,6 +591,7 @@ async function show_courage_graph(containerId, day, zone, pc) {
 	}); 
 	data_series_uceso.push([new Date(d[0], d[1]-1, d[2], 23, 59), uceso[uceso.length-1][1]]);
 	
+	// Si le schema du jour J existe, alors on l'affiche
 	if (typeof schema !== 'undefined') {
 		// schema.ouverture: [ jj/mm/aaaa, heure_début, heure_fin, nbr_secteurs, [noms des TV] ]
 		schema.ouverture.forEach(row => {
@@ -604,9 +602,10 @@ async function show_courage_graph(containerId, day, zone, pc) {
 			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]); // -1 pour le mois car l'index commence à 0
 			data_series.push([time,nb_sect]);
 		}); 
-		data_series.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema7.ouverture[schema7.ouverture.length-1][3]]);
+		data_series.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema.ouverture[schema.ouverture.length-1][3]]);
 	}
 	
+	// Si le schema du jour J n'existe pas mais que J-7 existe, alors on affiche J-7
 	if (typeof schema7 !== 'undefined' && typeof schema == 'undefined') {
 		// schema.ouverture: [ jj/mm/aaaa, heure_début, heure_fin, nbr_secteurs, [noms des TV] ]
 		schema7.ouverture.forEach(row => {
@@ -620,6 +619,7 @@ async function show_courage_graph(containerId, day, zone, pc) {
 		data_series7.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema7.ouverture[schema7.ouverture.length-1][3]]);
 	}
 	
+	// 2019 existe toujours
 	schema728.ouverture.forEach(row => {
 		let deb = row[1];
 		let fin = row[2];

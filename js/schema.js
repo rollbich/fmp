@@ -3,6 +3,7 @@ class schema_rea {
     constructor(day, zone) {
         this.day = day;
         this.zone = zone;
+        this.ouv_tech = 4;
     }
 
 /*  ----------------------------------------------------------------------------------------------------------------
@@ -116,11 +117,11 @@ class schema_rea {
                 }
             //} 
         })
-        
+
         // parfois on a le même TV 2 fois de suite => concaténer les 2 lignes en 1 en étendant l'heure de la 1ère ligne, à faire 2 fois car parfois il y a 3 fois le même TV
-        
         this.doublon(schema);
         this.doublon(schema);
+        this.correct_technical_opening(schema);
         this.correct_technical_opening(schema);
         this.doublon(schema);
         // enlève les doublons du tableau des TV
@@ -155,8 +156,8 @@ class schema_rea {
 	----------------------------------------- */
     tri(arr_tv) {
         // on met dans un tableau les tv du groupe 1, puis du groupe 2, etc...
-        const bloc1 = ["RAE", "RAEE", "RAEM", "SBAM", "MNST", "BTAJ", "SAB", "BAM", "MN", "ST", "AJ", "BT"];
-        const bloc2 = ["EK", "EK1", "EK2", "EK3", "EK12", "EK3", "E12", "E3", "KK", "K12", "K3", "EE", "KK", "E1", "E2", "K1", "K2"];
+        const bloc1 = ["RAE", "RAEE", "RAEM", "RAES", "RAEE1", "SBAM", "MNST", "BTAJ", "SAB", "BAM", "MN", "ST", "AJ", "BT"];
+        const bloc2 = ["EK", "EK1", "EK2", "EK3", "EK12", "EK3", "EK23", "E12", "E3", "KK", "K12", "K3", "EE", "KK", "E1", "E2", "K1", "K2"];
         const bloc3 = ["AB", "AB1", "AB2", "AB3", "AB4", "AB12", "AB34", "B12", "B34", "B1", "B2", "B3", "B4", "AA", "BB", "A12", "A34", "A1", "A2", "A3", "A4"];
         const bloc4 = ["GYAB", "GYA", "GY", "GY1", "GY2", "GY3", "GY4", "GY12", "GY34", "GG", "YY", "Y12", "Y34", "Y1", "Y2", "Y3", "Y4", "G12", "G34", "G1", "G2", "G3", "G4"];
         // on place les tv appartenant au groupe 1 dans un tableau, idem pour le groupe 2, etc...
@@ -230,8 +231,8 @@ class schema_rea {
             // heure du créneau suivant
             let next_deb = time_to_min(schema.ouverture[i+1][1]);
             let next_fin = time_to_min(schema.ouverture[i+1][2]);
-            
-            if (next_fin - next_deb < this.ouv_tech) {
+            let diff = next_fin - next_deb;
+            if (diff < this.ouv_tech) {
                 // [date, heure_deb, heure_fin, nbre_sec, TV]
                 const temp_array = [schema.ouverture[i][0], current_deb, min_to_time(next_fin), schema.ouverture[i][3], schema.ouverture[i][4]];
                 schema.ouverture.splice(i, 1, temp_array);

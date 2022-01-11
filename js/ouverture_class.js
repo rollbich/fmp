@@ -4,7 +4,6 @@ class ouverture extends schema_rea {
     constructor(containerId, day, zone) {
         super(day, zone);
         this.container = $(containerId);
-        this.ouv_tech = 4;
         this.show_ouverture();
     }
 
