@@ -23,6 +23,7 @@ class schema_rea {
  	}
 	---------------------------------------------------------------------------------------------------------------- */
     async read_schema_realise() {
+        if (this.day === null) return;
         const fichier_courage = dir+"Realise/"+this.get_courage_filename(this.day, this.zone);
         const schema = {};
         schema.ouverture = [];

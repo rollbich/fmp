@@ -23,81 +23,88 @@ class capa {
     --------------------------------------------------------------------------------------- */
     async get_nbpc_dispo(update = {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0}) {
         
-        const tab_vac_eq = this.get_vac_eq();
-        const instr = await loadJson("../instruction.json");
-        const yesterday = jmoins1(this.day);
-        // récupère l'objet contenant les propriétés equipes
-        const effectif = await get_olaf(this.zone_olaf, this.day, yesterday);
-        
-        const tour_local = await loadJson(tour_json);
-        const tour_utc = await this.get_tour_utc(tour_local);
-        
-        // Calcul du nombre de pc à afficher 
-        // On récupère l'effectif total, donc on doit enlever le cds sur les vacations sauf J2 et S1	
-        const pc = {"J1":{}, "J3":{}, "S2":{}, "J2":{}, "S1":{}, "N":{}, "N-1":{}};
-        for(const vac in tab_vac_eq) {
-            let p = tab_vac_eq[vac]+"-"+this.zone_olaf;
-            if (vac !== "N-1") {
-                const cds = (vac == "J2" || vac == "S1") ? 0 : 1; // cds=0 en J2 et S1
-                pc[vac]["nbpc"] = parseInt(effectif[this.day][p]["teamReserve"]["teamQuantity"]) - cds + update[vac]; 
-                pc[vac]["BV"] = parseInt(effectif[this.day][p]["teamReserve"]["BV"]);
-                pc[vac]["RO"] = parseInt(effectif[this.day][p]["teamReserve"]["roQuantity"]);
-                pc[vac]["userList"] = effectif[this.day][p]["userList"];
-                pc[vac]["teamData"] = effectif[this.day][p]["teamData"];
-                pc[vac]["html"] = effectif[this.day][p]["html"][this.day][p];
-            } else {
-                pc[vac]["nbpc"] = parseInt(effectif[yesterday][p]["teamReserve"]["teamQuantity"]) - 1 + update[vac]; // le cds ne compte pas dans le nb de pc => -1
-                pc[vac]["BV"] = parseInt(effectif[yesterday][p]["teamReserve"]["BV"]);
-                pc[vac]["RO"] = parseInt(effectif[yesterday][p]["teamReserve"]["roQuantity"]);
-                pc[vac]["userList"] = effectif[yesterday][p]["userList"];
-                pc[vac]["teamData"] = effectif[yesterday][p]["teamData"];
-                pc[vac]["html"] = effectif[yesterday][p]["html"][yesterday][p];
-            }
-        } 
-        
-        // array du nombre de pc dispo associé au créneau horaire du tour de service
-        // En 24h, il y a 96 créneaux de 15mn.
-        // [ ["hh:mm", nb_pc_dispo], [...], ... ]
-        let nb_pc = 0;
-        let pcs = [];
-        const in15mn = []; // nbre de pc instruction par 15 mn
-        const vacs = ["J1", "J3", "S2", "J2", "S1"];
-        const cds = 1;
-        for(var i=0;i<96;i++) {
-            vacs.forEach(vacation => {
-                const cds = (vacation == "J2" || vacation == "S1") ? 0 : 1;
-                if (tour_utc[vacation][i][1] === 1) nb_pc += cds; // cds qui bosse sur secteur
-                if (tour_utc[vacation][i][2] === 1) nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2), Math.floor((pc[vacation]["BV"]-cds)/2));
-                if (tour_utc[vacation][i][3] === 1) nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2, Math.floor((pc[vacation]["BV"]-cds)/2)+(pc[vacation]["BV"]-cds)%2);
-            })
-            if (tour_utc["N"][i][1] === 1 && i>48) nb_pc += cds; // cds qui bosse sur secteur
-            if (tour_utc["N"][i][2] === 1 && i>48) nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2), Math.floor((pc["N"]["BV"]-cds)/2));
-            if (tour_utc["N"][i][3] === 1 && i>48) nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2, Math.floor((pc["N"]["BV"]-cds)/2)+(pc["N"]["BV"]-cds)%2);
-            if (tour_utc["N"][i][1] === 1 && i<48) nb_pc += cds; // cds qui bosse sur secteur
-            if (tour_utc["N"][i][2] === 1 && i<48) nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2), Math.floor((pc["N-1"]["BV"]-cds)/2));
-            if (tour_utc["N"][i][3] === 1 && i<48) nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2, Math.floor((pc["N-1"]["BV"]-cds)/2)+(pc["N-1"]["BV"]-cds)%2);
-            pcs.push([tour_utc["J1"][i][0], nb_pc]);
-            nb_pc = 0;
+        try {
+			const tab_vac_eq = this.get_vac_eq();
+			const instr = await loadJson("../instruction.json");
+			const yesterday = jmoins1(this.day);
+			// récupère l'objet contenant les propriétés equipes
+			const effectif = await get_olaf(this.zone_olaf, this.day, yesterday);
+			
+			// si pas de donnée on retourne 0
+			if (effectif == 0) return 0;
+			
+			const tour_local = await loadJson(tour_json);
+			const tour_utc = await this.get_tour_utc(tour_local);
+			
+			// Calcul du nombre de pc à afficher 
+			// On récupère l'effectif total, donc on doit enlever le cds sur les vacations sauf J2 et S1	
+			const pc = {"J1":{}, "J3":{}, "S2":{}, "J2":{}, "S1":{}, "N":{}, "N-1":{}};
+			for(const vac in tab_vac_eq) {
+				let p = tab_vac_eq[vac]+"-"+this.zone_olaf;
+				if (vac !== "N-1") {
+					const cds = (vac == "J2" || vac == "S1") ? 0 : 1; // cds=0 en J2 et S1
+					pc[vac]["nbpc"] = parseInt(effectif[this.day][p]["teamReserve"]["teamQuantity"]) - cds + update[vac]; 
+					pc[vac]["BV"] = parseInt(effectif[this.day][p]["teamReserve"]["BV"]);
+					pc[vac]["RO"] = parseInt(effectif[this.day][p]["teamReserve"]["roQuantity"]);
+					pc[vac]["userList"] = effectif[this.day][p]["userList"];
+					pc[vac]["teamData"] = effectif[this.day][p]["teamData"];
+					pc[vac]["html"] = effectif[this.day][p]["html"][this.day][p];
+				} else {
+					pc[vac]["nbpc"] = parseInt(effectif[yesterday][p]["teamReserve"]["teamQuantity"]) - 1 + update[vac]; // le cds ne compte pas dans le nb de pc => -1
+					pc[vac]["BV"] = parseInt(effectif[yesterday][p]["teamReserve"]["BV"]);
+					pc[vac]["RO"] = parseInt(effectif[yesterday][p]["teamReserve"]["roQuantity"]);
+					pc[vac]["userList"] = effectif[yesterday][p]["userList"];
+					pc[vac]["teamData"] = effectif[yesterday][p]["teamData"];
+					pc[vac]["html"] = effectif[yesterday][p]["html"][yesterday][p];
+				}
+			} 
+			
+			// array du nombre de pc dispo associé au créneau horaire du tour de service
+			// En 24h, il y a 96 créneaux de 15mn.
+			// [ ["hh:mm", nb_pc_dispo], [...], ... ]
+			let nb_pc = 0;
+			let pcs = [];
+			const in15mn = []; // nbre de pc instruction par 15 mn
+			const vacs = ["J1", "J3", "S2", "J2", "S1"];
+			const cds = 1;
+			for(var i=0;i<96;i++) {
+				vacs.forEach(vacation => {
+					const cds = (vacation == "J2" || vacation == "S1") ? 0 : 1;
+					if (tour_utc[vacation][i][1] === 1) nb_pc += cds; // cds qui bosse sur secteur
+					if (tour_utc[vacation][i][2] === 1) nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2), Math.floor((pc[vacation]["BV"]-cds)/2));
+					if (tour_utc[vacation][i][3] === 1) nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2, Math.floor((pc[vacation]["BV"]-cds)/2)+(pc[vacation]["BV"]-cds)%2);
+				})
+				if (tour_utc["N"][i][1] === 1 && i>48) nb_pc += cds; // cds qui bosse sur secteur
+				if (tour_utc["N"][i][2] === 1 && i>48) nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2), Math.floor((pc["N"]["BV"]-cds)/2));
+				if (tour_utc["N"][i][3] === 1 && i>48) nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2, Math.floor((pc["N"]["BV"]-cds)/2)+(pc["N"]["BV"]-cds)%2);
+				if (tour_utc["N"][i][1] === 1 && i<48) nb_pc += cds; // cds qui bosse sur secteur
+				if (tour_utc["N"][i][2] === 1 && i<48) nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2), Math.floor((pc["N-1"]["BV"]-cds)/2));
+				if (tour_utc["N"][i][3] === 1 && i<48) nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2, Math.floor((pc["N-1"]["BV"]-cds)/2)+(pc["N-1"]["BV"]-cds)%2);
+				pcs.push([tour_utc["J1"][i][0], nb_pc]);
+				nb_pc = 0;
 
-            in15mn[i] = [0, ""];
-            instr.forEach( (elem, index) => {
-                const debut = elem["debut"];
-                const fin = elem["fin"];
-                const d = elem["date"];
-                const zone = elem["zone"];
-                const type = elem["type"];
-                let t = get_time(i);
-                if (d === this.day && zone.toLowerCase() === this.zone) {
-                    if (t >= debut && t< fin) {
-                        if (type === "Inst") { in15mn[i][0] += 2; in15mn[i][1] = "Inst"; }
-                        if (type === "Eleve") { in15mn[i][1] = "Eleve"; }
-                        if (type === "Asa") { in15mn[i][0] -= 1; in15mn[i][1] = "Asa"; }
-                    } 
-                }
-            });
+				in15mn[i] = [0, ""];
+				instr.forEach( (elem, index) => {
+					const debut = elem["debut"];
+					const fin = elem["fin"];
+					const d = elem["date"];
+					const zone = elem["zone"];
+					const type = elem["type"];
+					let t = get_time(i);
+					if (d === this.day && zone.toLowerCase() === this.zone) {
+						if (t >= debut && t< fin) {
+							if (type === "Inst") { in15mn[i][0] += 2; in15mn[i][1] = "Inst"; }
+							if (type === "Eleve") { in15mn[i][1] = "Eleve"; }
+							if (type === "Asa") { in15mn[i][0] -= 1; in15mn[i][1] = "Asa"; }
+						} 
+					}
+				});
+			}
+			return {"pc_vac": pc, "pc_total_dispo_15mn": pcs, "pc_instr_15mn": in15mn};
+		}
+		catch (err) {
+            alert(err);
         }
-
-        return {"pc_vac": pc, "pc_total_dispo_15mn": pcs, "pc_instr_15mn": in15mn};
     }
 
     /* ---------------------------------------------------
@@ -557,39 +564,51 @@ class feuille_capa extends capa {
 		 @param {array} pc - objet d'array des crénaux horaires associés aux pc dispo
 	-------------------------------------------------------------------------------- */
 async function show_courage_graph(containerId, day, zone, pc) {
-	const pc_15mn = pc["pc_total_dispo_15mn"];
-	const pc_instr_15mn = pc["pc_instr_15mn"];
-	const uceso = pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn[index][0]) / 2) ]);
-	//const uceso = pc_15mn.map( elem => [elem[0],Math.floor(elem[1]/2)]);
-	const day7 = jmoins7(day);
-	const day728 = jmoins728(day);
 	
+	const d = day.split("-");
+	let pc_15mn = null;
+	let pc_instr_15mn = null;
+	let uceso = null;
+	let data_series_uceso = null;
+	if (pc == 0) {
+		show_popup("Données OLAF indisponibles", "Pas de graph UCESO proposé");
+	} else {
+		pc_15mn = pc["pc_total_dispo_15mn"];
+		pc_instr_15mn = pc["pc_instr_15mn"];
+		uceso = pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn[index][0]) / 2) ]);
+		//const uceso = pc_15mn.map( elem => [elem[0],Math.floor(elem[1]/2)]);
+		data_series_uceso = [];
+		uceso.forEach(row => {
+			let deb = row[0];
+			let nb_sect = row[1];
+			let f = deb.split(":");
+			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]);
+			data_series_uceso.push([time,nb_sect]);
+		}); 
+		data_series_uceso.push([new Date(d[0], d[1]-1, d[2], 23, 59), uceso[uceso.length-1][1]]);
+	}
+
+	
+	const day7 = addDays_toString(day, -7);
+	const d7 = day7.split("-");
+	let day2019 = null;
+	if (d[0] === "2022") day2019 = addDays_toString(day, -1092);
+	if (d[0] === "2021") day2019 = addDays_toString(day, -728);
+	if (d[0] === "2020") day2019 = addDays_toString(day, -364);
+	const d2019 = day2019 != null ? day2019.split("-") : null;
 	const sch = new schema_rea(day, zone);
     const schema = await sch.read_schema_realise();
 	const sch7 = new schema_rea(day7, zone);
     const schema7 = await sch7.read_schema_realise();
-	const sch728 = new schema_rea(day728, zone);
-    const schema728 = await sch728.read_schema_realise();
+	const sch2019 = new schema_rea(day2019, zone);
+    const schema2019 = await sch2019.read_schema_realise();
 	var chartDom = $(containerId);
 	chartDom.style.height = "400px";
 	var myChart = echarts.init(chartDom);
 	
-	data_series_uceso = [];
 	data_series = [];
 	data_series7 = [];
-	data_series728 = [];
-	let d = day.split("-");
-	let d7 = day7.split("-");
-	let d728 = day728.split("-");
-	
-	uceso.forEach(row => {
-		let deb = row[0];
-		let nb_sect = row[1];
-		let f = deb.split(":");
-		let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]);
-		data_series_uceso.push([time,nb_sect]);
-	}); 
-	data_series_uceso.push([new Date(d[0], d[1]-1, d[2], 23, 59), uceso[uceso.length-1][1]]);
+	data_series2019 = [];
 	
 	// Si le schema du jour J existe, alors on l'affiche
 	if (typeof schema !== 'undefined') {
@@ -619,31 +638,33 @@ async function show_courage_graph(containerId, day, zone, pc) {
 		data_series7.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema7.ouverture[schema7.ouverture.length-1][3]]);
 	}
 	
-	// 2019 existe toujours
-	schema728.ouverture.forEach(row => {
-		let deb = row[1];
-		let fin = row[2];
-		let nb_sect = row[3];
-		let f = deb.split(":");
-		let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]);
-		data_series728.push([time,nb_sect]);
-	}); 
-	data_series728.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema728.ouverture[schema728.ouverture.length-1][3]]);
-	
+	// 2019 existe toujours pour un année >2019
+	// si la date initiale est en 2019, on ne va pas chercher 2019 et schema2019 = null
+	if (schema2019 != null) {
+		schema2019.ouverture.forEach(row => {
+			let deb = row[1];
+			let fin = row[2];
+			let nb_sect = row[3];
+			let f = deb.split(":");
+			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]);
+			data_series2019.push([time,nb_sect]);
+		}); 
+		data_series2019.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema2019.ouverture[schema2019.ouverture.length-1][3]]);
+	}
 	
 	var option;
 	
 	option = {
 		
-	  color: [
-		'#ce7777', // rouge
-		 '#77ce77', // vert
-		 '#ffca00', // orange
-		 '#00caff'  // bleu
-	  ],
-	  
 	  tooltip: {
-		trigger: 'axis'
+		trigger: 'axis',
+		formatter: function(params) {
+			params = params[0];
+			let chartdate = echarts.format.formatTime('hh:mm', params.value[0]);
+			let val = '<li style="list-style:none">' + params.marker +
+				params.seriesName + ':&nbsp;&nbsp;' + params.value[1] + '&nbsp;secteurs</li>';
+			return chartdate + val;
+		}
 	  },
 	  
 	  xAxis: {
@@ -659,31 +680,38 @@ async function show_courage_graph(containerId, day, zone, pc) {
 	  },
 	  series: [
 		{
-		  name: 'UCESO capa',
-		  data: data_series_uceso,
-		  type: 'line',
-		  step: 'end'
-		},
-		{
 		  name: 'Réalisé J',
+		  color: '#77ce77',
 		  type: 'line',
 		  step: 'end',
 		  data: data_series
 		},
 		{
 		  name: 'Réalisé J-7',
+		  color: '#ffca00',
 		  type: 'line',
 		  step: 'end',
 		  data: data_series7
 		},
 		{
 		  name: 'Réalisé 2019', //2019
+		  color: '#00caff',
 		  type: 'line',
 		  step: 'end',
-		  data: data_series728
+		  data: data_series2019
 		}
 	  ]
 	};
+
+	if (pc != 0) {
+		option.series.push({
+			name: 'UCESO capa',
+			color: '#ce7777',
+			data: data_series_uceso,
+			type: 'line',
+			step: 'end'
+		});
+	}
 
 	if (option && typeof option === 'object') {
 		myChart.setOption(option);
