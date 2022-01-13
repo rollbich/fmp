@@ -17,7 +17,7 @@ class schema_rea {
  	  schema = {
 		date:  {day: ..., month: ..., year: ... },
 		max_secteurs: nbre secteurs max sur la journée,
-		ouverture: [ jj/mm/aaaa, heure_début, heure_fin, nbr_secteurs, [noms des TV] ]
+		ouverture: [ jj/mm/aaaa, heure_début, heure_fin, nbr_secteurs, [noms des TV], position ]
 		tv: [ liste des tv]
 		tv_h: { tv: [ [heure_deb en min, heure_fin en min], [heure_deb, heure_fin] ...] }  = heure ouverture par tv
  	}
@@ -74,6 +74,7 @@ class schema_rea {
                 // enlève le dernier élément vide du tableau s'il existe (à cause des retours ligne)
                 ouverture.forEach( el => {
                     if (el === '') {
+                        //console.log("pop");
                         ouverture.pop();
                     }
                 });
@@ -85,41 +86,49 @@ class schema_rea {
                 
                 // extrait les TVs ouverts
                 let ouv = [];
-                
+                let position = [];
+                let pos = '';
                 // on peut avoir des tv = ????? dans ce cas on met isok à false pour ne pas ajouter temp dans les ouverture
                 let isOk = true;
-                
                 ouverture.forEach( el => {
                     if (el != '') {
+                        pos = el.substr(3,3);
                         let sub_tv = el.substr(7,5).trimStart();
                         // Correctif il peut arriver que la position s'apelle P10 et le TV = ????
                         // dans ce cas on 10 ???? alors que ce n'est pas une nouvelle ligne et une ouverture et h[1] = '-1'
                         if (sub_tv === '?????' || (h[1] === '-1' && parseInt(h[2]) < 27)) { isOk = false; } 
                         else { // ajoute dans la liste des tv
-                        schema.tv.push(sub_tv);
-                        // remplit les heures ouverts pour chaque TV
-                        if (!(schema["tv_h"].hasOwnProperty(sub_tv))) { 
-                            schema["tv_h"][sub_tv] = [];
+                            schema.tv.push(sub_tv);
+                            // remplit les heures ouverts pour chaque TV
+                            if (!(schema["tv_h"].hasOwnProperty(sub_tv))) { 
+                                schema["tv_h"][sub_tv] = [];
+                            }
+                            if (isOk == true) {
+                                schema["tv_h"][sub_tv].push([tv_h_d, tv_h_f]);
+                            }
+                            ouv.push([sub_tv, pos]);
                         }
-                        if (isOk == true) {
-                            schema["tv_h"][sub_tv].push([tv_h_d, tv_h_f]);
-                        }
-                        }
-                        ouv.push(sub_tv);
+                        
                     }
                 });
                 
-                // on teste aussi si c'est pas une manip ou erreur (ouverture < 1 minute)
+                // on teste aussi si c'est pas une manip ou erreur (ouverture < x minute)
                 if (isOk != false) {
                     // trier temp par ordre alphabétique
                     let arr_ouv = this.zone === "AE" ? this.tri(ouv) : this.tri_west(ouv);
                     temp.push(arr_ouv);
+                    //temp.push(ouv);
+                    //temp.push(position);
+                    console.log("temp");
+                    console.log(temp);
                     schema.ouverture.push(temp);
                 }
             //} 
         })
-
+        console.log("Schema ouverture");
+        console.log(schema.ouverture);
         // parfois on a le même TV 2 fois de suite => concaténer les 2 lignes en 1 en étendant l'heure de la 1ère ligne, à faire 2 fois car parfois il y a 3 fois le même TV
+        // le faire uniquement si la position est inchangée
         this.doublon(schema);
         this.doublon(schema);
         this.correct_technical_opening(schema);
@@ -127,7 +136,6 @@ class schema_rea {
         this.doublon(schema);
         // enlève les doublons du tableau des TV
         schema.tv = [...new Set(schema.tv)];
-    
         return schema;
         }
         
@@ -162,10 +170,10 @@ class schema_rea {
         const bloc3 = ["AB", "AB1", "AB2", "AB3", "AB4", "AB12", "AB34", "B12", "B34", "B1", "B2", "B3", "B4", "AA", "BB", "A12", "A34", "A1", "A2", "A3", "A4"];
         const bloc4 = ["GYAB", "GYA", "GY", "GY1", "GY2", "GY3", "GY4", "GY12", "GY34", "GG", "YY", "Y12", "Y34", "Y1", "Y2", "Y3", "Y4", "G12", "G34", "G1", "G2", "G3", "G4"];
         // on place les tv appartenant au groupe 1 dans un tableau, idem pour le groupe 2, etc...
-        let bloc1_tv_array = arr_tv.filter(tv => bloc1.includes(tv));
-        let bloc2_tv_array = arr_tv.filter(tv => bloc2.includes(tv));
-        let bloc3_tv_array = arr_tv.filter(tv => bloc3.includes(tv));
-        let bloc4_tv_array = arr_tv.filter(tv => bloc4.includes(tv));
+        let bloc1_tv_array = arr_tv.filter(tv => bloc1.includes(tv[0]));
+        let bloc2_tv_array = arr_tv.filter(tv => bloc2.includes(tv[0]));
+        let bloc3_tv_array = arr_tv.filter(tv => bloc3.includes(tv[0]));
+        let bloc4_tv_array = arr_tv.filter(tv => bloc4.includes(tv[0]));
         // on concatène les 4 tableaux en 1
         arr_tv = [...bloc1_tv_array, ...bloc2_tv_array, ...bloc3_tv_array, ...bloc4_tv_array];
         return arr_tv;	
@@ -182,11 +190,11 @@ class schema_rea {
         const bloc3 = ["MM", "MF", "M12", "M1"];
         const bloc4 = ["M34", "M2", "M3", "M4", "FDZ", "FF", "F12", "MF12"];
         const bloc5 = ["MF34", "F34", "DZ", "DD", "ZZ", "DH", "DL", "DZL", "DZH"];
-        let bloc1_tv_array = arr_tv.filter(tv => bloc1.includes(tv));
-        let bloc2_tv_array = arr_tv.filter(tv => bloc2.includes(tv));
-        let bloc3_tv_array = arr_tv.filter(tv => bloc3.includes(tv));
-        let bloc4_tv_array = arr_tv.filter(tv => bloc4.includes(tv));
-        let bloc5_tv_array = arr_tv.filter(tv => bloc5.includes(tv));
+        let bloc1_tv_array = arr_tv.filter(tv => bloc1.includes(tv[0]));
+        let bloc2_tv_array = arr_tv.filter(tv => bloc2.includes(tv[0]));
+        let bloc3_tv_array = arr_tv.filter(tv => bloc3.includes(tv[0]));
+        let bloc4_tv_array = arr_tv.filter(tv => bloc4.includes(tv[0]));
+        let bloc5_tv_array = arr_tv.filter(tv => bloc5.includes(tv[0]));
         // on concatène les 4 tableaux en 1
         arr_tv = [...bloc1_tv_array, ...bloc2_tv_array, ...bloc3_tv_array, ...bloc4_tv_array, ...bloc5_tv_array];
         return arr_tv;	
@@ -207,10 +215,18 @@ class schema_rea {
                 let tvs2 = [...schema.ouverture[i+1][4]];
                 // on trie le tableau et on l'aplatit en strings pour les comparer
                 if (tvs1.sort().toString() == tvs2.sort().toString()) {
-                    const temp_array = [schema.ouverture[i][0], schema.ouverture[i][1], schema.ouverture[i+1][2], schema.ouverture[i][3], schema.ouverture[i][4]];
-                    // on remplace la ligne i dans le tableau et on supprime la ligne i+1 du tableau
-                    schema.ouverture.splice(i, 1, temp_array);
-                    schema.ouverture.splice(i+1, 1);
+                    console.log(i);
+                    let pos1 = [...schema.ouverture[i][5]];
+                    let pos2 = [...schema.ouverture[i+1][5]];
+                    console.log(pos1);
+                    console.log(pos2);
+                    // si ce sont les mêmes numéro de position
+                    if (pos1.sort().toString() == pos2.sort().toString()) {
+                        const temp_array = [schema.ouverture[i][0], schema.ouverture[i][1], schema.ouverture[i+1][2], schema.ouverture[i][3], schema.ouverture[i][4]];
+                        // on remplace la ligne i dans le tableau et on supprime la ligne i+1 du tableau
+                        schema.ouverture.splice(i, 1, temp_array);
+                        schema.ouverture.splice(i+1, 1);
+                    }
                 }
             }
         }
@@ -234,7 +250,7 @@ class schema_rea {
             let next_fin = time_to_min(schema.ouverture[i+1][2]);
             let diff = next_fin - next_deb;
             if (diff < this.ouv_tech) {
-                // [date, heure_deb, heure_fin, nbre_sec, TV]
+                // [date, heure_deb, heure_fin, nbre_sec, [TV], [position]]
                 const temp_array = [schema.ouverture[i][0], current_deb, min_to_time(next_fin), schema.ouverture[i][3], schema.ouverture[i][4]];
                 schema.ouverture.splice(i, 1, temp_array);
                 schema.ouverture.splice(i+1, 1);

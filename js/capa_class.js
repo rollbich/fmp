@@ -563,8 +563,13 @@ class feuille_capa extends capa {
 		 @param {string} zone - "AE" ou "AW"
 		 @param {array} pc - objet d'array des crénaux horaires associés aux pc dispo
 	-------------------------------------------------------------------------------- */
-async function show_courage_graph(containerId, day, zone, pc) {
+async function show_courage_graph(containerId, day, zone, pc = 0) {
 	
+	let chartDom = $(containerId);
+	chartDom.style.height = "400px";
+	let myChart = echarts.init(chartDom);
+	myChart.clear();
+
 	const d = day.split("-");
 	let pc_15mn = null;
 	let pc_instr_15mn = null;
@@ -602,9 +607,7 @@ async function show_courage_graph(containerId, day, zone, pc) {
     const schema7 = await sch7.read_schema_realise();
 	const sch2019 = new schema_rea(day2019, zone);
     const schema2019 = await sch2019.read_schema_realise();
-	var chartDom = $(containerId);
-	chartDom.style.height = "400px";
-	var myChart = echarts.init(chartDom);
+	
 	
 	data_series = [];
 	data_series7 = [];
@@ -621,6 +624,7 @@ async function show_courage_graph(containerId, day, zone, pc) {
 			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]); // -1 pour le mois car l'index commence à 0
 			data_series.push([time,nb_sect]);
 		}); 
+		//data_series[0] = [new Date(d[0], d[1]-1, d[2], 00, 00), schema.ouverture[0][3]];
 		data_series.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema.ouverture[schema.ouverture.length-1][3]]);
 	}
 	
@@ -669,7 +673,8 @@ async function show_courage_graph(containerId, day, zone, pc) {
 	  
 	  xAxis: {
 		type: 'time',
-		splitNumber:12
+		splitNumber:12,
+		
 	  },
 	  
 	  yAxis: {

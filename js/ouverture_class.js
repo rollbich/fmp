@@ -38,8 +38,8 @@ class ouverture extends schema_rea {
             res += '<tr>'; 
             for(let j=1;j<4;j++) { res += `<td>${row[j]}</td>`; }					
             row[4].forEach(tv => {
-                let r = this.get_ouverture_totale(tv, time_to_min(row[1]), time_to_min(row[2]));
-                res += `<td class="tv" data-tv="${tv}" data-deb="${r[0]}" data-fin="${r[1]}">${tv}</td>`;
+                let r = this.get_ouverture_totale(tv[0], time_to_min(row[1]), time_to_min(row[2]));
+                res += `<td title="${tv[1]}" class="tv" data-tv="${tv[0]}" data-deb="${r[0]}" data-fin="${r[1]}">${tv[0]}</td>`;
             });
             res += '</tr>';
                                     
