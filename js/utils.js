@@ -71,6 +71,11 @@ Date.prototype.ecartJour = function(dat) {
 	return Math.round((dat.getTime()-this.getTime())/(1000*3600*24));
 }
 
+// clone une date
+Date.prototype.clone = function() { 
+	return new Date(this.getTime()); 
+};
+
 // ajoute x jours à une date
 Date.prototype.addDays= function(nb_day) {
 	this.setDate(this.getDate() + nb_day);
@@ -180,6 +185,30 @@ function weeksInYear(year) {
     let d = new Date(year, 11, 31);
     let week = getWeekNumber(d)[1];
     return week == 1 ? 52 : week;
+}
+
+const getZeroBasedIsoWeekDay = date => (date.getDay() + 6) % 7
+const getIsoWeekDay = date => getZeroBasedIsoWeekDay(date) + 1
+
+// weekDay = 1 pour lundi.... = 7 pour dimanche
+function weekDateToDate(year, week, weekDay) {
+    const zeroBasedWeek = week - 1
+    const zeroBasedWeekDay = weekDay - 1
+    let days = (zeroBasedWeek * 7) + zeroBasedWeekDay
+
+    // Dates start at 2017-01-01 and not 2017-01-00
+    days += 1
+
+    const firstDayOfYear = new Date(year, 0, 1)
+    const firstIsoWeekDay = getIsoWeekDay(firstDayOfYear)
+    const zeroBasedFirstIsoWeekDay = getZeroBasedIsoWeekDay(firstDayOfYear)
+
+    // If year begins with W52 or W53
+    if (firstIsoWeekDay > 4) days += 8 - firstIsoWeekDay
+    // Else begins with W01
+    else days -= zeroBasedFirstIsoWeekDay
+
+    return new Date(year, 0, days)
 }
 
 /*	-------------------------------------------------------
