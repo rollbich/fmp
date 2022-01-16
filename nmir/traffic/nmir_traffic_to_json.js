@@ -59,8 +59,8 @@ class nmir_traffic {
 	console.log(rows_RAE);
 	console.log(rows_RAW);
 	console.log(rows_CTA);
-	//console.log("nb rows: "+rows.length);
-	// il faut faire 3 boucles car il peut y avoir des lignes manquantes et donc i serait différent pour les 3 espaces
+
+	// il faut faire 3 boucles car il peut y avoir des lignes manquantes si pas de données nmir pour une heure et donc i serait différent pour les 3 espaces
 	for(let i=0;i<rows_RAE.length-1;i++) {
 		const ligne_RAE = rows_RAE[i].split(",");
 		const day = ligne_RAE[1];
@@ -90,7 +90,7 @@ class nmir_traffic {
 		}
 	}
 	console.log(counts);
-	let vols = {};
+	
 	for (let [key, value] of Object.entries(counts)) {
 		vols = {};
 		vols["LFMMFMPE"] = [];
