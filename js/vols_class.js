@@ -127,7 +127,48 @@ class period_vols {
 	}
 }
 
+class weekly_vols {
+	constructor(year) {
+		this.year = year;
+	}
 
+	async init() {
+		this.weekly_vols = await this.get_data_weekly_vols();
+		this.nbre_vols = this.get_weekly_vols();
+	}
+
+	/*  ----------------------------------------------------------------------------------
+		Lit le fichier json de regul
+			@param {string} day - "yyyy-mm-dd"
+            @returns {	"LFMMCTA":["LFMMCTA", day, nb_vol]
+						"LFMMFMPE":[ [TV, day, nb_vol], []...],
+						"LFMMFMPW":[ [TV, day, nb_vol], []...],
+						"requestReceptionTime":"2022-01-02 22:42:17",
+						"status":"OK",
+						"VOLS_RAE":[{"flight":{...}},{}]
+						"VOLS_RAW":[{"flight":{...}},{}]
+					}
+	-------------------------------------------------------------------------------------*/
+	async get_data_weekly_vols() {
+		const url = `../b2b/json/${this.year}-weekly-flights.json`;	
+		const resp = await loadJson(url);
+		return resp;
+	}
+
+	get_weekly_vols() {
+		const vols = {};
+		vols['year'] = parseInt(this.weekly_vols['year']);
+		vols['est'] = [];
+		vols['west'] = [];
+		vols['cta'] = [];
+		for(let i=1;i<53;i++) {
+			if (typeof this.weekly_vols['est'][i] !== 'undefined') vols['est'].push(this.weekly_vols['est'][i]);
+			if (typeof this.weekly_vols['west'][i] !== 'undefined') vols['west'].push(this.weekly_vols['west'][i]);
+			if (typeof this.weekly_vols['cta'][i] !== 'undefined') vols['cta'].push(this.weekly_vols['cta'][i]);
+		}
+		return vols;
+	}
+}
 
 
 
