@@ -7,7 +7,7 @@
 <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="robots" content="noindex">
-        <title>Capa</title>
+        <title>Ouverture</title>
 		<link rel="icon" href="favicon.ico" />
 		<script type="text/javascript" src="../js/base.js"></script>
 		<script type="text/javascript" src="../js/tds-name.js"></script>

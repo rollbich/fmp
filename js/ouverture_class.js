@@ -1,6 +1,9 @@
 class ouverture extends schema_rea {
-
-// on ne compte pas les ouvertures techniques < x minutes
+    /*  -------------------------------------------------------------
+        @param {string} containerId - Id du conteneur
+            @param {string} day - "yyyy-mm-dd"
+            @param {string} zone - "AE ou "AW"
+    ----------------------------------------------------------------- */
     constructor(containerId, day, zone) {
         super(day, zone);
         this.container = $(containerId);
@@ -9,21 +12,18 @@ class ouverture extends schema_rea {
 
 /*  --------------------------------------------------------------------------------------------- 
 	  Lit le schema réalisé, affiche le tableau des ouvertures et ajoute les 'clicks' sur les TV
-	    @param {string} containerId - Id du conteneur
-		@param {string} day - "yyyy-mm-dd"
-		@param {string} zone - "AE ou "AW"
 	--------------------------------------------------------------------------------------------- */
 // 
     async show_ouverture() {
-        this.schema = await this.read_schema_realise();	
+        this.schema = await this.read_schema_realise();
+        if (typeof this.schema === 'undefined') return;	
         this.show_table_ouverture();
         this.add_ouverture_listener();
     }
 
 /*  ------------------------------------------------------------------------------
 	  Affiche la table du schema d'ouvertures dans le container
-	 	@param {object} schema - objet schéma
-		@param {HTMLElement} container - HTML Element du conteneur
+	 	 - Tri par horaire
 	------------------------------------------------------------------------------ */
     show_table_ouverture() {
         let res = `<table class="ouverture">
@@ -46,8 +46,66 @@ class ouverture extends schema_rea {
         });
         res += '</tbody></table>';
         res += `<div class="max">Max secteurs : ${this.schema.max_secteurs}</div>`;
-                            
+        res += `<button id='bouton_ouv_par_pos'>Afficher par position</button>`;                  
         this.container.innerHTML = res;
+        $('bouton_ouv_par_pos').addEventListener('click', e => {
+            this.show_table_ouverture_par_position();
+        });
+    }
+
+/*  ------------------------------------------------------------------------------
+	  Affiche la table du schema d'ouvertures dans le container
+	 	- Tri par position
+	------------------------------------------------------------------------------ */
+    show_table_ouverture_par_position() {
+        let res = `<table class="ouverture">
+                        <caption>Journée du ${this.schema.date}</caption>
+                        <thead>
+                            <tr class="titre"><th class="separation">Position</th>`;
+        let tab_h = [];
+        for (const [key, value] of Object.entries(this.schema.position)) {                        				
+            value.forEach(arr => {
+                let tv = arr[2];
+                let deb = min_to_time(arr[0]);
+                let fin = min_to_time(arr[1]);
+                let data = deb+"-"+fin;
+                tab_h.push(data);
+            });                           
+        }   
+        
+        tab_h = [...new Set(tab_h)].sort(); 
+        tab_h.forEach( h => {
+            res += `<th class="separation">${h.substr(0,5)}</th>`;
+        })
+        res += "</tr></thead><tbody>";
+        console.log("tab_h");
+        console.log(tab_h);
+                    
+        for (const [key, value] of Object.entries(this.schema.position)) {                     
+            res += '<tr>'; 
+            res += `<td class="separation">${key}</td>`;
+            const index_arr = new Array(tab_h.length).fill("");					
+            value.forEach( arr => {
+                let tv = arr[2];
+                let deb = min_to_time(arr[0]);
+                let fin = min_to_time(arr[1]);
+                let d = deb+"-"+fin;
+                let index = tab_h.indexOf(d);
+                index_arr[index] = [tv, deb, fin];
+            });
+            index_arr.forEach( val => {
+                if (typeof val[0] === 'undefined') res += `<td class="separation">-</td>`;
+                else res += `<td class="separation">${val[0]}</td>`;
+            })
+            res += '</tr>';                      
+        }
+
+        res += '</tbody></table>';
+        res += `<br><button id='bouton_ouv_par_heure'>Afficher par heure</button>`;                 
+        this.container.innerHTML = res;
+        $('bouton_ouv_par_heure').addEventListener('click', e => {
+            this.show_table_ouverture();
+        });
     }
 
 /*  -------------------------------------------------------------------------------- 

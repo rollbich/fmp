@@ -12,18 +12,20 @@ class schema_rea {
  	COUR-20210513.AW.sch.rea
 
 	@param {string} day - "yyyy-mm-dd"
+
 	@param {string} zone - "AE" ou "AW"
  	@returns {object} schema
  	  schema = {
 		date:  {day: ..., month: ..., year: ... },
 		max_secteurs: nbre secteurs max sur la journée,
-		ouverture: [ jj/mm/aaaa, heure_début, heure_fin, nbr_secteurs, [noms des TV], position ]
+		ouverture: [ jj/mm/aaaa, heure_début, heure_fin, nbr_secteurs, [noms des TV, position] ]
 		tv: [ liste des tv]
+        position: { position: [ [heure_deb, heure_fin, TV], ...}
 		tv_h: { tv: [ [heure_deb en min, heure_fin en min], [heure_deb, heure_fin] ...] }  = heure ouverture par tv
  	}
 	---------------------------------------------------------------------------------------------------------------- */
     async read_schema_realise() {
-        if (this.day === null) return;
+        if (this.day === null) throw new Error("Le jour est indéfini");
         const fichier_courage = dir+"Realise/"+this.get_courage_filename(this.day, this.zone);
         const schema = {};
         schema.ouverture = [];
@@ -32,6 +34,7 @@ class schema_rea {
         schema.date = get_date_from_courage_file(fichier_courage);
         schema.max_secteurs = 0;
         schema.tv_h = {};
+        schema.position = {};
         
         try { 
         const contenu = await fetch(`/${fichier_courage}`).then( (response) => {
@@ -59,71 +62,68 @@ class schema_rea {
             // sert pour tv_h
             const tv_h_d = Math.max(parseInt(h[1]), 0);
             const tv_h_f = parseInt(h[2]);
-
-            // teste si ouverture > ouv_tech
-            //if (parseInt(h[2]) - parseInt(h[1]) > ouv_tech) { 
                 
-                // si l'heure de fin est une heure ronde, enlève 1 minute
-                if (parseInt(h[2]) % 60 === 0) h[2]--;
-                let h_debut = parseInt(h[1]) < 0 ? "00:00" : min_to_time(parseInt(h[1]));
-                let h_fin = min_to_time(parseInt(h[2])); 
-                
-                let temp = [schema.date, h_debut, h_fin];
-                // enlève le 1er élément du tableau => il ne reste que les ouvertures
-                ouverture.shift();
-                // enlève le dernier élément vide du tableau s'il existe (à cause des retours ligne)
-                ouverture.forEach( el => {
-                    if (el === '') {
-                        //console.log("pop");
-                        ouverture.pop();
-                    }
-                });
-                // ajoute le nb de secteurs ouverts
-                temp.push(ouverture.length);
-                
-                // calcul du nbre max de secteurs
-                schema.max_secteurs = Math.max(schema.max_secteurs, ouverture.length);
-                
-                // extrait les TVs ouverts
-                let ouv = [];
-                let position = [];
-                let pos = '';
-                // on peut avoir des tv = ????? dans ce cas on met isok à false pour ne pas ajouter temp dans les ouverture
-                let isOk = true;
-                ouverture.forEach( el => {
-                    if (el != '') {
-                        pos = el.substr(3,3);
-                        let sub_tv = el.substr(7,5).trimStart();
-                        // Correctif il peut arriver que la position s'apelle P10 et le TV = ????
-                        // dans ce cas on 10 ???? alors que ce n'est pas une nouvelle ligne et une ouverture et h[1] = '-1'
-                        if (sub_tv === '?????' || (h[1] === '-1' && parseInt(h[2]) < 27)) { isOk = false; } 
-                        else { // ajoute dans la liste des tv
-                            schema.tv.push(sub_tv);
-                            // remplit les heures ouverts pour chaque TV
-                            if (!(schema["tv_h"].hasOwnProperty(sub_tv))) { 
-                                schema["tv_h"][sub_tv] = [];
-                            }
-                            if (isOk == true) {
-                                schema["tv_h"][sub_tv].push([tv_h_d, tv_h_f]);
-                            }
-                            ouv.push([sub_tv, pos]);
+            // si l'heure de fin est une heure ronde, enlève 1 minute
+            if (parseInt(h[2]) % 60 === 0) h[2]--;
+            let h_debut = parseInt(h[1]) < 0 ? "00:00" : min_to_time(parseInt(h[1]));
+            let h_fin = min_to_time(parseInt(h[2])); 
+            
+            let temp = [schema.date, h_debut, h_fin];
+            // enlève le 1er élément du tableau => il ne reste que les ouvertures
+            ouverture.shift();
+            // enlève le dernier élément vide du tableau s'il existe (à cause des retours ligne)
+            ouverture.forEach( el => {
+                if (el === '') {
+                    //console.log("pop");
+                    ouverture.pop();
+                }
+            });
+            // ajoute le nb de secteurs ouverts
+            temp.push(ouverture.length);
+            
+            // calcul du nbre max de secteurs
+            schema.max_secteurs = Math.max(schema.max_secteurs, ouverture.length);
+            
+            // extrait les TVs ouverts
+            let ouv = [];
+            let pos = '';
+            // on peut avoir des tv = ????? dans ce cas on met isok à false pour ne pas ajouter temp dans les ouverture
+            let isOk = true;
+            ouverture.forEach( el => {
+                if (el != '') {
+                    pos = el.substr(3,3);
+                    let sub_tv = el.substr(7,5).trimStart();
+                    // Correctif il peut arriver que la position s'apelle P10 et le TV = ????
+                    // dans ce cas on 10 ???? alors que ce n'est pas une nouvelle ligne et une ouverture et h[1] = '-1'
+                    if (sub_tv === '?????' || (h[1] === '-1' && parseInt(h[2]) < 27)) { isOk = false; } 
+                    else { // ajoute dans la liste des tv
+                        schema.tv.push(sub_tv);
+                        // remplit les heures ouverts pour chaque TV et chaque position
+                        if (!(schema["tv_h"].hasOwnProperty(sub_tv))) { 
+                            schema["tv_h"][sub_tv] = [];
                         }
-                        
+                        if (!(schema["position"].hasOwnProperty(pos))) { 
+                            schema["position"][pos] = [];
+                        }
+                        if (isOk == true) {
+                            schema["tv_h"][sub_tv].push([tv_h_d, tv_h_f]);
+                            schema["position"][pos].push([tv_h_d, tv_h_f,sub_tv]);
+                        }
+                        ouv.push([sub_tv, pos]);
                     }
-                });
+                    
+                }
+            });
                 
                 // on teste aussi si c'est pas une manip ou erreur (ouverture < x minute)
                 if (isOk != false) {
                     // trier temp par ordre alphabétique
                     let arr_ouv = this.zone === "AE" ? this.tri(ouv) : this.tri_west(ouv);
                     temp.push(arr_ouv);
-                    //temp.push(ouv);
-                    //temp.push(position);
-                    console.log("temp");
-                    console.log(temp);
+                    //console.log("temp");
+                    //console.log(temp);
                     schema.ouverture.push(temp);
                 }
-            //} 
         })
         console.log("Schema ouverture");
         console.log(schema.ouverture);
@@ -214,19 +214,12 @@ class schema_rea {
                 let tvs1 = [...schema.ouverture[i][4]];
                 let tvs2 = [...schema.ouverture[i+1][4]];
                 // on trie le tableau et on l'aplatit en strings pour les comparer
+                // ex doublon le 4 juillet 2019 à l'est : tvs1.sort().toString() = AB12,P22,AB34,P20,EK,P02,GY,P08,SBAM,P18
                 if (tvs1.sort().toString() == tvs2.sort().toString()) {
-                    console.log(i);
-                    let pos1 = [...schema.ouverture[i][5]];
-                    let pos2 = [...schema.ouverture[i+1][5]];
-                    console.log(pos1);
-                    console.log(pos2);
-                    // si ce sont les mêmes numéro de position
-                    if (pos1.sort().toString() == pos2.sort().toString()) {
-                        const temp_array = [schema.ouverture[i][0], schema.ouverture[i][1], schema.ouverture[i+1][2], schema.ouverture[i][3], schema.ouverture[i][4]];
-                        // on remplace la ligne i dans le tableau et on supprime la ligne i+1 du tableau
-                        schema.ouverture.splice(i, 1, temp_array);
-                        schema.ouverture.splice(i+1, 1);
-                    }
+                    const temp_array = [schema.ouverture[i][0], schema.ouverture[i][1], schema.ouverture[i+1][2], schema.ouverture[i][3], schema.ouverture[i][4]];
+                    // on remplace la ligne i dans le tableau et on supprime la ligne i+1 du tableau
+                    schema.ouverture.splice(i, 1, temp_array);
+                    schema.ouverture.splice(i+1, 1);
                 }
             }
         }
@@ -234,6 +227,7 @@ class schema_rea {
 
 /*  -------------------------------------------------------------------------------
 	  corrige les heures de debut lorsque des ouvertures techniques sont détectées
+      (sauf pour schema.position : même les ouvertures technique sont gardées)
 	   ex : ex 15:37 - 15:56	  puis 15:56 - 15:58  (ouverture technique)
 	 	@param {object} schema - array non trié
 		@returns {array} - array filtré

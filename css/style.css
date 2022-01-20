@@ -37,6 +37,10 @@ body {
 	display: none;
 }
 
+button {
+	margin-top: 10px;
+}
+
 .pointer {
 	cursor: pointer;
 }
@@ -244,6 +248,7 @@ select, option {
 	padding: 10px;
 	width: auto;
 	overflow: auto;
+	margin-right: 20px;
 }
 
 table {
@@ -293,6 +298,12 @@ table td, table th {
 	padding-right: 7px;
 	text-align: center;
 	border-collapse: collapse;
+}
+
+td.separation, th.separation {
+	border-right: 1px solid;
+	padding-right: 4px;
+	padding-left: 4px;
 }
 
 table td.tv, table th.tv {
