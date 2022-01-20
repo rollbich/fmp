@@ -3,7 +3,7 @@
   require("php/config.inc.php");
   require("php/check_login.inc.php");
   if ($_SESSION['loginOK'] === true) {
-    header("Location: accueil.php");
+    header("Location: accueil/accueil.php");
   }
 ?>
 <!DOCTYPE html>

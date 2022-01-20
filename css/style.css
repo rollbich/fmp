@@ -109,6 +109,16 @@ nav a:hover{
     border-bottom: 2px solid gold;
 }
 
+.body {
+	position: relative;
+	margin-top: 40px;
+	font-family: 'Dosis';
+	font-size : 28px;
+	text-align: center;
+	-webkit-animation: fade 0.6s 0s ease both;
+			animation: fade 0.6s 0s ease both;
+  }
+
 /* ------- Titre ------- */
 
 h1 {

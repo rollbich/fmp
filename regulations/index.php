@@ -14,7 +14,7 @@
 		<script type="text/javascript" src="../js/graph.js"></script>
 		<script type="text/javascript" src="../js/upload.js"></script>
         <script type="text/javascript" src="../js/regulations_class.js"></script>
-		 <script type="text/javascript" src="../js/vols_class.js"></script>
+		<script type="text/javascript" src="../js/vols_class.js"></script>
 		<script src="../js/dragger.js"></script>
 		<script src="../js/echarts.min.js"></script>
 		<script src="../js/sortable.min.js"></script>
@@ -62,15 +62,7 @@
 					r.show_result_reg("result");
 					$('glob_container').classList.remove('off');
 				});
-				/*
-				document.getElementById('bouton_vols').addEventListener('click', async e => {
-					let day = document.getElementById('start').value; // yyyy-mm-dd
-					const r = new vols(day);
-					await r.init();
-					r.show_result_daily_vols("result");
-					$('glob_container').classList.remove('off');
-				});
-				*/
+
 				document.getElementById('bouton_vols').addEventListener('click', async e => {
 					let start_day = document.getElementById('start').value; // yyyy-mm-dd
 					let end_day = document.getElementById('end').value; // yyyy-mm-dd
@@ -81,16 +73,29 @@
 				});
 				
 				document.getElementById('bouton_year_vols').addEventListener('click', async e => {
-					let start_day = document.getElementById('start').value; // yyyy-mm-dd
-					let end_day = document.getElementById('end').value; // yyyy-mm-dd
-					const r = new period_vols(start_day, end_day);
-					await r.init();
-					const listWeek = [];
-					for(let i=1;i<53;i++) {
-						listWeek.push(i);
-					}
-					const data = [];
+					let day = document.getElementById('start').value; // yyyy-mm-dd
+					let zone = document.getElementById('zone').value;
+					const zon = zone === "AE" ? "est" : "west";
+					const data = {};
+					const year = parseInt(new Date(day).getFullYear());
+					const lastyear = parseInt(new Date(day).getFullYear()) - 1;
 					
+					const nb_week = weeksInYear(new Date(day).getFullYear());
+					const nb_week_lastyear = weeksInYear(new Date(day).getFullYear() - 1);
+					const nb_week_2019 = weeksInYear(2019);
+					const nb = Math.max(nb_week, nb_week_lastyear, nb_week_2019);
+					console.log("Nb week: "+nb_week);
+					const listWeek = [];
+					for (let k=1;k<nb+1;k++) { listWeek.push(k);}
+							
+					const data_2019 = new weekly_vols(2019);
+					await data_2019.init();
+					const data_lastyear = new weekly_vols(lastyear);
+					await data_lastyear.init();		
+					const data_year = new weekly_vols(year);
+					await data_year.init();	
+					console.log(listWeek);
+					show_traffic_graph("res", year, listWeek, data_year.nbre_vols[zon], data_lastyear.nbre_vols[zon], data_2019.nbre_vols[zon], "LFMM-"+zon);
 					$('glob_container').classList.remove('off');
 				});
 
@@ -167,5 +172,7 @@
 <div id="scroll_to_top">
     <a href="#top"><img src="../images/bouton-scroll-top.jpg" alt="Retourner en haut" /></a>
 </div>
+
+<div id="res"></div>
 </body>
 </html>

@@ -450,15 +450,19 @@ function show_occ_graph(containerId, dataAxis, data, peak, sustain, tv) {
 			@param {array} dataAxis - [1, 2, 3, week...]
 			@param {array} data - [load,...]
 	-------------------------------------------------------------------------- */
-function show_traffic_graph(containerId, listWeek, data) {
-	let myChart = echarts.init(document.getElementById(containerId));
+function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, data2019, zon) {
+
+	let chartDom = $(containerId);
+	chartDom.style.height = "600px";
+	let myChart = echarts.init(chartDom);
 	
 	let option;
 	
 	option = {
 		title: {
-			text: "Weekly ER traffic throughout the year for LFMM",
+			text: `Trafic semaine sur l'année - ${zon}`,
 			textStyle: {
+				color: '#FFF',
 				fontSize: '100%'
 			},
 			x: 'center',
@@ -476,7 +480,7 @@ function show_traffic_graph(containerId, listWeek, data) {
 		toolbox: {
 			feature: {
 				saveAsImage: {
-					name: "Weekly traffic throughout the year LFMM",
+					name: `Trafic semaine sur l'année - ${zon}`,
 					show: true
 				}
 			}
@@ -484,25 +488,31 @@ function show_traffic_graph(containerId, listWeek, data) {
 		grid: {
 			containLabel: true
 		},
-		/*
 		legend: {
 			x: 'center', // 'center' | 'left' | {number},
 			y: 'top' | 30, // 'center' | 'bottom' | {number}
 			padding: -1,
-			data: [this_week.split("_")[1], range[1].split("_")[1], range[2].split("_")[1]]
+			textStyle: {
+				color: '#fff'
+			}
 		},
-		*/
 		calculable: true,
 		xAxis: {
 			type: 'category',
-			name: 'Week of the year',
+			name: 'Semaines',
 			nameLocation: 'middle',
 			axisLabel: {
 				show: true,
 				interval: 'auto',    // {number}
 				margin: 8,
+				textStyle: {
+					color: '#fff'
+				}
 			},
 			nameGap: 30,
+			nameTextStyle: {
+				color: '#fff'
+			},
 			data: listWeek
 		},
 		yAxis: {
@@ -510,28 +520,31 @@ function show_traffic_graph(containerId, listWeek, data) {
 			axisLabel: {
 				formatter: '{value}'
 			},
-			name: 'No. of flights',
+			name: 'Nombre de vols',
+			nameTextStyle: {
+				color: '#fff'
+			},
+			nameRotate: 90,
+    		nameGap: 60,
 			nameLocation: 'middle'
-			/*,
-			nameGap: nameGap / 0.90*/
 		},
 		series: [
-			/*{
-				name: range[2].split("_")[1],
+			{
+				name: "2019",
 				type: 'line',
-				color: '#342D7E',
+				color : '#339dff',
 				areaStyle: {},
-				data: previousYear2,
+				data: data2019,
 			},
 			{
-				name: range[1].split("_")[1],
+				name: year-1,
 				type: 'line',
 				color: 'yellow',
 				areaStyle: {},
-				data: previousYear,
-			},*/
+				data: data_lastyear,
+			},
 			{
-				name: "2020",
+				name: year,
 				type: 'line',
 				color: '#4CC417',
 				areaStyle: {},
@@ -541,15 +554,5 @@ function show_traffic_graph(containerId, listWeek, data) {
 	
 		
 	myChart.setOption(option);
-
-	// Enable data zoom when user click bar.
-	let zoomSize = 6;
-	myChart.on('click', function (params) {
-		myChart.dispatchAction({
-			type: 'dataZoom',
-			startValue: dataAxis[Math.max(params.dataIndex - zoomSize / 2, 0)],
-			endValue: dataAxis[Math.min(params.dataIndex + zoomSize / 2, data.length - 1)]
-		});
-	});
 	
 }
