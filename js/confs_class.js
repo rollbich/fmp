@@ -28,6 +28,7 @@ class conf {
 			@param {string} day - "yyyy-mm-dd"
 		------------------------------------------------------------------ */
 	async show_result_confs(containerId) {
+		if (typeof this.confs === 'undefined') return;
 		try {
 			let res = "<div class='conf'>";
 			res += `

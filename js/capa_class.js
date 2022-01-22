@@ -22,7 +22,7 @@ class capa {
                 "pc_total_dispo_15mn":[ ["hh:mm", nb_pc_dispo], [...], ... ] }
     --------------------------------------------------------------------------------------- */
     async get_nbpc_dispo(update = {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0}) {
-        
+        if (this.day === null) throw new Error("Le jour est indéfini");
         try {
 			const tab_vac_eq = this.get_vac_eq();
 			const instr = await loadJson("../instruction.json");
@@ -577,6 +577,8 @@ async function show_courage_graph(containerId, day, zone, pc = 0) {
 	let data_series_uceso = null;
 	if (pc == 0) {
 		show_popup("Données OLAF indisponibles", "Pas de graph UCESO proposé");
+		await wait(1000);
+		document.querySelector('.popup-close').click();
 	} else {
 		pc_15mn = pc["pc_total_dispo_15mn"];
 		pc_instr_15mn = pc["pc_instr_15mn"];
@@ -624,7 +626,6 @@ async function show_courage_graph(containerId, day, zone, pc = 0) {
 			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]); // -1 pour le mois car l'index commence à 0
 			data_series.push([time,nb_sect]);
 		}); 
-		//data_series[0] = [new Date(d[0], d[1]-1, d[2], 00, 00), schema.ouverture[0][3]];
 		data_series.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema.ouverture[schema.ouverture.length-1][3]]);
 	}
 	
@@ -656,7 +657,19 @@ async function show_courage_graph(containerId, day, zone, pc = 0) {
 		data_series2019.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema2019.ouverture[schema2019.ouverture.length-1][3]]);
 	}
 	
-	var option;
+	const i1 = get_i1(data_series, data_series_uceso);
+
+	if ( $("i1") === null) {
+		const newDiv = document.createElement("div");
+		newDiv.setAttribute("id", "i1");
+		const newContent = document.createTextNode('Indicateur i1: '+i1+'%');
+		newDiv.appendChild(newContent);
+		document.body.insertBefore(newDiv, chartDom);
+	} else {
+		$("i1").innerHTML = 'Indicateur i1: '+i1+'%';
+	}
+
+	let option;
 	
 	option = {
 		
@@ -670,16 +683,50 @@ async function show_courage_graph(containerId, day, zone, pc = 0) {
 			return chartdate + val;
 		}
 	  },
-	  
+	  legend: {
+		x: 'center', // 'center' | 'left' | {number},
+		y: 'top' | 30, // 'center' | 'bottom' | {number}
+		padding: -1,
+		textStyle: {
+			color: '#fff'
+		}
+	  },
 	  xAxis: {
 		type: 'time',
 		splitNumber:12,
-		
+		name: 'Heures',
+		nameTextStyle: {
+			fontSize: 14,
+			color: '#fff'
+		},
+    	nameGap: 30,
+		nameLocation: 'middle',
+		axisLine: {
+			lineStyle: {
+				color: '#bbb'
+			}
+		}
 	  },
-	  
 	  yAxis: {
-		splitLine:{
-		  show:false
+		name: 'Nombre de secteurs',
+		nameTextStyle: {
+			fontSize: 14,
+			color: '#fff'
+		},
+		nameRotate: 90,
+    	nameGap: 30,
+		nameLocation: 'middle',
+		splitLine: {
+		  show: true,
+		  lineStyle: {
+			  color: '#fff',
+			  opacity: 0.3
+		  }
+		},
+		axisLine: {
+			lineStyle: {
+				color: '#bbb'
+			}
 		},
 		type: 'value'
 	  },
@@ -723,3 +770,34 @@ async function show_courage_graph(containerId, day, zone, pc = 0) {
 	}
 	
 }
+
+/* ---------------------------------------------------------------------------------
+		Affiche le i1 : Durée_réa*nb_sect_rea/Durée_uceso*nb_sect_uceso
+		
+		Paramètre :
+		 @param {string} containerId - id du container d'affichage
+		 @param {array} data_realise - [ [time, nb_secteurs], ... ]
+		 @param {array} data_uceso - [ [time, nb_secteurs], ... ]
+	-------------------------------------------------------------------------------- */
+	function get_i1(data_realise, data_uceso) {
+		const rl = data_realise.length;
+		const ul = data_uceso.length;
+		console.log("Data Realise");
+		console.log(data_realise);
+		let rea = 0;
+		let uce = 0;
+
+		for(let i=0;i<rl-1;i++) {
+			console.log((get_minutes(data_realise[i+1][0]) - get_minutes(data_realise[i][0]))*data_realise[i][1]);
+			rea += (get_minutes(data_realise[i+1][0]) - get_minutes(data_realise[i][0]))*data_realise[i][1];
+		}
+		console.log("Rea: "+rea);
+		for(let i=1;i<ul-1;i++) {
+			uce += (get_minutes(data_uceso[i+1][0]) - get_minutes(data_uceso[i][0]))*data_uceso[i][1];
+		}
+		console.log("Uce: "+uce);
+		const i1 = Math.round(rea*100/uce);
+		console.log("i1: "+rea/uce);
+		return i1;
+
+	}

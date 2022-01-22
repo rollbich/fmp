@@ -188,7 +188,9 @@ class ouverture extends schema_rea {
             for (const td of tds) {
                 td.classList.remove('tv');
             }
-            show_popup("Accès aux graphes impossible", "Les données n'ont pas été récupérées en B2B.");
+            show_popup("Accès aux graphes impossible", `Les données du ${this.day} n'ont pas été récupérées en B2B.`);
+            await wait(1250);
+            document.querySelector('.popup-close').click();
         }
     }
 
