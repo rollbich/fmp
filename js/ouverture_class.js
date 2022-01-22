@@ -105,6 +105,7 @@ class ouverture extends schema_rea {
         this.container.innerHTML = res;
         $('bouton_ouv_par_heure').addEventListener('click', e => {
             this.show_table_ouverture();
+            this.add_ouverture_listener();
         });
     }
 
