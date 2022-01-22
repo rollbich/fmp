@@ -44,6 +44,11 @@ const removeItemAll = (arr, value) => {
   return arr;
 }
 
+// function wait
+function wait(t) {
+	return new Promise((r) => setTimeout(r, t));
+}
+
 /*  -----------------------------------------
  				 Utils date 
 	----------------------------------------- */
@@ -58,6 +63,13 @@ function convertDate(date) {
 	var ddChars = dd.split('');
   
 	return yyyy + '-' + (mmChars[1]?mm:"0"+mmChars[0]) + '-' + (ddChars[1]?dd:"0"+ddChars[0]);
+}
+
+// get minutes from a date
+function get_minutes(date) {
+	var h = date.getHours()*60;
+	var m = date.getMinutes();
+	return h+m;
   }
 
 // inverse le sens de la date: 2021-12-25 => 25-12-2012

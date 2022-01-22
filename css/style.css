@@ -515,3 +515,17 @@ div.conf th {
 #scroll_to_top img {
   width: 45px;
 }
+
+/* ------- i1 ------- */
+#i1 {
+	width: 200px;
+	margin: 0 auto;
+	margin-top: 30px;
+	border: 2px double white;
+	padding: 10px;
+	font-family: 'RussoOne';
+	font-size : 16px;
+	text-align: center;
+	color: var(--select-bg-color);
+
+}

@@ -16,7 +16,7 @@ async function loadJsonB2B(url, type, zone) {
   }
   catch (err) {
 	const z = zone === "AE" ? "EST" : "OUEST";
-	alert(`Erreur ${type} zone ${z} : ${err.message}`);
+	//alert(`Erreur ${type} zone ${z} : ${err.message}`);
   }
 }
 
