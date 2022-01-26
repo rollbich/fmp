@@ -49,7 +49,6 @@ class regul {
 
 }
 
-
 class period_regul {
 	/*  ------------------------------------------------------------------	
 			@param {string} start_day - "yyyy-mm-dd"
@@ -140,7 +139,7 @@ class period_regul {
             });
         }
 		res += '</tbody></table>';
-		delays += `<span class="reg-tot">LFMM Est : ${total_delay_est} mn</span><span class="reg-tot">LFMM West : ${total_delay_west} mn</span><span class="reg-tot">LFMM App : ${total_delay_app} mn</span>`;
+		delays += `<span class="reg-tot">LFMM CTA : ${total_delay_est+total_delay_west} mn</span><span class="reg-tot">LFMM Est : ${total_delay_est} mn</span><span class="reg-tot">LFMM West : ${total_delay_west} mn</span><span class="reg-tot">LFMM App : ${total_delay_app} mn</span>`;
 		delays += "</div>";
 		delays += res;
 		$(containerId).innerHTML = delays;
@@ -148,6 +147,48 @@ class period_regul {
 	}
 }
 
+class weekly_regs {
+	constructor(year) {
+		this.year = year;
+	}
+
+	async init() {
+		this.weekly_regs = await this.get_data_weekly_regs();
+		this.delay = this.get_weekly_delay();
+	}
+
+	/*  ----------------------------------------------------------------------------------
+		Lit le fichier json des delay weekly
+			@param {string} day - "yyyy-mm-dd"
+            @returns {
+				"year":2022,
+				"cta":{"1":0,"2":142,...},
+				"est":{"1":0,"2":0,...},
+				"west":{"1":0,"2":142,...},
+			} = this.delay
+	-------------------------------------------------------------------------------------*/
+	async get_data_weekly_regs() {
+		const url = `../b2b/json/${this.year}-weekly-reg.json`;	
+		const resp = await loadJson(url);
+		return resp;
+	}
+
+	get_weekly_delay() {
+		const regs = {};
+		regs['year'] = parseInt(this.weekly_regs['year']);
+		regs['cta'] = [];
+		regs['est'] = [];
+		regs['west'] = [];
+		regs['app'] = [];
+		for(let i=1;i<54;i++) { //53 semaines max
+			if (typeof this.weekly_regs['cta'][i] !== 'undefined') regs['cta'].push(this.weekly_regs['cta'][i]);
+			if (typeof this.weekly_regs['est'][i] !== 'undefined') regs['est'].push(this.weekly_regs['est'][i]);
+			if (typeof this.weekly_regs['west'][i] !== 'undefined') regs['west'].push(this.weekly_regs['west'][i]);
+			if (typeof this.weekly_regs['app'][i] !== 'undefined') regs['app'].push(this.weekly_regs['app'][i]);
+		}
+		return vols;
+	}
+}
 
 
 
