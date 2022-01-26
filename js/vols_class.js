@@ -138,16 +138,14 @@ class weekly_vols {
 	}
 
 	/*  ----------------------------------------------------------------------------------
-		Lit le fichier json de regul
+		Lit le fichier json des vols weekly
 			@param {string} day - "yyyy-mm-dd"
-            @returns {	"LFMMCTA":["LFMMCTA", day, nb_vol]
-						"LFMMFMPE":[ [TV, day, nb_vol], []...],
-						"LFMMFMPW":[ [TV, day, nb_vol], []...],
-						"requestReceptionTime":"2022-01-02 22:42:17",
-						"status":"OK",
-						"VOLS_RAE":[{"flight":{...}},{}]
-						"VOLS_RAW":[{"flight":{...}},{}]
-					}
+            @returns {
+				"year":2022,
+				"cta":{"1":0,"2":142,...},
+				"est":{"1":0,"2":0,...},
+				"west":{"1":0,"2":142,...},
+			} = this.nbre_vols
 	-------------------------------------------------------------------------------------*/
 	async get_data_weekly_vols() {
 		const url = `../b2b/json/${this.year}-weekly-flights.json`;	
@@ -158,13 +156,13 @@ class weekly_vols {
 	get_weekly_vols() {
 		const vols = {};
 		vols['year'] = parseInt(this.weekly_vols['year']);
+		vols['cta'] = [];
 		vols['est'] = [];
 		vols['west'] = [];
-		vols['cta'] = [];
-		for(let i=1;i<53;i++) {
+		for(let i=1;i<54;i++) { //53 semaines max
+			if (typeof this.weekly_vols['cta'][i] !== 'undefined') vols['cta'].push(this.weekly_vols['cta'][i]);
 			if (typeof this.weekly_vols['est'][i] !== 'undefined') vols['est'].push(this.weekly_vols['est'][i]);
 			if (typeof this.weekly_vols['west'][i] !== 'undefined') vols['west'].push(this.weekly_vols['west'][i]);
-			if (typeof this.weekly_vols['cta'][i] !== 'undefined') vols['cta'].push(this.weekly_vols['cta'][i]);
 		}
 		return vols;
 	}
