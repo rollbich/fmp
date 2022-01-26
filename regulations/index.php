@@ -128,9 +128,9 @@
 </ul>
 <div id="dates">
 	<label for="start" class="dates">D&eacute;but:</label>
-	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2019-01-01">
+	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2018-12-31">
 	<label for="end" class="dates">Fin:</label>
-	<input type="date" id="end" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2019-01-01">
+	<input type="date" id="end" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2018-12-31">
 	<span>
 	  <select id="zone" class="select">
 		<option selected value="AE">Zone EST</option>
