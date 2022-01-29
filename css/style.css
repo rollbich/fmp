@@ -45,6 +45,10 @@ button {
 	cursor: pointer;
 }
 
+.red {
+	color: rgb(147, 218, 147);
+}
+
 /* feuille capa */
 td.bordure {
 	border: 1px solid #ccc;

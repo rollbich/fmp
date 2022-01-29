@@ -17,9 +17,21 @@ class ouverture extends schema_rea {
     async show_ouverture() {
         this.schema = await this.read_schema_realise();
         if (typeof this.schema === 'undefined') return;	
+        await this.get_fichier_confs();
         this.show_table_ouverture();
         this.add_ouverture_listener();
     }
+
+/*  --------------------------------------------------------------------------------------------- 
+	  Lit le fichier de correspondance confs-regroupements
+	--------------------------------------------------------------------------------------------- */
+    async get_fichier_confs() {
+		const url_est =  `../confs-est-test.json`;	
+        const url_west =  `../confs-west.json`;	
+        const url = this.zone === "AE" ? url_est : url_west;
+		this.confs = await loadJson(url);
+        console.log("load confs: "+this.confs);
+	}
 
 /*  ------------------------------------------------------------------------------
 	  Affiche la table du schema d'ouvertures dans le container
@@ -29,14 +41,30 @@ class ouverture extends schema_rea {
         let res = `<table class="ouverture">
                         <caption>Journée du ${this.schema.date}</caption>
                         <thead>
-                        <tr class="titre"><th>Début</th><th>Fin</th><th>Nb sect.</th><th class="colspan">Confs</th></tr>
+                        <tr class="titre"><th>Début</th><th>Fin</th><th>Nb sect.</th><th>Conf</th><th class="colspan">Confs</th></tr>
                     </thead>
                     <tbody>`;
                             
         this.schema.ouverture.forEach(row => {
                                 
             res += '<tr>'; 
-            for(let j=1;j<4;j++) { res += `<td>${row[j]}</td>`; }					
+            for(let j=1;j<4;j++) { res += `<td>${row[j]}</td>`; }	
+            const regroupements = [];
+            row[4].forEach(tv => {
+                regroupements.push(tv[0]);
+            });
+            let c = "-";
+            const nb_regroupements = regroupements.length;
+            console.log("length: "+nb_regroupements);
+            console.log("this: "+this.confs);
+            for(let conf in this.confs[nb_regroupements]) {
+                const arr_tv = this.confs[nb_regroupements][conf];
+                if (regroupements.sort().toString() == arr_tv.sort().toString()) {
+                    c = conf;
+                    break;
+                }
+            }
+            if (c.substring(0,1) === "N") { res += `<td class='red'>${c}</td>`; } else { res += `<td>${c}</td>`;}				
             row[4].forEach(tv => {
                 let r = this.get_ouverture_totale(tv[0], time_to_min(row[1]), time_to_min(row[2]));
                 res += `<td title="${tv[1]}" class="tv" data-tv="${tv[0]}" data-deb="${r[0]}" data-fin="${r[1]}">${tv[0]}</td>`;
