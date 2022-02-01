@@ -81,9 +81,6 @@ class schema_rea {
             // ajoute le nb de secteurs ouverts
             temp.push(ouverture.length);
             
-            // calcul du nbre max de secteurs
-            schema.max_secteurs = Math.max(schema.max_secteurs, ouverture.length);
-            
             // extrait les TVs ouverts
             let ouv = [];
             let pos = '';
@@ -117,6 +114,8 @@ class schema_rea {
                 
                 // on teste aussi si c'est pas une manip ou erreur (ouverture < x minute)
                 if (isOk != false) {
+                    // calcul du nbre max de secteurs
+                    schema.max_secteurs = Math.max(schema.max_secteurs, ouverture.length);
                     // trier temp par ordre alphabétique
                     let arr_ouv = this.zone === "AE" ? this.tri(ouv) : this.tri_west(ouv);
                     temp.push(arr_ouv);
@@ -125,8 +124,8 @@ class schema_rea {
                     schema.ouverture.push(temp);
                 }
         })
-        console.log("Schema ouverture");
-        console.log(schema.ouverture);
+        //console.log("Schema ouverture");
+        //console.log(schema.ouverture);
         // parfois on a le même TV 2 fois de suite => concaténer les 2 lignes en 1 en étendant l'heure de la 1ère ligne, à faire 2 fois car parfois il y a 3 fois le même TV
         // le faire uniquement si la position est inchangée
         this.doublon(schema);
