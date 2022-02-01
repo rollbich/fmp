@@ -135,7 +135,7 @@ class stat_confs {
 				if (nbr_sect%2) {res += '<tr class="one">'; } else {res += '<tr class="two">'; }
 				res +=`<td>${nbr_sect}</td><td>${conf[0]}</td><td>${conf[1].occur}</td><td>${conf[1].tps}</td>`;
                 res += `<td>${Math.round(conf[1].occur*1000/count_occur)/10}</td><td>${Math.round(conf[1].tps*1000/count_min)/10}</td></td>`;
-                res += `<td>${conf[1]["tv"].join("  ")}</td>`;
+                if (conf[0] === "-") { res += '<td>---</td>';} else { res += `<td>${conf[1]["tv"].join("  ")}</td>`;}
 				res += '</tr>';	
 			}
 		}
