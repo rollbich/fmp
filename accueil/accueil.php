@@ -14,6 +14,7 @@ require("../php/check_ok.inc.php");
     <script type="text/javascript" src="../js/utils.js"></script>
     <script type="text/javascript" src="../js/graph.js"></script>
     <script type="text/javascript" src="../js/vols_class.js"></script>
+    <script type="text/javascript" src="../js/regulations_class.js"></script>
     <script src="../js/echarts.min.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', async event => {
@@ -30,28 +31,31 @@ require("../php/check_ok.inc.php");
 					const listWeek = [];
 					for (let k=1;k<nb+1;k++) { listWeek.push(k);}
 							
-					const data_2019 = new weekly_vols(2019);
-					await data_2019.init();
-					const data_lastyear = new weekly_vols(lastyear);
-					await data_lastyear.init();		
-					const data_year = new weekly_vols(year);
-					await data_year.init();	
-					console.log(listWeek);
-					show_traffic_graph("res", year, listWeek, data_year.nbre_vols['cta'], data_lastyear.nbre_vols['cta'], data_2019.nbre_vols['cta'], "LFMMCTA");
+					const data_vols_2019 = new weekly_vols(2019);
+					await data_vols_2019.init();
+					const data_vols_lastyear = new weekly_vols(lastyear);
+					await data_vols_lastyear.init();		
+					const data_vols_year = new weekly_vols(year);
+					await data_vols_year.init();
+					show_traffic_graph("res", year, listWeek, data_vols_year.nbre_vols['cta'], data_vols_lastyear.nbre_vols['cta'], data_vols_2019.nbre_vols['cta'], "LFMMCTA");
+          const data_regs_2019 = new weekly_regs(2019);
+					await data_regs_2019.init();
+					const data_regs_lastyear = new weekly_regs(lastyear);
+					await data_regs_lastyear.init();		
+					const data_regs_year = new weekly_regs(year);
+					await data_regs_year.init();
+					show_delay_graph("res2", year, listWeek, data_regs_year.delay['cta'], data_regs_lastyear.delay['cta'], data_regs_2019.delay['cta'], "LFMMCTA");
       });
     </script>
 </head>
 <body>
-<nav>
-  <ul>
-    <li><a href='../ouverture'>Ouverture</a></li>
-    <li><a href='../overload'>Overload</a></li>
-    <li><a href='../regulations'>Regulation</a></li>
-  </ul>
-</nav>
+<?php include("../php/nav.inc.php"); ?>
 <div>
     <p class='body'>BIENVENUE !</p>
 </div>
-<div id="res"></div>
+<div style="display: flow">
+  <div id="res"></div>
+  <div id="res2"></div>
+</div>
 </body>
 </html>

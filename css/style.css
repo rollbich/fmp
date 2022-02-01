@@ -30,7 +30,7 @@ body {
 	background: var(--main-bg-color);
 	color: var(--main-color);
 	position: relative;
-	width: 100%;
+	width: auto;
 }
 
 .off {
@@ -243,6 +243,18 @@ select, option {
 
 /* ------- Résultats ------- */
 
+.delay {
+	display: flex;
+}
+
+span.rect {
+	font-family: 'Sansation';
+	font-size: 24px;
+	margin: 10px;
+	padding: 10px;
+	background : var(--ligne-impaire-color);
+}
+
 #glob_container {
 	display : flex;
 	flex-direction : row;
@@ -383,18 +395,17 @@ table.conf tr.two {
 
 /* ------ Upload ------ */
 .upload_button {
-  margin-left: auto;
-  margin-top: 4px;
-  margin-right: 5px;
-  height: 36px;
-  width: 120px;
-  font: bold 1rem 'Times New Roman';
-  color: var(--upload-button-color);
-  /*text-transform: uppercase;*/
-  border-radius: 50px;
-  line-height: 34px;
-  text-align: center;
-  background: var(--upload-button-bg-color);
+	position: absolute;
+	right: 10px;
+	top: 4px;
+	height: 36px;
+	width: 120px;
+	font: bold 1rem 'Times New Roman';
+	color: var(--upload-button-color);
+	border-radius: 50px;
+	line-height: 34px;
+	text-align: center;
+	background: var(--upload-button-bg-color);
 }
 
 .upload_button:hover {

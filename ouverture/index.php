@@ -114,7 +114,6 @@
 	<li id="bouton_stat_confs" class="pointer"><span>Stats Confs</span></li>
 	<li><button class="help_button">Help</button></li>
 </ul>
-
 <div id="dates">
 	<label for="start" class="dates">Date:</label>
 	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2019-01-01">

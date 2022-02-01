@@ -453,7 +453,8 @@ function show_occ_graph(containerId, dataAxis, data, peak, sustain, tv) {
 function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, data2019, zon) {
 
 	let chartDom = $(containerId);
-	chartDom.style.height = "600px";
+	chartDom.style.height = "350px";
+	chartDom.style.width = "900px";
 	let myChart = echarts.init(chartDom);
 	
 	let option;
@@ -552,7 +553,119 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 			}]
 	};
 	
-		
+	myChart.setOption(option);
+	
+}
+
+/*	--------------------------------------------------------------------------
+	 	Affiche le graph delay - Year
+			@param {string} containerId - Id de l'HTML Element conteneur
+			@param {array} dataAxis - [1, 2, 3, week...]
+			@param {array} data - [load,...]
+	-------------------------------------------------------------------------- */
+function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data2019, zon) {
+
+	let chartDom = $(containerId);
+	chartDom.style.height = "350px";
+	chartDom.style.width = "900px";
+	let myChart = echarts.init(chartDom);
+	
+	let option;
+	
+	option = {
+		title: {
+			text: `Delay semaine sur l'année - ${zon}`,
+			textStyle: {
+				color: '#FFF',
+				fontSize: '100%'
+			},
+			x: 'center',
+			y: 'top'
+		},
+		tooltip: {
+			trigger: 'axis',
+			axisPointer: {
+				type: 'shadow',
+				label: {
+					show: true
+				}
+			}
+		},
+		toolbox: {
+			feature: {
+				saveAsImage: {
+					name: `Delay semaine sur l'année - ${zon}`,
+					show: true
+				}
+			}
+		},
+		grid: {
+			containLabel: true
+		},
+		legend: {
+			x: 'center', // 'center' | 'left' | {number},
+			y: 'top' | 30, // 'center' | 'bottom' | {number}
+			padding: -1,
+			textStyle: {
+				color: '#fff'
+			}
+		},
+		calculable: true,
+		xAxis: {
+			type: 'category',
+			name: 'Semaines',
+			nameLocation: 'middle',
+			axisLabel: {
+				show: true,
+				interval: 'auto',    // {number}
+				margin: 8,
+				textStyle: {
+					color: '#fff'
+				}
+			},
+			nameGap: 30,
+			nameTextStyle: {
+				color: '#fff'
+			},
+			data: listWeek
+		},
+		yAxis: {
+			type: 'value',
+			axisLabel: {
+				formatter: '{value}'
+			},
+			name: 'Delay en min',
+			nameTextStyle: {
+				color: '#fff'
+			},
+			nameRotate: 90,
+			nameGap: 60,
+			nameLocation: 'middle'
+		},
+		series: [
+			{
+				name: "2019",
+				type: 'line',
+				color : '#339dff',
+				areaStyle: {},
+				data: data2019,
+			},
+			{
+				name: year-1,
+				type: 'line',
+				color: 'yellow',
+				areaStyle: {},
+				data: data_lastyear,
+			},
+			{
+				name: year,
+				type: 'line',
+				color: '#4CC417',
+				areaStyle: {},
+				data: data,
+			}]
+	};
+	
 	myChart.setOption(option);
 	
 }

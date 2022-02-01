@@ -119,7 +119,7 @@ class period_vols {
         }
         res += '</tbody></table>';
 		
-		result_vols += `<span class="reg-tot">LFMM Est : ${total_vols_est} vols</span><span class="reg-tot">LFMM West : ${total_vols_west} vols</span><span class="reg-tot">LFMM CTA : ${total_vols_cta} vols</span>`;
+		result_vols += `<span class="rect">LFMM Est : ${total_vols_est} vols</span><span class="rect">LFMM West : ${total_vols_west} vols</span><span class="rect">LFMM CTA : ${total_vols_cta} vols</span>`;
 		result_vols += "</div>";
 		result_vols += res;
 		$(containerId).innerHTML = result_vols;

@@ -186,7 +186,7 @@ class weekly_regs {
 			if (typeof this.weekly_regs['west'][i] !== 'undefined') regs['west'].push(this.weekly_regs['west'][i]);
 			if (typeof this.weekly_regs['app'][i] !== 'undefined') regs['app'].push(this.weekly_regs['app'][i]);
 		}
-		return vols;
+		return regs;
 	}
 }
 
