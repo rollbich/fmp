@@ -7,7 +7,7 @@
 <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="robots" content="noindex">
-        <title>Ouverture</title>
+        <title>Capa</title>
 		<link rel="icon" href="favicon.ico" />
 		<script type="text/javascript" src="../js/base.js"></script>
 		<script type="text/javascript" src="../js/tds-name.js"></script>
@@ -20,6 +20,7 @@
 		<script type="text/javascript" src="../js/olaf.js"></script>
 		<script type="text/javascript" src="../js/capa_class.js"></script>
 		<script type="text/javascript" src="../js/confs_class.js"></script>
+		<script type="text/javascript" src="../js/stats_confs.js"></script>
 		<script src="../js/dragger.js"></script>
 		<script src="../js/echarts.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="../css/font.css" />
@@ -50,16 +51,22 @@
 					$("help_frame").classList.remove('off');
 				});
 				
-				$('bouton_ouverture').addEventListener('click', e => {
+				$('bouton_ouverture').addEventListener('click', async e => {
 					$('graph-container-h20').classList.add('off');
 					$('graph-container-occ').classList.add('off');
 					let zone = $('zone').value;
 					let start_day = $('start').value;
-					new ouverture('result', start_day, zone);	
+					const ouv = new ouverture('result', start_day, zone);
+					await ouv.init();
+					ouv.show_ouverture();
 				});
 				
-				$('bouton_h20occ').addEventListener('click', e => {
-					show_popup("Graph", "Cette fonctionnalité n'est pas encore implémentée");
+				$('bouton_stat_confs').addEventListener('click', async e => {
+					let zone = $('zone').value;
+					let day = $('start').value;
+					const year = parseInt(new Date(day).getFullYear());
+					new stat_confs("result",year,zone);	
+					//show_popup("Stat confs", "Cette fonctionnalité n'est pas encore implémentée");
 				});
 
 				$('bouton_conf').addEventListener('click', async e => {
@@ -104,17 +111,13 @@
 	<li id="bouton_ouverture" class="pointer"><span>Ouverture</span></li>
 	<li id="bouton_uceso" class="pointer"><span>UCESO</span></li>
 	<li id="bouton_conf" class="pointer"><span>Conf NM</span></li>
-	<li id="bouton_h20occ" class="pointer"><span>Graph</span></li>
+	<li id="bouton_stat_confs" class="pointer"><span>Stats Confs</span></li>
 	<li><button class="help_button">Help</button></li>
 </ul>
 
 <div id="dates">
 	<label for="start" class="dates">Date:</label>
 	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2019-01-01">
-	<label for="start_h" class="dates">H Déb:</label>
-	<input type="time" id="start_h" class="time" value="04:00" min="04:00" max="23:30">
-	<label for="end_h" class="dates">H Fin:</label>
-	<input type="time" id="end_h" class="time" value="04:30" min="04:30" max="23:59">
 	<span>
 	  <select id="zone" class="select">
 		<option selected value="AE">Zone EST</option>

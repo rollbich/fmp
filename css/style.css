@@ -342,6 +342,14 @@ div.conf th {
 	width: 100px;
 }
 
+table.conf tr.one {
+	background-color: var(--ligne-paire-color);
+}
+
+table.conf tr.two {
+	background-color: transparent;
+}
+
 /* ------- Graphes ------- */
 
 #graph-container{
