@@ -40,14 +40,14 @@ nav{
 
 nav ul{
 	margin: 0px auto;
-	width: 50%;
+	width: 70%;
     list-style-type: none;
 	
 }
 
 nav li{
     float: left;
-    width: 33%;/*100% divisé par le nombre d'éléments de menu*/
+    width: 20%;/*100% divisé par le nombre d'éléments de menu*/
     text-align: center;/*Centre le texte dans les éléments de menu*/
 }
 

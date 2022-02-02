@@ -482,6 +482,7 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 			feature: {
 				saveAsImage: {
 					name: `Trafic semaine sur l'année - ${zon}`,
+					title: 'PNG',
 					show: true
 				}
 			}
@@ -566,7 +567,7 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data2019, zon) {
 
 	let chartDom = $(containerId);
-	chartDom.style.height = "350px";
+	chartDom.style.height = "400px";
 	chartDom.style.width = "900px";
 	let myChart = echarts.init(chartDom);
 	
@@ -595,6 +596,7 @@ function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data
 			feature: {
 				saveAsImage: {
 					name: `Delay semaine sur l'année - ${zon}`,
+					title: 'PNG',
 					show: true
 				}
 			}
@@ -645,21 +647,21 @@ function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data
 		series: [
 			{
 				name: "2019",
-				type: 'line',
+				type: 'bar',
 				color : '#339dff',
 				areaStyle: {},
 				data: data2019,
 			},
 			{
 				name: year-1,
-				type: 'line',
+				type: 'bar',
 				color: 'yellow',
 				areaStyle: {},
 				data: data_lastyear,
 			},
 			{
 				name: year,
-				type: 'line',
+				type: 'bar',
 				color: '#4CC417',
 				areaStyle: {},
 				data: data,

@@ -637,7 +637,7 @@ async function show_courage_graph(containerId, day, zone, pc = 0) {
 			let fin = row[2];
 			let nb_sect = row[3];
 			let f = deb.split(":");
-			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]); // -1 pour le mois car l'index commence à 0
+			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]); // -1 pour le mois car l'index commence à 0 
 			data_series7.push([time,nb_sect]);
 		}); 
 		data_series7.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema7.ouverture[schema7.ouverture.length-1][3]]);
@@ -732,20 +732,6 @@ async function show_courage_graph(containerId, day, zone, pc = 0) {
 	  },
 	  series: [
 		{
-		  name: 'Réalisé J',
-		  color: '#77ce77',
-		  type: 'line',
-		  step: 'end',
-		  data: data_series
-		},
-		{
-		  name: 'Réalisé J-7',
-		  color: '#ffca00',
-		  type: 'line',
-		  step: 'end',
-		  data: data_series7
-		},
-		{
 		  name: 'Réalisé 2019', //2019
 		  color: '#00caff',
 		  type: 'line',
@@ -755,6 +741,30 @@ async function show_courage_graph(containerId, day, zone, pc = 0) {
 	  ]
 	};
 
+	let legd = ["2019"];
+
+	if (typeof schema !== 'undefined') {
+		option.series.push({
+			name: 'Réalisé J',
+			color: '#77ce77',
+			type: 'line',
+			step: 'end',
+			data: data_series
+		})
+		legd.push("Realise J");
+	}
+
+	if (typeof schema7 !== 'undefined' && typeof schema == 'undefined') {
+		option.series.push({
+			name: 'Réalisé J-7',
+			color: '#ffca00',
+			type: 'line',
+			step: 'end',
+			data: data_series7
+		})
+		legd.push("Realise J-7");
+	}
+
 	if (pc != 0) {
 		option.series.push({
 			name: 'UCESO capa',
@@ -763,7 +773,10 @@ async function show_courage_graph(containerId, day, zone, pc = 0) {
 			type: 'line',
 			step: 'end'
 		});
+		legd.push("UCESO");
 	}
+	
+	//option.legend.data = legd;
 
 	if (option && typeof option === 'object') {
 		myChart.setOption(option);

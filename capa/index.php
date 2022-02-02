@@ -16,7 +16,7 @@
 		<link rel="stylesheet" type="text/css" href="../css/upload.css" />
 		<script>
 			document.addEventListener('DOMContentLoaded', (event) => {
-				
+				$$('.upload_button').style.display = 'none';
 				$('close_button').addEventListener('click', e => {
 					$("help_frame").classList.add('off');
 				});
@@ -44,7 +44,7 @@
 <body id="drag-container">
 
 <header>
-
+<?php include("../php/nav.inc.php"); ?>
 <h1>FEUILLE CAPA v1.1</h1>
 <div id="help_frame" class="off">
 	<h2>Help</h2>
