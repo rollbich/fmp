@@ -1,3 +1,7 @@
+<?php
+  session_start();
+  require("../php/check_ok.inc.php");
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -64,7 +68,11 @@
 		<option value="AW">Zone WEST</option>
 	  </select>
 	</li>
-	<li class ="feuille"><a href="./edit.php">Edit TDS</a></li>
+	<?php
+	if ($_SESSION['login_bureau'] === true) {
+		echo '<li class ="feuille"><a href="./edit.php">Edit TDS</a></li>';
+	}
+	?>
 	<li class="feuille"><button class="help_button">Help</button></li>
 </ul>
 
