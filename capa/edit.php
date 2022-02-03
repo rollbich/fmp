@@ -1,3 +1,8 @@
+<?php
+session_start();
+require("../php/check_ok.inc.php");
+if (!(isset($_SESSION['login_bureau'])) || $_SESSION['login_bureau'] === false) header("Location: index.php");
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
