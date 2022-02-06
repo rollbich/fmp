@@ -18,6 +18,8 @@
   --upload-button-bg-color: #6dd6cc;
   --popup-bg-color: #fff;
   --caption-uceso: #77ce77;
+  --color-2019: #00caff;
+  --color-j-7: #ffca00;
 }
 
 html {
@@ -396,7 +398,7 @@ table.conf tr.two {
 /* ------ Upload ------ */
 .upload_button {
 	position: absolute;
-	right: 10px;
+	left: 10px;
 	top: 4px;
 	height: 36px;
 	width: 120px;
@@ -414,6 +416,29 @@ table.conf tr.two {
 
 .blur {
   filter: blur(1.3px) sepia(1);
+}
+
+/* ------ Logout button ------ */
+.logout_button {
+	position: absolute;
+	right: 10px;
+	top: 4px;
+	height: 36px;
+	width: 120px;
+	font: bold 1rem 'Times New Roman';
+	color: var(--upload-button-color);
+	border-radius: 50px;
+	line-height: 34px;
+	text-align: center;
+	background: var(--main-color);
+}
+
+.logout_button:hover {
+  cursor: pointer;
+}
+
+.logout_button a, .logout_button a:visited {
+	color:var(--uploadbutton-color);
 }
 
 /* ------- Help ------- */

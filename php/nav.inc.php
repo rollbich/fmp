@@ -8,3 +8,4 @@
   </ul>
 </nav>
 <div class="upload_button">Upload Schema</div>
+<div class="logout_button"><a href="../php/logout.php">Logout<a></div>
