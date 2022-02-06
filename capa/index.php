@@ -12,8 +12,10 @@
 		<script type="text/javascript" src="../js/base.js"></script>
 		<script type="text/javascript" src="../js/tds-name.js"></script>
 		<script type="text/javascript" src="../js/utils.js"></script>
+		<script type="text/javascript" src="../js/schema.js"></script>
 		<script type="text/javascript" src="../js/olaf.js"></script>
 		<script type="text/javascript" src="../js/capa_class.js"></script>
+		<script src="../js/echarts.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="../css/font.css" />
 		<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
 		<link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
@@ -34,6 +36,22 @@
 					let day = $('start').value;
                     const capa = new feuille_capa("feuille_capa_tour", day, zone);
 					capa.show_feuille_capa();
+				});
+
+				$('bouton_simucapa').addEventListener('click', async e => {
+					let zone = $('zone').value;
+					let day = $('start').value;
+					/*
+					const cap = new capa(day, zone);
+					show_popup("Patientez !", "Chargement en cours...");
+					const pc = await cap.get_nbpc_dispo();
+					document.querySelector('.popup-close').click();
+					show_capa_graph("feuille_capa_uceso", day, zone, pc);
+					*/
+					const simu = new simu_capa("feuille_capa_uceso", day, zone);
+					simu.show_simu_capa();
+					//simu.go();
+                    //alert("Fonctionnalité en développement");
 				});
 				
 				document.querySelector('.popup-close').addEventListener('click', e => {
@@ -59,6 +77,7 @@
 </div>
 <ul class="menu">
 	<li id="bouton_feuille" class="pointer"><span>Feuille</span></li>
+	<li id="bouton_simucapa" class="pointer"><span>Simu</span></li>
 	<li><label for="start" class="dates">Date:</label>
 	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="2021-09-14" max="2030-12-31">
 	</li>
@@ -75,9 +94,11 @@
 	?>
 	<li class="feuille"><button class="help_button">Help</button></li>
 </ul>
-
 </header>
+
 <div id='feuille_capa_tour'>
+</div>
+<div id='feuille_capa_uceso'>
 </div>
 
 <div id="popup-wrap" class="off" >
