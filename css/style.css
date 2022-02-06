@@ -20,6 +20,7 @@
   --caption-uceso: #77ce77;
   --color-2019: #00caff;
   --color-j-7: #ffca00;
+  --color-j: #77ce77;
 }
 
 html {
@@ -576,4 +577,29 @@ table.conf tr.two {
 	text-align: center;
 	color: var(--select-bg-color);
 
+}
+
+#date_legend {
+	width: 220px;
+	margin: 0 auto;
+	margin-top: 30px;
+	border: 2px double white;
+	padding: 10px;
+	font-family: 'RussoOne';
+	font-size : 16px;
+	text-align: center;
+	color: var(--table-titre-color);
+	list-style-type: none;
+}
+
+li.bleu {
+	color: var(--color-2019);
+}
+
+li.orange {
+	color: var(--color-j-7);
+}
+
+li.vert {
+	color: var(--color-j);
 }

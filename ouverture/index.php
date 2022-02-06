@@ -83,7 +83,7 @@
 					show_popup("Patientez !", "Chargement en cours...");
 					const pc = await cap.get_nbpc_dispo();
 					document.querySelector('.popup-close').click();
-					show_courage_graph("courage_container", day, zone, pc);
+					show_capa_graph("feuille_capa_uceso", day, zone, pc);
 				});
 				
 				document.querySelector('.popup-close').addEventListener('click', e => {
@@ -124,14 +124,15 @@
 	  </select>
 	</span>
 </div>
-
 </header>
+
 <div id='feuille_capa_tour'>
 </div>
 <div id="courage_container">
 </div>
 <div id='feuille_capa_uceso'>
 </div>
+
 <div id="glob_container">
 	<div id='result'>
 	</div>

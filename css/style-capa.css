@@ -18,6 +18,10 @@
   --upload-button-bg-color: #6dd6cc;
   --popup-bg-color: #fff;
   --caption-uceso: #77ce77;
+  --graph-uceso: #2c3e50;
+  --color-2019: #00caff;
+  --color-j-7: #ffca00;
+  --color-j: #77ce77;
 }
 
 html {
@@ -30,7 +34,7 @@ body {
 	background: var(--main-bg-color);
 	color: var(--main-color);
 	position: relative;
-	width: 100%;
+	width: auto;
 	height: 100%;
 	margin: 0;
   	padding: 0;
@@ -68,6 +72,24 @@ body.editor span a {
 
 #button_save {
 	margin-top: 5px;
+}
+
+#feuille_capa_tour {
+	display: flex;
+}
+
+#feuille_capa_uceso {
+	margin-top: 10px;
+	padding: 10px;
+	background-color: var(--graph-uceso);
+}
+
+#left_part {
+	background-color: white;
+}
+
+#right_part {
+	width: 1600px;
 }
 
 /* Bandeau de navigation */
@@ -139,7 +161,7 @@ h1 {
 ul.menu {
 	margin: 12px auto 0;
 	position: relative;
-	width: 740px;
+	width: 800px;
 	height: 50px;
 	background-color: var(--menu-bg-color);
 	border-radius: 8px;
@@ -165,18 +187,17 @@ ul.menu li.feuille a, ul.menu li.feuille a:visited {
 }
 
 ul.menu li.feuille {
-	margin-left: 40px;
+	margin-left: 30px;
 }
 
 ul.menu li label {
-	margin-left: 40px;
+	margin-left: 30px;
 }
 
 ul.menu li span{
 	transition: all .5s ease 0s;
-	width: 140px;
-	margin-left: 20px;
-	margin-right: 20px;
+	margin-left: 10px;
+	margin-right: 10px;
 	padding: 10px 20px 10px;
 	border-radius: 2px;
 }
@@ -248,6 +269,30 @@ input {
 
 #dates input.time {
 	width: 60px;
+}
+
+/* --------- Boutons +/- ----------- */
+.minus, .plus{
+    height:25px;
+    width:25px;
+    border:1px black solid;
+    border-radius:50%;
+}
+.minus:hover{
+    background-color:rgb(253, 150, 150);    
+}
+.plus:hover{
+    background-color:rgb(104, 194, 104);
+}
+.numberPlace {
+	display: inline-block;
+	width: 15px;
+    margin-left:5px;
+    margin-right:5px;
+}
+
+.modify {
+	width: 80px;
 }
 
 /* ------- Résultats ------- */
@@ -451,6 +496,29 @@ input.date {
 
 .blur {
   filter: blur(1.3px) sepia(1);
+}
+
+/* ------ Logout button ------ */
+.logout_button {
+	position: absolute;
+	right: 10px;
+	top: 4px;
+	height: 36px;
+	width: 120px;
+	font: bold 1rem 'Times New Roman';
+	color: var(--upload-button-color);
+	border-radius: 50px;
+	line-height: 34px;
+	text-align: center;
+	background: var(--main-color);
+}
+
+.logout_button:hover {
+  cursor: pointer;
+}
+
+.logout_button a, .logout_button a:visited {
+	color:var(--uploadbutton-color);
 }
 
 /* ------- Help ------- */
@@ -681,6 +749,7 @@ label {
 
 .btn {
     -moz-user-select: none;
+	user-select: none;
     background-image: none;
     border: 1px solid transparent;
     border-radius: 4px;
@@ -694,4 +763,43 @@ label {
     text-align: center;
     vertical-align: middle;
     white-space: nowrap;
+}
+
+/* ------- i1 ------- */
+#i1 {
+	width: 200px;
+	margin: 0 auto;
+	margin-top: 30px;
+	border: 2px double white;
+	padding: 10px;
+	font-family: 'RussoOne';
+	font-size : 16px;
+	text-align: center;
+	color: var(--select-bg-color);
+
+}
+
+#date_legend {
+	width: 220px;
+	margin: 0 auto;
+	margin-top: 30px;
+	border: 2px double white;
+	padding: 10px;
+	font-family: 'RussoOne';
+	font-size : 16px;
+	text-align: center;
+	color: var(--table-titre-color);
+	list-style-type: none;
+}
+
+li.bleu {
+	color: var(--color-2019);
+}
+
+li.orange {
+	color: var(--color-j-7);
+}
+
+li.vert {
+	color: var(--color-j);
 }

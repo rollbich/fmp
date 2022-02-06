@@ -551,6 +551,113 @@ class feuille_capa extends capa {
 	}
 }
 
+class simu_capa extends capa {
+	/* ----------------------------------------------------------------
+		@param {string} containerIdTour - id du container pour le tour
+	   ---------------------------------------------------------------- */
+	constructor(containerIdTour, day, zone) {
+		super(day, zone);
+		this.zone_schema = zone === "est" ? "AW" : "AE";
+		this.containerTour = $(containerIdTour);
+		this.containerTour.style.display = 'flex';
+		this.containerTour.innerHTML = '<div id="left_part"></div><div id="right_part"></div>';
+	}
+
+	async go() {
+		show_popup("Patientez !", "Chargement en cours...");
+		const pc = await this.get_nbpc_dispo();
+		document.querySelector('.popup-close').click();
+		show_capa_graph("right_part", this.day, this.zone_schema, pc);
+	}
+
+	/*	------------------------------------------
+			Affichage de la feuille de capa		
+		------------------------------------------ */
+	async show_simu_capa() {
+		show_popup("Patientez !", "Chargement en cours...");
+		const update = await loadJson("../update.json");
+		if (typeof update[this.zone][this.day] === 'undefined') update[this.zone][this.day] = {"update_count": {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0}, "update_name": {"J1":[], "J3":[], "S2":[], "J2":[], "S1":[], "N":[], "N-1":[]}};
+		const pc = await this.get_nbpc_dispo(update[this.zone][this.day]['update_count']);
+		document.querySelector('.popup-close').click();
+		const pc_vac = pc["pc_vac"];
+		const tab_vac_eq = this.get_vac_eq(this.day);
+		const tour_local = await loadJson(tour_json);
+		const tour_utc = await this.get_tour_utc(tour_local);
+
+		// Construit le tableau
+		let res = `<table class="ouverture">
+					<caption>${this.day}<br>Zone ${this.zone}</caption>
+					<thead>
+						<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px right_1px">PC</th><th class="top_2px bottom_2px right_1px">BV</th><th class="top_2px bottom_2px right_2px">Modify</th></tr>
+					</thead>
+					<tbody>`;
+		res += `${affiche_vac("J1")}`;
+		res += `${affiche_vac("J3")}`;
+		res += `${affiche_vac("S2")}`;
+		res += `${affiche_vac("J2")}`;
+		res += `${affiche_vac("S1")}`;
+		res += `${affiche_vac("N")}`;
+		res += `${affiche_vac("N-1")}`;
+		res += '</tbody></table>';
+		$('left_part').innerHTML = res;
+		modify_listener();
+		console.log(this.day+" "+this.zone_schema);
+		show_capa_graph("right_part", this.day, this.zone_schema, pc);
+
+		// Fabrique la ligne du tour de service
+		function affiche_vac(vac) {
+			// A = effectif/2
+			// B = effectif/2 (+1)
+			const cds = (vac == "J2" || vac == "S1") ? 0 : 1
+			const dispoA = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2), Math.floor((pc_vac[vac]["BV"]-cds)/2));
+			const dispoB = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2, Math.floor((pc_vac[vac]["BV"]-cds)/2)+(pc_vac[vac]["BV"]-cds)%2);
+			
+			// comp : { [ ["00:00", 0, 3, 4], ["hh:mm", cds, A, B], ... ] }
+			const vacation = (vac === "N-1") ? "N" : vac;
+			const comp = tour_utc[vacation].map( elem => [elem[0], parseInt(elem[1]), parseInt(elem[2])*dispoA, parseInt(elem[3])*dispoB]);
+			
+			
+			return `
+			<tr data-vac='${vac}'>
+				<td class='left_2px right_1px'></td><td class='right_1px'></td>
+				<td class='right_1px'>cds</td><td>${cds}</td>
+				<td class='pc right_1px' data-vac='${vac}'>${pc_vac[vac]["nbpc"]}</td><td class='right_1px'>${pc_vac[vac]["BV"]}</td>
+				<td class='right_2px'></td>
+			</tr>
+			<tr data-vac='${vac}'>
+				<td class='eq left_2px right_1px' data-vac='${vac}'>${tab_vac_eq[vac]}</td>
+				<td class='right_1px'>${vac}</td><td class='right_1px'>A</td><td class='right_1px' colspan="2"></td><td class='right_1px'></td>
+				<td class='right_2px'><div class="modify"><button class="minus" data-vac='${vac}'>-</button><span class="numberPlace" data-vac='${vac}'>0</span><button class="plus" data-vac='${vac}'>+</button></div></td>
+			</tr>
+			<tr data-vac='${vac}'>
+				<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
+				<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px' colspan="2"></td>
+				<td class='bottom_2px right_1px'></td>
+				<td class='right_2px bottom_2px'></td>
+			</tr>`;
+		}
+
+		function modify_listener(){
+			const moins = document.querySelectorAll('.minus');
+			const plus = document.querySelectorAll('.plus');
+			plus.forEach(el => {
+				el.addEventListener('click', (event) => {
+					const vac = el.dataset.vac;
+					$$(`span[data-vac='${vac}']`).innerHTML = parseInt($$(`span[data-vac='${vac}']`).innerHTML) + 1;
+				});
+			});
+
+			moins.forEach(el => {
+				el.addEventListener('click', (event) => {
+					const vac = el.dataset.vac;
+					$$(`span[data-vac='${vac}']`).innerHTML = parseInt($$(`span[data-vac='${vac}']`).innerHTML) - 1;
+				});
+			});
+		}
+
+	}
+}
+
 /* ---------------------------------------------------------------------------------
 		Affiche les graphes :
 		- vert de la capa offerte le jour choisi
@@ -563,9 +670,11 @@ class feuille_capa extends capa {
 		 @param {string} zone - "AE" ou "AW"
 		 @param {array} pc - objet d'array des crénaux horaires associés aux pc dispo
 	-------------------------------------------------------------------------------- */
-async function show_courage_graph(containerId, day, zone, pc = 0) {
+async function show_capa_graph(containerId, day, zone, pc = 0) {
 	
-	let chartDom = $(containerId);
+	const container = $(containerId);
+	container.innerHTML = '<div style="display: flex;"><div id="i1"></div><ul id="date_legend"><li class="bleu"></li><li class="orange"></li><li class="vert"></li></ul></div><div id="uceso"></div>';
+	let chartDom = $("uceso");
 	chartDom.style.height = "400px";
 	let myChart = echarts.init(chartDom);
 	myChart.clear();
@@ -595,11 +704,10 @@ async function show_courage_graph(containerId, day, zone, pc = 0) {
 		data_series_uceso.push([new Date(d[0], d[1]-1, d[2], 23, 59), uceso[uceso.length-1][1]]);
 	}
 
-	
 	const day7 = addDays_toString(day, -7);
 	const d7 = day7.split("-");
 	let day2019 = null;
-	if (d[0] === "2022") day2019 = addDays_toString(day, -1092);
+	if (d[0] === "2022") day2019 = addDays_toString(day, -1099);
 	if (d[0] === "2021") day2019 = addDays_toString(day, -728);
 	if (d[0] === "2020") day2019 = addDays_toString(day, -364);
 	const d2019 = day2019 != null ? day2019.split("-") : null;
@@ -637,7 +745,7 @@ async function show_courage_graph(containerId, day, zone, pc = 0) {
 			let fin = row[2];
 			let nb_sect = row[3];
 			let f = deb.split(":");
-			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]); // -1 pour le mois car l'index commence à 0 
+			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]); // -1 pour le mois car l'index commence à 0
 			data_series7.push([time,nb_sect]);
 		}); 
 		data_series7.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema7.ouverture[schema7.ouverture.length-1][3]]);
@@ -658,17 +766,15 @@ async function show_courage_graph(containerId, day, zone, pc = 0) {
 	}
 	
 	const i1 = get_i1(data_series, data_series_uceso);
-
-	if ( $("i1") === null) {
-		const newDiv = document.createElement("div");
-		newDiv.setAttribute("id", "i1");
-		const newContent = document.createTextNode('Indicateur i1: '+i1+'%');
-		newDiv.appendChild(newContent);
-		document.body.insertBefore(newDiv, chartDom);
-	} else {
-		$("i1").innerHTML = 'Indicateur i1: '+i1+'%';
-	}
-
+	$("i1").innerHTML = 'Indicateur i1: '+i1+'%';
+	const tab_jour=new Array("Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi");
+	const jour2019 = tab_jour[new Date(day2019).getDay()];
+	const jour7 = tab_jour[new Date(day7).getDay()];
+	const jour = tab_jour[new Date(day).getDay()];
+	$$(".bleu").innerHTML = '2019 : '+jour2019+' '+reverse_date(day2019);
+	$$(".orange").innerHTML = 'J-7 : '+jour7+' '+reverse_date(day7);
+	$$(".vert").innerHTML = 'J : '+jour+' '+reverse_date(day);
+	
 	let option;
 	
 	option = {
@@ -732,6 +838,20 @@ async function show_courage_graph(containerId, day, zone, pc = 0) {
 	  },
 	  series: [
 		{
+		  name: 'Réalisé J',
+		  color: '#77ce77',
+		  type: 'line',
+		  step: 'end',
+		  data: data_series
+		},
+		{
+		  name: 'Réalisé J-7',
+		  color: '#ffca00',
+		  type: 'line',
+		  step: 'end',
+		  data: data_series7
+		},
+		{
 		  name: 'Réalisé 2019', //2019
 		  color: '#00caff',
 		  type: 'line',
@@ -741,30 +861,6 @@ async function show_courage_graph(containerId, day, zone, pc = 0) {
 	  ]
 	};
 
-	let legd = ["2019"];
-
-	if (typeof schema !== 'undefined') {
-		option.series.push({
-			name: 'Réalisé J',
-			color: '#77ce77',
-			type: 'line',
-			step: 'end',
-			data: data_series
-		})
-		legd.push("Realise J");
-	}
-
-	if (typeof schema7 !== 'undefined' && typeof schema == 'undefined') {
-		option.series.push({
-			name: 'Réalisé J-7',
-			color: '#ffca00',
-			type: 'line',
-			step: 'end',
-			data: data_series7
-		})
-		legd.push("Realise J-7");
-	}
-
 	if (pc != 0) {
 		option.series.push({
 			name: 'UCESO capa',
@@ -773,10 +869,7 @@ async function show_courage_graph(containerId, day, zone, pc = 0) {
 			type: 'line',
 			step: 'end'
 		});
-		legd.push("UCESO");
 	}
-	
-	//option.legend.data = legd;
 
 	if (option && typeof option === 'object') {
 		myChart.setOption(option);
@@ -795,13 +888,10 @@ async function show_courage_graph(containerId, day, zone, pc = 0) {
 	function get_i1(data_realise, data_uceso) {
 		const rl = data_realise.length;
 		const ul = data_uceso.length;
-		console.log("Data Realise");
-		console.log(data_realise);
 		let rea = 0;
 		let uce = 0;
 
 		for(let i=0;i<rl-1;i++) {
-			console.log((get_minutes(data_realise[i+1][0]) - get_minutes(data_realise[i][0]))*data_realise[i][1]);
 			rea += (get_minutes(data_realise[i+1][0]) - get_minutes(data_realise[i][0]))*data_realise[i][1];
 		}
 		console.log("Rea: "+rea);
