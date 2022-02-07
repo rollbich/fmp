@@ -78,7 +78,7 @@ body.editor span a {
 	display: flex;
 }
 
-#feuille_capa_uceso {
+#feuille_capa_uceso,  #feuille_capa_simu{
 	margin-top: 10px;
 	padding: 10px;
 	background-color: var(--graph-uceso);
@@ -326,7 +326,7 @@ table thead > tr.titre {
   background-color: var(--table-titre-color);
 }
 
-table.ouverture tr:nth-child(6n+1), table.ouverture tr:nth-child(6n+2), table.ouverture tr:nth-child(6n+3) {
+table.uceso tr:nth-child(6n+1), table.uceso tr:nth-child(6n+2), table.uceso tr:nth-child(6n+3) {
   background-color: var(--ligne-paire-color);
 }
 
@@ -336,11 +336,11 @@ td, th {
 	text-align: center;
 }
 
-td[data-col], td.pc {
+td[data-col], #feuille_capa_tour td.pc {
 	cursor: pointer;
 }
 
-td.pc:hover {
+#feuille_capa_tour td.pc:hover, #feuille_capa_uceso td.pc:hover {
 	background-color:rgb(245, 213, 153);
 	cursor: pointer;
 }
@@ -367,9 +367,6 @@ td.typePC:hover, td.typedetache:hover {
 }
 
 /* feuille capa */
-table.ouverture tr:nth-child(3n+3) {
-	border-bottom: 2px solid rgb(20, 20, 20);
-}
 
 td.f8px {
 	font-size: 8px;
