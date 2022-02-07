@@ -89,7 +89,8 @@ class period_regul {
 		------------------------------------------------------------------ */	 
         
 	async show_result_reg(containerId) {
-		let delays = "<div class='delay'>";
+		let delays = `<h2>Delay : ${reverse_date(this.start_day)} au ${reverse_date(this.end_day)}</h2><br>`;
+		delays += "<div class='delay'>";
 		let res = `
 		<table class="regulation sortable">
 			<caption>LFMM-EST : ${reverse_date(this.start_day)} au ${reverse_date(this.end_day)}</caption>
@@ -139,7 +140,8 @@ class period_regul {
             });
         }
 		res += '</tbody></table>';
-		delays += `<span class="reg-tot">LFMM CTA : ${total_delay_est+total_delay_west} mn</span><span class="reg-tot">LFMM Est : ${total_delay_est} mn</span><span class="reg-tot">LFMM West : ${total_delay_west} mn</span><span class="reg-tot">LFMM App : ${total_delay_app} mn</span>`;
+		
+		delays += `<span class="rect">LFMM CTA : ${total_delay_est+total_delay_west} mn</span><span class="rect">LFMM Est : ${total_delay_est} mn</span><span class="rect">LFMM West : ${total_delay_west} mn</span><span class="rect">LFMM App : ${total_delay_app} mn</span>`;
 		delays += "</div>";
 		delays += res;
 		$(containerId).innerHTML = delays;
