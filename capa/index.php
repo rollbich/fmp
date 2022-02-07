@@ -41,16 +41,9 @@
 				$('bouton_simucapa').addEventListener('click', async e => {
 					let zone = $('zone').value;
 					let day = $('start').value;
-					/*
-					const cap = new capa(day, zone);
-					show_popup("Patientez !", "Chargement en cours...");
-					const pc = await cap.get_nbpc_dispo();
-					document.querySelector('.popup-close').click();
-					show_capa_graph("feuille_capa_uceso", day, zone, pc);
-					*/
-					const simu = new simu_capa("feuille_capa_uceso", day, zone);
+					const simu = new simu_capa("feuille_capa_simu", day, zone);
+					await simu.init();
 					simu.show_simu_capa();
-					//simu.go();
                     //alert("Fonctionnalité en développement");
 				});
 				
@@ -98,7 +91,7 @@
 
 <div id='feuille_capa_tour'>
 </div>
-<div id='feuille_capa_uceso'>
+<div id='feuille_capa_simu'>
 </div>
 
 <div id="popup-wrap" class="off" >

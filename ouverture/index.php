@@ -126,10 +126,6 @@
 </div>
 </header>
 
-<div id='feuille_capa_tour'>
-</div>
-<div id="courage_container">
-</div>
 <div id='feuille_capa_uceso'>
 </div>
 

@@ -21,17 +21,17 @@ class capa {
                 { "pc_vac": {"vac": {"nbpc": nbre_pc, "BV", "RO"}, ...}, 
                 "pc_total_dispo_15mn":[ ["hh:mm", nb_pc_dispo], [...], ... ] }
     --------------------------------------------------------------------------------------- */
-    async get_nbpc_dispo(update = {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0}) {
+    async get_nbpc_dispo(update = {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0, "J1BV":0, "J3BV":0, "S2BV":0, "J2BV":0, "S1BV":0, "NBV":0, "N-1BV":0}, noBV = false) {
         if (this.day === null) throw new Error("Le jour est indéfini");
         try {
 			const tab_vac_eq = this.get_vac_eq();
 			const instr = await loadJson("../instruction.json");
 			const yesterday = jmoins1(this.day);
 			// récupère l'objet contenant les propriétés equipes
-			const effectif = await get_olaf(this.zone_olaf, this.day, yesterday);
+			this.effectif = this.effectif || await get_olaf(this.zone_olaf, this.day, yesterday);
 			
 			// si pas de donnée on retourne 0
-			if (effectif == 0) return 0;
+			if (this.effectif == 0) return 0;
 			
 			const tour_local = await loadJson(tour_json);
 			const tour_utc = await this.get_tour_utc(tour_local);
@@ -41,21 +41,22 @@ class capa {
 			const pc = {"J1":{}, "J3":{}, "S2":{}, "J2":{}, "S1":{}, "N":{}, "N-1":{}};
 			for(const vac in tab_vac_eq) {
 				let p = tab_vac_eq[vac]+"-"+this.zone_olaf;
+				const upBV = vac+"BV";
 				if (vac !== "N-1") {
 					const cds = (vac == "J2" || vac == "S1") ? 0 : 1; // cds=0 en J2 et S1
-					pc[vac]["nbpc"] = parseInt(effectif[this.day][p]["teamReserve"]["teamQuantity"]) - cds + update[vac]; 
-					pc[vac]["BV"] = parseInt(effectif[this.day][p]["teamReserve"]["BV"]);
-					pc[vac]["RO"] = parseInt(effectif[this.day][p]["teamReserve"]["roQuantity"]);
-					pc[vac]["userList"] = effectif[this.day][p]["userList"];
-					pc[vac]["teamData"] = effectif[this.day][p]["teamData"];
-					pc[vac]["html"] = effectif[this.day][p]["html"][this.day][p];
+					pc[vac]["nbpc"] = parseInt(this.effectif[this.day][p]["teamReserve"]["teamQuantity"]) - cds + update[vac]; 
+					pc[vac]["BV"] = parseInt(this.effectif[this.day][p]["teamReserve"]["BV"]) + update[upBV];
+					pc[vac]["RO"] = parseInt(this.effectif[this.day][p]["teamReserve"]["roQuantity"]);
+					pc[vac]["userList"] = this.effectif[this.day][p]["userList"];
+					pc[vac]["teamData"] = this.effectif[this.day][p]["teamData"];
+					pc[vac]["html"] = this.effectif[this.day][p]["html"][this.day][p];
 				} else {
-					pc[vac]["nbpc"] = parseInt(effectif[yesterday][p]["teamReserve"]["teamQuantity"]) - 1 + update[vac]; // le cds ne compte pas dans le nb de pc => -1
-					pc[vac]["BV"] = parseInt(effectif[yesterday][p]["teamReserve"]["BV"]);
-					pc[vac]["RO"] = parseInt(effectif[yesterday][p]["teamReserve"]["roQuantity"]);
-					pc[vac]["userList"] = effectif[yesterday][p]["userList"];
-					pc[vac]["teamData"] = effectif[yesterday][p]["teamData"];
-					pc[vac]["html"] = effectif[yesterday][p]["html"][yesterday][p];
+					pc[vac]["nbpc"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["teamQuantity"]) - 1 + update[vac]; // le cds ne compte pas dans le nb de pc => -1
+					pc[vac]["BV"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["BV"]) + update[upBV];
+					pc[vac]["RO"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["roQuantity"]);
+					pc[vac]["userList"] = this.effectif[yesterday][p]["userList"];
+					pc[vac]["teamData"] = this.effectif[yesterday][p]["teamData"];
+					pc[vac]["html"] = this.effectif[yesterday][p]["html"][yesterday][p];
 				}
 			} 
 			
@@ -71,15 +72,51 @@ class capa {
 				vacs.forEach(vacation => {
 					const cds = (vacation == "J2" || vacation == "S1") ? 0 : 1;
 					if (tour_utc[vacation][i][1] === 1) nb_pc += cds; // cds qui bosse sur secteur
-					if (tour_utc[vacation][i][2] === 1) nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2), Math.floor((pc[vacation]["BV"]-cds)/2));
-					if (tour_utc[vacation][i][3] === 1) nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2, Math.floor((pc[vacation]["BV"]-cds)/2)+(pc[vacation]["BV"]-cds)%2);
+					if (tour_utc[vacation][i][2] === 1) {
+						if (noBV === false) {
+							nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2), Math.floor((pc[vacation]["BV"]-cds)/2));	
+						} else {
+							nb_pc += Math.floor(pc[vacation]["nbpc"]/2);
+						}
+					}
+					if (tour_utc[vacation][i][3] === 1) {
+						if (noBV === false) {
+							nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2, Math.floor((pc[vacation]["BV"]-cds)/2)+(pc[vacation]["BV"]-cds)%2);
+						} else {
+							nb_pc += Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2;
+						}
+					}
 				})
 				if (tour_utc["N"][i][1] === 1 && i>48) nb_pc += cds; // cds qui bosse sur secteur
-				if (tour_utc["N"][i][2] === 1 && i>48) nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2), Math.floor((pc["N"]["BV"]-cds)/2));
-				if (tour_utc["N"][i][3] === 1 && i>48) nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2, Math.floor((pc["N"]["BV"]-cds)/2)+(pc["N"]["BV"]-cds)%2);
+				if (tour_utc["N"][i][2] === 1 && i>48) {
+					if (noBV === false) {
+						nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2), Math.floor((pc["N"]["BV"]-cds)/2));
+					} else {
+						nb_pc += Math.floor(pc["N"]["nbpc"]/2);
+					}
+				}
+				if (tour_utc["N"][i][3] === 1 && i>48) {
+					if (noBV === false) {
+						nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2, Math.floor((pc["N"]["BV"]-cds)/2)+(pc["N"]["BV"]-cds)%2);
+					} else {
+						nb_pc += Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2;
+					}
+				}
 				if (tour_utc["N"][i][1] === 1 && i<48) nb_pc += cds; // cds qui bosse sur secteur
-				if (tour_utc["N"][i][2] === 1 && i<48) nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2), Math.floor((pc["N-1"]["BV"]-cds)/2));
-				if (tour_utc["N"][i][3] === 1 && i<48) nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2, Math.floor((pc["N-1"]["BV"]-cds)/2)+(pc["N-1"]["BV"]-cds)%2);
+				if (tour_utc["N"][i][2] === 1 && i<48) {
+					if (noBV === false) {
+						nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2), Math.floor((pc["N-1"]["BV"]-cds)/2));
+					} else {
+						nb_pc += Math.floor(pc["N-1"]["nbpc"]/2);
+					}
+				}
+				if (tour_utc["N"][i][3] === 1 && i<48) {
+					if (noBV === false) {
+						nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2, Math.floor((pc["N-1"]["BV"]-cds)/2)+(pc["N-1"]["BV"]-cds)%2);
+					} else {
+						nb_pc += Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2;
+					}
+				}
 				pcs.push([tour_utc["J1"][i][0], nb_pc]);
 				nb_pc = 0;
 
@@ -96,6 +133,8 @@ class capa {
 							if (type === "Inst") { in15mn[i][0] += 2; in15mn[i][1] = "Inst"; }
 							if (type === "Eleve") { in15mn[i][1] = "Eleve"; }
 							if (type === "Asa") { in15mn[i][0] -= 1; in15mn[i][1] = "Asa"; }
+							if (type === "Simu1PC") { in15mn[i][0] -= 1; in15mn[i][1] = "Simu1PC"; }
+							if (type === "Simu2PC") { in15mn[i][0] -= 2; in15mn[i][1] = "Simu2PC"; }
 						} 
 					}
 				});
@@ -242,7 +281,7 @@ class feuille_capa extends capa {
 	async show_feuille_capa() {
 		show_popup("Patientez !", "Chargement en cours...");
 		const update = await loadJson("../update.json");
-		if (typeof update[this.zone][this.day] === 'undefined') update[this.zone][this.day] = {"update_count": {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0}, "update_name": {"J1":[], "J3":[], "S2":[], "J2":[], "S1":[], "N":[], "N-1":[]}};
+		if (typeof update[this.zone][this.day] === 'undefined') update[this.zone][this.day] = {"update_count": {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0, "J1BV":0, "J3BV":0, "S2BV":0, "J2BV":0, "S1BV":0, "NBV":0, "N-1BV":0}, "update_name": {"J1":[], "J3":[], "S2":[], "J2":[], "S1":[], "N":[], "N-1":[]}};
 		const pc = await this.get_nbpc_dispo(update[this.zone][this.day]['update_count']);
 		document.querySelector('.popup-close').click();
 		const pc_15mn = pc["pc_total_dispo_15mn"];
@@ -253,8 +292,8 @@ class feuille_capa extends capa {
 		const tour_utc = await this.get_tour_utc(tour_local);
 
 		// Construit le tableau
-		let res = `<table class="ouverture">
-					<caption>Journée du ${this.day} - Zone ${this.zone}</caption>
+		let res = `<table class="uceso">
+					<caption>Journée du ${reverse_date(this.day)} - Zone ${this.zone}</caption>
 					<thead>
 						<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px right_1px">PC</th><th class="top_2px bottom_2px right_2px">BV</th><th class="top_2px bottom_2px right_2px" colspan="96">...</th></tr>
 					</thead>
@@ -559,36 +598,34 @@ class simu_capa extends capa {
 		super(day, zone);
 		this.zone_schema = zone === "est" ? "AW" : "AE";
 		this.containerTour = $(containerIdTour);
-		this.containerTour.style.display = 'flex';
-		this.containerTour.innerHTML = '<div id="left_part"></div><div id="right_part"></div>';
 	}
 
-	async go() {
-		show_popup("Patientez !", "Chargement en cours...");
-		const pc = await this.get_nbpc_dispo();
+	async init() {
+		this.containerTour.style.display = 'flex';
+		this.containerTour.innerHTML = '<div id="left_part"></div><div id="right_part"></div>';
+		show_popup("Patientez !", "Chargement OLAF en cours...");
+		this.pc = await this.get_nbpc_dispo();
 		document.querySelector('.popup-close').click();
-		show_capa_graph("right_part", this.day, this.zone_schema, pc);
 	}
 
 	/*	------------------------------------------
 			Affichage de la feuille de capa		
 		------------------------------------------ */
 	async show_simu_capa() {
-		show_popup("Patientez !", "Chargement en cours...");
+		//show_popup("Patientez !", "Chargement en cours...");
 		const update = await loadJson("../update.json");
 		if (typeof update[this.zone][this.day] === 'undefined') update[this.zone][this.day] = {"update_count": {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0}, "update_name": {"J1":[], "J3":[], "S2":[], "J2":[], "S1":[], "N":[], "N-1":[]}};
-		const pc = await this.get_nbpc_dispo(update[this.zone][this.day]['update_count']);
-		document.querySelector('.popup-close').click();
-		const pc_vac = pc["pc_vac"];
+		//document.querySelector('.popup-close').click();
+		const pc_vac = this.pc["pc_vac"];
 		const tab_vac_eq = this.get_vac_eq(this.day);
 		const tour_local = await loadJson(tour_json);
 		const tour_utc = await this.get_tour_utc(tour_local);
 
 		// Construit le tableau
-		let res = `<table class="ouverture">
-					<caption>${this.day}<br>Zone ${this.zone}</caption>
+		let res = `<table class="simu">
+					<caption>Zone ${this.zone}<br>${reverse_date(this.day)}</caption>
 					<thead>
-						<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px right_1px">PC</th><th class="top_2px bottom_2px right_1px">BV</th><th class="top_2px bottom_2px right_2px">Modify</th></tr>
+						<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px right_1px">PC</th><th class="top_2px bottom_2px right_1px">BV</th><th class="top_2px bottom_2px right_1px">BVini</th><th class="top_2px bottom_2px right_2px">Modify BV</th></tr>
 					</thead>
 					<tbody>`;
 		res += `${affiche_vac("J1")}`;
@@ -600,9 +637,52 @@ class simu_capa extends capa {
 		res += `${affiche_vac("N-1")}`;
 		res += '</tbody></table>';
 		$('left_part').innerHTML = res;
+
+		const v = {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0, "J1BV":0, "J3BV":0, "S2BV":0, "J2BV":0, "S1BV":0, "NBV":0, "N-1BV":0};
+
+		const modify_listener = () => {
+			const moins = document.querySelectorAll('.minus');
+			const plus = document.querySelectorAll('.plus');
+			plus.forEach(el => {
+				el.addEventListener('click', async (event) => {
+					const vac = el.dataset.vac;
+					const vacBV = vac+"BV";
+					const cds = (vac == "J2" || vac == "S1") ? 0 : 1;
+					$$(`span[data-vac='${vac}']`).innerHTML = parseInt($$(`span[data-vac='${vac}']`).innerHTML) + 1;
+					v[vacBV]++;
+					$$(`td.bv[data-vac='${vac}']`).innerHTML = parseInt($$(`td.bv[data-vac='${vac}']`).innerHTML) + 1;
+					if ($$(`td.bv[data-vac='${vac}']`).innerHTML != $$(`td.bvini[data-vac='${vac}']`).innerHTML) {
+						$$(`td.bv[data-vac='${vac}']`).classList.add('bg_red');
+					} else {
+						$$(`td.bv[data-vac='${vac}']`).classList.remove('bg_red');
+					}
+					this.pc = await this.get_nbpc_dispo(v);
+					show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
+				});
+			});
+
+			moins.forEach(el => {
+				el.addEventListener('click', async (event) => {
+					const vac = el.dataset.vac;
+					const vacBV = vac+"BV";
+					const cds = (vac == "J2" || vac == "S1") ? 0 : 1;
+					$$(`span[data-vac='${vac}']`).innerHTML = parseInt($$(`span[data-vac='${vac}']`).innerHTML) - 1;
+					v[vacBV]--;
+					$$(`td.bv[data-vac='${vac}']`).innerHTML = parseInt($$(`td.bv[data-vac='${vac}']`).innerHTML) - 1;
+					if ($$(`td.bv[data-vac='${vac}']`).innerHTML != $$(`td.bvini[data-vac='${vac}']`).innerHTML) {
+						$$(`td.bv[data-vac='${vac}']`).classList.add('bg_red');
+					} else {
+						$$(`td.bv[data-vac='${vac}']`).classList.remove('bg_red');
+					}
+					this.pc = await this.get_nbpc_dispo(v);
+					show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
+				});
+			});
+		}
+
 		modify_listener();
 		console.log(this.day+" "+this.zone_schema);
-		show_capa_graph("right_part", this.day, this.zone_schema, pc);
+		show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
 
 		// Fabrique la ligne du tour de service
 		function affiche_vac(vac) {
@@ -621,38 +701,21 @@ class simu_capa extends capa {
 			<tr data-vac='${vac}'>
 				<td class='left_2px right_1px'></td><td class='right_1px'></td>
 				<td class='right_1px'>cds</td><td>${cds}</td>
-				<td class='pc right_1px' data-vac='${vac}'>${pc_vac[vac]["nbpc"]}</td><td class='right_1px'>${pc_vac[vac]["BV"]}</td>
+				<td class='pc right_1px' data-vac='${vac}'>${pc_vac[vac]["nbpc"]}</td>
+				<td class='bv right_1px' data-vac='${vac}'>${pc_vac[vac]["BV"]}</td><td class='bvini right_1px' data-vac='${vac}'>${pc_vac[vac]["BV"]}</td>
 				<td class='right_2px'></td>
 			</tr>
 			<tr data-vac='${vac}'>
 				<td class='eq left_2px right_1px' data-vac='${vac}'>${tab_vac_eq[vac]}</td>
-				<td class='right_1px'>${vac}</td><td class='right_1px'>A</td><td class='right_1px' colspan="2"></td><td class='right_1px'></td>
+				<td class='right_1px'>${vac}</td><td class='right_1px'>A</td><td class='right_1px' colspan="2"></td><td class='right_1px'></td><td class='right_1px'></td>
 				<td class='right_2px'><div class="modify"><button class="minus" data-vac='${vac}'>-</button><span class="numberPlace" data-vac='${vac}'>0</span><button class="plus" data-vac='${vac}'>+</button></div></td>
 			</tr>
 			<tr data-vac='${vac}'>
 				<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
 				<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px' colspan="2"></td>
-				<td class='bottom_2px right_1px'></td>
+				<td class='bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
 				<td class='right_2px bottom_2px'></td>
 			</tr>`;
-		}
-
-		function modify_listener(){
-			const moins = document.querySelectorAll('.minus');
-			const plus = document.querySelectorAll('.plus');
-			plus.forEach(el => {
-				el.addEventListener('click', (event) => {
-					const vac = el.dataset.vac;
-					$$(`span[data-vac='${vac}']`).innerHTML = parseInt($$(`span[data-vac='${vac}']`).innerHTML) + 1;
-				});
-			});
-
-			moins.forEach(el => {
-				el.addEventListener('click', (event) => {
-					const vac = el.dataset.vac;
-					$$(`span[data-vac='${vac}']`).innerHTML = parseInt($$(`span[data-vac='${vac}']`).innerHTML) - 1;
-				});
-			});
 		}
 
 	}
@@ -775,6 +838,10 @@ async function show_capa_graph(containerId, day, zone, pc = 0) {
 	$$(".orange").innerHTML = 'J-7 : '+jour7+' '+reverse_date(day7);
 	$$(".vert").innerHTML = 'J : '+jour+' '+reverse_date(day);
 	
+	const couleur_bleu = getComputedStyle(document.documentElement).getPropertyValue('--color-2019');
+	const couleur_orange = getComputedStyle(document.documentElement).getPropertyValue('--color-j-7');
+	const couleur_vert = getComputedStyle(document.documentElement).getPropertyValue('--color-j');
+
 	let option;
 	
 	option = {
@@ -839,21 +906,21 @@ async function show_capa_graph(containerId, day, zone, pc = 0) {
 	  series: [
 		{
 		  name: 'Réalisé J',
-		  color: '#77ce77',
+		  color: couleur_vert,
 		  type: 'line',
 		  step: 'end',
 		  data: data_series
 		},
 		{
 		  name: 'Réalisé J-7',
-		  color: '#ffca00',
+		  color: couleur_orange,
 		  type: 'line',
 		  step: 'end',
 		  data: data_series7
 		},
 		{
 		  name: 'Réalisé 2019', //2019
-		  color: '#00caff',
+		  color: couleur_bleu,
 		  type: 'line',
 		  step: 'end',
 		  data: data_series2019
