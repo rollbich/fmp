@@ -57,6 +57,8 @@
                 <option selected value="Eleve">Eleves</option>
                 <option value="Inst">Instrus</option>
                 <option value="Asa">Asa</option>
+                <option value="Simu1PC">Simu 1 PC</option>
+                <option value="Simu2PC">Simu 2 PC</option>
             </select>
         </div>
         <button id='button_ajout' type='button' class="btn">Ajouter</button>
