@@ -682,7 +682,6 @@ class simu_capa extends capa {
 		}
 
 		modify_listener();
-		console.log(this.day+" "+this.zone_schema);
 		show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
 
 		// Fabrique la ligne du tour de service
@@ -962,13 +961,10 @@ async function show_capa_graph(containerId, day, zone, pc = 0) {
 		for(let i=0;i<rl-1;i++) {
 			rea += (get_minutes(data_realise[i+1][0]) - get_minutes(data_realise[i][0]))*data_realise[i][1];
 		}
-		console.log("Rea: "+rea);
 		for(let i=1;i<ul-1;i++) {
 			uce += (get_minutes(data_uceso[i+1][0]) - get_minutes(data_uceso[i][0]))*data_uceso[i][1];
 		}
-		console.log("Uce: "+uce);
 		const i1 = Math.round(rea*100/uce);
-		console.log("i1: "+rea/uce);
 		return i1;
 
 	}

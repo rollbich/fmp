@@ -37,14 +37,20 @@ class schema_rea {
         schema.position = {};
         
         try { 
-        const contenu = await fetch(`/${fichier_courage}`).then( (response) => {
+        const contenu = await fetch(`/${fichier_courage}`).then( async (response) => {
             if (response.ok) { // entre 200 et 300
             return Promise.resolve(response)
             } else {
             const date = get_date_from_courage_file(fichier_courage);
             const z = this.zone === "AE" ? "EST" : "OUEST";
-            if (response.status == 404) { return Promise.reject(new Error(`Le fichier courage ${z} du ${date} n'existe pas`)); }
-            return Promise.reject(new Error('Erreur'+response.statusText))
+            if (response.status == 404) { 
+                //return Promise.reject(new Error(`Le fichier courage ${z} du ${date} n'existe pas`)); 
+                //show_popup(`Fichier courage ${z}`, `Le fichier du ${date} n'existe pas`);
+		        //await wait(1000);
+		        //document.querySelector('.popup-close').click();
+                console.log(`Fichier courage ${z} : Le fichier du ${date} n'existe pas`);
+            }
+            //return Promise.reject(new Error('Erreur'+response.statusText))
             }
         }); 
         const response = await contenu.text();
@@ -139,7 +145,7 @@ class schema_rea {
         }
         
         catch (err) {
-            alert(err.message);
+            //alert(err.message);
         }
         
     }
