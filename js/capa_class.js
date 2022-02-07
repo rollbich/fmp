@@ -286,6 +286,7 @@ class feuille_capa extends capa {
 		document.querySelector('.popup-close').click();
 		const pc_15mn = pc["pc_total_dispo_15mn"];
 		const pc_instr_15mn = pc["pc_instr_15mn"];
+		console.log(pc_instr_15mn);
 		const pc_vac = pc["pc_vac"];
 		const tab_vac_eq = this.get_vac_eq(this.day);
 		const tour_local = await loadJson(tour_json);

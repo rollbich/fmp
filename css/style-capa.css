@@ -58,6 +58,11 @@ body.editor span a {
 	margin-left: 10px;
 }
 
+span.back {
+	margin-left: 20px;
+	font-size: 14px;
+}
+
 .off {
 	display: none;
 }
@@ -105,14 +110,14 @@ nav{
 
 nav ul{
 	margin: 0px auto;
-	width: 70%;
+	width: 80%;
     list-style-type: none;
 	height: 46px;
 }
 
 nav li{
     float: left;
-    width: 20%;/*100% divisé par le nombre d'éléments de menu*/
+    width: 16%;/*100% divisé par le nombre d'éléments de menu*/
     text-align: center;/*Centre le texte dans les éléments de menu*/
 }
 
@@ -161,7 +166,7 @@ h1 {
 ul.menu {
 	margin: 12px auto 0;
 	position: relative;
-	width: 800px;
+	width: 860px;
 	height: 50px;
 	background-color: var(--menu-bg-color);
 	border-radius: 8px;
