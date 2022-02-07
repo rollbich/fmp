@@ -85,6 +85,7 @@
 		echo '<li class ="feuille"><a href="./edit.php">Edit TDS</a></li>';
 	}
 	?>
+	<li class="feuille"><a href="./instruction.php">Instr</a></li>
 	<li class="feuille"><button class="help_button">Help</button></li>
 </ul>
 </header>
