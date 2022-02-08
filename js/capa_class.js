@@ -626,7 +626,8 @@ class simu_capa extends capa {
 		let res = `<table class="simu">
 					<caption>Zone ${this.zone}<br>${reverse_date(this.day)}</caption>
 					<thead>
-						<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px right_1px">PC</th><th class="top_2px bottom_2px right_1px">BV</th><th class="top_2px bottom_2px right_1px">BVini</th><th class="top_2px bottom_2px right_2px">Modify BV</th></tr>
+						<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px right_1px">PC</th><th class="top_2px bottom_2px right_1px">BV</th><th class="top_2px bottom_2px right_1px">BVini</th><th class="top_2px bottom_2px right_2px">Mod BV</th>
+						<th class="top_2px bottom_2px right_2px">Mod PC</th></tr>
 					</thead>
 					<tbody>`;
 		res += `${affiche_vac("J1")}`;
@@ -642,43 +643,87 @@ class simu_capa extends capa {
 		const v = {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0, "J1BV":0, "J3BV":0, "S2BV":0, "J2BV":0, "S1BV":0, "NBV":0, "N-1BV":0};
 
 		const modify_listener = () => {
-			const moins = document.querySelectorAll('.minus');
-			const plus = document.querySelectorAll('.plus');
-			plus.forEach(el => {
+			const moinsBV = document.querySelectorAll('.minusBV');
+			const plusBV = document.querySelectorAll('.plusBV');
+			const moinsPC = document.querySelectorAll('.minusPC');
+			const plusPC = document.querySelectorAll('.plusPC');
+
+			plusBV.forEach(el => {
 				el.addEventListener('click', async (event) => {
 					const vac = el.dataset.vac;
 					const vacBV = vac+"BV";
 					const cds = (vac == "J2" || vac == "S1") ? 0 : 1;
-					$$(`span[data-vac='${vac}']`).innerHTML = parseInt($$(`span[data-vac='${vac}']`).innerHTML) + 1;
+					$$(`span[data-vacBV='${vac}']`).innerHTML = parseInt($$(`span[data-vacBV='${vac}']`).innerHTML) + 1;
 					v[vacBV]++;
-					$$(`td.bv[data-vac='${vac}']`).innerHTML = parseInt($$(`td.bv[data-vac='${vac}']`).innerHTML) + 1;
-					if ($$(`td.bv[data-vac='${vac}']`).innerHTML != $$(`td.bvini[data-vac='${vac}']`).innerHTML) {
-						$$(`td.bv[data-vac='${vac}']`).classList.add('bg_red');
+					const BV_elem = $$(`td.bv[data-vacBV='${vac}']`);
+					BV_elem.innerHTML = parseInt(BV_elem.innerHTML) + 1;
+					if (BV_elem.innerHTML != $$(`td.bvini[data-vacBV='${vac}']`).innerHTML) {
+						BV_elem.classList.add('bg_red');
 					} else {
-						$$(`td.bv[data-vac='${vac}']`).classList.remove('bg_red');
+						BV_elem.classList.remove('bg_red');
 					}
 					this.pc = await this.get_nbpc_dispo(v);
 					show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
 				});
 			});
 
-			moins.forEach(el => {
+			moinsBV.forEach(el => {
 				el.addEventListener('click', async (event) => {
 					const vac = el.dataset.vac;
 					const vacBV = vac+"BV";
 					const cds = (vac == "J2" || vac == "S1") ? 0 : 1;
-					$$(`span[data-vac='${vac}']`).innerHTML = parseInt($$(`span[data-vac='${vac}']`).innerHTML) - 1;
+					$$(`span[data-vacBV='${vac}']`).innerHTML = parseInt($$(`span[data-vacBV='${vac}']`).innerHTML) - 1;
 					v[vacBV]--;
-					$$(`td.bv[data-vac='${vac}']`).innerHTML = parseInt($$(`td.bv[data-vac='${vac}']`).innerHTML) - 1;
-					if ($$(`td.bv[data-vac='${vac}']`).innerHTML != $$(`td.bvini[data-vac='${vac}']`).innerHTML) {
-						$$(`td.bv[data-vac='${vac}']`).classList.add('bg_red');
+					const BV_elem = $$(`td.bv[data-vacBV='${vac}']`);
+					BV_elem.innerHTML = parseInt(BV_elem.innerHTML) - 1;
+					if (BV_elem.innerHTML != $$(`td.bvini[data-vacBV='${vac}']`).innerHTML) {
+						BV_elem.classList.add('bg_red');
 					} else {
-						$$(`td.bv[data-vac='${vac}']`).classList.remove('bg_red');
+						BV_elem.classList.remove('bg_red');
 					}
 					this.pc = await this.get_nbpc_dispo(v);
 					show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
 				});
 			});
+
+			plusPC.forEach(el => {
+				el.addEventListener('click', async (event) => {
+					const vac = el.dataset.vac;
+					const vacBV = vac+"BV";
+					const cds = (vac == "J2" || vac == "S1") ? 0 : 1;
+					$$(`span[data-vacPC='${vac}']`).innerHTML = parseInt($$(`span[data-vacPC='${vac}']`).innerHTML) + 1;
+					v[vac]++;
+					const PC_elem = $$(`td.nbpc[data-vacPC='${vac}']`);
+					PC_elem.innerHTML = parseInt(PC_elem.innerHTML) + 1;
+					if ($$(`span[data-vacPC='${vac}']`).innerHTML != 0) {
+						PC_elem.classList.add('bg_red');
+					} else {
+						PC_elem.classList.remove('bg_red');
+					}
+					this.pc = await this.get_nbpc_dispo(v);
+					show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
+				});
+			});
+
+			moinsPC.forEach(el => {
+				el.addEventListener('click', async (event) => {
+					const vac = el.dataset.vac;
+					const vacBV = vac+"BV";
+					const cds = (vac == "J2" || vac == "S1") ? 0 : 1;
+					$$(`span[data-vacPC='${vac}']`).innerHTML = parseInt($$(`span[data-vacPC='${vac}']`).innerHTML) - 1;
+					v[vac]--;
+					const PC_elem = $$(`td.nbpc[data-vacPC='${vac}']`);
+					PC_elem.innerHTML = parseInt(PC_elem.innerHTML) - 1;
+					if ($$(`span[data-vacPC='${vac}']`).innerHTML != 0) {
+						PC_elem.classList.add('bg_red');
+					} else {
+						PC_elem.classList.remove('bg_red');
+					}
+					this.pc = await this.get_nbpc_dispo(v);
+					show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
+				});
+			});
+
 		}
 
 		modify_listener();
@@ -701,19 +746,22 @@ class simu_capa extends capa {
 			<tr data-vac='${vac}'>
 				<td class='left_2px right_1px'></td><td class='right_1px'></td>
 				<td class='right_1px'>cds</td><td>${cds}</td>
-				<td class='pc right_1px' data-vac='${vac}'>${pc_vac[vac]["nbpc"]}</td>
-				<td class='bv right_1px' data-vac='${vac}'>${pc_vac[vac]["BV"]}</td><td class='bvini right_1px' data-vac='${vac}'>${pc_vac[vac]["BV"]}</td>
+				<td class='nbpc right_1px' data-vacPC='${vac}'>${pc_vac[vac]["nbpc"]}</td>
+				<td class='bv right_1px' data-vacBV='${vac}'>${pc_vac[vac]["BV"]}</td><td class='bvini right_1px' data-vacBV='${vac}'>${pc_vac[vac]["BV"]}</td>
+				<td class='right_1px'></td>
 				<td class='right_2px'></td>
 			</tr>
 			<tr data-vac='${vac}'>
 				<td class='eq left_2px right_1px' data-vac='${vac}'>${tab_vac_eq[vac]}</td>
 				<td class='right_1px'>${vac}</td><td class='right_1px'>A</td><td class='right_1px' colspan="2"></td><td class='right_1px'></td><td class='right_1px'></td>
-				<td class='right_2px'><div class="modify"><button class="minus" data-vac='${vac}'>-</button><span class="numberPlace" data-vac='${vac}'>0</span><button class="plus" data-vac='${vac}'>+</button></div></td>
+				<td class='right_1px'><div class="modify"><button class="minusBV minus" data-vac='${vac}'>-</button><span class="numberPlace" data-vacBV='${vac}'>0</span><button class="plusBV plus" data-vac='${vac}'>+</button></div></td>
+				<td class='right_2px'><div class="modify"><button class="minusPC minus" data-vac='${vac}'>-</button><span class="numberPlace" data-vacPC='${vac}'>0</span><button class="plusPC plus" data-vac='${vac}'>+</button></div></td>
 			</tr>
 			<tr data-vac='${vac}'>
 				<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
 				<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px' colspan="2"></td>
 				<td class='bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
+				<td class='bottom_2px right_1px'></td>
 				<td class='right_2px bottom_2px'></td>
 			</tr>`;
 		}
