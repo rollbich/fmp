@@ -599,11 +599,12 @@ class simu_capa extends capa {
 		super(day, zone);
 		this.zone_schema = zone === "est" ? "AW" : "AE";
 		this.containerTour = $(containerIdTour);
+		this.noBV = false;
 	}
 
 	async init() {
 		this.containerTour.style.display = 'flex';
-		this.containerTour.innerHTML = '<div id="left_part"></div><div id="right_part"></div>';
+		this.containerTour.innerHTML = '<div id="left_part"><div id="table_option"></div><div id="table"></div></div><div id="right_part"></div>';
 		show_popup("Patientez !", "Chargement OLAF en cours...");
 		this.pc = await this.get_nbpc_dispo();
 		document.querySelector('.popup-close').click();
@@ -623,10 +624,24 @@ class simu_capa extends capa {
 		const tour_utc = await this.get_tour_utc(tour_local);
 
 		// Construit le tableau
+		const v = {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0, "J1BV":0, "J3BV":0, "S2BV":0, "J2BV":0, "S1BV":0, "NBV":0, "N-1BV":0};
+		let to = `<h2>Zone ${this.zone.toUpperCase()} / ${reverse_date(this.day)}</h2>`;
+		to += '<input type="checkbox" id="check_nobv" name="check_nobv"><label for="check_nobv">Enlever les BVs pour le calcul des UCESOs</label><div><button id="upd">Update</button></div>';
+		$('table_option').innerHTML = to;
+		$('check_nobv').addEventListener('click', () => {
+			if ($('check_nobv').checked) {
+				this.noBV = true;
+			} else {
+				this.noBV = false;
+			}
+		})
+		$('upd').addEventListener('click', async () => {
+			this.pc = await this.get_nbpc_dispo(v, this.noBV);
+			show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
+		})
 		let res = `<table class="simu">
-					<caption>Zone ${this.zone}<br>${reverse_date(this.day)}</caption>
 					<thead>
-						<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px right_1px">PC</th><th class="top_2px bottom_2px right_1px">BV</th><th class="top_2px bottom_2px right_1px">BVini</th><th class="top_2px bottom_2px right_2px">Mod BV</th>
+						<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px right_1px">PC</th><th class="top_2px bottom_2px right_1px">BV</th><th class="top_2px bottom_2px right_1px">BVini</th><th class="top_2px bottom_2px right_2px">Mod BV</th>
 						<th class="top_2px bottom_2px right_2px">Mod PC</th></tr>
 					</thead>
 					<tbody>`;
@@ -638,9 +653,7 @@ class simu_capa extends capa {
 		res += `${affiche_vac("N")}`;
 		res += `${affiche_vac("N-1")}`;
 		res += '</tbody></table>';
-		$('left_part').innerHTML = res;
-
-		const v = {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0, "J1BV":0, "J3BV":0, "S2BV":0, "J2BV":0, "S1BV":0, "NBV":0, "N-1BV":0};
+		$('table').innerHTML = res;
 
 		const modify_listener = () => {
 			const moinsBV = document.querySelectorAll('.minusBV');
@@ -662,7 +675,7 @@ class simu_capa extends capa {
 					} else {
 						BV_elem.classList.remove('bg_red');
 					}
-					this.pc = await this.get_nbpc_dispo(v);
+					this.pc = await this.get_nbpc_dispo(v, this.noBV);
 					show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
 				});
 			});
@@ -681,7 +694,7 @@ class simu_capa extends capa {
 					} else {
 						BV_elem.classList.remove('bg_red');
 					}
-					this.pc = await this.get_nbpc_dispo(v);
+					this.pc = await this.get_nbpc_dispo(v, this.noBV);
 					show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
 				});
 			});
@@ -700,7 +713,7 @@ class simu_capa extends capa {
 					} else {
 						PC_elem.classList.remove('bg_red');
 					}
-					this.pc = await this.get_nbpc_dispo(v);
+					this.pc = await this.get_nbpc_dispo(v, this.noBV);
 					show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
 				});
 			});
@@ -719,7 +732,7 @@ class simu_capa extends capa {
 					} else {
 						PC_elem.classList.remove('bg_red');
 					}
-					this.pc = await this.get_nbpc_dispo(v);
+					this.pc = await this.get_nbpc_dispo(v, this.noBV);
 					show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
 				});
 			});
@@ -744,25 +757,12 @@ class simu_capa extends capa {
 			
 			return `
 			<tr data-vac='${vac}'>
-				<td class='left_2px right_1px'></td><td class='right_1px'></td>
-				<td class='right_1px'>cds</td><td>${cds}</td>
-				<td class='nbpc right_1px' data-vacPC='${vac}'>${pc_vac[vac]["nbpc"]}</td>
-				<td class='bv right_1px' data-vacBV='${vac}'>${pc_vac[vac]["BV"]}</td><td class='bvini right_1px' data-vacBV='${vac}'>${pc_vac[vac]["BV"]}</td>
-				<td class='right_1px'></td>
-				<td class='right_2px'></td>
-			</tr>
-			<tr data-vac='${vac}'>
-				<td class='eq left_2px right_1px' data-vac='${vac}'>${tab_vac_eq[vac]}</td>
-				<td class='right_1px'>${vac}</td><td class='right_1px'>A</td><td class='right_1px' colspan="2"></td><td class='right_1px'></td><td class='right_1px'></td>
-				<td class='right_1px'><div class="modify"><button class="minusBV minus" data-vac='${vac}'>-</button><span class="numberPlace" data-vacBV='${vac}'>0</span><button class="plusBV plus" data-vac='${vac}'>+</button></div></td>
-				<td class='right_2px'><div class="modify"><button class="minusPC minus" data-vac='${vac}'>-</button><span class="numberPlace" data-vacPC='${vac}'>0</span><button class="plusPC plus" data-vac='${vac}'>+</button></div></td>
-			</tr>
-			<tr data-vac='${vac}'>
-				<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
-				<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px' colspan="2"></td>
-				<td class='bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
-				<td class='bottom_2px right_1px'></td>
-				<td class='right_2px bottom_2px'></td>
+			<td class='eq left_2px right_1px bottom_2px' data-vac='${vac}'>${tab_vac_eq[vac]}</td><td class='right_1px bottom_2px'>${vac}</td><td class='bottom_2px'>${cds}</td>
+				<td class='nbpc right_1px bottom_2px' data-vacPC='${vac}'>${pc_vac[vac]["nbpc"]}</td>
+				<td class='bv right_1px bottom_2px' data-vacBV='${vac}'>${pc_vac[vac]["BV"]}</td>
+				<td class='bvini right_1px bottom_2px' data-vacBV='${vac}'>${pc_vac[vac]["BV"]}</td>
+				<td class='right_1px bottom_2px'><div class="modify"><button class="minusBV minus" data-vac='${vac}'>-</button><span class="numberPlace" data-vacBV='${vac}'>0</span><button class="plusBV plus" data-vac='${vac}'>+</button></div></td>
+				<td class='right_2px bottom_2px'><div class="modify"><button class="minusPC minus" data-vac='${vac}'>-</button><span class="numberPlace" data-vacPC='${vac}'>0</span><button class="plusPC plus" data-vac='${vac}'>+</button></div></td>
 			</tr>`;
 		}
 
