@@ -91,10 +91,15 @@ span.back {
 
 #left_part {
 	background-color: white;
+	min-height: 540px;
 }
 
 #right_part {
 	width: 1600px;
+}
+
+#upd {
+	margin: 10px;
 }
 
 /* Bandeau de navigation */
@@ -154,6 +159,13 @@ h1 {
 	width: 50%;
 	margin: 7px auto;
 
+}
+
+h2 {
+	font-family: 'Sansation';
+	font-size: 24px;
+	margin: 10px;
+	text-align: center;
 }
 
 .logo {
@@ -310,13 +322,14 @@ table {
 	margin-left: 10px;
 	margin-right: 10px;
 	margin-bottom: 10px;
+	width:fit-content;
 }
 
 table.uceso {
 	margin: 0 auto;
 }
 
-table.uceso caption {
+table.uceso caption, table.simu caption {
 	color: var(--caption-uceso);
 }
 
@@ -335,10 +348,33 @@ table.uceso tr:nth-child(6n+1), table.uceso tr:nth-child(6n+2), table.uceso tr:n
   background-color: var(--ligne-paire-color);
 }
 
+#table_option {
+	height: 130px;
+	background-color: #eceff1;
+}
+
+#table_option input {
+	margin-left: 10px;
+	margin-top: 20px;
+}
+
+#table_option label {
+	margin-left: 10px;
+	font-size: 14px;
+}
+
 td, th {
 	width: 15px;
-	/*padding: 5px;*/
+	padding: 1px;
 	text-align: center;
+}
+
+table.simu {
+	width:fit-content;
+}
+
+table.simu td, table.simu th{
+	padding: 5px;
 }
 
 td[data-col], #feuille_capa_tour td.pc {
