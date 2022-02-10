@@ -70,7 +70,11 @@
 </div>
 <ul class="menu">
 	<li id="bouton_feuille" class="pointer"><span>Feuille</span></li>
-	<li id="bouton_simucapa" class="pointer"><span>Simu</span></li>
+	<?php
+	if ($_SESSION['login_bureau'] === true || $_SESSION['login_encadrement'] === true) {
+		echo '<li id="bouton_simucapa" class="pointer"><span>Simu</span></li>';
+	}
+	?>
 	<li><label for="start" class="dates">Date:</label>
 	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="2021-09-14" max="2030-12-31">
 	</li>

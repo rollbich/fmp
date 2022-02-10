@@ -19,5 +19,9 @@ if (isset($_POST) && (!empty($_POST['pwd']))) {
 		$_SESSION['loginOK'] = true;
 		$_SESSION['login_bureau'] = true; 
 	}
+	if (password_verify($pwd, $hash_encadrement)) {
+		$_SESSION['loginOK'] = true;
+		$_SESSION['login_encadrement'] = true; 
+	}
 }
 ?>
