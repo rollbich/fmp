@@ -23,7 +23,7 @@ class capa {
     --------------------------------------------------------------------------------------- */
     async get_nbpc_dispo(update = {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0, "J1BV":0, "J3BV":0, "S2BV":0, "J2BV":0, "S1BV":0, "NBV":0, "N-1BV":0}, noBV = false) {
         if (this.day === null) throw new Error("Le jour est indéfini");
-        try {
+        //try {
 			const tab_vac_eq = this.get_vac_eq();
 			const instr = await loadJson("../instruction.json");
 			const yesterday = jmoins1(this.day);
@@ -50,6 +50,13 @@ class capa {
 					pc[vac]["userList"] = this.effectif[this.day][p]["userList"];
 					pc[vac]["teamData"] = this.effectif[this.day][p]["teamData"];
 					pc[vac]["html"] = this.effectif[this.day][p]["html"][this.day][p];
+					if (typeof pc[vac]["html"]["lesrenforts"] === 'undefined') {
+						pc[vac]["renfort"] = 0;
+					} else {
+						pc[vac]["renfort"] = Object.keys(pc[vac]["html"]["lesrenforts"]).length;
+					}
+					
+					//pc[vac]["detache"] = parseInt(this.effectif[this.day][p]["teamReserve"]["detacheQuantity"]);
 				} else {
 					pc[vac]["nbpc"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["teamQuantity"]) - 1 + update[vac]; // le cds ne compte pas dans le nb de pc => -1
 					pc[vac]["BV"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["BV"]) + update[upBV];
@@ -57,6 +64,12 @@ class capa {
 					pc[vac]["userList"] = this.effectif[yesterday][p]["userList"];
 					pc[vac]["teamData"] = this.effectif[yesterday][p]["teamData"];
 					pc[vac]["html"] = this.effectif[yesterday][p]["html"][yesterday][p];
+					if (typeof pc[vac]["html"]["lesrenforts"] === 'undefined') {
+						pc[vac]["renfort"] = 0;
+					} else {
+						pc[vac]["renfort"] = Object.keys(pc[vac]["html"]["lesrenforts"]).length;
+					}
+					//pc[vac]["detache"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["detacheQuantity"]);
 				}
 			} 
 			
@@ -74,14 +87,14 @@ class capa {
 					if (tour_utc[vacation][i][1] === 1) nb_pc += cds; // cds qui bosse sur secteur
 					if (tour_utc[vacation][i][2] === 1) {
 						if (noBV === false) {
-							nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2), Math.floor((pc[vacation]["BV"]-cds)/2));	
+							nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2), (Math.floor((pc[vacation]["BV"]+pc[vacation]["renfort"]-cds)/2)));	
 						} else {
 							nb_pc += Math.floor(pc[vacation]["nbpc"]/2);
 						}
 					}
 					if (tour_utc[vacation][i][3] === 1) {
 						if (noBV === false) {
-							nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2, Math.floor((pc[vacation]["BV"]-cds)/2)+(pc[vacation]["BV"]-cds)%2);
+							nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2, Math.floor((pc[vacation]["BV"]+pc[vacation]["renfort"]-cds)/2)+(pc[vacation]["BV"]+pc[vacation]["renfort"]-cds)%2);
 						} else {
 							nb_pc += Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2;
 						}
@@ -90,14 +103,14 @@ class capa {
 				if (tour_utc["N"][i][1] === 1 && i>48) nb_pc += cds; // cds qui bosse sur secteur
 				if (tour_utc["N"][i][2] === 1 && i>48) {
 					if (noBV === false) {
-						nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2), Math.floor((pc["N"]["BV"]-cds)/2));
+						nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2), Math.floor((pc["N"]["BV"]+pc["N"]["renfort"]-cds)/2));
 					} else {
 						nb_pc += Math.floor(pc["N"]["nbpc"]/2);
 					}
 				}
 				if (tour_utc["N"][i][3] === 1 && i>48) {
 					if (noBV === false) {
-						nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2, Math.floor((pc["N"]["BV"]-cds)/2)+(pc["N"]["BV"]-cds)%2);
+						nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2, Math.floor((pc["N"]["BV"]+pc["N"]["renfort"]-cds)/2)+(pc["N"]["BV"]+pc["N"]["renfort"]-cds)%2);
 					} else {
 						nb_pc += Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2;
 					}
@@ -105,14 +118,14 @@ class capa {
 				if (tour_utc["N"][i][1] === 1 && i<48) nb_pc += cds; // cds qui bosse sur secteur
 				if (tour_utc["N"][i][2] === 1 && i<48) {
 					if (noBV === false) {
-						nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2), Math.floor((pc["N-1"]["BV"]-cds)/2));
+						nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2), Math.floor((pc["N-1"]["BV"]+pc["N-1"]["renfort"]-cds)/2));
 					} else {
 						nb_pc += Math.floor(pc["N-1"]["nbpc"]/2);
 					}
 				}
 				if (tour_utc["N"][i][3] === 1 && i<48) {
 					if (noBV === false) {
-						nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2, Math.floor((pc["N-1"]["BV"]-cds)/2)+(pc["N-1"]["BV"]-cds)%2);
+						nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2, Math.floor((pc["N-1"]["BV"]+pc["N-1"]["renfort"]-cds)/2)+(pc["N-1"]["BV"]+pc["N-1"]["renfort"]-cds)%2);
 					} else {
 						nb_pc += Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2;
 					}
@@ -140,10 +153,10 @@ class capa {
 				});
 			}
 			return {"pc_vac": pc, "pc_total_dispo_15mn": pcs, "pc_instr_15mn": in15mn};
-		}
-		catch (err) {
-            alert(err);
-        }
+		//}
+		//catch (err) {
+        //    alert(err);
+        //}
     }
 
     /* ---------------------------------------------------
@@ -296,7 +309,7 @@ class feuille_capa extends capa {
 		let res = `<table class="uceso">
 					<caption>Journée du ${reverse_date(this.day)} - Zone ${this.zone}</caption>
 					<thead>
-						<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px right_1px">PC</th><th class="top_2px bottom_2px right_2px">BV</th><th class="top_2px bottom_2px right_2px" colspan="96">...</th></tr>
+						<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px">PC</th><th class="top_2px bottom_2px right_1px">det</th><th class="top_2px bottom_2px right_2px">BV</th><th class="top_2px bottom_2px right_2px" colspan="96">...</th></tr>
 					</thead>
 					<tbody>`;
 		res += `${affiche_vac("J1")}`;
@@ -307,7 +320,7 @@ class feuille_capa extends capa {
 		res += `${affiche_vac("N")}`;
 		res += `${affiche_vac("N-1")}`;
 		res += `${affiche_inst()}`;
-		res += `<tr class="titre"><th class='bottom_2px left_2px right_2px' colspan="6">Heures UTC</th>${heure()}`;
+		res += `<tr class="titre"><th class='bottom_2px left_2px right_2px' colspan="7">Heures UTC</th>${heure()}`;
 		res += `${affiche_nbpc()}`;
 		res += `${affiche_demi_uc()}`;
 		res += `${affiche_uceso()}`;
@@ -378,8 +391,8 @@ class feuille_capa extends capa {
 			// A = effectif/2
 			// B = effectif/2 (+1)
 			const cds = (vac == "J2" || vac == "S1") ? 0 : 1
-			const dispoA = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2), Math.floor((pc_vac[vac]["BV"]-cds)/2));
-			const dispoB = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2, Math.floor((pc_vac[vac]["BV"]-cds)/2)+(pc_vac[vac]["BV"]-cds)%2);
+			const dispoA = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2), Math.floor((pc_vac[vac]["BV"]+pc_vac[vac]["renfort"]-cds)/2));
+			const dispoB = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2, Math.floor((pc_vac[vac]["BV"]+pc_vac[vac]["renfort"]-cds)/2)+(pc_vac[vac]["BV"]+pc_vac[vac]["renfort"]-cds)%2);
 			
 			// comp : { [ ["00:00", 0, 3, 4], ["hh:mm", cds, A, B], ... ] }
 			const vacation = (vac === "N-1") ? "N" : vac;
@@ -426,13 +439,16 @@ class feuille_capa extends capa {
 			<tr data-vac='${vac}'>
 				<td class='left_2px right_1px'></td><td class='right_1px'></td>
 				<td class='right_1px'>cds</td><td>${cds}</td>
-				<td class='pc right_1px' data-vac='${vac}'>${pc_vac[vac]["nbpc"]}</td><td class='right_2px'>${pc_vac[vac]["BV"]}</td>${res1}</tr>
+				<td class='pc' data-vac='${vac}'>${pc_vac[vac]["nbpc"]}</td>
+				<td class='right_1px' data-vac='${vac}'>${pc_vac[vac]["renfort"]}</td>
+				<td class='right_2px'>${pc_vac[vac]["BV"]}</td>${res1}</tr>
 			<tr data-vac='${vac}'>
 				<td class='eq left_2px right_1px' data-vac='${vac}'>${tab_vac_eq[vac]}</td>
-				<td class='right_1px'>${vac}</td><td class='right_1px'>A</td><td class='right_1px' colspan="2"></td><td class='right_2px'></td>${res2}</tr>
+				<td class='right_1px'>${vac}</td><td class='right_1px'>A</td>
+				<td class='right_1px' colspan="3"></td><td class='right_2px'></td>${res2}</tr>
 			<tr data-vac='${vac}'>
 				<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
-				<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px' colspan="2"></td>
+				<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px' colspan="3"></td>
 				<td class='bottom_2px right_2px'></td>${res3}</tr>`;
 		}
 		
@@ -445,7 +461,7 @@ class feuille_capa extends capa {
 				else res2 += `<td class='bottom_2px'></td>`;
 			} 
 			res2 += `<td class='bottom_2px right_2px'></td>`;
-			let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="6">Instru/Asa</td>${res2}</tr>`;
+			let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="7">Instru/Asa</td>${res2}</tr>`;
 			return res;
 		}
 
@@ -458,7 +474,7 @@ class feuille_capa extends capa {
 				if (index === 95) cl += " right_2px";
 				res2 += `<td class='${cl} bottom_2px'>${elem[1]+pc_instr_15mn[index][0]}</td>`;
 			});
-			let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="6">Nb PC</td>${res2}</tr>`;
+			let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="7">Nb PC</td>${res2}</tr>`;
 			return res;
 		}
 
@@ -472,7 +488,7 @@ class feuille_capa extends capa {
 				const demi = ((elem[1]+pc_instr_15mn[index][0])%2 === 0) ? "" : "\u00bd";
 				res2 += `<td class='${cl} bottom_2px'>${demi}</td>`;
 			});
-			let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="6">Demi UC</td>${res2}</tr>`;
+			let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="7">Demi UC</td>${res2}</tr>`;
 			return res;
 		}
 		
@@ -486,7 +502,7 @@ class feuille_capa extends capa {
 				res3 += `<td class="bordure_uc" colspan="${nb_occ}">${elem[2]}</td>`;
 			});
 			
-			let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="6">UCESO</td>${res3}</tr>`;
+			let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="7">UCESO</td>${res3}</tr>`;
 			return res;
 		}
 		
@@ -641,7 +657,7 @@ class simu_capa extends capa {
 		})
 		let res = `<table class="simu">
 					<thead>
-						<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px right_1px">PC</th><th class="top_2px bottom_2px right_1px">BV</th><th class="top_2px bottom_2px right_1px">BVini</th><th class="top_2px bottom_2px right_2px">Mod BV</th>
+						<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px">PC</th><th class="top_2px bottom_2px right_1px">det</th><th class="top_2px bottom_2px right_1px">BV</th><th class="top_2px bottom_2px right_1px">BVini</th><th class="top_2px bottom_2px right_2px">Mod BV</th>
 						<th class="top_2px bottom_2px right_2px">Mod PC</th></tr>
 					</thead>
 					<tbody>`;
@@ -742,23 +758,15 @@ class simu_capa extends capa {
 		modify_listener();
 		show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
 
-		// Fabrique la ligne du tour de service
+		// Fabrique la partie gauche
 		function affiche_vac(vac) {
-			// A = effectif/2
-			// B = effectif/2 (+1)
 			const cds = (vac == "J2" || vac == "S1") ? 0 : 1
-			const dispoA = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2), Math.floor((pc_vac[vac]["BV"]-cds)/2));
-			const dispoB = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2, Math.floor((pc_vac[vac]["BV"]-cds)/2)+(pc_vac[vac]["BV"]-cds)%2);
-			
-			// comp : { [ ["00:00", 0, 3, 4], ["hh:mm", cds, A, B], ... ] }
-			const vacation = (vac === "N-1") ? "N" : vac;
-			const comp = tour_utc[vacation].map( elem => [elem[0], parseInt(elem[1]), parseInt(elem[2])*dispoA, parseInt(elem[3])*dispoB]);
-			
 			
 			return `
 			<tr data-vac='${vac}'>
 			<td class='eq left_2px right_1px bottom_2px' data-vac='${vac}'>${tab_vac_eq[vac]}</td><td class='right_1px bottom_2px'>${vac}</td><td class='bottom_2px'>${cds}</td>
-				<td class='nbpc right_1px bottom_2px' data-vacPC='${vac}'>${pc_vac[vac]["nbpc"]}</td>
+				<td class='nbpc bottom_2px' data-vacPC='${vac}'>${pc_vac[vac]["nbpc"]}</td>
+				<td class='nbpc right_1px bottom_2px' data-vacDET='${vac}'>${pc_vac[vac]["renfort"]}</td>
 				<td class='bv right_1px bottom_2px' data-vacBV='${vac}'>${pc_vac[vac]["BV"]}</td>
 				<td class='bvini right_1px bottom_2px' data-vacBV='${vac}'>${pc_vac[vac]["BV"]}</td>
 				<td class='right_1px bottom_2px'><div class="modify"><button class="minusBV minus" data-vac='${vac}'>-</button><span class="numberPlace" data-vacBV='${vac}'>0</span><button class="plusBV plus" data-vac='${vac}'>+</button></div></td>
