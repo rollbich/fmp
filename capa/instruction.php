@@ -27,10 +27,14 @@
 </head>
 <body>
 
-<header><h1>Créneaux/Absences Supplémentaires : HEURES UTC</h1></header>
-<span class="back"><a href="./">back to TDS</a></span>
+<header class="instr">
+    <h1>Créneaux/Absences Supplémentaires : HEURES UTC</h1>
+    <span class="back"><a href="./">back to TDS</a></span>
+</header>
+
 <div class="glob">
     <div id="result"></div>
+    <div id="cont">
     <div class="formu">     
     <form action="" method="post">                   
         <div class="form-group">
@@ -64,6 +68,7 @@
         </div>
         <button id='button_ajout' type='button' class="btn">Ajouter</button>
     </form>
+    </div>
     </div>
 </div>
 </body>

@@ -161,6 +161,24 @@ h1 {
 
 }
 
+header.instr {
+	display: flex;
+}
+
+header.instr span {
+	font-size: 16px;
+	margin-top: 20px;
+}
+
+header.instr h1 {
+	text-align: left;
+	margin-left: 20px;
+	margin-right: 300px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	width: auto;
+}
+
 h2 {
 	font-family: 'Sansation';
 	font-size: 24px;
@@ -192,7 +210,6 @@ ul.menu li {
 	font-family: 'RussoOne';
 	display: inline-block;
 	position: relative;
-	z-index: 1;
 	text-decoration: none;
 	text-transform: uppercase;
 	text-align: center;
@@ -314,10 +331,18 @@ input {
 
 /* ------- Résultats ------- */
 
+#result, #cont {
+	background-color: aliceblue;
+	margin: 18px;
+	padding: 20px;
+	padding-top: 0px;
+	min-height: 100%;
+}
+
 table {
 	border-collapse: separate;
 	border-spacing: 0;
-	font-size: 12px;
+	font-size: 13px;
 	margin-top: 20px;
 	margin-left: 10px;
 	margin-right: 10px;
@@ -364,9 +389,14 @@ table.uceso tr:nth-child(6n+1), table.uceso tr:nth-child(6n+2), table.uceso tr:n
 }
 
 td, th {
-	width: 15px;
+	width: 13px;
 	padding: 1px;
 	text-align: center;
+	font-size: 14px;
+}
+
+.bold {
+	font-weight: bold;
 }
 
 table.simu {
@@ -386,7 +416,7 @@ td[data-col], #feuille_capa_tour td.pc {
 	cursor: pointer;
 }
 
-td.typePC:hover, td.typedetache:hover {
+td.typePC:hover, td.typePC-DET:hover, td.typePC-RPL:hover {
 	background-color: var(--table-titre-color);
 	cursor: pointer;
 }
@@ -414,7 +444,7 @@ td.f8px {
 }
 
 td.bg {
-	background-color:rgb(153, 223, 245);
+	background-color:rgb(181, 226, 240);
 }
 
 td.bg_red {
@@ -702,10 +732,7 @@ input.date {
 /* --------- Instruction ------------- */
 .glob {
 	display: flex;
-}
-
-table.creneaux {
-	margin-right: 160px;
+	height: 700px;
 }
 
 table.creneaux th, table creneaux td {
@@ -725,8 +752,12 @@ td.supprime {
 	cursor: pointer;
 }
 
+.formu {
+	margin-left: 130px;
+}
+
 .formu form {
-    margin: 30px auto;
+    margin: 70px auto;
 	overflow: hidden;
 	width: 250px;
 }
@@ -738,11 +769,6 @@ td.supprime {
 
 .form-label {
     border: 0 none;
-    /*
-	clip: rect(0px, 0px, 0px, 0px);
-	height: 1px;
-	width: 1px;
-	*/
 	font-size : 1.2rem;
 	margin-left: -80px;
 	margin-top: 7px;
