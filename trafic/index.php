@@ -104,8 +104,8 @@
 <div id="help_frame" class="off">
 	<h2>Help</h2>
 	<p><span>Origine des données H20 et Occ</span> :<br>Elles sont récupérées quotidiennement en B2B sur le serveur du NM et stockées sous forme de fichiers. <br>La période de récupération des données se situe entre 4h UTC et 22h00 UTC. Par conséquent, il n'est pas possible de visualiser les graphes en dehors de cette plage horaire.<br>D'autre part, comme tous les TV ne sont pas récupérés, certains graphiques (principalement les TV très peu ouverts) ne peuvent pas être affichés.</p>
-	<p><span>Le bouton "Regulation"</span> :<br>Il permet d'afficher un récapitulatif des reulations de la date choisie.</p>
-	<p><span>Le bouton "Vols"</span> :<br>Il affiche le nombre de vols</p>
+	<p><span>Le bouton "Nombre de Vols"</span> :<br>Il affiche le nombre de vols sur la plage sélectionnée</p>
+	<p><span>Le bouton "Graph année"</span> :<br>Il permet d'afficher le nombre de vols semaine sur l'année.</p>
 	<button id="close_button" class="pointer">Close</button>
 </div>
 <ul class="menu">
