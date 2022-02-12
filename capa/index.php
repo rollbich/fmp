@@ -63,9 +63,14 @@
 <h1>FEUILLE CAPA v1.1</h1>
 <div id="help_frame" class="off">
 	<h2>Help</h2>
-	<p><span>Feuille</span> :<br>Cliquez sur ce bouton pour afficher la feuille de capa correspondante à la date et la zone choisie</p>
-	<p><span>Modification de l'effectif</span> :<br>Cliquez sur le nombre de pc dans la colonne PC afin de mettre à jour localement ce nombre. La case est alors surlignée pour montrer que l'effectif est différent de l'effectif OLAF</p>
+	<p><span>Feuille</span> :<br>Cliquez sur ce bouton pour afficher la feuille de capa correspondante à la date et la zone choisie<br>Cliquez sur le nombre de pc dans la colonne PC afin de visualiser les effectifs par équipes. Cette case est surlignée lorsque l'effectif est différent de l'effectif OLAF</p>
+	<?php
+	if ($_SESSION['login_bureau'] === true || $_SESSION['login_encadrement'] === true) {
+		echo "<p><span>Simu</span> : Ce bouton permet de simuler un changement de BV ou de nombre de PC et de voir le résultat graphiquement.</p>";
+	}
+	?>
 	<p><span>Edit TDS</span> :<br>Ce bouton permet de modifier le tour de service ainsi que sa plage d'utilisation</p>
+	<p><span>Instr</span> :<br>Ce bouton permet de modifier une plage horaire en ajoutant ou enlevant de l'effectif, par exemple lors d'un recyclage instructeur, une ASA ou une simu remontée de trafic.</p>
 	<button id="close_button" class="pointer">Close</button>
 </div>
 <ul class="menu">
