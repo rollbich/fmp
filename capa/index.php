@@ -31,6 +31,15 @@
 					$("help_frame").classList.remove('off');
 				});
 				
+				$('arrow_left').addEventListener('click', async e => {
+					$('start').value = addDays_toString($('start').value,-1);
+                    
+				});
+
+				$('arrow_right').addEventListener('click', async e => {
+					$('start').value = addDays_toString($('start').value,1);
+				});
+
 				$('bouton_feuille').addEventListener('click', async e => {
 					let zone = $('zone').value;
 					let day = $('start').value;
@@ -80,8 +89,11 @@
 		echo '<li id="bouton_simucapa" class="pointer"><span>Simu</span></li>';
 	}
 	?>
-	<li><label for="start" class="dates">Date:</label>
+	<li>
+	<!--<label for="start" class="dates">Date:</label>-->
+	<button id="arrow_left"><</button>
 	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="2021-09-14" max="2030-12-31">
+	<button id="arrow_right">></button>
 	</li>
 	<li class="feuille">
 	  <select id="zone" class="select">
