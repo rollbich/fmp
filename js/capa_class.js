@@ -350,7 +350,7 @@ class feuille_capa extends capa {
 					</div>`;
 				show_popup("Modification", ih);
 				}
-				const type = document.querySelectorAll('.typePC,.typedetache');
+				const type = document.querySelectorAll('.typePC,.typePC-DET,.typePC-RPL');
 				type.forEach(type_el => {
 					type_el.addEventListener('click', (event) => {
 						const vac = type_el.dataset.vac;
@@ -502,7 +502,7 @@ class feuille_capa extends capa {
 				res3 += `<td class="bordure_uc" colspan="${nb_occ}">${elem[2]}</td>`;
 			});
 			
-			let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="7">UCESO</td>${res3}</tr>`;
+			let res = `<tr class="bold"><td class='left_2px bottom_2px right_2px' colspan="7">UCESO</td>${res3}</tr>`;
 			return res;
 		}
 		
@@ -517,22 +517,39 @@ class feuille_capa extends capa {
 			return res;
 		}
 		
-		function add_RO_det(vac, present) {
+		function add_travailleurs_RO(vac, present) {
 			const values = Object.values(pc_vac[vac]["html"]);
 			for (const obj of values) {
 				//console.log(values[obj]);
 				for (const user in obj) {
-					if (obj[user].search(/<sup>RO/) != -1) present.push([user, "RO"]);
-					if (obj[user].search(/detache/) != -1) present.push([user, "detache"]);
+					if (obj[user].search(/reserve/) == -1 && obj[user].search(/detache/) == -1 && obj[user].search(/0ZE/) == -1) {
+						if (obj[user].search(/RPL/) == -1) present.push([user, "PC"]);
+					}
+					if (obj[user].search(/reserve/) != -1) present.push([user, "RO"]);
+					if (obj[user].search(/detache/) != -1) {
+						if (obj[user].search(/ACDS/) != -1) present.push([user, "PC-ACDS"]); else present.push([user, "PC-DET"]);
+					}
+					if (obj[user].search(/0ZE/) != -1) present.push([user, "stagiaire"]);
 				}
 			}
 		}
 		
-		function add_stage_conge(vac, present) {
+		function add_stage_conge_autre(vac, present) {
 			const cles = Object.keys(pc_vac[vac]["teamData"]);
 			for (const k of cles) {
 				for (const user in pc_vac[vac]["teamData"][k]) {
-						present.push([user, k]);
+					if (k != "autre_agent") { present.push([user, k]); } 
+					else {
+						if (pc_vac[vac]["teamData"][k][user].search(/RPL/) != -1) {
+							for (const user2 in pc_vac[vac]["userList"]) {
+								const name = pc_vac[vac]["userList"][user2].screen_unique_name || pc_vac[vac]["userList"][user2].nom;
+								var re = new RegExp(name, 'g');
+								if (pc_vac[vac]["teamData"][k][user].match(re)) {
+									present.push([user, "PC-RPL", name]);
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -541,17 +558,11 @@ class feuille_capa extends capa {
 			let res = `<table><caption>${vac} : <span data-vac='${vac}'>${update[this.zone][this.day]['update_count'][vac]}</span></caption><thead><tr><th>Nom</th><th>Type</th></tr></thead><tbody>`;
 			const pres = [];
 			const present = [];
-			add_RO_det(vac, present);
-			add_stage_conge(vac, present);
+			add_travailleurs_RO(vac, present);
+			add_stage_conge_autre(vac, present);
 			present.forEach(elem => {
 				pres.push(elem[0]);
 			})
-			for (const user in pc_vac[vac]["userList"]) {
-				const name = pc_vac[vac]["userList"][user].screen_unique_name || pc_vac[vac]["userList"][user].nom;
-				const stagiaire = pc_vac[vac]["userList"][user].details;
-				if (pres.includes(name) === false && stagiaire != "Stagiaire") present.push([name, "PC"]);
-				if (pres.includes(name) === false && stagiaire === "Stagiaire") present.push([name, "Mod"]);
-			}
 
 			for (const p of present) {
 				let cl = `type${p[1]}`, cl_previous;
@@ -757,6 +768,9 @@ class simu_capa extends capa {
 
 		modify_listener();
 		show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
+		$('feuille_capa_simu').scrollIntoView({ 
+            behavior: 'smooth' 
+        });
 
 		// Fabrique la partie gauche
 		function affiche_vac(vac) {
