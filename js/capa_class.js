@@ -4,23 +4,27 @@
 
 class capa {
 
+	/* ------------------------------------------------------
+			@param {string} day 	- "yyyy-mm-jj"
+            @param {string} zone	- "AE" ou "AW"
+	   ------------------------------------------------------ */
     constructor(day, zone) {
         this.day = day;
+		this.zone_schema = zone;
         this.zone_olaf = zone.substr(1,1); // 2è lettre de la zone (E ou W)
 		this.zone = this.zone_olaf === "E" ? "est" : "ouest"; 
     }
 
-    /* ---------------------------------------------------------------------------------------
+    /* ----------------------------------------------------------------------------------------------------------------
         *Calcul du nbre de PC total par vac
         *Calcul du nbre de PC total dispo par pas de 15mn à la date choisie
-            @param {string} day 	- "yyyy-mm-jj"
-            @param {string} zone	- "AE" ou "AW"
-            @param {object} update	- {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0}
-                                    - Nombre de pc à retrancher à l'effectif OLAF
+            @param {object} update	- {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0, "J1BV":0, "J3BV":0,...}
+                                    - Nombre de pc à retrancher à l'effectif OLAF ou au BV
+			@param {boolean} noBV	- false pour ne pas prendre en compte les BV
             @returns {object} 
                 { "pc_vac": {"vac": {"nbpc": nbre_pc, "BV", "RO"}, ...}, 
                 "pc_total_dispo_15mn":[ ["hh:mm", nb_pc_dispo], [...], ... ] }
-    --------------------------------------------------------------------------------------- */
+    ------------------------------------------------------------------------------------------------------------------- */
     async get_nbpc_dispo(update = {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0, "J1BV":0, "J3BV":0, "S2BV":0, "J2BV":0, "S1BV":0, "NBV":0, "N-1BV":0}, noBV = false) {
         if (this.day === null) throw new Error("Le jour est indéfini");
         //try {
@@ -624,7 +628,6 @@ class simu_capa extends capa {
 	   ---------------------------------------------------------------- */
 	constructor(containerIdTour, day, zone) {
 		super(day, zone);
-		this.zone_schema = zone === "est" ? "AW" : "AE";
 		this.containerTour = $(containerIdTour);
 		this.noBV = false;
 	}
