@@ -23,12 +23,19 @@
 		<script>
 			document.addEventListener('DOMContentLoaded', (event) => {
 				$$('.upload_button').style.display = 'none';
+
+				document.querySelector('.help_button').addEventListener('click', e => {
+					$("help_frame").classList.remove('off');
+				});
+
 				$('close_button').addEventListener('click', e => {
 					$("help_frame").classList.add('off');
 				});
-				
-				document.querySelector('.help_button').addEventListener('click', e => {
-					$("help_frame").classList.remove('off');
+
+				document.querySelector('.popup-close').addEventListener('click', e => {
+					e.preventDefault();
+					document.querySelector('.popup-box').classList.remove('transform-in');
+					document.querySelector('.popup-box').classList.add('transform-out');
 				});
 				
 				$('arrow_left').addEventListener('click', async e => {
@@ -54,12 +61,6 @@
 					await simu.init();
 					simu.show_simu_capa();
                     //alert("Fonctionnalité en développement");
-				});
-				
-				document.querySelector('.popup-close').addEventListener('click', e => {
-					e.preventDefault();
-					document.querySelector('.popup-box').classList.remove('transform-in');
-					document.querySelector('.popup-box').classList.add('transform-out');
 				});
 				
 			});		
