@@ -26,6 +26,15 @@ const round = value => {
 	return Math.round(value*100)/100;
 }
 
+// force + devant un positif
+class SignedFormat extends Intl.NumberFormat {
+	constructor(...args) { super(...args) }
+	format(x) {
+	  let y = super.format(x);
+	  return x < 0 ? y : '+' + y;
+	}
+  }
+   
 // force un affichage à 2 chiffres : 2 => 02 (utile pour formater les h ou les min)
 const formattedNumber = (valueint) => {
 	return fnb = ("0".repeat(1) + valueint).slice(-2);
@@ -199,9 +208,13 @@ function weeksInYear(year) {
     return week == 1 ? 52 : week;
 }
 
+// getDay => dimanche = 0
+// Dimanche = 0,...,Samedi = 6 ==> Lundi = 0,..., Dimanche = 6
 const getZeroBasedIsoWeekDay = date => (date.getDay() + 6) % 7
+// ==> Lundi = 1,..., Dimanche = 7
 const getIsoWeekDay = date => getZeroBasedIsoWeekDay(date) + 1
 
+// retourne la date correspondante au jour de la semaine, de la semaine week et de l'année year
 // weekDay = 1 pour lundi.... = 7 pour dimanche
 function weekDateToDate(year, week, weekDay) {
     const zeroBasedWeek = week - 1
