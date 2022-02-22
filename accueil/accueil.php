@@ -38,25 +38,32 @@ require("../php/check_ok.inc.php");
 			await data_vols_lastyear.init();		
 			const data_vols_year = new weekly_vols(year);
 			await data_vols_year.init();
-			show_traffic_graph("res", year, listWeek, data_vols_year.nbre_vols['cta'], data_vols_lastyear.nbre_vols['cta'], data_vols_2019.nbre_vols['cta'], "LFMMCTA");
+			show_traffic_graph("accueil_vols", year, listWeek, data_vols_year.nbre_vols['cta'], data_vols_lastyear.nbre_vols['cta'], data_vols_2019.nbre_vols['cta'], "LFMMCTA");
 			const data_regs_2019 = new weekly_regs(2019);
 			await data_regs_2019.init();
 			const data_regs_lastyear = new weekly_regs(lastyear);
 			await data_regs_lastyear.init();		
 			const data_regs_year = new weekly_regs(year);
 			await data_regs_year.init();
-			show_delay_graph("res2", year, listWeek, data_regs_year.delay['cta'], data_regs_lastyear.delay['cta'], data_regs_2019.delay['cta'], "LFMMCTA");
+			show_delay_graph("accueil_reguls", year, listWeek, data_regs_year.delay['cta'], data_regs_lastyear.delay['cta'], data_regs_2019.delay['cta'], "LFMMCTA");
+
+			const tabl = new weekly_briefing(2022, "accueil_bilan");
+			await tabl.init();
+			tabl.show_data();
       	});
     </script>
 </head>
 <body>
 <?php include("../php/nav.inc.php"); ?>
 <div>
-    <p class='body'>BIENVENUE !</p>
+    <p class='body'>LFMM-FMP - Briefing semaine dernière</p>
 </div>
-<div style="display: flow">
-  <div id="res"></div>
-  <div id="res2"></div>
+<div style="display: flex;">
+  	<div id="accueil_left">
+	  <div id="accueil_vols"></div>
+	  <div id="accueil_reguls"></div>
+	</div>
+  <div id="accueil_bilan"></div>
 </div>
 </body>
 </html>

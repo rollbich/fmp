@@ -21,6 +21,7 @@
   --color-2019: #00caff;
   --color-j-7: #ffca00;
   --color-j: #77ce77;
+  --rect-bg-color: #5fafd0;
 }
 
 html {
@@ -118,13 +119,64 @@ nav a:hover{
 
 .body {
 	position: relative;
+	color: gold;
 	margin-top: 40px;
 	font-family: 'Dosis';
-	font-size : 28px;
+	font-size : 32px;
 	text-align: center;
 	-webkit-animation: fade 0.6s 0s ease both;
 			animation: fade 0.6s 0s ease both;
+	border: 2px double white;
   }
+
+/* ------- Accueil bilan --------- */
+#accueil_left {
+	margin-right: 20px;
+}
+
+#accueil_bilan {
+	margin-top: 0;
+}
+
+#accueil_bilan h2 {
+	font-size: 2em;
+	margin-top: 0;
+	color: var(--select-bg-color);
+}
+
+#accueil_bilan span.rect {
+	font-family: 'Sansation';
+	font-size: 22px;
+	margin: 8px;
+	padding: 8px;
+	background : var(--rect-bg-color);
+}
+
+.table_bilan {
+	font-size: 18px;
+	margin: 10px;
+	margin-top: 20px;
+	margin-bottom: 50px;
+	table-layout: fixed;
+	width: 816px;
+	border: 2px solid white;
+}
+
+table.table_bilan th {
+	border-bottom: 2px solid white;
+}
+
+.table_bilan th, table_bilan td {
+	padding:5px;
+}
+
+table.table_bilan tr:nth-child(odd) {
+	background-color: transparent;
+}
+  
+table.table_bilan tr:nth-child(even) {
+	background-color: transparent;
+}
 
 /* ------- Titre ------- */
 

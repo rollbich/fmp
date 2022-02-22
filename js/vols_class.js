@@ -168,7 +168,110 @@ class weekly_vols {
 	}
 }
 
+class weekly_briefing {
+	constructor(year, containerId) {
+		this.container = $(containerId);
+		this.year = year;
+		this.week = getWeekNumber(new Date())[1];
+		this.lastweek = this.get_last_week();
+		this.lastfortnite = this.get_last_fortnite();
+		this.init();
+	}
 
+	async init() {
+		this.flights = new weekly_vols(this.year);
+		this.flights_lastyear = new weekly_vols(this.year-1);
+		this.flights_2019 = new weekly_vols(2019);
+		await this.flights.init();
+		await this.flights_lastyear.init();
+		await this.flights_2019.init();
+		this.reguls = new weekly_regs(this.year);
+		this.reguls_lastyear = new weekly_regs(this.year-1);
+		this.reguls_2019 = new weekly_regs(2019);
+		await this.reguls.init();
+		await this.reguls_lastyear.init();
+		await this.reguls_2019.init();
+	}
+
+	get_last_week() {
+		return this.week - 1;
+	}
+
+	get_last_fortnite() {
+		return this.week - 2;
+	}
+
+	show_data() {
+		let v = this.data_vols();
+		let r = this.data_reguls();
+		this.container.innerHTML = v+r;
+	}
+
+	data_vols() {
+		let result = `<h2 class='h2_bilan'>Nombre de vols : semaine ${this.lastweek}</h2><br>`;
+		result += `<span class="rect">LFMM CTA : ${this.flights.nbre_vols['cta'][this.lastweek-1]} vols</span><span class="rect">LFMM Est : ${this.flights.nbre_vols['est'][this.lastweek-1]} vols</span><span class="rect">LFMM West : ${this.flights.nbre_vols['west'][this.lastweek-1]} vols</span>`;
+		result += "<div class='delay'>";
+		const MyFormat = new SignedFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits:1} );
+		let res = `
+		<table class="table_bilan sortable">
+			<thead><tr class="titre"><th>Zone</th><th>Vols</th><th>Last Week</th><th>% ${this.year-1}</th><th>%2019</th></tr></thead>
+			<tbody>`;
+            res += '<tr>'; 
+            res +=`<td>CTA</td><td>${this.flights.nbre_vols['cta'][this.lastweek-1]}</td>
+			<td>${MyFormat.format((this.flights.nbre_vols['cta'][this.lastweek-1]/this.flights.nbre_vols['cta'][this.lastfortnite-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.flights.nbre_vols['cta'][this.lastweek-1]/this.flights_lastyear.nbre_vols['cta'][this.lastweek-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.flights.nbre_vols['cta'][this.lastweek-1]/this.flights_2019.nbre_vols['cta'][this.lastweek-1] - 1)*100)} %</td></tr><tr>
+			<td>Est</td><td>${this.flights.nbre_vols['est'][this.lastweek-1]}</td>
+			<td>${MyFormat.format((this.flights.nbre_vols['est'][this.lastweek-1]/this.flights.nbre_vols['est'][this.lastfortnite-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.flights.nbre_vols['est'][this.lastweek-1]/this.flights_lastyear.nbre_vols['est'][this.lastweek-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.flights.nbre_vols['est'][this.lastweek-1]/this.flights_2019.nbre_vols['est'][this.lastweek-1] - 1)*100)} %</td></tr><tr>
+			<td>West</td><td>${this.flights.nbre_vols['west'][this.lastweek-1]}</td>
+			<td>${MyFormat.format((this.flights.nbre_vols['west'][this.lastweek-1]/this.flights.nbre_vols['west'][this.lastfortnite-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.flights.nbre_vols['west'][this.lastweek-1]/this.flights_lastyear.nbre_vols['west'][this.lastweek-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.flights.nbre_vols['west'][this.lastweek-1]/this.flights_2019.nbre_vols['west'][this.lastweek-1] - 1)*100)} %</td>`;
+            res += '</tr>';	
+        res += '</tbody></table>';
+		
+		result += "</div>";
+		result += res;
+		return result;
+	}
+
+	data_reguls() {
+		let result = `<h2>Régulations : semaine ${this.lastweek}</h2><br>`;
+		result += `<span class="rect">LFMM CTA : ${this.reguls.delay['cta'][this.lastweek-1]} min</span><span class="rect">LFMM Est : ${this.reguls.delay['est'][this.lastweek-1]} min</span><span class="rect">LFMM West : ${this.reguls.delay['west'][this.lastweek-1]} min</span><span class="rect">LFMM App : ${this.reguls.delay['app'][this.lastweek-1]} min</span>`;
+		result += "<div class='delay'>";
+		const MyFormat = new SignedFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits:1} )
+		let res = `
+		<table class="table_bilan sortable">
+			<thead><tr class="titre"><th>Zone</th><th>Delay</th><th>Last Week</th><th>% ${this.year-1}</th><th>%2019</th></tr></thead>
+			<tbody>`;
+            res += '<tr>'; 
+            res +=`<td>CTA</td><td>${this.reguls.delay['cta'][this.lastweek-1]} min</td>
+			<td>${MyFormat.format((this.reguls.delay['cta'][this.lastweek-1]/this.reguls.delay['cta'][this.lastfortnite-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.reguls.delay['cta'][this.lastweek-1]/this.reguls_lastyear.delay['cta'][this.lastweek-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.reguls.delay['cta'][this.lastweek-1]/this.reguls_2019.delay['cta'][this.lastweek-1] - 1)*100)} %</td></tr><tr>
+			<td>Est</td><td>${this.reguls.delay['est'][this.lastweek-1]} min</td>
+			<td>${MyFormat.format((this.reguls.delay['est'][this.lastweek-1]/this.reguls.delay['est'][this.lastfortnite-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.reguls.delay['est'][this.lastweek-1]/this.reguls_lastyear.delay['est'][this.lastweek-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.reguls.delay['est'][this.lastweek-1]/this.reguls_2019.delay['est'][this.lastweek-1] - 1)*100)} %</td></tr><tr>
+			<td>West</td><td>${this.reguls.delay['west'][this.lastweek-1]} min</td>
+			<td>${MyFormat.format((this.reguls.delay['west'][this.lastweek-1]/this.reguls.delay['west'][this.lastfortnite-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.reguls.delay['west'][this.lastweek-1]/this.reguls_lastyear.delay['west'][this.lastweek-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.reguls.delay['west'][this.lastweek-1]/this.reguls_2019.delay['west'][this.lastweek-1] - 1)*100)} %</td></tr><tr>
+			<td>App</td><td>${this.reguls.delay['app'][this.lastweek-1]} min</td>
+			<td>${MyFormat.format((this.reguls.delay['app'][this.lastweek-1]/this.reguls.delay['app'][this.lastfortnite-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.reguls.delay['app'][this.lastweek-1]/this.reguls_lastyear.delay['app'][this.lastweek-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.reguls.delay['app'][this.lastweek-1]/this.reguls_2019.delay['app'][this.lastweek-1] - 1)*100)} %</td>`;
+            res += '</tr>';	
+        res += '</tbody></table>';
+		
+		result += "</div>";
+		result += res;
+		return result;
+	}
+
+}
 
 
 
