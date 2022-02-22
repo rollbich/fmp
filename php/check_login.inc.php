@@ -9,6 +9,7 @@ function clean($data) {
   
 $_SESSION['loginOK'] = false;
 $_SESSION['login_bureau'] = false;
+$_SESSION['login_encadrement'] = false;
   
 if (isset($_POST) && (!empty($_POST['pwd']))) {
 	$pwd = clean($_POST['pwd']);
