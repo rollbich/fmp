@@ -59,7 +59,6 @@ class capa {
 					} else {
 						pc[vac]["renfort"] = Object.keys(pc[vac]["html"]["lesrenforts"]).length;
 					}
-					
 					//pc[vac]["detache"] = parseInt(this.effectif[this.day][p]["teamReserve"]["detacheQuantity"]);
 				} else {
 					pc[vac]["nbpc"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["teamQuantity"]) - 1 + update[vac]; // le cds ne compte pas dans le nb de pc => -1
@@ -526,14 +525,14 @@ class feuille_capa extends capa {
 			for (const obj of values) {
 				//console.log(values[obj]);
 				for (const user in obj) {
-					if (obj[user].search(/reserve/) == -1 && obj[user].search(/detache/) == -1 && obj[user].search(/0ZE/) == -1) {
+					if (obj[user].search(/reserve/) == -1 && obj[user].search(/detache/) == -1 && obj[user].search(/0ZE/) == -1 && obj[user].search(/0ZW/) == -1) {
 						if (obj[user].search(/RPL/) == -1) present.push([user, "PC"]);
 					}
 					if (obj[user].search(/reserve/) != -1) present.push([user, "RO"]);
 					if (obj[user].search(/detache/) != -1) {
 						if (obj[user].search(/ACDS/) != -1) present.push([user, "PC-ACDS"]); else present.push([user, "PC-DET"]);
 					}
-					if (obj[user].search(/0ZE/) != -1) present.push([user, "stagiaire"]);
+					if (obj[user].search(/0ZE/) != -1 || obj[user].search(/0ZW/) != -1) present.push([user, "stagiaire"]);
 				}
 			}
 		}
@@ -542,7 +541,10 @@ class feuille_capa extends capa {
 			const cles = Object.keys(pc_vac[vac]["teamData"]);
 			for (const k of cles) {
 				for (const user in pc_vac[vac]["teamData"][k]) {
-					if (k != "autre_agent") { present.push([user, k]); } 
+					if (k != "autre_agent") { 
+						if (k === "stage") {present.push([user, k]); } 
+						if (k === "conge") {present.push([user, k]); }
+					}
 					else {
 						if (pc_vac[vac]["teamData"][k][user].search(/RPL/) != -1) {
 							for (const user2 in pc_vac[vac]["userList"]) {
@@ -982,6 +984,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0) {
 		  color: couleur_vert,
 		  type: 'line',
 		  step: 'end',
+		  animation: false,
 		  data: data_series
 		},
 		{
@@ -989,6 +992,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0) {
 		  color: couleur_orange,
 		  type: 'line',
 		  step: 'end',
+		  animation: false,
 		  data: data_series7
 		},
 		{
@@ -996,6 +1000,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0) {
 		  color: couleur_bleu,
 		  type: 'line',
 		  step: 'end',
+		  animation: false,
 		  data: data_series2019
 		}
 	  ]
@@ -1007,6 +1012,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0) {
 			color: '#ce7777',
 			data: data_series_uceso,
 			type: 'line',
+			animation: false,
 			step: 'end'
 		});
 	}
