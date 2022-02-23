@@ -396,7 +396,7 @@ td, th {
 	width: 13px;
 	padding: 1px;
 	text-align: center;
-	font-size: 14px;
+	font-size: 13px;
 }
 
 .bold {
@@ -657,7 +657,7 @@ input.date {
 } 
 
 .popup-modif {
-	width: 1600px;
+	width: 1400px;
 }
 
 #modif_eq {
