@@ -214,7 +214,7 @@ class weekly_briefing {
 		const MyFormat = new SignedFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits:1} );
 		let res = `
 		<table class="table_bilan sortable">
-			<thead><tr class="titre"><th>Zone</th><th>Vols</th><th>Last Week</th><th>% ${this.year-1}</th><th>%2019</th></tr></thead>
+			<thead><tr class="titre"><th>Zone</th><th>Vols</th><th>Last Week</th><th>${this.year-1}</th><th>2019</th></tr></thead>
 			<tbody>`;
             res += '<tr>'; 
             res +=`<td>CTA</td><td>${this.flights.nbre_vols['cta'][this.lastweek-1]}</td>
@@ -244,7 +244,7 @@ class weekly_briefing {
 		const MyFormat = new SignedFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits:1} )
 		let res = `
 		<table class="table_bilan sortable">
-			<thead><tr class="titre"><th>Zone</th><th>Delay</th><th>Last Week</th><th>% ${this.year-1}</th><th>%2019</th></tr></thead>
+			<thead><tr class="titre"><th>Zone</th><th>Delay</th><th>Last Week</th><th>${this.year-1}</th><th>2019</th></tr></thead>
 			<tbody>`;
             res += '<tr>'; 
             res +=`<td>CTA</td><td>${this.reguls.delay['cta'][this.lastweek-1]} min</td>
