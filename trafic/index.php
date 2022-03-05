@@ -2,6 +2,7 @@
   session_start();
   require("../php/check_ok.inc.php");
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
