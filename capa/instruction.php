@@ -6,8 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Créneaux Instruction</title>
     <script type="text/javascript" src="../js/utils.js"></script>
+    <script type="text/javascript" src="../js/cute-alert.js"></script>
     <script type="text/javascript" src="../js/instruction.js"></script>
     <link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
+    <link rel="stylesheet" type="text/css" href="../css/cute-style.css" />
     <script>
 		document.addEventListener('DOMContentLoaded', (event) => {
             inst("result");
@@ -18,10 +20,23 @@
                     "debut": $('debut_in').value,
                     "fin": $('fin_in').value,
                     "zone": $('zone_in').value,
-                    "type": $('type_in').value
+                    "type": $('type_in').value,
+                    "comm": $('com_in').value
                 }
-                ajoute("result", ajout);
+                cuteAlert({
+                    type: "question",
+                    title: "Heures UTC",
+                    message: "Je confirme que les heures ont été converties en UTC",
+                    confirmText: "Okay",
+                    cancelText: "Cancel"
+                }).then((e)=>{
+                    if ( e == ("confirm")){
+                        ajoute("result",ajout);
+                    } else {
+                    }
+                })
             });
+
         });
     </script>
 </head>
@@ -66,10 +81,15 @@
                 <option value="Simu2PC">Simu 2 PC</option>
             </select>
         </div>
+        <div class="form-group">
+            <label class="form-label" for="com_in">Comm:</label>
+            <input class="form-control" id="com_in" name="com_in" placeholder="Commentaire" type="texte" maxlength="12">
+        </div>
         <button id='button_ajout' type='button' class="btn">Ajouter</button>
     </form>
     </div>
     </div>
 </div>
+
 </body>
 </html>

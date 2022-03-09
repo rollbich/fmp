@@ -680,7 +680,11 @@ input.date {
 .popup-box h3 {
    color:#888;
 }
-  
+
+.ok_button {
+	height: 20px;
+}
+
 .close-btn {
     width:35px;
     height:35px;

@@ -39,7 +39,7 @@ function affiche(containerId, instr) {
     <table class="creneaux">
         <caption>Créneaux</caption>
         <thead>
-            <tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Date</th><th class="top_2px bottom_2px right_1px">Début</th><th class="top_2px bottom_2px right_1px">Fin</th><th class="top_2px right_1px bottom_2px">Secteur</th><th class="top_2px bottom_2px right_1px">Type</th><th class="top_2px bottom_2px right_2px">Supprime</th></tr>
+            <tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Date</th><th class="top_2px bottom_2px right_1px">Début</th><th class="top_2px bottom_2px right_1px">Fin</th><th class="top_2px right_1px bottom_2px">Secteur</th><th class="top_2px bottom_2px right_1px">Type</th><th class="top_2px bottom_2px right_1px">Comment</th><th class="top_2px bottom_2px right_2px">Supprime</th></tr>
         </thead>
         <tbody>`;
     instr.sort(compare).forEach( (elem, index) => {
@@ -48,8 +48,9 @@ function affiche(containerId, instr) {
         const d = elem["date"];
         const zone = elem["zone"];
         const type = elem["type"];
+        const comm = elem["comm"];
         const id = elem["id"];
-        res += `<tr><td>${d}</td><td>${debut}</td><td>${fin}</td><td>${zone}</td><td>${type}</td><td class="supprime" data-id="${id}">x</td></tr>`;
+        res += `<tr><td>${d}</td><td>${debut}</td><td>${fin}</td><td>${zone}</td><td>${type}</td><td>${comm}</td><td class="supprime" data-id="${id}">x</td></tr>`;
     });
     res += '</tbody></table>';
     $(containerId).innerHTML = res;
@@ -58,7 +59,7 @@ function affiche(containerId, instr) {
 async function ajoute(containerId, ajout) {
     let instr = await loadJson("../instruction.json");
     let id;
-    for(let i=1;i<100;i++) {
+    for(let i=1;i<300;i++) {
         const k = instr.every( elem => elem["id"] != i );
         if (k == true) { id = i; break; }
     }
