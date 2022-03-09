@@ -48,6 +48,8 @@ class capa {
 				const upBV = vac+"BV";
 				if (vac !== "N-1") {
 					const cds = (vac == "J2" || vac == "S1") ? 0 : 1; // cds=0 en J2 et S1
+					// Le RO induit apparait si detachés > 1 et plus que 1 n'est pas Expert Ops, ACDS ou Assistant sub
+					pc[vac]["ROinduit"] = parseInt(this.effectif[this.day][p]["teamReserve"]["roInduction"]);
 					pc[vac]["nbpc"] = parseInt(this.effectif[this.day][p]["teamReserve"]["teamQuantity"]) - cds + update[vac]; 
 					pc[vac]["BV"] = parseInt(this.effectif[this.day][p]["teamReserve"]["BV"]) + update[upBV];
 					pc[vac]["RO"] = parseInt(this.effectif[this.day][p]["teamReserve"]["roQuantity"]);
@@ -61,6 +63,7 @@ class capa {
 					}
 					//pc[vac]["detache"] = parseInt(this.effectif[this.day][p]["teamReserve"]["detacheQuantity"]);
 				} else {
+					pc[vac]["ROinduit"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["roInduction"]);
 					pc[vac]["nbpc"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["teamQuantity"]) - 1 + update[vac]; // le cds ne compte pas dans le nb de pc => -1
 					pc[vac]["BV"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["BV"]) + update[upBV];
 					pc[vac]["RO"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["roQuantity"]);
@@ -90,30 +93,31 @@ class capa {
 					if (tour_utc[vacation][i][1] === 1) nb_pc += cds; // cds qui bosse sur secteur
 					if (tour_utc[vacation][i][2] === 1) {
 						if (noBV === false) {
-							nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2), (Math.floor((pc[vacation]["BV"]+pc[vacation]["renfort"]-cds)/2)));	
+							nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2), (Math.floor((pc[vacation]["BV"]+pc[vacation]["renfort"]-cds-pc[vacation]["ROinduit"])/2)));	
 						} else {
 							nb_pc += Math.floor(pc[vacation]["nbpc"]/2);
 						}
 					}
 					if (tour_utc[vacation][i][3] === 1) {
 						if (noBV === false) {
-							nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2, Math.floor((pc[vacation]["BV"]+pc[vacation]["renfort"]-cds)/2)+(pc[vacation]["BV"]+pc[vacation]["renfort"]-cds)%2);
+							nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2, Math.floor((pc[vacation]["BV"]+pc[vacation]["renfort"]-cds-pc[vacation]["ROinduit"])/2)+(pc[vacation]["BV"]+pc[vacation]["renfort"]-cds-pc[vacation]["ROinduit"])%2);
 						} else {
 							nb_pc += Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2;
 						}
 					}
+					console.log("vac: "+vacation+"   pc:"+nb_pc);
 				})
 				if (tour_utc["N"][i][1] === 1 && i>48) nb_pc += cds; // cds qui bosse sur secteur
 				if (tour_utc["N"][i][2] === 1 && i>48) {
 					if (noBV === false) {
-						nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2), Math.floor((pc["N"]["BV"]+pc["N"]["renfort"]-cds)/2));
+						nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2), Math.floor((pc["N"]["BV"]+pc["N"]["renfort"]-cds-pc["N"]["ROinduit"])/2));
 					} else {
 						nb_pc += Math.floor(pc["N"]["nbpc"]/2);
 					}
 				}
 				if (tour_utc["N"][i][3] === 1 && i>48) {
 					if (noBV === false) {
-						nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2, Math.floor((pc["N"]["BV"]+pc["N"]["renfort"]-cds)/2)+(pc["N"]["BV"]+pc["N"]["renfort"]-cds)%2);
+						nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2, Math.floor((pc["N"]["BV"]+pc["N"]["renfort"]-cds-pc["N"]["ROinduit"])/2)+(pc["N"]["BV"]+pc["N"]["renfort"]-cds-pc["N"]["ROinduit"])%2);
 					} else {
 						nb_pc += Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2;
 					}
@@ -121,14 +125,14 @@ class capa {
 				if (tour_utc["N"][i][1] === 1 && i<48) nb_pc += cds; // cds qui bosse sur secteur
 				if (tour_utc["N"][i][2] === 1 && i<48) {
 					if (noBV === false) {
-						nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2), Math.floor((pc["N-1"]["BV"]+pc["N-1"]["renfort"]-cds)/2));
+						nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2), Math.floor((pc["N-1"]["BV"]+pc["N-1"]["renfort"]-cds-pc["N-1"]["ROinduit"])/2));
 					} else {
 						nb_pc += Math.floor(pc["N-1"]["nbpc"]/2);
 					}
 				}
 				if (tour_utc["N"][i][3] === 1 && i<48) {
 					if (noBV === false) {
-						nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2, Math.floor((pc["N-1"]["BV"]+pc["N-1"]["renfort"]-cds)/2)+(pc["N-1"]["BV"]+pc["N-1"]["renfort"]-cds)%2);
+						nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2, Math.floor((pc["N-1"]["BV"]+pc["N-1"]["renfort"]-cds-pc["N-1"]["ROinduit"])/2)+(pc["N-1"]["BV"]+pc["N-1"]["renfort"]-cds-pc["N-1"]["ROinduit"])%2);
 					} else {
 						nb_pc += Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2;
 					}
@@ -394,8 +398,8 @@ class feuille_capa extends capa {
 			// A = effectif/2
 			// B = effectif/2 (+1)
 			const cds = (vac == "J2" || vac == "S1") ? 0 : 1
-			const dispoA = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2), Math.floor((pc_vac[vac]["BV"]+pc_vac[vac]["renfort"]-cds)/2));
-			const dispoB = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2, Math.floor((pc_vac[vac]["BV"]+pc_vac[vac]["renfort"]-cds)/2)+(pc_vac[vac]["BV"]+pc_vac[vac]["renfort"]-cds)%2);
+			const dispoA = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2), Math.floor((pc_vac[vac]["BV"]+pc_vac[vac]["renfort"]-cds-pc_vac[vac]["ROinduit"])/2));
+			const dispoB = Math.min(Math.floor(pc_vac[vac]["nbpc"]/2)+(pc_vac[vac]["nbpc"])%2, Math.floor((pc_vac[vac]["BV"]+pc_vac[vac]["renfort"]-cds-pc_vac[vac]["ROinduit"])/2)+(pc_vac[vac]["BV"]+pc_vac[vac]["renfort"]-cds-pc_vac[vac]["ROinduit"])%2);
 			
 			// comp : { [ ["00:00", 0, 3, 4], ["hh:mm", cds, A, B], ... ] }
 			const vacation = (vac === "N-1") ? "N" : vac;
