@@ -7,19 +7,30 @@ async function inst(containerId) {
     for (const elem of supp) {
         elem.addEventListener('click', e => {
             const id = elem.dataset.id;
-            let ind;
-            instr.forEach( (el, index) => {
-                if (id == el["id"]) ind = index;
-            })
             const parent = elem.parentNode;
-            parent.parentNode.removeChild(parent);
-            instr.splice(ind,1);
-            const data = {
-                method: "post",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(instr)
-            };
-            fetch("export_inst_to_json.php", data);
+            cuteAlert({
+                type: "question",
+                title: "Suppression",
+                message: `Confirmez la suppression du créneau du ${parent.firstChild.innerHTML} à ${parent.firstChild.nextSibling.innerHTML}<br>${parent.firstChild.nextSibling.nextSibling.nextSibling.nextSibling.innerHTML} zone ${parent.firstChild.nextSibling.nextSibling.nextSibling.innerHTML}`,
+                confirmText: "Okay",
+                cancelText: "Cancel"
+            }).then((e)=>{
+                if ( e == ("confirm")){
+                    let ind;
+                    instr.forEach( (el, index) => {
+                        if (id == el["id"]) ind = index;
+                    })
+                    parent.parentNode.removeChild(parent);
+                    instr.splice(ind,1);
+                    const data = {
+                        method: "post",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(instr)
+                    };
+                    fetch("export_inst_to_json.php", data);
+                } else {
+                }
+            })
         });
     }
 }
@@ -36,7 +47,7 @@ function compare(a, b) {
 
 function affiche(containerId, instr) {
     let res = `
-    <table class="creneaux">
+    <table class="creneaux sortable">
         <caption>Créneaux</caption>
         <thead>
             <tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Date</th><th class="top_2px bottom_2px right_1px">Début</th><th class="top_2px bottom_2px right_1px">Fin</th><th class="top_2px right_1px bottom_2px">Secteur</th><th class="top_2px bottom_2px right_1px">Type</th><th class="top_2px bottom_2px right_1px">Comment</th><th class="top_2px bottom_2px right_2px">Supprime</th></tr>
@@ -59,7 +70,7 @@ function affiche(containerId, instr) {
 async function ajoute(containerId, ajout) {
     let instr = await loadJson("../instruction.json");
     let id;
-    for(let i=1;i<300;i++) {
+    for(let i=1;i<2000;i++) {
         const k = instr.every( elem => elem["id"] != i );
         if (k == true) { id = i; break; }
     }
