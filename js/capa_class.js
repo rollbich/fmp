@@ -314,11 +314,13 @@ class feuille_capa extends capa {
 
 		// Construit le tableau
 		let res = `<table class="uceso">
-					<caption>Journée du ${reverse_date(this.day)} - Zone ${this.zone}</caption>
-					<thead>
-						<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px">PC</th><th class="top_2px bottom_2px right_1px">det</th><th class="top_2px bottom_2px right_2px">BV</th><th class="top_2px bottom_2px right_2px" colspan="96">...</th></tr>
-					</thead>
-					<tbody>`;
+					<caption>Journée du ${reverse_date(this.day)} - Zone ${this.zone}`;
+		res += `<thead>
+				<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th>`;
+		res += `<th class="top_2px bottom_2px details masque">CDS</th><th class="top_2px bottom_2px details masque">PC</th><th class="top_2px bottom_2px right_1px details masque">det</th><th class="top_2px bottom_2px right_2px details masque">BV</th>`;
+		res += `<th class="top_2px bottom_2px right_2px" colspan="96">...</th></tr>
+				</thead>
+				<tbody>`;
 		res += `${affiche_vac("J1")}`;
 		res += `${affiche_vac("J3")}`;
 		res += `${affiche_vac("S2")}`;
@@ -327,13 +329,13 @@ class feuille_capa extends capa {
 		res += `${affiche_vac("N")}`;
 		res += `${affiche_vac("N-1")}`;
 		res += `${affiche_inst()}`;
-		res += `<tr class="titre"><th class='bottom_2px left_2px right_2px' colspan="7">Heures UTC</th>${heure()}`;
+		res += `<tr class="titre"><td class='bottom_2px left_2px' colspan="3">Heures UTC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${heure()}`;
 		res += `${affiche_nbpc()}`;
 		res += `${affiche_demi_uc()}`;
 		res += `${affiche_uceso()}`;
 		res += '</tbody></table>';
 		this.containerTour.innerHTML = res;
-		
+
 		// ajoute les clicks sur la case du nbre de pc de la vac
 		const td_pc = document.querySelectorAll('.pc');
 
@@ -352,11 +354,14 @@ class feuille_capa extends capa {
 					${add_pers("J2")}
 					${add_pers("S1")}
 					${add_pers("N")}
-					${add_pers("N-1")}
-					<button id="ch">Changer</button>
-					</div>`;
-				show_popup("Modification", ih);
+					${add_pers("N-1")}`;
+					//ih += '<button id="ch">Changer</button>';
+					ih += `</div>`;
+				show_popup("Personnels", ih);
 				}
+				/*  -------------------------------------------------------
+						Modification locale de la feuille de capa
+					-------------------------------------------------------
 				const type = document.querySelectorAll('.typePC,.typePC-DET,.typePC-RPL');
 				type.forEach(type_el => {
 					type_el.addEventListener('click', (event) => {
@@ -389,6 +394,7 @@ class feuille_capa extends capa {
 						this.show_feuille_capa();
 					});
 				})
+				*/
 			});
 		});
 
@@ -445,30 +451,31 @@ class feuille_capa extends capa {
 			return `
 			<tr data-vac='${vac}'>
 				<td class='left_2px right_1px'></td><td class='right_1px'></td>
-				<td class='right_1px'>cds</td><td>${cds}</td>
-				<td class='pc' data-vac='${vac}'>${pc_vac[vac]["nbpc"]}</td>
-				<td class='right_1px' data-vac='${vac}'>${pc_vac[vac]["renfort"]}</td>
-				<td class='right_2px'>${pc_vac[vac]["BV"]}</td>${res1}</tr>
+				<td class='right_1px'>cds</td><td class='details masque'>${cds}</td>
+				<td class='pc details masque' data-vac='${vac}'>${pc_vac[vac]["nbpc"]}</td>
+				<td class='right_1px details masque' data-vac='${vac}'>${pc_vac[vac]["renfort"]}</td>
+				<td class='right_2px details masque'>${pc_vac[vac]["BV"]}</td>${res1}</tr>
 			<tr data-vac='${vac}'>
 				<td class='eq left_2px right_1px' data-vac='${vac}'>${tab_vac_eq[vac]}</td>
 				<td class='right_1px'>${vac}</td><td class='right_1px'>A</td>
-				<td class='right_1px' colspan="3"></td><td class='right_2px'></td>${res2}</tr>
+				<td class='right_1px details masque' colspan="3"></td><td class='right_2px details masque'></td>${res2}</tr>
 			<tr data-vac='${vac}'>
 				<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
-				<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px' colspan="3"></td>
-				<td class='bottom_2px right_2px'></td>${res3}</tr>`;
+				<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px details masque' colspan="3"></td>
+				<td class='bottom_2px right_2px details masque'></td>${res3}</tr>`;
 		}
 		
 		// fabrique la ligne du supplément instruction
 		function affiche_inst() {
 			let res2 = "";
-			for(let i=0;i<95;i++) {	
+			res2 += `<td class='left_2px bottom_2px'></td>`; // border left à 2px pour la case 0
+			for(let i=1;i<95;i++) {	
 				//console.log("Time: "+get_time(i)+"  "+in15mn[i]);
 				if (pc_instr_15mn[i][1] != "") res2 += `<td class='bg bottom_2px'>${pc_instr_15mn[i][0]}</td>`;
 				else res2 += `<td class='bottom_2px'></td>`;
 			} 
 			res2 += `<td class='bottom_2px right_2px'></td>`;
-			let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="7">Instru/Asa</td>${res2}</tr>`;
+			let res = `<tr><td class='left_2px bottom_2px' colspan="3">Instru/Asa</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
 			return res;
 		}
 
@@ -481,7 +488,7 @@ class feuille_capa extends capa {
 				if (index === 95) cl += " right_2px";
 				res2 += `<td class='${cl} bottom_2px'>${elem[1]+pc_instr_15mn[index][0]}</td>`;
 			});
-			let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="7">Nb PC</td>${res2}</tr>`;
+			let res = `<tr><td class='left_2px bottom_2px' colspan="3">Nb PC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
 			return res;
 		}
 
@@ -495,7 +502,7 @@ class feuille_capa extends capa {
 				const demi = ((elem[1]+pc_instr_15mn[index][0])%2 === 0) ? "" : "\u00bd";
 				res2 += `<td class='${cl} bottom_2px'>${demi}</td>`;
 			});
-			let res = `<tr><td class='left_2px bottom_2px right_2px' colspan="7">Demi UC</td>${res2}</tr>`;
+			let res = `<tr><td class='left_2px bottom_2px' colspan="3">Demi UC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
 			return res;
 		}
 		
@@ -509,7 +516,7 @@ class feuille_capa extends capa {
 				res3 += `<td class="bordure_uc" colspan="${nb_occ}">${elem[2]}</td>`;
 			});
 			
-			let res = `<tr class="bold"><td class='left_2px bottom_2px right_2px' colspan="7">UCESO</td>${res3}</tr>`;
+			let res = `<tr class="bold"><td class='left_2px bottom_2px' colspan="3">UCESO</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res3}</tr>`;
 			return res;
 		}
 		

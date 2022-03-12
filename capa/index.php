@@ -62,6 +62,16 @@
 					simu.show_simu_capa();
                     //alert("Fonctionnalité en développement");
 				});
+
+				document.addEventListener('keydown', function(event) {
+				if (event.ctrlKey && event.key === 's') {
+					event.preventDefault();
+					const td_masque = document.querySelectorAll('.details');
+					td_masque.forEach(td_el => {
+						td_el.classList.toggle('masque');
+					});
+				}
+				}, true);
 				
 			});		
 		</script>

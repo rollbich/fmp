@@ -67,6 +67,10 @@ span.back {
 	display: none;
 }
 
+.masque {
+	display: none;
+}
+
 .pointer {
 	cursor: pointer;
 }
@@ -77,6 +81,10 @@ span.back {
 
 #button_save {
 	margin-top: 5px;
+}
+
+#button_details {
+	margin-left: 15px;
 }
 
 #feuille_capa_tour {
@@ -744,7 +752,7 @@ input.date {
 }
 
 table.creneaux th, table creneaux td {
-	width: 120px;
+	width: 90px;
 }
 
 table.creneaux tr:nth-child(2n) {
@@ -758,6 +766,14 @@ table.creneaux tr:nth-child(2n+1) {
 td.supprime {
 	color: red;
 	cursor: pointer;
+}
+
+.sortable th {
+	text-align: center;
+}
+
+.sortable td, .sortable th {
+	padding: 5px;
 }
 
 .formu {
