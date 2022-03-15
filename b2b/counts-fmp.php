@@ -746,8 +746,9 @@ try {
 	$nbr_vols_rae = $flights->LFMMFMPE[0][2];
 	$nbr_vols_raw = $flights->LFMMFMPW[0][2];
 	$heure = gmdate('Y-m-d H:i');
-	$req_vols = "requete VOLS recue le ".$receptionTime." UTC pour la date du ".$wef_flights." UTC a ".$unt_flights." UTC\n";
-	$req_vols = $req_vols."test nbr vols    RAE: ".$nbr_vols_rae."   RAW: ".$nbr_vols_raw."\n\n";
+	$req_vols = "requete VOLS recue le ".$receptionTime." UTC pour la date du ".$wef_flights." UTC a ".$unt_flights." UTC<br>";
+	$req_vols = $req_vols."test nbr vols    RAE: ".$nbr_vols_rae."<br>RAW: ".$nbr_vols_raw."<br>";
+	$req_vols = $req_vols."LFMMCTA ".$counts_LFMMCTA." vols<br>";
 	$req_vols = $req_vols."Export du ".$heure." UTC terminé";
 	echo $req_vols;
 	write_log("", "", $req_vols);
