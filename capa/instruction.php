@@ -30,7 +30,7 @@
                     title: "Heures UTC",
                     message: "Je confirme que les heures ont été converties en UTC",
                     confirmText: "Okay",
-                    cancelText: "Cancel"
+                    cancelText: "Annuler"
                 }).then((e)=>{
                     if ( e == ("confirm")){
                         ajoute("result",ajout);

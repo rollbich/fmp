@@ -13,7 +13,7 @@ async function inst(containerId) {
                 title: "Suppression",
                 message: `Confirmez la suppression du créneau du ${parent.firstChild.innerHTML} à ${parent.firstChild.nextSibling.innerHTML}<br>${parent.firstChild.nextSibling.nextSibling.nextSibling.nextSibling.innerHTML} zone ${parent.firstChild.nextSibling.nextSibling.nextSibling.innerHTML}`,
                 confirmText: "Okay",
-                cancelText: "Cancel"
+                cancelText: "Annuler"
             }).then((e)=>{
                 if ( e == ("confirm")){
                     let ind;

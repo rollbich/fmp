@@ -147,14 +147,16 @@ class capa {
 					const d = elem["date"];
 					const zone = elem["zone"];
 					const type = elem["type"];
+					const comm = elem["comm"];
 					let t = get_time(i);
 					if (d === this.day && zone.toLowerCase() === this.zone) {
 						if (t >= debut && t< fin) {
-							if (type === "Inst") { in15mn[i][0] += 2; in15mn[i][1] = "Inst"; }
-							if (type === "Eleve") { in15mn[i][1] = "Eleve"; }
-							if (type === "Asa") { in15mn[i][0] -= 1; in15mn[i][1] = "Asa"; }
-							if (type === "Simu1PC") { in15mn[i][0] -= 1; in15mn[i][1] = "Simu1PC"; }
-							if (type === "Simu2PC") { in15mn[i][0] -= 2; in15mn[i][1] = "Simu2PC"; }
+							in15mn[i][1] = [];
+							if (type === "Inst") { in15mn[i][0] += 2; in15mn[i][1].push({type: type, comm: comm}); }
+							if (type === "Eleve") { in15mn[i][1].push({type: type, comm: comm}); }
+							if (type === "Asa") { in15mn[i][0] -= 1; in15mn[i][1].push({type: type, comm: comm}); }
+							if (type === "Simu1PC") { in15mn[i][0] -= 1; in15mn[i][1].push({type: type, comm: comm}); }
+							if (type === "Simu2PC") { in15mn[i][0] -= 2; in15mn[i][1].push({type: type, comm: comm}); }
 						} 
 					}
 				});
@@ -471,7 +473,7 @@ class feuille_capa extends capa {
 			res2 += `<td class='left_2px bottom_2px'></td>`; // border left à 2px pour la case 0
 			for(let i=1;i<95;i++) {	
 				//console.log("Time: "+get_time(i)+"  "+in15mn[i]);
-				if (pc_instr_15mn[i][1] != "") res2 += `<td class='bg bottom_2px'>${pc_instr_15mn[i][0]}</td>`;
+				if (pc_instr_15mn[i][1].length !== 0) res2 += `<td class='bg bottom_2px'>${pc_instr_15mn[i][0]}</td>`;
 				else res2 += `<td class='bottom_2px'></td>`;
 			} 
 			res2 += `<td class='bottom_2px right_2px'></td>`;
