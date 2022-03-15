@@ -105,7 +105,6 @@ class capa {
 							nb_pc += Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2;
 						}
 					}
-					console.log("vac: "+vacation+"   pc:"+nb_pc);
 				})
 				if (tour_utc["N"][i][1] === 1 && i>48) nb_pc += cds; // cds qui bosse sur secteur
 				if (tour_utc["N"][i][2] === 1 && i>48) {
@@ -140,7 +139,7 @@ class capa {
 				pcs.push([tour_utc["J1"][i][0], nb_pc]);
 				nb_pc = 0;
 
-				in15mn[i] = [0, ""];
+				in15mn[i] = [0, []];
 				instr.forEach( (elem, index) => {
 					const debut = elem["debut"];
 					const fin = elem["fin"];
@@ -151,7 +150,6 @@ class capa {
 					let t = get_time(i);
 					if (d === this.day && zone.toLowerCase() === this.zone) {
 						if (t >= debut && t< fin) {
-							in15mn[i][1] = [];
 							if (type === "Inst") { in15mn[i][0] += 2; in15mn[i][1].push({type: type, comm: comm}); }
 							if (type === "Eleve") { in15mn[i][1].push({type: type, comm: comm}); }
 							if (type === "Asa") { in15mn[i][0] -= 1; in15mn[i][1].push({type: type, comm: comm}); }
@@ -338,6 +336,34 @@ class feuille_capa extends capa {
 		res += '</tbody></table>';
 		this.containerTour.innerHTML = res;
 
+		// ajoute le hover sur la ligne instruction
+		const td_instr = document.querySelectorAll('[data-instr]');
+		td_instr.forEach(td_el => {
+			let detail = td_el.dataset.instr.split('$');
+			detail.pop();
+			td_el.addEventListener('mouseover', (event) => {
+				const el = document.createElement('div');
+				el.setAttribute('id', 'popinstr');
+				let det = "";
+				detail.forEach(value => {
+					const v = value.split(":");
+					det += `<div style="float:left;width:50%;">${v[0]} : </div><div style="float:left;width:50%;">${v[1]}</div>`;
+				})
+				const pos = td_el.getBoundingClientRect();
+				el.style.position = 'absolute';
+				el.style.left = pos.left + 'px';
+				el.style.top = pos.top + 20 + 'px';
+				el.style.backgroundColor = '#fbb';
+				el.style.padding = '10px';
+				el.style.width = '200px';
+				document.body.insertBefore(el, $('feuille_capa_tour'));
+				el.innerHTML = det;
+			})
+			td_el.addEventListener('mouseleave', (event) => {
+				$('popinstr').remove();
+			})
+		})
+
 		// ajoute les clicks sur la case du nbre de pc de la vac
 		const td_pc = document.querySelectorAll('.pc');
 
@@ -473,7 +499,15 @@ class feuille_capa extends capa {
 			res2 += `<td class='left_2px bottom_2px'></td>`; // border left à 2px pour la case 0
 			for(let i=1;i<95;i++) {	
 				//console.log("Time: "+get_time(i)+"  "+in15mn[i]);
-				if (pc_instr_15mn[i][1].length !== 0) res2 += `<td class='bg bottom_2px'>${pc_instr_15mn[i][0]}</td>`;
+				if (pc_instr_15mn[i][1].length !== 0) {
+					let d = "data-instr='";
+					pc_instr_15mn[i][1].forEach(val => {
+						d += val.type + ":" + val.comm+"$";
+					})
+					d += "'";
+					d = d.trimEnd();
+					res2 += `<td class='bg bottom_2px' ${d}>${pc_instr_15mn[i][0]}</td>`;
+				}
 				else res2 += `<td class='bottom_2px'></td>`;
 			} 
 			res2 += `<td class='bottom_2px right_2px'></td>`;
