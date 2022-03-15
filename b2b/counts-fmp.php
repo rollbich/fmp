@@ -712,8 +712,7 @@ function get_vols_West($obj, $tv_arr, $wef, $unt) {
 	}
 }
 
-$tab_TVE = ["LFMRAE", "LFMSBAM", "LFMGY", "LFMAB", "LFMEK"];
-$tab_TVW = ["LFMRAW", "LFMMALY", "LFMWW", "LFMMF", "LFMDZ"];
+require_once("tab_TV.inc.php");
 
 $flights = new stdClass();
 $flights->LFMMCTA = ["LFMMCTA", $today, $counts_LFMMCTA];
