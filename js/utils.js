@@ -100,6 +100,7 @@ Date.prototype.clone = function() {
 // ajoute x jours à une date
 Date.prototype.addDays= function(nb_day) {
 	this.setDate(this.getDate() + nb_day);
+	this.setHours(3); // on met 3h, enlève le pb au passage à l'heure d'été
 	return this;
 }
 
