@@ -37,6 +37,8 @@ class B2B {
 			'passphrase'=> $this->passphrase_MM,
 			'stream_context' => stream_context_create($this->context_param),
 			'trace'=>1,
+			//'proxy_host' => '100.78.176.201', 	// proxy
+			//'proxy_port' => 8001,				// 
 			'exceptions'=>1,
 			'location' => $this->Location_MM
 		);
