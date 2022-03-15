@@ -712,7 +712,7 @@ function get_vols_West($obj, $tv_arr, $wef, $unt) {
 	}
 }
 
-require_once("tab_TV.inc.php");
+include("tab_TV.inc.php");
 
 $flights = new stdClass();
 $flights->LFMMCTA = ["LFMMCTA", $today, $counts_LFMMCTA];
@@ -737,9 +737,10 @@ try {
 	
 	write_json($json_reg, "", "-reg", $wef_counts);
 	write_json($json_atfcm_reg->data, "", "-atfcm-reg", $wef_counts);
-
-	write_json($flights, "", "-vols", $wef_counts);
 	write_json($atc_confs, "", "-confs", $wef_counts);
+	
+	write_json($flights, "", "-vols", $wef_counts);
+	
 
 	// logs
 	$nbr_vols_rae = $flights->LFMMFMPE[0][2];
