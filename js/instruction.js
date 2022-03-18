@@ -75,15 +75,18 @@ function affiche(containerId, instr) {
 
 async function ajoute(containerId, ajout) {
     let instr = await loadJson("../instruction.json");
-    let id, i = 1;
+    let id = 1;
     const zone = ajout["zone"].toLowerCase();
     const day = ajout["date"];
-    for(let i=1;i<99;i++) {
-        const k = instr[zone][day].every( elem => elem["id"] != i );
-        if (k == true) { id = i; break; }
+    if (typeof instr[zone][day] === 'undefined') {
+        instr[zone][day] = [];
+    } else {
+        for(let i=1;i<99;i++) {
+            const k = instr[zone][day].every( elem => elem["id"] != i );
+            if (k == true) { id = i; break; }
+        }
     }
     ajout["id"] = id;
-    if (typeof instr[zone][day] === 'undefined') instr[zone][day] = [];
     instr[zone][day].push(ajout);
     const data = {
         method: "post",
