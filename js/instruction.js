@@ -83,6 +83,8 @@ function affiche(containerId, instr) {
     }
     res += '</tbody></table>';
     $(containerId).innerHTML = res;
+    $$('.titre').firstChild.click();
+    $$('.titre').firstChild.click();
 } 
 
 async function ajoute(containerId, ajout) {
