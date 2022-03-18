@@ -140,24 +140,26 @@ class capa {
 				nb_pc = 0;
 
 				in15mn[i] = [0, []];
-				instr.forEach( (elem, index) => {
-					const debut = elem["debut"];
-					const fin = elem["fin"];
-					const d = elem["date"];
-					const zone = elem["zone"];
-					const type = elem["type"];
-					const comm = elem["comm"];
-					let t = get_time(i);
-					if (d === this.day && zone.toLowerCase() === this.zone) {
-						if (t >= debut && t< fin) {
-							if (type === "Inst") { in15mn[i][0] += 2; in15mn[i][1].push({type: type, comm: comm}); }
-							if (type === "Eleve") { in15mn[i][1].push({type: type, comm: comm}); }
-							if (type === "Asa") { in15mn[i][0] -= 1; in15mn[i][1].push({type: type, comm: comm}); }
-							if (type === "Simu1PC") { in15mn[i][0] -= 1; in15mn[i][1].push({type: type, comm: comm}); }
-							if (type === "Simu2PC") { in15mn[i][0] -= 2; in15mn[i][1].push({type: type, comm: comm}); }
-						} 
-					}
-				});
+				if (typeof instr[this.zone][this.day] !== 'undefined') {
+					instr[this.zone][this.day].forEach( (elem, index) => {
+						const debut = elem["debut"];
+						const fin = elem["fin"];
+						const d = elem["date"];
+						const zone = elem["zone"];
+						const type = elem["type"];
+						const comm = elem["comm"];
+						let t = get_time(i);
+						if (d === this.day && zone.toLowerCase() === this.zone) {
+							if (t >= debut && t< fin) {
+								if (type === "Inst") { in15mn[i][0] += 2; in15mn[i][1].push({type: type, comm: comm}); }
+								if (type === "Eleve") { in15mn[i][1].push({type: type, comm: comm}); }
+								if (type === "Asa") { in15mn[i][0] -= 1; in15mn[i][1].push({type: type, comm: comm}); }
+								if (type === "Simu1PC") { in15mn[i][0] -= 1; in15mn[i][1].push({type: type, comm: comm}); }
+								if (type === "Simu2PC") { in15mn[i][0] -= 2; in15mn[i][1].push({type: type, comm: comm}); }
+							} 
+						}
+					});
+				}
 			}
 			return {"pc_vac": pc, "pc_total_dispo_15mn": pcs, "pc_instr_15mn": in15mn};
 		//}
