@@ -55,10 +55,22 @@ function affiche(containerId, instr) {
             <tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Date</th><th class="top_2px bottom_2px right_1px">Début</th><th class="top_2px bottom_2px right_1px">Fin</th><th class="top_2px right_1px bottom_2px">Secteur</th><th class="top_2px bottom_2px right_1px">Type</th><th class="top_2px bottom_2px right_1px">Comment</th><th class="top_2px bottom_2px right_2px">Supprime</th></tr>
         </thead>
         <tbody>`;
-    const cles = Object.keys(instr["est"]);
-    console.log("cles "+cles);
-    for (const dat of cles) {
+    const cles_est = Object.keys(instr["est"]);
+    for (const dat of cles_est) {
         instr["est"][dat].forEach(elem => {
+            const debut = elem["debut"];
+            const fin = elem["fin"];
+            const d = elem["date"];
+            const zone = elem["zone"];
+            const type = elem["type"];
+            const comm = elem["comm"];
+            const id = elem["id"];
+            res += `<tr><td>${d}</td><td>${debut}</td><td>${fin}</td><td>${zone}</td><td>${type}</td><td>${comm}</td><td class="supprime" data-zone="${zone}" data-date="${d}" data-id="${id}">x</td></tr>`;
+        });
+    }
+    const cles_ouest = Object.keys(instr["ouest"]);
+    for (const dat of cles_ouest) {
+        instr["ouest"][dat].forEach(elem => {
             const debut = elem["debut"];
             const fin = elem["fin"];
             const d = elem["date"];
