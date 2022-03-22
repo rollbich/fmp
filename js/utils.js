@@ -87,9 +87,14 @@ const reverse_date = day => {
 	return `${d[2]}-${d[1]}-${d[0]}`
 }
 
-// ecart entre 2 dates en jours
+// ecart entre la date du jour et une autre date en jours
 Date.prototype.ecartJour = function(dat) {
 	return Math.round((dat.getTime()-this.getTime())/(1000*3600*24));
+}
+
+// ecart entre 2 dates en jours
+const ecart_date = (dat1, dat2) => {
+	return Math.round((dat2.getTime()-dat1.getTime())/(1000*3600*24));
 }
 
 // clone une date
@@ -153,6 +158,43 @@ const get_ouv_1h = str_time => {
 const jour_sem = day => {
 	const jours = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
 	return jours[new Date(day).getDay()];
+}
+
+// Récupère le même jour de la semaine équivalente d'une année passée
+// day : date de depart "2021-03-28"
+// year : année passée où on veut récupérer le jour correspondant
+const get_sameday = (day, year) => {
+	const d = new Date(day);
+	console.log("Day: "+d);
+	const j = d.getDate();
+	const m = d.getMonth();
+	const y = d.getFullYear();
+	const js = d.getDay();
+	// on approxime le jour equivalent
+	let past_d = new Date(day);
+	past_d = d.addDays(-365.25*(y-year));
+	let past_d_js = past_d.getDay();
+	// ecart entre les jours de la semaine de day et past_d
+	const ecart = past_d_js - js;
+	console.log("ecart: "+ecart);
+	// on corrige pour avoir le même jour de la semaine
+	past_d = past_d.addDays(-ecart);
+	console.log("past_day: "+past_d);
+	const past_d_month = past_d.getMonth();
+	const past_d_jour = past_d.getDate();
+	// Calcul de l'écart en jour entre les 2 journées (on fixe une année quelconque pour le calcul)
+	const d1 = new Date(year, past_d_month, past_d_jour);
+	const d2 = new Date(year, m, j);
+	const ecart2 = ecart_date(d1, d2);
+	// Si abs(ecart) > 3, ce n'est pas le jour le plus proche, il faut ajouter/enlever 7 jours 
+	if (ecart2 > 3) {
+		past_d = past_d.addDays(7);
+	}
+	if (ecart2 < -3) {
+		past_d = past_d.addDays(-7);
+	}
+	console.log("result: "+past_d);
+	return past_d;
 }
 
 /* For a given date, get the ISO week number
