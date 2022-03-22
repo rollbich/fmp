@@ -15,6 +15,9 @@ class tds_editor {
     async edit_tds() {
 
         this.tour_local = await loadJson(tour_json);
+        this.tour_supp = await loadJson(tour_supp_json);
+        this.date_supp = await loadJson(date_supp_json);
+        this.tour_vierge = [["00:00",0],["00:15",0],["00:30",0],["00:45",0],["01:00",0],["01:15",0],["01:30",0],["01:45",0],["02:00",0],["02:15",0],["02:30",0],["02:45",0],["03:00",0],["03:15",0],["03:30",0],["03:45",0],["04:00",0],["04:15",0],["04:30",0],["04:45",0],["05:00",0],["05:15",0],["05:30",0],["05:45",0],["06:00",0],["06:15",0],["06:30",0],["06:45",0],["07:00",0],["07:15",0],["07:30",0],["07:45",0],["08:00",0],["08:15",0],["08:30",0],["08:45",0],["09:00",0],["09:15",0],["09:30",0],["09:45",0],["10:00",0],["10:15",0],["10:30",0],["10:45",0],["11:00",0],["11:15",0],["11:30",0],["11:45",0],["12:00",0],["12:15",0],["12:30",0],["12:45",0],["13:00",0],["13:15",0],["13:30",0],["13:45",0],["14:00",0],["14:15",0],["14:30",0],["14:45",0],["15:00",0],["15:15",0],["15:30",0],["15:45",0],["16:00",0],["16:15",0],["16:30",0],["16:45",0],["17:00",0],["17:15",0],["17:30",0],["17:45",0],["18:00",0],["18:15",0],["18:30",0],["18:45",0],["19:00",0],["19:15",0],["19:30",0],["19:45",0],["20:00",0],["20:15",0],["20:30",0],["20:45",0],["21:00",0],["21:15",0],["21:30",0],["21:45",0],["22:00",0],["22:15",0],["22:30",0],["22:45",0],["23:00",0],["23:15",0],["23:30",0],["23:45",0]];
 
         /*  --------------------------------------------------------------------------------------------- 
             Affiche les plages horaires   
@@ -63,6 +66,26 @@ class tds_editor {
             $(containerId).innerHTML = res;
         }
 
+        const affiche_tds_supp = (containerId, zone) => {
+            let res = `<table class="ouverture">
+            <caption>TDS Supp - ${capitalizeFirstLetter(zone)}</caption>
+            <thead>
+                <tr class="titre">
+                    <th class="top_2px left_2px right_1px bottom_2px">Vac</th>
+                    <th class="top_2px bottom_2px left_2px right_2px" colspan="96">...</th>
+                    <th class="top_2px bottom_2px right_2px">Supprime</th>
+                </tr>
+            </thead>
+            <tbody>`;
+            const cles = Object.keys(this.tour_supp[zone]);
+            cles.forEach(vac => {
+                res += `${affiche_vac_supp(vac, zone)}`;
+            });
+            res += `<tr class="titre"><th class='bottom_2px left_2px right_1px' colspan="1">Heures loc</th>${heure()}`;
+            res += '</tbody></table>';
+            $(containerId).innerHTML = res;
+        }
+
 /*  ------------------------------------------------------------------------------------------
         Fabrique la ligne du tour de service avec les entêtes 
             @param {string} vac         - "J1" "J3" "N" (nuit soirée) "N1" (nuit du matin) etc...
@@ -92,11 +115,35 @@ class tds_editor {
                 if (r3 != 0) cl3 = "case bg";
                 if (index === 95) { cl1 += " right_2px"; cl2 += " right_2px"; cl3+= " right_2px"; }
                 if (index%4 === 0) { cl1 += " left_2px"; cl2 += " left_2px"; cl3+= " left_2px"; }
-                res1 += `<td class='${cl1}' data-vac='${vac}' data-ligne='1' data-col='${index}' data-saison='${saison+"-"+zone}'>${r1 || ''}</td>`; // CDS travaille sur position ?
-                res2 += `<td class='${cl2}' data-vac='${vac}' data-ligne='2' data-col='${index}' data-saison='${saison+"-"+zone}'>${r2 || ''}</td>`; // partie A
-                res3 += `<td class='${cl3} bottom_2px' data-vac='${vac}' data-ligne='3' data-col='${index}' data-saison='${saison+"-"+zone}'>${r3 || ''}</td>`; // partie B
+                res1 += `<td class='${cl1} standard' data-vac='${vac}' data-ligne='1' data-col='${index}' data-saison='${saison+"-"+zone}'>${r1 || ''}</td>`; // CDS sur position ?
+                res2 += `<td class='${cl2} standard' data-vac='${vac}' data-ligne='2' data-col='${index}' data-saison='${saison+"-"+zone}'>${r2 || ''}</td>`; // partie A
+                res3 += `<td class='${cl3} bottom_2px standard' data-vac='${vac}' data-ligne='3' data-col='${index}' data-saison='${saison+"-"+zone}'>${r3 || ''}</td>`; // partie B
             });
             return [res1, res2, res3];
+        }
+
+        const affiche_vac_supp = (vac, zone) => {
+            if (typeof this.tour_supp[zone][vac] != 'undefined') {
+                const res = affiche_td_vac_supp(vac, zone);
+                return `<tr><td class='left_2px right_1px bottom_2px' data-vac='${vac}' data-zone='${zone}'>${vac}</td>${res}<td class='vac_supp right_2px bottom_2px' data-zone="${zone}"  data-vac="${vac}">x</td></tr>`;
+            } else return '';
+        }
+
+        // Jx sous-routine affichage td (partie droite)
+        // returns {array} [ligne1, ligne2, ligne 3] - elements <td> formant le tds
+        const affiche_td_vac_supp = (vac, zone) => {
+            let res1 = "";
+            if (typeof this.tour_supp[zone][vac] != 'undefined') {
+                this.tour_supp[zone][vac].forEach( (elem, index) => {
+                    let r1 = elem[1];
+                    let cl1 = "case";
+                    if (r1 != 0) cl1 = "case bg";
+                    if (index === 95) { cl1 += " right_2px"; }
+                    if (index%4 === 0) { cl1 += " left_2px"; }
+                    res1 += `<td class='${cl1} supp bottom_2px' data-vac='${vac}' data-ligne='1' data-col='${index}' data-zone='${zone}'>${r1 || ''}</td>`; 
+                });
+            }
+            return res1;
         }
     
         /*  ------------------------------------------------------------------------
@@ -111,7 +158,9 @@ class tds_editor {
             }
             return res;
         }
-
+        
+        affiche_tds_supp("result_supp_est", "est");
+        affiche_tds_supp("result_supp_ouest", "ouest");
         const saisons = ["hiver", "mi-saison-basse", "mi-saison-haute", "ete"];
         for (const s of saisons) {
             affiche_plages("plage_est", "est", s);
@@ -129,6 +178,8 @@ class tds_editor {
         this.add_listener("ete", "est");
         this.add_listener_plage("ete", "est");
 
+        this.add_listener_supp("est");
+
         this.add_listener("hiver", "ouest");
         this.add_listener_plage("hiver", "ouest");
         this.add_listener("mi-saison-basse", "ouest");
@@ -138,17 +189,72 @@ class tds_editor {
         this.add_listener("ete", "ouest");
         this.add_listener_plage("ete", "ouest");
 
-        $('button_save').addEventListener('click', (e) => {
+        this.add_listener_supp("ouest");
+
+        const add_listener_supprime = () => {
+            const vac_supp = document.querySelectorAll(`td.vac_supp`);
+            for (const td of vac_supp) {
+                td.addEventListener('click', e => { 
+                    let zone = td.dataset.zone;	
+                    let vac = td.dataset.vac;	
+                    delete(this.tour_supp[zone][vac]);
+                    $('button_save').click();
+                    affiche_tds_supp("result_supp_"+zone, zone);
+                    this.add_listener_supp(zone);
+                 });
+            }
+        }
+
+        add_listener_supprime();
+
+        $('button_cree_supp').addEventListener('click', e => {
+            const zone = $('zone').value;
+            const name = $('cree_name').value;
+            if (typeof this.tour_supp[zone][name] === 'undefined') {
+                this.tour_supp[zone][name] = this.tour_vierge;
+            }
+            $('button_save').click();
+            affiche_tds_supp("result_supp_"+zone, zone);
+            this.add_listener_supp(zone);
+            add_listener_supprime();
+        });
+        
+        $('button_show_supp').addEventListener('click', (e) => {
+            let res = `
+            <table class="creneaux sortable">
+                <caption>Date Supp</caption>
+                <thead>
+                    <tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Date</th><th class="top_2px bottom_2px right_1px">Type</th><th class="top_2px bottom_2px right_1px">Num type</th><th class="top_2px bottom_2px right_2px">Supprime</th></tr>
+                </thead>
+                <tbody>`;
+            const cles = Object.keys(this.date_supp);
+            console.log("cles "+cles);
+            for (const k of cles) {
+                console.log("k "+k);
+                console.log("cles[k] "+this.date_supp[k]);
+                this.date_supp[k].forEach(elem => {
+                    res += `<tr><td>${k}</td><td>${elem[0]}</td><td>${elem[1]}</td><td class="supprime" data-id="">x</td></tr>`;
+                })
+            }
+            res += '</tbody></table>';
+			show_popup("Date Supp", res);
+        })
+
+        $('button_save').addEventListener('click', async (e) => {
             var data = {
                 method: "post",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(this.tour_local)
             };
+            var data2 = {
+                method: "post",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(this.tour_supp)
+            };
             show_popup("Patientez !", "Sauvegarde du TDS en cours...<br>Cela peut prendre 30s");
-            fetch("export_to_json.php", data)
-            .then(function(response) {
-                document.querySelector('.popup-close').click();
-            });
+            await fetch("export_supp_to_json.php", data2);
+            await fetch("export_to_json.php", data);
+            document.querySelector('.popup-close').click();
         });
     }	
 
@@ -199,13 +305,13 @@ class tds_editor {
         --------------------------------------------------------------------------------------------- */
 
     add_listener(saison, zone) {
-        const cases = document.querySelectorAll(`td.case[data-saison=${saison+"-"+zone}]`);
+        const cases = document.querySelectorAll(`td.standard[data-saison=${saison+"-"+zone}]`);
         for (const td of cases) {
             td.addEventListener('click', (event) => {
                 let lig = td.dataset.ligne;
                 let col = td.dataset.col;
                 let vac = td.dataset.vac;	
-                let t0 = this.tour_local[zone][saison][vac][col][0];
+                let heure = this.tour_local[zone][saison][vac][col][0];
                 let t1 = this.tour_local[zone][saison][vac][col][1];
                 let t2 = this.tour_local[zone][saison][vac][col][2];
                 let t3 = this.tour_local[zone][saison][vac][col][3];
@@ -213,14 +319,29 @@ class tds_editor {
                 td.innerHTML = (td.innerHTML === '1') ? '' : '1';
                 td.classList.toggle('bg');
                 if (lig == '1') {
-                    this.tour_local[zone][saison][vac][col] = [t0, val, t2, t3];
+                    this.tour_local[zone][saison][vac][col] = [heure, val, t2, t3];
                 }
                 if (lig == '2') {
-                    this.tour_local[zone][saison][vac][col] = [t0, t1, val, t3];
+                    this.tour_local[zone][saison][vac][col] = [heure, t1, val, t3];
                 }
                 if (lig == '3') {
-                    this.tour_local[zone][saison][vac][col] = [t0, t1, t2, val];
+                    this.tour_local[zone][saison][vac][col] = [heure, t1, t2, val];
                 }
+            });
+        }
+    }
+
+    add_listener_supp(zone) {
+        const cases = document.querySelectorAll(`td.supp[data-zone=${zone}]`);
+        for (const td of cases) {
+            td.addEventListener('click', (event) => {
+                let col = td.dataset.col;
+                let vac = td.dataset.vac;	
+                let heure = this.tour_supp[zone][vac][col][0];
+                const val = (td.innerHTML === '1') ? 0 : 1;
+                td.innerHTML = (td.innerHTML === '1') ? '' : '1';
+                td.classList.toggle('bg');
+                this.tour_supp[zone][vac][col] = [heure, val];
             });
         }
     }

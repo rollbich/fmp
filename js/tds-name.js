@@ -4,4 +4,6 @@
      racine du site
     ----------------------------------------------------------- */
 const tour_json = "../tour_de_service.json";
+const tour_supp_json = "../tds_supp.json";
+const date_supp_json = "../date_supp.json";
 
