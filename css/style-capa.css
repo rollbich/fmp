@@ -201,6 +201,10 @@ h2 {
 
 /* ------- Menu ------- */
 
+#tds_glob {
+	display: flex;
+}
+
 ul.menu {
 	margin: 12px auto 0;
 	position: relative;
@@ -209,6 +213,33 @@ ul.menu {
 	background-color: var(--menu-bg-color);
 	border-radius: 8px;
 	cursor: default;
+}
+
+ul.menu_tds_editor {
+	margin: 12px auto 0;
+	position: relative;
+	width: 300px;
+	height: 50px;
+	background-color: var(--menu-bg-color);
+	border-radius: 8px;
+	cursor: default;
+}
+
+ul.menu_tds_editor li {
+	line-height: 50px; /*permet le centrage vertical*/
+	height: 100%;
+	font-size: 14px;
+	font-family: 'RussoOne';
+	display: inline-block;
+	position: relative;
+	text-decoration: none;
+	text-transform: uppercase;
+	text-align: center;
+	color: var(--main-bg-color);
+}
+
+a:link, a:visited {
+	color: var(--main-bg-color);
 }
 
 ul.menu li {
@@ -447,6 +478,10 @@ td.typePC:hover, td.typePC-DET:hover, td.typePC-RPL:hover {
 	width: 140px;
 	margin-top: 20px;
 	font-size: 16px;
+}
+
+.button_tour {
+	margin-left:30px;
 }
 
 /* feuille capa */
@@ -763,8 +798,13 @@ table.creneaux tr:nth-child(2n+1) {
 	background-color: var(--ligne-impaire-color);
 }
 
-td.supprime {
+td.supprime, td.vac_supp {
 	color: red;
+	cursor: pointer;
+}
+
+td.vac_supp:hover {
+	background-color: rgb(235, 247, 183);
 	cursor: pointer;
 }
 
