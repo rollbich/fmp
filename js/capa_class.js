@@ -243,7 +243,9 @@ class capa {
     async get_tour_utc(tour_local) {
         
         // récupère le décalage utc/local en heure
-        const diff = Math.abs(new Date(this.day).getTimezoneOffset()) / 60;
+		const d = new Date(this.day);
+		d.setHours(6);
+        const diff = Math.abs(d.getTimezoneOffset()) / 60;
         const saison = this.get_date_tour(tour_local);
         const tour = tour_local[this.zone][saison];	
         
@@ -894,6 +896,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0) {
 	const day7 = addDays_toString(day, -7);
 	const d7 = day7.split("-");
 	let day2019 = null;
+	const gsd = get_sameday(day, 2019);
 	if (d[0] === "2022") day2019 = addDays_toString(day, -1099);
 	if (d[0] === "2021") day2019 = addDays_toString(day, -728);
 	if (d[0] === "2020") day2019 = addDays_toString(day, -364);
