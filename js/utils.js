@@ -109,6 +109,12 @@ Date.prototype.addDays= function(nb_day) {
 	return this;
 }
 
+Date.prototype.getDaysInMonth = function() {
+	// Janvier = 0
+	//jour 0 is the last day in the previous month
+	return new Date(this.getFullYear(), this.getMonth()+1, 0).getDate();
+}
+
 // ajoute x jours à un string yyyy-mm-dd
 const addDays_toString = (day, nb_day) => {
 	return new Date(day).addDays(nb_day).toISOString().split('T')[0];

@@ -4,6 +4,7 @@ b2b/log/
 b2b/B2B_params.php
 Realise/
 php/get_capa.php
+php/get_capa_lfmm.php
 overload/xls/
 *.json
 *.csv

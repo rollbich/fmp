@@ -51,7 +51,6 @@
 					let zone = $('zone').value;
 					let day = $('start').value;
                     const capa = new feuille_capa("feuille_capa_tour", day, zone);
-					capa.show_feuille_capa();
 				});
 
 				if ($('bouton_simucapa')) {
