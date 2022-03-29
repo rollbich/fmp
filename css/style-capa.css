@@ -216,13 +216,14 @@ ul.menu {
 }
 
 ul.menu_tds_editor {
-	margin: 12px auto 0;
-	position: relative;
-	width: 300px;
+	display: grid;
+    grid-gap: 10px;
+	grid-template-columns: repeat(auto-fill, minmax(210px,1fr));
 	height: 50px;
 	background-color: var(--menu-bg-color);
 	border-radius: 8px;
 	cursor: default;
+	margin: 12px auto 0;
 }
 
 ul.menu_tds_editor li {
@@ -234,7 +235,6 @@ ul.menu_tds_editor li {
 	position: relative;
 	text-decoration: none;
 	text-transform: uppercase;
-	text-align: center;
 	color: var(--main-bg-color);
 }
 
@@ -481,7 +481,8 @@ td.typePC:hover, td.typePC-DET:hover, td.typePC-RPL:hover {
 }
 
 .button_tour {
-	margin-left:30px;
+	margin-left: 20px;
+	margin-right: 20px;
 }
 
 /* feuille capa */
@@ -703,6 +704,11 @@ input.date {
 	width: 1400px;
 }
 
+.popup-supp {
+	width: 1400px;
+	top:920px;
+}
+
 #modif_eq {
 	display: flex;
 	flex-direction: row;
@@ -803,7 +809,7 @@ td.supprime, td.vac_supp {
 	cursor: pointer;
 }
 
-td.vac_supp:hover {
+td.vac_supp:hover, td[data-day]:hover {
 	background-color: rgb(235, 247, 183);
 	cursor: pointer;
 }
