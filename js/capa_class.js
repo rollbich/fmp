@@ -326,7 +326,7 @@ class feuille_capa extends capa {
 		
 		// Construit le tableau
 		let res = `<table class="uceso">
-					<caption>Journée du ${reverse_date(this.day)} - Zone ${this.zone}`;
+					<caption>Journée du ${reverse_date(this.day)} - Zone ${this.zone}</caption>`;
 		res += `<thead>
 				<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th>`;
 		res += `<th class="top_2px bottom_2px details masque">CDS</th><th class="top_2px bottom_2px details masque">PC</th><th class="top_2px bottom_2px right_1px details masque">det</th><th class="top_2px bottom_2px right_2px details masque">BV</th>`;
