@@ -19,13 +19,12 @@ require("../php/check_ok.inc.php");
     <script>
       	document.addEventListener('DOMContentLoaded', async event => {
 			$$('.upload_button').style.display = 'none';
-			let day = "2022-01-01"; // yyyy-mm-dd
-			const data = {};
-			const year = parseInt(new Date(day).getFullYear());
-			const lastyear = parseInt(new Date(day).getFullYear()) - 1;
-						
-			const nb_week = weeksInYear(new Date(day).getFullYear());
-			const nb_week_lastyear = weeksInYear(new Date(day).getFullYear() - 1);
+			const last_wn = getPreviousWeekNumber(new Date());
+			const year = last_wn[0];
+			const week_number = last_wn[1];
+			const lastyear = year - 1;			
+			const nb_week = weeksInYear(year);
+			const nb_week_lastyear = weeksInYear(lastyear);
 			const nb_week_2019 = weeksInYear(2019);
 			const nb = Math.max(nb_week, nb_week_lastyear, nb_week_2019);
 			console.log("Nb week: "+nb_week);
@@ -47,7 +46,7 @@ require("../php/check_ok.inc.php");
 			await data_regs_year.init();
 			show_delay_graph("accueil_reguls", year, listWeek, data_regs_year.delay['cta'], data_regs_lastyear.delay['cta'], data_regs_2019.delay['cta'], "LFMMCTA");
 
-			const tabl = new weekly_briefing(2022, "accueil_bilan");
+			const tabl = new weekly_briefing(year, week_number, "accueil_bilan");
 			await tabl.init();
 			tabl.show_data();
       	});
