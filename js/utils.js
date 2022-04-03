@@ -233,6 +233,11 @@ function getWeekNumber(d) {
     return [d.getUTCFullYear(), weekNo];
 }
 
+function getPreviousWeekNumber(d) {
+	d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+	return getWeekNumber(d.addDays(-7));
+}
+
 function isLeapYear(year) {
 	if (year % 400 === 0) return true;
 	if (year % 100 === 0) return false;
@@ -281,7 +286,7 @@ function weekDateToDate(year, week, weekDay) {
     if (firstIsoWeekDay > 4) days += 8 - firstIsoWeekDay
     // Else begins with W01
     else days -= zeroBasedFirstIsoWeekDay
-
+	// month = 0 car days est compris entre 1 et 365
     return new Date(year, 0, days)
 }
 
