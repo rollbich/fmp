@@ -523,7 +523,7 @@ class tds_editor {
 				const pos = td.getBoundingClientRect();
 				poptds.style.position = 'absolute';
 				poptds.style.left = pos.left + 'px';
-				poptds.style.top = pos.top + 20 + 'px';
+				poptds.style.top = pos.top + 20 + window.scrollY + 'px';
 				poptds.style.backgroundColor = '#fbb';
 				poptds.style.padding = '10px';
 				poptds.style.width = '100px';
