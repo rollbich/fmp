@@ -205,9 +205,24 @@ class weekly_briefing {
 	}
 
 	show_data() {
+		let sel =  `<select id="semaine" class="select">`;
+		for(let i=1;i<54;i++) {
+			if (i === this.week) { sel += `<option selected value="${i}">Sem ${i}</option>`; } else 
+			{ sel += `<option value="${i}">Sem ${i}</option>`; }
+		}
+		sel += `</select><br><br>`;
 		let v = this.data_vols();
 		let r = this.data_reguls();
-		this.container.innerHTML = v+r;
+		this.container.innerHTML = sel+v+r;
+		this.change_week();
+	}
+
+	change_week() {
+		$('semaine').addEventListener('change', (e) => {
+			const val = $('semaine').value;
+			this.week = parseInt(val);
+			this.show_data();
+		})
 	}
 
 	data_vols() {
