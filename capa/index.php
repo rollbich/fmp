@@ -5,77 +5,78 @@
 <!DOCTYPE html>
 <html>
 <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <meta name="robots" content="noindex">
-        <title>Feuille Capa</title>
-		<link rel="icon" href="favicon.ico" />
-		<script type="text/javascript" src="../js/base.js"></script>
-		<script type="text/javascript" src="../js/tds-name.js"></script>
-		<script type="text/javascript" src="../js/utils.js"></script>
-		<script type="text/javascript" src="../js/schema.js"></script>
-		<script type="text/javascript" src="../js/olaf.js"></script>
-		<script type="text/javascript" src="../js/capa_class.js"></script>
-		<script src="../js/echarts.min.js"></script>
-		<link rel="stylesheet" type="text/css" href="../css/font.css" />
-		<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
-		<link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
-		<link rel="stylesheet" type="text/css" href="../css/upload.css" />
-		<script>
-			document.addEventListener('DOMContentLoaded', (event) => {
-				$$('.upload_button').style.display = 'none';
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="robots" content="noindex">
+	<title>Feuille Capa</title>
+	<link rel="icon" href="favicon.ico" />
+	<script type="text/javascript" src="../js/base.js"></script>
+	<script type="text/javascript" src="../js/tds-name.js"></script>
+	<script type="text/javascript" src="../js/utils.js"></script>
+	<script type="text/javascript" src="../js/schema.js"></script>
+	<script type="text/javascript" src="../js/olaf.js"></script>
+	<script type="text/javascript" src="../js/capa_class.js"></script>
+	<script src="../js/echarts.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="../css/font.css" />
+	<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
+	<link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
+	<link rel="stylesheet" type="text/css" href="../css/upload.css" />
+	<script>
+		document.addEventListener('DOMContentLoaded', (event) => {
+			$$('.upload_button').style.display = 'none';
 
-				document.querySelector('.help_button').addEventListener('click', e => {
-					$("help_frame").classList.remove('off');
-				});
+			document.querySelector('.help_button').addEventListener('click', e => {
+				$("help_frame").classList.remove('off');
+			});
 
-				$('close_button').addEventListener('click', e => {
-					$("help_frame").classList.add('off');
-				});
+			$('close_button').addEventListener('click', e => {
+				$("help_frame").classList.add('off');
+			});
 
-				document.querySelector('.popup-close').addEventListener('click', e => {
-					e.preventDefault();
-					document.querySelector('.popup-box').classList.remove('transform-in');
-					document.querySelector('.popup-box').classList.add('transform-out');
-				});
+			document.querySelector('.popup-close').addEventListener('click', e => {
+				e.preventDefault();
+				document.querySelector('.popup-box').classList.remove('transform-in');
+				document.querySelector('.popup-box').classList.add('transform-out');
+			});
+			
+			$('arrow_left').addEventListener('click', async e => {
+				$('start').value = addDays_toString($('start').value,-1);
 				
-				$('arrow_left').addEventListener('click', async e => {
-					$('start').value = addDays_toString($('start').value,-1);
-                    
-				});
+			});
 
-				$('arrow_right').addEventListener('click', async e => {
-					$('start').value = addDays_toString($('start').value,1);
-				});
+			$('arrow_right').addEventListener('click', async e => {
+				$('start').value = addDays_toString($('start').value,1);
+			});
 
-				$('bouton_feuille').addEventListener('click', async e => {
+			$('bouton_feuille').addEventListener('click', async e => {
+				let zone = $('zone').value;
+				let day = $('start').value;
+				const capa = new feuille_capa("feuille_capa_tour", day, zone);
+			});
+
+			if ($('bouton_simucapa')) {
+				$('bouton_simucapa').addEventListener('click', async e => {
 					let zone = $('zone').value;
 					let day = $('start').value;
-                    const capa = new feuille_capa("feuille_capa_tour", day, zone);
+					const simu = new simu_capa("feuille_capa_simu", day, zone);
+					await simu.init();
+					simu.show_simu_capa();
+					//alert("Fonctionnalité en développement");
 				});
+			}
 
-				if ($('bouton_simucapa')) {
-					$('bouton_simucapa').addEventListener('click', async e => {
-						let zone = $('zone').value;
-						let day = $('start').value;
-						const simu = new simu_capa("feuille_capa_simu", day, zone);
-						await simu.init();
-						simu.show_simu_capa();
-						//alert("Fonctionnalité en développement");
-					});
-				}
-
-				document.addEventListener('keydown', function(event) {
-				if (event.ctrlKey && event.key === 's') {
-					event.preventDefault();
-					const td_masque = document.querySelectorAll('.details');
-					td_masque.forEach(td_el => {
-						td_el.classList.toggle('masque');
-					});
-				}
-				}, true);
-				
-			});		
-		</script>
+			document.addEventListener('keydown', function(event) {
+			if (event.ctrlKey && event.key === 's') {
+				event.preventDefault();
+				const td_masque = document.querySelectorAll('.details');
+				td_masque.forEach(td_el => {
+					td_el.classList.toggle('masque');
+				});
+			}
+			}, true);
+			
+		});		
+	</script>
 </head>
 <body id="drag-container">
 
