@@ -6,7 +6,7 @@ if (!(isset($_SESSION['login_bureau'])) || $_SESSION['login_bureau'] === false) 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    meta charset="utf-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Editor</title>
     <script type="text/javascript" src="../js/tds-name.js"></script>
