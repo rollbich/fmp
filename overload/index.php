@@ -5,85 +5,86 @@
 <!DOCTYPE html>
 <html>
 <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <meta name="robots" content="noindex">
-        <title>Overload</title>
-		<link rel="icon" href="../favicon.ico" />
-		<script type="text/javascript" src="../js/base.js"></script>
-		<script type="text/javascript" src="../js/utils.js"></script>
-		<script type="text/javascript" src="../js/list-component.js"></script>
-		<script type="text/javascript" src="../js/mixin.js"></script>
-		<script type="text/javascript" src="../js/schema.js"></script>
-		<script type="text/javascript" src="../js/graph.js"></script>
-        <script type="text/javascript" src="../js/overload_class.js"></script>
-		<script type="text/javascript" src="../js/upload.js"></script>
-		<script src="../js/dragger.js"></script>
-		<script src="../js/echarts.min.js"></script>
-		<link rel="stylesheet" type="text/css" href="../css/font.css" />
-		<link rel="stylesheet" type="text/css" href="../css/list-component.css" />
-		<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
-		<link rel="stylesheet" type="text/css" href="../css/style.css" />
-		<link rel="stylesheet" type="text/css" href="../css/upload.css" />
-		<script>
-			document.addEventListener('DOMContentLoaded', (event) => {
-				let depassement = undefined;
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="robots" content="noindex">
+	<title>Overload</title>
+	<link rel="icon" href="../favicon.ico" />
+	<script type="text/javascript" src="../js/base.js"></script>
+	<script type="text/javascript" src="../js/utils.js"></script>
+	<script type="text/javascript" src="../js/list-component.js"></script>
+	<script type="text/javascript" src="../js/mixin.js"></script>
+	<script type="text/javascript" src="../js/schema.js"></script>
+	<script type="text/javascript" src="../js/graph.js"></script>
+	<script type="text/javascript" src="../js/overload_class.js"></script>
+	<script type="text/javascript" src="../js/upload.js"></script>
+	<script src="../js/dragger.js"></script>
+	<script src="../js/echarts.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="../css/font.css" />
+	<link rel="stylesheet" type="text/css" href="../css/list-component.css" />
+	<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
+	<link rel="stylesheet" type="text/css" href="../css/style.css" />
+	<link rel="stylesheet" type="text/css" href="../css/upload.css" />
+	<script>
+		document.addEventListener('DOMContentLoaded', (event) => {
+			let depassement = undefined;
 
-				new dragger('graph-container-h20', 'drag-container');
-				new dragger('graph-container-occ', 'drag-container');
+			new dragger('graph-container-h20', 'drag-container');
+			new dragger('graph-container-occ', 'drag-container');
 
-				const z = document.querySelector('#zone');
-				z.addEventListener('change', (e) => {
-					$('result').innerHTML = "";
-					$('graph-container-h20').classList.add('off');
-					$('graph-container-occ').classList.add('off');
-				});
-				
-				$('start').addEventListener('change', function (e) {
-					let start_date = Date.parse(this.value);
-					let end_date = Date.parse($('end').value);
-					if (start_date > end_date) { $('end').value = this.value; }
-				});
-				
-				$('close_button').addEventListener('click', e => {
-					$("help_frame").classList.add('off');
-				});
-				
-				<?php include("../php/upload.js.php"); ?>
-				
-				document.querySelector('.help_button').addEventListener('click', e => {
-					$("help_frame").classList.remove('off');
-				});
-				
-				$('bouton_capa').addEventListener('click', e => {
-					$('graph-container-h20').classList.add('off');
-					$('graph-container-occ').classList.add('off');
-					//result_h20 = {};
-					let zone = $('zone').value;
-					let start_day = $('start').value; // yyyy-mm-dd
-					let end_day = $('end').value; // yyyy-mm-dd
-					let sel_percent = parseInt($('selection').value);
-					depassement = new overload('result', "H20", start_day, end_day, zone, sel_percent);
-					//show_result_capa('result', "H20", start_day, end_day, zone, sel_percent);
-				});
-				
-				$('bouton_export').addEventListener('click', e => {
-					if (isObjEmpty(depassement.result_capa) === false) {
-						export_json_to_xls('php/export_to_excel.php', depassement.result_capa);
-					} else {
-						show_popup("Il n'y a rien à exporter", "Il faut cliquer sur le bouton CAPA avant");
-					}
-				});
-				
-				document.querySelector('.popup-close').addEventListener('click', e => {
-					document.querySelector('.popup-box').classList.remove('transform-in');
-					document.querySelector('.popup-box').classList.add('transform-out');
-					e.preventDefault();
-				});
-				
-				
-				
-			});		
-		</script>
+			const z = document.querySelector('#zone');
+			z.addEventListener('change', (e) => {
+				$('result').innerHTML = "";
+				$('graph-container-h20').classList.add('off');
+				$('graph-container-occ').classList.add('off');
+			});
+			
+			$('start').addEventListener('change', function (e) {
+				let start_date = Date.parse(this.value);
+				let end_date = Date.parse($('end').value);
+				if (start_date > end_date) { $('end').value = this.value; }
+			});
+			
+			$('close_button').addEventListener('click', e => {
+				$("help_frame").classList.add('off');
+			});
+			
+			<?php include("../php/upload.js.php"); ?>
+			
+			document.querySelector('.help_button').addEventListener('click', e => {
+				$("help_frame").classList.remove('off');
+			});
+			
+			$('bouton_capa').addEventListener('click', e => {
+				$('graph-container-h20').classList.add('off');
+				$('graph-container-occ').classList.add('off');
+				//result_h20 = {};
+				let zone = $('zone').value;
+				let start_day = $('start').value; // yyyy-mm-dd
+				let end_day = $('end').value; // yyyy-mm-dd
+				let sel_percent = parseInt($('selection').value);
+				depassement = new overload('result', "H20", start_day, end_day, zone, sel_percent);
+				//show_result_capa('result', "H20", start_day, end_day, zone, sel_percent);
+			});
+			
+			$('bouton_export').addEventListener('click', e => {
+				if (isObjEmpty(depassement.result_capa) === false) {
+					export_json_to_xls('php/export_to_excel.php', depassement.result_capa);
+				} else {
+					show_popup("Il n'y a rien à exporter", "Il faut cliquer sur le bouton CAPA avant");
+				}
+			});
+			
+			document.querySelector('.popup-close').addEventListener('click', e => {
+				document.querySelector('.popup-box').classList.remove('transform-in');
+				document.querySelector('.popup-box').classList.add('transform-out');
+				e.preventDefault();
+			});
+			
+			
+			
+		});		
+	</script>
 </head>
 <body id="drag-container">
 
