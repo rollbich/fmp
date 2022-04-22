@@ -193,8 +193,8 @@ class schema_rea {
         const bloc1 = ["RAW", "RAWM", "RAWN", "RAWS", "MALY", "LYO", "MOLYO", "MML", "LE", "LOLS", "LS", "LO", "MO", "ML"];
         const bloc2 = ["MOML", "WLMO", "MFDZ", "W1", "W23", "W12", "W2", "W3", "WM", "WW"];
         const bloc3 = ["MM", "MF", "M12", "M1"];
-        const bloc4 = ["M34", "M2", "M3", "M4", "FDZ", "FF", "F12", "MF12", "F123"];
-        const bloc5 = ["MF34", "F34", "F4", "DZ", "DD", "ZZ", "DH", "DL", "DZL", "DZH"];
+        const bloc4 = ["M34", "M2", "M3", "M4", "FDZ", "FF", "F12", "MF12", "F123", "MFDZL"];
+        const bloc5 = ["MF34", "F34", "F4", "DZ", "DD", "ZZ", "DH", "DL", "DZL", "DZH", "MFDZH"];
         let bloc1_tv_array = arr_tv.filter(tv => bloc1.includes(tv[0]));
         let bloc2_tv_array = arr_tv.filter(tv => bloc2.includes(tv[0]));
         let bloc3_tv_array = arr_tv.filter(tv => bloc3.includes(tv[0]));
