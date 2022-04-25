@@ -20,13 +20,17 @@
 	<script type="text/javascript" src="../js/upload.js"></script>
 	<script src="../js/dragger.js"></script>
 	<script src="../js/echarts.min.js"></script>
+	<link rel="stylesheet" href="../css/bulma.css">
+	<link rel="stylesheet" href="../css/nav.css"> 
 	<link rel="stylesheet" type="text/css" href="../css/font.css" />
 	<link rel="stylesheet" type="text/css" href="../css/list-component.css" />
-	<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
+	<!--<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />-->
 	<link rel="stylesheet" type="text/css" href="../css/style.css" />
 	<link rel="stylesheet" type="text/css" href="../css/upload.css" />
 	<script>
 		document.addEventListener('DOMContentLoaded', (event) => {
+			
+			<?php include("../php/nav.js.inc.php"); ?>
 			let depassement = undefined;
 
 			new dragger('graph-container-h20', 'drag-container');
@@ -107,9 +111,9 @@
 
 <div id="dates">
 	<label for="start" class="dates">D&eacute;but:</label>
-	<input type="date" id="start" value="2021-06-21" min="2021-06-21" max="2030-12-31">
+	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2021-06-21" max="2030-12-31">
 	<label for="end" class="dates">Fin:</label>
-	<input type="date" id="end" value="2021-06-21" min="2021-06-21" max="2030-12-31">
+	<input type="date" id="end" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2021-06-21" max="2030-12-31">
 	<span>
 		<select id="selection" class="select">
 		  <option value="180">180%</option>
