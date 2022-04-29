@@ -454,7 +454,7 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 
 	let chartDom = $(containerId);
 	chartDom.style.height = "350px";
-	chartDom.style.width = "900px";
+	chartDom.style.width = "870px";
 	let myChart = echarts.init(chartDom);
 	
 	let option;
@@ -464,7 +464,7 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 			text: `Trafic semaine sur l'année - ${zon}`,
 			textStyle: {
 				color: '#FFF',
-				fontSize: '100%'
+				fontSize: '1.5rem'
 			},
 			x: 'center',
 			y: 'top'
@@ -478,6 +478,7 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 				}
 			}
 		},
+		/*
 		toolbox: {
 			feature: {
 				saveAsImage: {
@@ -487,6 +488,7 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 				}
 			}
 		},
+		*/
 		grid: {
 			containLabel: true
 		},
@@ -513,7 +515,8 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 			},
 			nameGap: 30,
 			nameTextStyle: {
-				color: '#fff'
+				color: '#fff',
+				fontSize: '1.2rem'
 			},
 			data: listWeek
 		},
@@ -524,7 +527,8 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 			},
 			name: 'Nombre de vols',
 			nameTextStyle: {
-				color: '#fff'
+				color: '#fff',
+				fontSize: '1.2rem'
 			},
 			nameRotate: 90,
     		nameGap: 60,
@@ -568,7 +572,7 @@ function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data
 
 	let chartDom = $(containerId);
 	chartDom.style.height = "400px";
-	chartDom.style.width = "900px";
+	chartDom.style.width = "870px";
 	let myChart = echarts.init(chartDom);
 	
 	let option;
@@ -578,7 +582,7 @@ function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data
 			text: `Delay semaine sur l'année - ${zon}`,
 			textStyle: {
 				color: '#FFF',
-				fontSize: '100%'
+				fontSize: '1.5rem'
 			},
 			x: 'center',
 			y: 'top'
@@ -592,6 +596,7 @@ function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data
 				}
 			}
 		},
+		/*
 		toolbox: {
 			feature: {
 				saveAsImage: {
@@ -601,6 +606,7 @@ function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data
 				}
 			}
 		},
+		*/
 		grid: {
 			containLabel: true
 		},
@@ -627,7 +633,8 @@ function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data
 			},
 			nameGap: 30,
 			nameTextStyle: {
-				color: '#fff'
+				color: '#fff',
+				fontSize: '1.2rem'
 			},
 			data: listWeek
 		},
@@ -638,7 +645,8 @@ function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data
 			},
 			name: 'Delay en min',
 			nameTextStyle: {
-				color: '#fff'
+				color: '#fff',
+				fontSize: '1.2rem'
 			},
 			nameRotate: 90,
 			nameGap: 60,

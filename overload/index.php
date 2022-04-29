@@ -24,7 +24,7 @@
 	<link rel="stylesheet" href="../css/nav.css"> 
 	<link rel="stylesheet" type="text/css" href="../css/font.css" />
 	<link rel="stylesheet" type="text/css" href="../css/list-component.css" />
-	<!--<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />-->
+	<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
 	<link rel="stylesheet" type="text/css" href="../css/style.css" />
 	<link rel="stylesheet" type="text/css" href="../css/upload.css" />
 	<script>
@@ -49,7 +49,7 @@
 				if (start_date > end_date) { $('end').value = this.value; }
 			});
 			
-			$('close_button').addEventListener('click', e => {
+			$$('.help_close_button').addEventListener('click', e => {
 				$("help_frame").classList.add('off');
 			});
 			
@@ -100,7 +100,7 @@
 	<p><span>Origine des données H20 et Occ</span> :<br>Elles sont récupérées quotidiennement en B2B sur le serveur du NM et stockées sous forme de fichiers. <br>La période de récupération des données se situe entre 4h UTC et 22h00 UTC. Par conséquent, il n'est pas possible de visualiser les graphes en dehors de cette plage horaire.<br>D'autre part, comme tous les TV ne sont pas récupérés, certains graphiques (principalement les TV très peu ouverts) ne peuvent pas être affichés.</p>
 	<p><span>Le bouton "Overload"</span> :<br>Il permet d'afficher dans un tableau les dépassements de capacité sur la plage de dates choisie. On peut ensuite cliquer sur un TV pour afficher la courbe de H20 et l'Occupancy.</p>
 	<p><span>Le bouton "XLS Export"</span> :<br>Il permet d'exporter au format Excel le tableau des dépassements de capa.</p>
-	<button id="close_button" class="pointer">Close</button>
+	<button class="help_close_button pointer">Close</button>
 </div>
 <ul class="menu">
 	<li id="bouton_capa" class="pointer"><span>Overload</span></li>

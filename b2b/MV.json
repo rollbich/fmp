@@ -708,6 +708,18 @@
 		"sustain": 15,
 		"duration": 10
 		},
+	"F123": {
+		"MV": 36,
+		"peak": 18,
+		"sustain": 15,
+		"duration": 10
+	},
+	"F4": {
+		"MV": 25,
+		"peak": 15,
+		"sustain": 12,
+		"duration": 10
+	},
 	"M12": {
 		"MV": 36,
 		"peak": 18,

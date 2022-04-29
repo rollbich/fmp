@@ -27,22 +27,24 @@
 html {
 	scroll-behavior: smooth;
 	font-family: Avenir, sans-serif;
+	font-size: 12px;
 }
 
 body {
-	font-size: 12px;
+	font-size: 1rem;
 	background: var(--main-bg-color);
 	color: var(--main-color);
-	position: relative;
-	width: auto;
+}
+
+h2 {
+	font-family: 'Sansation';
+	font-size: 2rem;
+	margin: 10px;
+	text-align: left;
 }
 
 .off {
 	display: none;
-}
-
-button {
-	margin-top: 10px;
 }
 
 .pointer {
@@ -53,68 +55,12 @@ button {
 	color: rgb(147, 218, 147);
 }
 
-/* feuille capa */
-td.bordure {
-	border: 1px solid #ccc;
-}
-
-td.bordure_heure {
-	border-left: 1px solid #ccc;
-	font-size: 10px;
-}
-
-/* haut | côtés verticaux | bas */
-/* haut | droite | bas | gauche */
-td.bordure_2 {
-	border-style: hidden hidden solid solid;
-	border-bottom-width: 1px;
-	border-color: #ccc;
-}
-
 /* Bandeau de navigation */
 
-nav{
-    width: 100%;
-    margin: 0px auto;
-    background-color: white;
+nav.navbar{
     position: sticky;
     top: 0px;
 	background-image:url(../images/bandeau-fond3.png);
-}
-
-nav ul{
-	margin: 0px auto;
-	width: 70%;
-    list-style-type: none;
-	
-}
-
-nav li{
-    float: left;
-    width: 20%;/*100% divisé par le nombre d'éléments de menu*/
-    text-align: center;/*Centre le texte dans les éléments de menu*/
-}
-
-/*Evite que le menu n'ait une hauteur nulle*/
-nav ul::after{
-    content: "";
-    display: table;
-    clear: both;
-}
-
-nav a{
-    display: block; /*Toute la surface sera cliquable*/
-    text-decoration: none;
-    color: #EEE;
-    border-bottom: 2px solid transparent;/*Evite le décalage des éléments sous le menu à cause de la bordure en :hover*/
-    padding: 10px 0px;/*Agrandit le menu et espace la bordure du texte*/
-	font-family: "Avenir Next Regular",sans-serif;
-	font-size: 18px;
-}
-
-nav a:hover{
-    color: orange;
-    border-bottom: 2px solid gold;
 }
 
 .body {
@@ -130,14 +76,6 @@ nav a:hover{
   }
 
 /* ------- Accueil bilan --------- */
-#accueil_left {
-	margin-right: 20px;
-}
-
-#accueil_bilan {
-	margin-top: 0;
-}
-
 #accueil_bilan h2 {
 	font-size: 2em;
 	margin-top: 0;
@@ -146,9 +84,9 @@ nav a:hover{
 
 #accueil_bilan span.rect {
 	font-family: 'Sansation';
-	font-size: 22px;
-	margin: 8px;
-	padding: 8px;
+	font-size: 1.8rem;
+	margin: 0.6rem;
+	padding: 0.6rem;
 	background : var(--rect-bg-color);
 }
 
@@ -164,10 +102,12 @@ nav a:hover{
 
 table.table_bilan th {
 	border-bottom: 2px solid white;
+	color: white;
+	text-align:center;
 }
 
-.table_bilan th, table_bilan td {
-	padding:5px;
+table.table_bilan th, table.table_bilan td {
+	text-align:center;
 }
 
 table.table_bilan tr:nth-child(odd) {
@@ -181,38 +121,42 @@ table.table_bilan tr:nth-child(even) {
 /* ------- Titre ------- */
 
 h1 {
-	font-size: 36px;
+	font-size: 3rem;
 	font-family: 'Azonix';
 	color: var(--main-color);
 	text-shadow: 2px 2px 4px #000000;
 	text-align: center;
-	margin: 10px 0;
-}
-
-.logo {
-	width: auto;
-	height: 40px;
+	margin: 1rem 0;
 }
 
 /* ------- Menu ------- */
 
 ul.menu {
-	margin: 12px auto 0;
-	position: relative;
-	width: 700px;
-	height: 50px;
+	margin: 1rem auto 0;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+    justify-content: stretch;
+    align-items: center; /* centrage vertical */
+	width: 65%;
 	background-color: var(--menu-bg-color);
 	border-radius: 8px;
 	cursor: default;
 }
 
+@media screen and (max-width: 1023px) {
+  ul.menu {
+	width: 80%;
+  }
+}
+
 ul.menu li {
-	line-height: 50px; /*permet le centrage vertical*/
+	line-height: 50px; /*permet le centrage vertical avec marge et bouton*/
 	height: 100%;
-	font-size: 14px;
+	font-size: 1.2rem;
 	font-family: 'RussoOne';
-	display: inline-block;
-	position: relative;
+    flex-grow: 1;
+    flex-shrink: 0;
 	z-index: 1;
 	text-decoration: none;
 	text-transform: uppercase;
@@ -221,7 +165,7 @@ ul.menu li {
 }
 
 ul.menu li.feuille {
-	margin-left: 40px;
+	/*margin-left: 40px;*/
 }
 
 ul.menu li label {
@@ -239,16 +183,16 @@ ul.menu li span{
 
 ul.menu li span:hover {
 	background-color: var(--menu-hover-bg-color);
-	border-radius: 10px;
+	border-radius: 1rem;
 	
 }
 
 select, option {
+	font-size: 1rem;
 	background-color: var(--select-bg-color);
-	vertical-align: middle;
-	height: 24px;
-	margin-top: 5px;
+	height: 1.8rem;
 	margin-left: 40px;
+	margin-top: 0.5rem;
 }
 
 #selection.select {
@@ -259,26 +203,22 @@ select, option {
 	width: 70px;
 }
 
-#zone.select {
-	margin-left: 0px;
-	margin-top: 6px;
-	z-index: 1;
-	width: 100px;
-}
-
 /* ------- Date Picker ------- */
 
 #dates {
 	display: flex;
 	flex-direction: row;
+	/*
 	width: 570px;
 	margin: 0 auto;
 	text-align: center;
+	*/
+	justify-content: center;
+	align-items: center;
 }
 
 #dates input {
 	font-size: 11px;
-	vertical-align: middle;
 	width: 104px;
 	margin-top: 5px;
 	margin-right: 30px;
@@ -314,7 +254,8 @@ span.rect {
 	display : flex;
 	flex-direction : row;
 	flex-wrap: wrap;
-	margin: 5px auto;
+	justify-content: center;
+	margin: 5px;
 	height: auto;
 	width: auto;
 }
@@ -325,21 +266,25 @@ span.rect {
 
 #result {
 	background: var(--result-bg-color);
-	flex: auto;
 	padding: 10px;
-	width: auto;
+	width: 48%;
 	overflow: auto;
 	margin-right: 20px;
+	margin-left: 10px;
 }
 
 table {
 	border-collapse: collapse;
-	font-size: 12px;
+	font-size: 1.1rem;
 	margin-top: 20px;
 }
 
 table.ouverture {
 	display: inline-block;
+}
+
+#bouton_ouv_par_pos {
+	margin-top: 1rem;
 }
 
 table.depassement {
@@ -375,8 +320,8 @@ table tr:nth-child(even) {
 
 table td, table th {
 	width: auto;
-	padding-left: 5px;
-	padding-right: 7px;
+	padding-left: 2px;
+	padding-right: 2px;
 	text-align: center;
 	border-collapse: collapse;
 }
@@ -448,59 +393,24 @@ table.conf tr.two {
 	height:340px;
 }
 
-/* ------ Upload ------ */
-.upload_button {
-	position: absolute;
-	left: 10px;
-	top: 4px;
-	height: 36px;
-	width: 120px;
-	font: bold 1rem 'Times New Roman';
-	color: var(--upload-button-color);
-	border-radius: 50px;
-	line-height: 34px;
-	text-align: center;
-	background: var(--upload-button-bg-color);
-}
-
-.upload_button:hover {
-  cursor: pointer;
+#schema_dir {
+	width: 40%;
+	background: var(--result-bg-color);
+	color: var(--main-color);
 }
 
 .blur {
   filter: blur(1.3px) sepia(1);
 }
 
-/* ------ Logout button ------ */
-.logout_button {
-	position: absolute;
-	right: 10px;
-	top: 4px;
-	height: 36px;
-	width: 120px;
-	font: bold 1rem 'Times New Roman';
-	color: var(--upload-button-color);
-	border-radius: 50px;
-	line-height: 34px;
-	text-align: center;
-	background: var(--main-color);
-}
-
-.logout_button:hover {
-  cursor: pointer;
-}
-
-.logout_button a, .logout_button a:visited {
-	color:var(--uploadbutton-color);
-}
-
 /* ------- Help ------- */
 
 .help_button {
-  margin-left: auto;
-  margin-top: 5px;
-  height: 30px;
-  width: 60px;
+  margin-right: 1rem;
+  margin-left: 1rem;
+  margin-top: 0.5rem;
+  height: 2.5rem;
+  width: 5rem;
   font: bold 1rem 'Times New Roman';
   color: var(--help-button-color);
   text-transform: uppercase;
@@ -533,10 +443,6 @@ table.conf tr.two {
 	text-decoration: underline;
 }
 
-#close_button {
-	cursor: pointer;
-}
-
 /* ------- Popup ------- */
 
 .popup-wrap {
@@ -562,9 +468,16 @@ table.conf tr.two {
 }
   
 .popup-box h3 {
-   color:#888;
+	font-size: 1.4rem;
+    color:#888;
 }
-  
+
+.popup-box h3 a {
+	font-size: 1.4rem;
+	color:rgb(240, 178, 64);
+	text-decoration: underline;
+ }
+
 .close-btn {
     width:35px;
     height:35px;

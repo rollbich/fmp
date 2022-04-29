@@ -1,4 +1,10 @@
+html {
+	font-size: 12px;
+	box-sizing: border-box;
+}
+
 body {
+	font-size: 1rem;
 	background: rgb(78,191,198);
 	background: radial-gradient(circle, rgba(78,181,198,1) 0%, rgba(69,82,97,1) 100%);
 }
@@ -27,54 +33,6 @@ body {
   src: url('fonts/Azonix.otf') format('opentype');
 }
 
-/* Bandeau de navigation */
-
-nav{
-    width: 100%;
-    margin: 0px auto;
-    background-color: white;
-    position: sticky;
-    top: 0px;
-	background-image:url(../images/bandeau-fond3.png);
-}
-
-nav ul{
-	margin: 0px auto;
-	width: 70%;
-    list-style-type: none;
-	
-}
-
-nav li{
-    float: left;
-    width: 20%;/*100% divisé par le nombre d'éléments de menu*/
-    text-align: center;/*Centre le texte dans les éléments de menu*/
-}
-
-/*Evite que le menu n'ait une hauteur nulle*/
-nav ul::after{
-    content: "";
-    display: table;
-    clear: both;
-}
-
-nav a{
-    display: block; /*Toute la surface sera cliquable*/
-    text-decoration: none;
-    color: #EEE;
-    border-bottom: 2px solid transparent;/*Evite le décalage des éléments sous le menu à cause de la bordure en :hover*/
-    padding: 10px 0px;
-	font-family: "RussoOne",sans-serif;
-	font-size: 18px;
-}
-
-nav a:hover{
-    color: orange;
-    border-bottom: 2px solid gold;
-}
-
-/* --------- fin bandeau nav ------------ */
-
 .accueil {
   display: block;
   margin: 0px auto;
@@ -83,7 +41,7 @@ nav a:hover{
   box-sizing: border-box;
   border-radius: 5px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  padding-bottom: 20px;
+  padding-bottom: 2rem;
   background: #fff;
   -webkit-animation: fadeup 0.5s 0.5s ease both;
           animation: fadeup 0.5s 0.5s ease both;
@@ -107,10 +65,10 @@ nav a:hover{
     font-family: 'Roboto';
     color: #6db3d9;
     text-align: center;
-    font-size: 21px;
+    font-size: 2rem;
     font-weight: 100;
-	margin-top: 20px;
-    margin-bottom: 25px;
+	margin-top: 1rem;
+    margin-bottom: 1rem;
 }
 
 .accueil2 input:focus {
@@ -120,11 +78,11 @@ nav a:hover{
 .form-btn {
 	text-align: center;	
     width: 50%;
-    height: 40px;
+    height: 3.1rem;
     bottom: 0;
     border: 0;
     font-family: 'Dosis';
-    font-size: 24px;
+    font-size: 2rem;
     text-transform: uppercase;
     cursor: pointer;
 	right: 0;
@@ -143,10 +101,10 @@ nav a:hover{
 
 .accueil .accueil2 header p {
   color: #eee;
-  font-size: 40px;
+  font-size: 3.2rem;
   margin: 0;
-  padding: 50px 0;
-  margin-top: 30px;
+  padding: 4rem 0;
+  margin-top: 2.5rem;
 }
 
 .accueil .accueil2 header p .lfmm {
@@ -160,7 +118,7 @@ nav a:hover{
 .accueil .accueil2 header p .fmp {
   display: inline-block;
   font-weight: 100;
-  margin-left: 12px;
+  margin-left: 1rem;
   transform: translateX(0px);
   opacity: 0;
   -webkit-animation: fadeup 0.6s 0s ease both;
@@ -171,7 +129,7 @@ nav a:hover{
   position: relative;
   margin-top: 40px;
   font-family: 'Dosis';
-  font-size : 28px;
+  font-size : 2.2rem;
   text-align: center;
   opacity: 0;
   -webkit-animation: fade 0.6s 0s ease both;

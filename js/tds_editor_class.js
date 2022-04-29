@@ -207,7 +207,7 @@ class tds_editor {
         res += `${this.affiche_vac("J2", saison, zone)}`;
         res += `${this.affiche_vac("S1", saison, zone)}`;
         res += `${this.affiche_vac("N", saison,  zone)}`;
-        res += `<tr class="titre"><th class='bottom_2px left_2px right_1px' colspan="2">Heures loc</th>${this.heure()}`;
+        res += `<tr class="titre"><td class='bottom_2px left_2px right_1px' colspan="2">Heures loc</td>${this.heure()}`;
         res += '</tbody></table>';
         $(containerId).innerHTML = res;
     }

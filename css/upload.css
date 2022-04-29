@@ -1,10 +1,12 @@
 /* basé sur https://codepen.io/jotavejv/pen/bRdaVJ */
 
 .upload {
-  position: absolute;
+  /*position: absolute;
   top: 220px;
   left: calc(50% - 200px);
   /*margin: 0px auto;*/
+  margin-top: 10px;
+  margin-bottom: 10px;
   width: 400px;
   min-height: 445px;
   box-sizing: border-box;

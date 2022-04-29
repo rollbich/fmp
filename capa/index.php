@@ -13,23 +13,31 @@
 	<script type="text/javascript" src="../js/base.js"></script>
 	<script type="text/javascript" src="../js/tds-name.js"></script>
 	<script type="text/javascript" src="../js/utils.js"></script>
+	<script type="text/javascript" src="../js/list-component.js"></script>
 	<script type="text/javascript" src="../js/schema.js"></script>
 	<script type="text/javascript" src="../js/olaf.js"></script>
 	<script type="text/javascript" src="../js/capa_class.js"></script>
+	<script type="text/javascript" src="../js/upload.js"></script>
 	<script src="../js/echarts.min.js"></script>
+	<link rel="stylesheet" href="../css/bulma.css">
+	<link rel="stylesheet" href="../css/nav.css"> 
 	<link rel="stylesheet" type="text/css" href="../css/font.css" />
+	<link rel="stylesheet" type="text/css" href="../css/list-component.css" />
 	<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
+	<link rel="stylesheet" type="text/css" href="../css/style.css" />
 	<link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
 	<link rel="stylesheet" type="text/css" href="../css/upload.css" />
 	<script>
 		document.addEventListener('DOMContentLoaded', (event) => {
-			$$('.upload_button').style.display = 'none';
+			<?php include("../php/nav.js.inc.php"); ?>
 
 			document.querySelector('.help_button').addEventListener('click', e => {
 				$("help_frame").classList.remove('off');
 			});
 
-			$('close_button').addEventListener('click', e => {
+			<?php include("../php/upload.js.php"); ?>
+
+			$$('.help_close_button').addEventListener('click', e => {
 				$("help_frame").classList.add('off');
 			});
 
@@ -66,7 +74,7 @@
 			}
 
 			document.addEventListener('keydown', function(event) {
-			if (event.ctrlKey && event.key === 's') {
+			if (event.ctrlKey && event.key === 'y') {
 				event.preventDefault();
 				const td_masque = document.querySelectorAll('.details');
 				td_masque.forEach(td_el => {
@@ -81,8 +89,10 @@
 <body id="drag-container">
 
 <header>
+
 <?php include("../php/nav.inc.php"); ?>
-<h1>FEUILLE CAPA v1.1</h1>
+
+<h1>FEUILLE CAPA v2.0</h1>
 <div id="help_frame" class="off">
 	<h2>Help</h2>
 	<p><span>Feuille</span> :<br>Cliquez sur ce bouton pour afficher la feuille de capa correspondante à la date et la zone choisie<br>Cliquez sur le nombre de pc dans la colonne PC afin de visualiser les effectifs par équipes. Cette case est surlignée lorsque l'effectif est différent de l'effectif OLAF</p>
@@ -93,7 +103,7 @@
 	?>
 	<p><span>Edit TDS</span> :<br>Ce bouton permet de modifier le tour de service ainsi que sa plage d'utilisation</p>
 	<p><span>Instr</span> :<br>Ce bouton permet de modifier une plage horaire en ajoutant ou enlevant de l'effectif, par exemple lors d'un recyclage instructeur, une ASA ou une simu remontée de trafic.</p>
-	<button id="close_button" class="pointer">Close</button>
+	<button class="help_close_button pointer">Close</button>
 </div>
 <ul class="menu">
 	<li id="bouton_feuille" class="pointer"><span>Feuille</span></li>
@@ -124,9 +134,11 @@
 </ul>
 </header>
 
-<div id='feuille_capa_tour'>
-</div>
-<div id='feuille_capa_simu'>
+<div id="glob_container">
+	<div id='feuille_capa_tour'>
+	</div>
+	<div id='feuille_capa_simu'>
+	</div>
 </div>
 
 <div id="popup-wrap" class="off" >
@@ -136,6 +148,8 @@
       <a class="close-btn popup-close" href="#">x</a>
     </div>
 </div>
+
+<?php include("../php/upload.inc.php"); ?>
 
 <div id="scroll_to_top">
     <a href="#top"><img src="../images/bouton-scroll-top.jpg" alt="Retourner en haut" /></a>
