@@ -165,7 +165,8 @@
 <div id="scroll_to_top">
     <a href="#top"><img src="../images/bouton-scroll-top.jpg" alt="Retourner en haut" /></a>
 </div>
-
-<div id="res"></div>
+<div style="display: flex; justify-content: center;">
+	<div id="res"></div>
+</div>
 </body>
 </html>
