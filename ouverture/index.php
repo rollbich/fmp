@@ -24,6 +24,8 @@
 	<script type="text/javascript" src="../js/stats_confs.js"></script>
 	<script src="../js/dragger.js"></script>
 	<script src="../js/echarts.min.js"></script>
+	<link rel="stylesheet" href="../css/bulma.css">
+	<link rel="stylesheet" href="../css/nav.css"> 
 	<link rel="stylesheet" type="text/css" href="../css/font.css" />
 	<link rel="stylesheet" type="text/css" href="../css/list-component.css" />
 	<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
@@ -32,6 +34,8 @@
 	<script>
 		document.addEventListener('DOMContentLoaded', (event) => {
 
+			<?php include("../php/nav.js.inc.php"); ?>
+			
 			new dragger('graph-container-h20', 'drag-container');
 			new dragger('graph-container-occ', 'drag-container');
 
@@ -42,7 +46,7 @@
 				$('graph-container-occ').classList.add('off');
 			});
 			
-			$('close_button').addEventListener('click', e => {
+			$$('.help_close_button').addEventListener('click', e => {
 				$("help_frame").classList.add('off');
 			});
 			
@@ -104,9 +108,9 @@
 <div id="help_frame" class="off">
 	<h2>Help</h2>
 	<p><span>Le bouton "Ouverture"</span> :<br>Il permet d'afficher graphiquement le fichier schéma réalisé de Courage. On peut ensuite cliquer sur un TV pour afficher la courbe de H20 et l'Occupancy pendant la période d'ouverture.<br>Si le TV n'est pas resté ouvert assez longtemps, le graphique H20 ne sera pas affiché.</p>
-	<p><span>Le bouton "Graph"</span> :<br>Il permet d'afficher les courbes H20/Occ d'une date pendant la plage horaire choisie.</p>
 	<p><span>Le bouton Uceso</span> :<br>Il affiche le graph proposé/réalisé. Une latence de 4 à 5s est posible le temps du chargement des données.<br>Si la date est passée, réalisé du jour J est affiché, sinon c'est le réalisé J-7 si disponible.</p>
-	<button id="close_button" class="pointer">Close</button>
+	<p><span>Le bouton "Confs NM"</span> :<br>Il permet d'afficher les préps déclarées au NM</p>
+	<button class="help_close_button pointer">Close</button>
 </div>
 <ul class="menu">
 	<li id="bouton_ouverture" class="pointer"><span>Ouverture</span></li>

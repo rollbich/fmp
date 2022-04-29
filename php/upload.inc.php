@@ -1,3 +1,6 @@
+<div id="upload_window" style="display: flex; flex-wrap: wrap; justify-content: center; margin: 10px;">
+<div id="schema_dir" class="off" style="padding: 20px; border: 1px solid white;">
+</div>
 <div id="upload" class="upload off">
  <div class="upload-files">
   <header>
@@ -26,5 +29,4 @@
   </footer>
  </div>
 </div>
-<div id="schema_dir" class="off">
 </div>

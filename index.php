@@ -27,7 +27,7 @@
 <body>
 <div class='accueil'>
  <div class='accueil2'>
-  <header>
+ <header>
    <p>
     <span class='lfmm'>LFMM</span>
     <span class='fmp'>FMP</span>
@@ -46,7 +46,7 @@
     } 
     ?>
   </div>
- </div>
+  </div>
 </div>
 
 </body>

@@ -13,6 +13,7 @@ if (!(isset($_SESSION['login_bureau'])) || $_SESSION['login_bureau'] === false) 
     <script type="text/javascript" src="../js/utils.js"></script>
     <script type="text/javascript" src="../js/cute-alert.js"></script>
     <script type="text/javascript" src="../js/tds_editor_class.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/style.css" />
     <link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
     <link rel="stylesheet" type="text/css" href="../css/custom-checkbox.css" />
     <link rel="stylesheet" type="text/css" href="../css/cute-style.css" />

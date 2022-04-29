@@ -33,7 +33,7 @@ class capa {
 			const yesterday = jmoins1(this.day);
 			// récupère l'objet contenant les propriétés equipes
 			this.effectif = this.effectif || await get_olaf(this.zone_olaf, this.day, yesterday);
-			
+			console.log(this.effectif);
 			// si pas de donnée on retourne 0
 			if (this.effectif == 0) return 0;
 			
@@ -693,7 +693,6 @@ class simu_capa extends capa {
 	}
 
 	async init() {
-		this.containerTour.style.display = 'flex';
 		this.containerTour.innerHTML = '<div id="left_part"><div id="table_option"></div><div id="table"></div></div><div id="right_part"></div>';
 		show_popup("Patientez !", "Chargement OLAF en cours...");
 		this.pc = await this.get_nbpc_dispo();

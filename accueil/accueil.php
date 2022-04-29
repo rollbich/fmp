@@ -8,16 +8,26 @@ require("../php/check_ok.inc.php");
 	<meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Accueil FMP</title>
-    <link rel="stylesheet" href="../css/style.css"> 
+	<link rel="stylesheet" type="text/css" href="../css/list-component.css" />
+	<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
+	<link rel="stylesheet" type="text/css" href="../css/upload.css" />
+	<link rel="stylesheet" href="../css/bulma.css">
+	<!--<link rel="stylesheet" href="../css/nav.css"> -->
+	<link rel="stylesheet" href="../css/style.css"> 
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
     <script type="text/javascript" src="../js/utils.js"></script>
+	<script type="text/javascript" src="../js/list-component.js"></script>
+	<script type="text/javascript" src="../js/upload.js"></script>
     <script type="text/javascript" src="../js/graph.js"></script>
     <script type="text/javascript" src="../js/vols_class.js"></script>
     <script type="text/javascript" src="../js/regulations_class.js"></script>
     <script src="../js/echarts.min.js"></script>
     <script>
       	document.addEventListener('DOMContentLoaded', async event => {
-			$$('.upload_button').style.display = 'none';
+
+			<?php include("../php/nav.js.inc.php"); ?>
+			<?php include("../php/upload.js.php"); ?>
+			
 			const last_wn = getPreviousWeekNumber(new Date());
 			const year = last_wn[0];
 			const week_number = last_wn[1];
@@ -48,20 +58,22 @@ require("../php/check_ok.inc.php");
 			const tabl = new weekly_briefing(year, week_number, "accueil_bilan");
 			await tabl.init();
 			tabl.show_data();
+			
       	});
     </script>
 </head>
 <body>
 <?php include("../php/nav.inc.php"); ?>
-<div>
-    <p class='body'>LFMM-FMP - Briefing semaine dernière</p>
-</div>
-<div style="display: flex;">
+<h1>LFMM-FMP - Briefing semaine dernière</h1>
+<div id="glob_container">
+<div id='accueil' style="display: flex; flex-wrap: wrap">
   	<div id="accueil_left">
 	  <div id="accueil_vols"></div>
 	  <div id="accueil_reguls"></div>
 	</div>
   <div id="accueil_bilan"></div>
 </div>
+</div>
+<?php include("../php/upload.inc.php"); ?>
 </body>
 </html>

@@ -9,6 +9,7 @@
     <script type="text/javascript" src="../js/instruction.js"></script>
     <script src="../js/sortable.min.js"></script>
     <link rel="stylesheet" type="text/css" href="../css/sortable.css" />
+    <link rel="stylesheet" type="text/css" href="../css/style.css" />
     <link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
     <link rel="stylesheet" type="text/css" href="../css/cute-style.css" />
     <script>
