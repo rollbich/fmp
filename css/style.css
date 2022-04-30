@@ -291,18 +291,10 @@ table.depassement {
 	width: 500px;
 }
 
-table.uceso {
-	margin: 0 auto;
-}
-
-table.uceso caption {
-	color: var(--caption-uceso);
-}
-
 caption {
 	font-family: 'Sansation';
-	font-size: 24px;
-	margin: 10px;
+	font-size: 2rem;
+	margin: 0.9rem;
 	text-align: left;
 }
 

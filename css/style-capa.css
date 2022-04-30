@@ -1,7 +1,7 @@
 :root {
 	--table-titre-color: #eef3f5;
-	--ligne-impaire-color: #c6cfd3;
-	--ligne-paire-color: #eceff1;
+	--ligne-impaire-color: #eceff1;
+	--ligne-paire-color: #dfe3e6;
 }
 
 body {
@@ -30,6 +30,7 @@ body {
 
 #feuille_capa_tour {
 	display: flex;
+	overflow: scroll;
 }
 
 #feuille_capa_tour th, #feuille_capa_tour th td {
@@ -206,6 +207,7 @@ table {
 
 table.uceso {
 	margin: 0 auto;
+	overflow: scroll;
 }
 
 table.uceso caption, table.simu caption {
@@ -217,6 +219,10 @@ caption {
 	font-size: 24px;
 	margin: 10px;
 	text-align: left;
+}
+
+table.uceso tr:nth-child(2n) {
+	background-color: var(--ligne-impaire-color);
 }
 
 table.uceso tr:nth-child(6n+1), table.uceso tr:nth-child(6n+2), table.uceso tr:nth-child(6n+3) {
