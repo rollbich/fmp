@@ -349,8 +349,10 @@ class tds_editor {
             } else {
                 d += '<td>';
                 console.log(this.date_supp[zone][cle]);
-                this.date_supp[zone][cle].forEach(elem => {
-                    d += `<div data-date='${cle}' data-vac='${elem}' data-zone='${zone}'>${elem}</div>`;
+                Object.keys(this.date_supp[zone][cle]).forEach(elem => {
+                    if (this.date_supp[zone][cle][elem] !== 0) {
+                        d += `<div data-date='${cle}' data-vac='${elem}' data-zone='${zone}'>${elem}</div>`;
+                    }
                 })
                 d += '</td>';
             }
@@ -505,32 +507,72 @@ class tds_editor {
             td.addEventListener('click', (event) => {
                 const day = td.dataset.day;
                 const zone = td.dataset.zone;
-                const cles = Object.keys(this.tour_supp[zone]); // J0A, J0B,...
+                const cles = Object.keys(this.tour_supp[zone]); // ["J0A", "J0B",...]
                 let data;
                 if (typeof this.date_supp[zone][day] !== 'undefined') {
-                    data = this.date_supp[zone][day];
+                    data = Object.keys(this.date_supp[zone][day]);
                 } else { data = [];}
-                let det = `<form action="">`;
+                let det = `<h2>${reverse_date(day)}</h2>`;
                 cles.forEach((elem, index) => {
-                    if (data.includes(elem)) {
-                        det += `<label class="form-control">${elem}<input class="checkbox" type="checkbox" name="checkbox" data-day="${day}" data-zone="${zone}" data-type="${elem}" checked/></label>`;
+                    if (typeof this.date_supp[zone][day] !== 'undefined') {
+                        det += `<div style='display: grid; grid-template-columns: 40px 80px;'><span style='font-size: 1.4rem; margin-top: 2px;'>${elem} : </span><span class="modify"><button class="minusJx minus" data-zone='${zone}' data-day='${day}' data-vac='${elem}'>-</button><span class="numberPlace" data-zone='${zone}' data-day='${day}' data-vac='${elem}'>${this.date_supp[zone][day][elem]}</span><button class="plusJx plus" data-zone='${zone}' data-day='${day}' data-vac='${elem}'>+</button></span></div>`;
                     } else {
-                        det += `<label class="form-control">${elem}<input class="checkbox" type="checkbox" name="checkbox" data-day="${day}" data-zone="${zone}" data-type="${elem}" /></label>`;
+                        det += `<div style='display: grid; grid-template-columns: 40px 80px;'><span style='font-size: 1.4rem; margin-top: 2px'>${elem} : </span><span class="modify"><button class="minusJx minus" data-zone='${zone}' data-day='${day}' data-vac='${elem}'>-</button><span class="numberPlace" data-zone='${zone}' data-day='${day}' data-vac='${elem}'>0</span><button class="plusJx plus" data-zone='${zone}' data-day='${day}' data-vac='${elem}'>+</button></span></div>`;
                     }
                 })
-                det += '</form>';
+                det += '';
                 console.log("Data: "+data);
 				const pos = td.getBoundingClientRect();
-				poptds.style.position = 'absolute';
 				poptds.style.left = pos.left + 'px';
 				poptds.style.top = pos.top + 20 + window.scrollY + 'px';
-				poptds.style.backgroundColor = '#fbb';
-				poptds.style.padding = '10px';
-				poptds.style.width = '100px';
-                poptds.style.zIndex = '99';
 				document.body.insertBefore(poptds, $('popup-wrap'));
 				poptds.innerHTML = det;
+                
+                const moinsJx = document.querySelectorAll('.minusJx');
+                const plusJx = document.querySelectorAll('.plusJx');
 
+                plusJx.forEach(el => {
+                    el.addEventListener('click', async (event) => {
+                        const vac = el.dataset.vac;
+                        const day = el.dataset.day;
+                        const zone = el.dataset.zone;
+                        let nb = parseInt($$(`span[data-vac='${vac}'][data-day='${day}'][data-zone='${zone}']`).innerHTML) + 1;
+                        $$(`span[data-vac='${vac}'][data-day='${day}'][data-zone='${zone}']`).innerHTML = nb;
+                        if (typeof this.date_supp[zone][day] === 'undefined') {
+                            this.date_supp[zone][day] = {
+                                "J0A": 0,
+                                "J0B": 0,
+                                "J0C": 0,
+                                "J0D": 0,
+                                "J0E": 0,
+                                "Jx": 0
+                            }
+                        }
+                        this.date_supp[zone][day][vac] = nb;
+                    });
+                });
+        
+                moinsJx.forEach(el => {
+                    el.addEventListener('click', async (event) => {
+                        const vac = el.dataset.vac;
+                        const day = el.dataset.day;
+                        const zone = el.dataset.zone;
+                        let nb = parseInt($$(`span[data-vac='${vac}'][data-day='${day}'][data-zone='${zone}']`).innerHTML) - 1;
+                        $$(`span[data-vac='${vac}'][data-day='${day}'][data-zone='${zone}']`).innerHTML = nb;
+                        if (typeof this.date_supp[zone][day] === 'undefined') {
+                            this.date_supp[zone][day] = {
+                                "J0A": 0,
+                                "J0B": 0,
+                                "J0C": 0,
+                                "J0D": 0,
+                                "J0E": 0,
+                                "Jx": 0
+                            }
+                        }
+                        this.date_supp[zone][day][vac] = nb;
+                    });
+                });
+                /*
                 const check = document.querySelectorAll(`input.checkbox[data-type]`);
                 console.log(check);
                 for (const inp of check) {
@@ -541,12 +583,13 @@ class tds_editor {
                         if (inp.checked === true) { // on coche la checkbox
                             data.push(type);
                         } else {
-                            data = data.filter(word => word != type);
+                            data = data.filter(word => word != type); // on enlève du tableau type
                         }
                         this.date_supp[zone][day] = data;
                         console.log("day: "+day+"  -  "+this.date_supp[zone][day]);
                     })
                 }
+                */
             })
             td.addEventListener('contextmenu', (event) => {
                 event.preventDefault();
