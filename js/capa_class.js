@@ -173,7 +173,6 @@ class capa {
 						if (tds_supp_utc[vac_jx][i][1] === 1) {
 							effectif_Jx_15mn[i] += nb;
 						}
-						console.log(vac_jx+" "+get_time(i)+"   tds: "+tds_supp_utc[vac_jx][i][1]+"  nb_tds: "+nb);
 					});
 				}
 			}
@@ -800,7 +799,8 @@ class simu_capa extends capa {
 		------------------------------------------ */
 	async show_simu_capa() {
 		//show_popup("Patientez !", "Chargement en cours...");
-		const update = await loadJson("../update.json");
+		const update = {"est": {}, "ouest": {}};
+
 		if (typeof update[this.zone][this.day] === 'undefined') update[this.zone][this.day] = {"update_count": {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0}, "update_name": {"J1":[], "J3":[], "S2":[], "J2":[], "S1":[], "N":[], "N-1":[]}};
 		//document.querySelector('.popup-close').click();
 		//const tour_local = await loadJson(tour_json);
@@ -972,6 +972,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0) {
 	const d = day.split("-");
 	let pc_15mn = null;
 	let pc_instr_15mn = null;
+	let pc_jx_15mn = null;
 	let uceso = null;
 	let data_series_uceso = null;
 	if (pc == 0) {
@@ -981,7 +982,10 @@ async function show_capa_graph(containerId, day, zone, pc = 0) {
 	} else {
 		pc_15mn = pc["pc_total_dispo_15mn"];
 		pc_instr_15mn = pc["pc_instr_15mn"];
-		uceso = pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn[index][0]) / 2) ]);
+		pc_jx_15mn = pc["pc_jx_15mn"];
+		console.log("graph");
+		console.log(pc_jx_15mn);
+		uceso = pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn[index][0] + pc_jx_15mn[index]) / 2) ]);
 		//const uceso = pc_15mn.map( elem => [elem[0],Math.floor(elem[1]/2)]);
 		data_series_uceso = [];
 		uceso.forEach(row => {
