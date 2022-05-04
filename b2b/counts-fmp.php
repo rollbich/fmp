@@ -672,6 +672,8 @@ $atc_confs->est = $plan_e->data->plan->nmSchedule->item;
 $atc_confs->ouest = $plan_w->data->plan->nmSchedule->item;
 
 // Counts de LFMMCTAE
+// Attention avec les réglages "local", on récupère effectiveTrafficWindow sur 2 jours => $query_LFMMCTA->data->counts->item[0]->value
+// Alors qu'en prod, on récupère bien sur 1 journée => data->counts->item->value
 $query_LFMMCTA = query_entry_day_count("LFMMCTA");
 $today = substr($query_LFMMCTA->data->effectiveTrafficWindow->wef, 0, 10) ;
 $counts_LFMMCTA = $query_LFMMCTA->data->counts->item->value->item->value->totalCounts;

@@ -12,7 +12,7 @@ if ($dat < $date_hiver || $dat >= $date_ete) {
 	$unt_counts = gmdate('Y-m-d H:i', strtotime("today 21:59"));
 
 	// Plage horaire de récupération des reguls 
-	// On donne l'heure locale et on récupère $wef_counts et $unt_counts en UTC
+	// On donne l'heure locale et on récupère $wef_regs et $unt_regs en UTC
 	$wef_regs = gmdate('Y-m-d H:i', strtotime("today 00:00"));
 	$unt_regs = gmdate('Y-m-d H:i', strtotime("today 23:59"));
 
@@ -26,7 +26,7 @@ if ($dat < $date_hiver || $dat >= $date_ete) {
 	$unt_counts = gmdate('Y-m-d H:i', strtotime("today 22:59"));
 
 	// Plage horaire de récupération des reguls 
-	// On donne l'heure locale et on récupère $wef_counts et $unt_counts en UTC
+	// On donne l'heure locale et on récupère $wef_regs et $unt_regs en UTC
 	$wef_regs = gmdate('Y-m-d H:i', strtotime("today 00:00"));
 	$unt_regs = gmdate('Y-m-d H:i', strtotime("today 23:59"));
 
