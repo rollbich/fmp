@@ -14,6 +14,6 @@ nmir/
 weekly_briefing.js
 .htaccess
 js/base.js
-b2b/hour_config-fmp.php
-b2b/hour_config.php
+b2b/hour_config-fmp.inc.php
+b2b/hour_config-fmp-yesterday.inc.php
 b2b/config.inc.php
