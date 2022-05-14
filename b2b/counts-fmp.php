@@ -685,7 +685,7 @@ $atc_confs->ouest = $plan_w->data->plan->nmSchedule->item;
 
 $query_LFMMCTA = query_entry_day_count("LFMMCTA");
 $today = substr($query_LFMMCTA->data->effectiveTrafficWindow->wef, 0, 10) ;
-$counts_LFMMCTA = $query_LFMMCTA->data->counts->item->value->item->value->totalCounts;*/
+$counts_LFMMCTA = $query_LFMMCTA->data->counts->item->value->item->value->totalCounts;
 
 /*  -----------------------------------------------------------------------
 		instanciation soap FLIGHT Services
