@@ -3,5 +3,5 @@
 // suffixe = "" pour le localhost
 // suffixe = "-fmp" pour le serveur lfmm
 // suffixe = "-adonis" pour le localhost adonis
-$config = "";
+$config = "-fmp";
 ?>
