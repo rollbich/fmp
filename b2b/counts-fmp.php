@@ -769,7 +769,6 @@ $flights->LFMMCTA = ["LFMMCTA", $today, $counts_LFMMCTA];
 get_vols_Est($flights, $tab_TVE, $wef_flights, $unt_flights);
 get_vols_West($flights, $tab_TVW, $wef_flights, $unt_flights);
 get_vols_App($flights, $tab_TVAPP, $wef_flights, $unt_flights);
-var_dump($flights);
 
 // Sauvegarde des fichiers
 // Affichage d'un message suivant la réussite de la sauvegarde
