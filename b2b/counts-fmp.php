@@ -731,19 +731,23 @@ function get_vols_App($obj, $tv_arr, $wef, $unt) {
 	$obj->LFMMAPP = new stdClass();
 	$obj->VOLS_APP = new stdClass();
 	$date = new DateTime($wef);
+	$total_app = 0;
 	foreach($tv_arr as $tv) {
 		$res = get_nb_vols($tv, $wef, $unt);
+		$nb_flight = 0;
         // S'il n'y a pas de vol alors pas de property "flights"
         if (property_exists($res->data, "flights")) {
             // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
             if (is_array($res->data->flights)) {
-                $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), count($res->data->flights));
+                $nb_flight = count($res->data->flights);
             } else {
-                $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 1);
+                $nb_flight = 1;
             }
         } else {
-            $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 0);
+            $nb_flight = 0;
         }
+		$obj->LFMMAPP->$tv = array($date->format('Y-m-d'), $nb_flight);
+		$total_app += $nb_flight;
         if (property_exists($res->data, "flights")) {
             // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
             if (is_array($res->data->flights)) {
@@ -755,6 +759,7 @@ function get_vols_App($obj, $tv_arr, $wef, $unt) {
             $obj->VOLS_APP->$tv = new stdClass();
         }
 	}
+	$obj->VOLS_APP->flights = $nb_flight;
 }
 
 include("tab_TV.inc.php");
