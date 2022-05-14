@@ -114,10 +114,11 @@ function query_occ_count($tv, $tv_duration, $wef, $unt) {
 	
 }
 
-/*  --------------------------------------------------------
+/*  --------------------------------------------------------------------
 			récupère le H20 de la zone "est" ou "west"
 		dans la plage horaire $wef-$unt en heure UTC
-	-------------------------------------------------------- */
+		@return [ ["TV", "yyyy-mm-dd", "hh:mm", MV, H/20], [...], ... ]
+	-------------------------------------------------------------------- */
 function get_entry($zone, $wef, $unt) {
 	
 	global $tvs_est;
@@ -154,10 +155,11 @@ function get_entry($zone, $wef, $unt) {
 	return $arr;
 }
 
-/*  ------------------------------------------------------------
+/*  -------------------------------------------------------------------------------
 			récupère l'occ de la zone "est" ou "west"
 		dans la plage horaire $wef-$unt en heure UTC
-	------------------------------------------------------------ */
+		@return [ ["TV", "yyyy-mm-dd", "hh:mm", peak, sustain, H/20], [...], ... ]
+	------------------------------------------------------------------------------- */
 
 function get_occ($zone, $wef, $unt) {
 	
@@ -355,35 +357,6 @@ function get_area_situation($output, $area) {
 	return $arr;
 }
 
-/*  ---------------------------------------------------------------------
-		Nombre de vols d'un TV par jour : FlightService
-	--------------------------------------------------------------------- */
-function get_nb_vols($tv, $wef, $unt) {
-	
-	global $soapClientFlight;
-	global $receptionTime;
-	
-	$params = array(
-		'sendTime'=>gmdate("Y-m-d H:i:s"),
-		'dataset'=>array('type'=>'OPERATIONAL'),
-		'trafficType'=>'LOAD',
-		'includeProposalFlights'=>false,
-		'includeForecastFlights'=>false,
-		'trafficWindow'=>array('wef'=>$wef,'unt'=>$unt),
-		'requestedFlightFields'=>array('timeAtReferenceLocationEntry','aircraftType','aircraftOperator','actualTakeOffTime','actualTimeOfArrival'),
-		'trafficVolume'=>$tv,
-		'calculationType'=>'ENTRY'
-	);
-						
-	try {
-		$output = $soapClientFlight->__soapCall('queryFlightsByTrafficVolume', array('parameters'=>$params));
-		$receptionTime = $output->requestReceptionTime;
-		return $output;
-		}
-
-	catch (Exception $e) {echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";}
-}
-
 /* -----------------------------------------------------------------
 	Récupère les confs déclarés
 	@param {string} $airspace - "LFMMCTAE"
@@ -403,6 +376,35 @@ function get_atc_conf($airspace, $day) {
 						
 	try {
 		$output = $soapClientFlow->__soapCall('retrieveSectorConfigurationPlan', array('parameters'=>$params));
+		return $output;
+		}
+
+	catch (Exception $e) {echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";}
+}
+
+/*  ---------------------------------------------------------------------
+		Nombre de vols d'un TV par jour : FlightService
+	--------------------------------------------------------------------- */
+function get_nb_vols($tv, $wef, $unt) {
+
+	global $soapClientFlight;
+	global $receptionTime;
+	
+	$params = array(
+		'sendTime'=>gmdate("Y-m-d H:i:s"),
+		'dataset'=>array('type'=>'OPERATIONAL'),
+		'trafficType'=>'LOAD',
+		'includeProposalFlights'=>false,
+		'includeForecastFlights'=>false,
+		'trafficWindow'=>array('wef'=>$wef,'unt'=>$unt),
+		'requestedFlightFields'=>array('timeAtReferenceLocationEntry','aircraftType','aircraftOperator','actualTakeOffTime','actualTimeOfArrival'),
+		'trafficVolume'=>$tv,
+		'calculationType'=>'ENTRY'
+	);
+						
+	try {
+		$output = $soapClientFlight->__soapCall('queryFlightsByTrafficVolume', array('parameters'=>$params));
+		$receptionTime = $output->requestReceptionTime;
 		return $output;
 		}
 
@@ -643,8 +645,9 @@ $obj = json_decode($fichier_mv, true);
 $tve = $obj["TV-EST"];
 $tvw = $obj["TV-OUEST"];
 
-// récupère les TV que l'on veut compter
+// récupère les TV que l'on veut compter en H/20 et Occ
 // données du fichier TV_count.json
+// Attention, il faut que le TV ait une MV, OTMV dans MV.json
 $fichier_tv_count = file_get_contents(dirname(__FILE__)."/TV_count.json");
 $obj2 = json_decode($fichier_tv_count, true);
 $tvs_est = $obj2["TV-EST"];
@@ -657,6 +660,7 @@ $occ_est = get_occ("est", $wef_counts, $unt_counts);
 $occ_west = get_occ("west", $wef_counts, $unt_counts);
 $h20_est = get_entry("est", $wef_counts, $unt_counts);
 $h20_west = get_entry("west", $wef_counts, $unt_counts);
+
 $regul = get_regulations("LF", $wef_regs, $unt_regs);
 // objet contenant les reguls Europe
 $json_atfcm_reg = get_ATFCM_situation();
@@ -670,13 +674,18 @@ $plan_w = get_atc_conf($airspace2, $tomorrow);
 $atc_confs = new stdClass();
 $atc_confs->est = $plan_e->data->plan->nmSchedule->item;
 $atc_confs->ouest = $plan_w->data->plan->nmSchedule->item;
+// confs existantes dans NM pour l'est et l'ouest 
+//$atc_confs->known_confs = new stdClass();
+//$atc_confs->known_confs->est = $plan_e->data->plan->knownConfigurations->item;
+//$atc_confs->known_confs->ouest = $plan_w->data->plan->knownConfigurations->item;
 
 // Counts de LFMMCTAE
 // Attention avec les réglages "local", on récupère effectiveTrafficWindow sur 2 jours => $query_LFMMCTA->data->counts->item[0]->value
 // Alors qu'en prod, on récupère bien sur 1 journée => data->counts->item->value
+
 $query_LFMMCTA = query_entry_day_count("LFMMCTA");
 $today = substr($query_LFMMCTA->data->effectiveTrafficWindow->wef, 0, 10) ;
-$counts_LFMMCTA = $query_LFMMCTA->data->counts->item->value->item->value->totalCounts;
+$counts_LFMMCTA = $query_LFMMCTA->data->counts->item->value->item->value->totalCounts;*/
 
 /*  -----------------------------------------------------------------------
 		instanciation soap FLIGHT Services
@@ -705,12 +714,41 @@ function get_vols_Est($obj, $tv_arr, $wef, $unt) {
 
 function get_vols_West($obj, $tv_arr, $wef, $unt) {
 	$obj->LFMMFMPW = array();
-	$obj->VOLS_RAW = array();
 	$date = new DateTime($wef);
 	foreach($tv_arr as $tv) {
 		$res = get_nb_vols($tv, $wef, $unt);
 		array_push($obj->LFMMFMPW, array($tv, $date->format('Y-m-d'), count($res->data->flights)));
 		if ($tv == "LFMRAW") $obj->VOLS_RAW = $res->data->flights;
+	}
+}
+
+function get_vols_App($obj, $tv_arr, $wef, $unt) {
+	$obj->LFMMAPP = new stdClass();
+	$obj->VOLS_APP = new stdClass();
+	$date = new DateTime($wef);
+	foreach($tv_arr as $tv) {
+		$res = get_nb_vols($tv, $wef, $unt);
+        // S'il n'y a pas de vol alors pas de property "flights"
+        if (property_exists($res->data, "flights")) {
+            // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
+            if (is_array($res->data->flights)) {
+                $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), count($res->data->flights));
+            } else {
+                $obj->LFMMAPP->$tv = array($tv, $date->format('Y-m-d'), 1);
+            }
+        } else {
+            $obj->LFMMAPP->$tv = array($tv, $date->format('Y-m-d'), 0);
+        }
+        if (property_exists($res->data, "flights")) {
+            // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
+            if (is_array($res->data->flights)) {
+                $obj->VOLS_APP->$tv = $res->data->flights;
+            } else {
+                $obj->VOLS_APP->$tv = $res->data->flights;
+            }
+        } else {
+            $obj->VOLS_APP->$tv = new stdClass();
+        }
 	}
 }
 
@@ -720,6 +758,7 @@ $flights = new stdClass();
 $flights->LFMMCTA = ["LFMMCTA", $today, $counts_LFMMCTA];
 get_vols_Est($flights, $tab_TVE, $wef_flights, $unt_flights);
 get_vols_West($flights, $tab_TVW, $wef_flights, $unt_flights);
+get_vols_App($flights, $tab_TVAPP, $wef_flights, $unt_flights);
 
 
 // Sauvegarde des fichiers
