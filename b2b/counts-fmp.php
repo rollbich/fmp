@@ -759,7 +759,7 @@ function get_vols_App($obj, $tv_arr, $wef, $unt) {
             $obj->VOLS_APP->$tv = new stdClass();
         }
 	}
-	$obj->VOLS_APP->flights = $total_app;
+	$obj->LFMMAPP->flights = $total_app;
 }
 
 include("tab_TV.inc.php");
