@@ -97,10 +97,10 @@ function get_vols_App($obj, $tv_arr, $wef, $unt) {
             if (is_array($res->data->flights)) {
                 $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), count($res->data->flights));
             } else {
-                $obj->LFMMAPP->$tv = array($tv, $date->format('Y-m-d'), 1);
+                $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 1);
             }
         } else {
-            $obj->LFMMAPP->$tv = array($tv, $date->format('Y-m-d'), 0);
+            $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 0);
         }
         if (property_exists($res->data, "flights")) {
             // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
