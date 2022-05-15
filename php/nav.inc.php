@@ -12,13 +12,16 @@
 	</div>
 
 	<div id="navbarBasicExample" class="navbar-menu">
-		<div class="navbar-center"> <!-- Here I have created the navbar-center class --> 
+		<div class="navbar-center"> 
 		<div class="navbar-item has-dropdown is-hoverable">
 				<a class="navbar-link" style="background: transparent;">
             Appli
         </a>
 				<div class="navbar-dropdown">
-					<a class="navbar-item upload_button">
+          <a class="navbar-item" href="../accueil/accueil.php">
+            Accueil
+          </a>
+          <a class="navbar-item upload_button">
             Upload Schema
           </a>
           <!--<a class="navbar-item" href="../php/reloadB2B.php">
