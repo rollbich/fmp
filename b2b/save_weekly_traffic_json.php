@@ -33,9 +33,10 @@ function get_weekly_traffic($dateTime1, $dateTime2) {
         new DateInterval('P1D'),
         $dateTime2
     );
-    $cta =0;
+    $cta = 0;
     $est = 0;
     $west = 0;
+    $app = 0;
     foreach ($period as $key => $value) {
         //$file_name = $value->format('Ymd')."-vols.json";
         $file_name = "https://lfmm-fmp.fr/b2b/json/".$value->format('Ymd')."-vols.json";
@@ -49,10 +50,9 @@ function get_weekly_traffic($dateTime1, $dateTime2) {
         foreach ($donnees->LFMMFMPW as $value) {
             if ($value[0] == "LFMRAW") $west += intval($value[2]);
         } 
-        //$array[] = json_decode($donnees);  
-        //$array[] = $file_name;
+        $app += intval($donnes->LFMMAPP->flights);
     }
-    return [$cta, $est, $west];
+    return [$cta, $est, $west, $app];
 }
 
 /*  ----------------------------------------------------
@@ -72,13 +72,11 @@ function get_weekly_regs($dateTime1, $dateTime2) {
         $dateTime2
     );
     $cta = 0;
-    $app =0;
+    $app = 0;
     $est = 0;
     $west = 0;
     foreach ($period as $key => $value) {
-        //$file_name = $value->format('Ymd')."-vols.json";
         $file_name = "https://lfmm-fmp.fr/b2b/json/".$value->format('Ymd')."-reg.json";
-        //$data = file_get_contents("./json/".$file_name);
         $data = get_file($file_name);
         $donnees = json_decode($data[0]);
         
@@ -98,7 +96,8 @@ function get_weekly_regs($dateTime1, $dateTime2) {
 
 /*  -----------------------------------------------------------------------------
             Process files
-     file_get_contents ne fonctionne pas en prod mais seulement en local => curl
+     file_get_contents ne fonctionne pas en prod mais seulement en local 
+        => on utilise curl
     ----------------------------------------------------------------------------- */
 
 function process_file_traffic($file, $arr, $week_number, $year) {
@@ -121,6 +120,7 @@ function process_file_traffic($file, $arr, $week_number, $year) {
     $json_year->est->$week_number = $arr[1];
     $json_year->west->$week_number = $arr[2];
     $json_year->cta->$week_number = $arr[0];
+    $json_year->app->$week_number = $arr[3];
 
     echo "Nouveau json traffic"."<br>";
     var_dump($json_year);
