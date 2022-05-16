@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="robots" content="noindex">
 	<title>Trafic</title>
-	<link rel="icon" href="favicon.ico" />
+	<link rel="icon" href="../favicon.ico" />
 	<script type="text/javascript" src="../js/utils.js"></script>
 	<script type="text/javascript" src="../js/list-component.js"></script>
 	<script type="text/javascript" src="../js/graph.js"></script>

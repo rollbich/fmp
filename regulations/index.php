@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="robots" content="noindex">
 	<title>Regulations</title>
-	<link rel="icon" href="favicon.ico" />
+	<link rel="icon" href="../favicon.ico" />
 	<script type="text/javascript" src="../js/utils.js"></script>
 	<script type="text/javascript" src="../js/list-component.js"></script>
 	<script type="text/javascript" src="../js/graph.js"></script>
@@ -25,7 +25,6 @@
 	<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
 	<link rel="stylesheet" type="text/css" href="../css/sortable.css" />
 	<link rel="stylesheet" type="text/css" href="../css/style.css" />
-	<link rel="stylesheet" type="text/css" href="../css/regulation.css" />
 	<link rel="stylesheet" type="text/css" href="../css/upload.css" />
 	<script>
 		document.addEventListener('DOMContentLoaded', (event) => {
@@ -136,7 +135,7 @@
 
 </header>
 <div id="glob_container" class="off">
-	<div id='result' class='result'>
+	<div id='result'>
 	</div>
 	
 	<div id="graph-container">
