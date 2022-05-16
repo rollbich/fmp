@@ -159,10 +159,14 @@ class weekly_vols {
 		vols['cta'] = [];
 		vols['est'] = [];
 		vols['west'] = [];
+		vols['app'] = [];
+		console.log("weekly vols");
+		console.log(this.weekly_vols);
 		for(let i=1;i<54;i++) { //53 semaines max
 			if (typeof this.weekly_vols['cta'][i] !== 'undefined') vols['cta'].push(this.weekly_vols['cta'][i]);
 			if (typeof this.weekly_vols['est'][i] !== 'undefined') vols['est'].push(this.weekly_vols['est'][i]);
 			if (typeof this.weekly_vols['west'][i] !== 'undefined') vols['west'].push(this.weekly_vols['west'][i]);
+			if (typeof this.weekly_vols['app'] !== 'undefined') if (typeof this.weekly_vols['app'][i] !== 'undefined') vols['app'].push(this.weekly_vols['app'][i]);
 		}
 		return vols;
 	}
@@ -227,7 +231,7 @@ class weekly_briefing {
 
 	data_vols() {
 		let result = `<h2 class='h2_bilan'>Nombre de vols : semaine ${this.week} - Année ${this.year}</h2><br>`;
-		result += `<span class="rect">LFMM CTA : ${this.flights.nbre_vols['cta'][this.week-1]} vols</span><span class="rect">LFMM Est : ${this.flights.nbre_vols['est'][this.week-1]} vols</span><span class="rect">LFMM West : ${this.flights.nbre_vols['west'][this.week-1]} vols</span>`;
+		result += `<span class="rect">LFMM CTA : ${this.flights.nbre_vols['cta'][this.week-1]} vols</span><span class="rect">Est : ${this.flights.nbre_vols['est'][this.week-1]} vols</span><span class="rect">West : ${this.flights.nbre_vols['west'][this.week-1]} vols</span><span class="rect">App : ${this.flights.nbre_vols['app'][this.week-1]} vols</span>`;
 		result += "<div class='delay'>";
 		const lastweek_flights = this.year === this.lastweek_year ? this.flights : this.flights_lastyear; 
 		const MyFormat = new SignedFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits:1} );
@@ -247,7 +251,11 @@ class weekly_briefing {
 			<td>West</td><td>${this.flights.nbre_vols['west'][this.week-1]}</td>
 			<td>${MyFormat.format((this.flights.nbre_vols['west'][this.week-1]/lastweek_flights.nbre_vols['west'][this.lastweek_week-1] - 1)*100)} %</td>
 			<td>${MyFormat.format((this.flights.nbre_vols['west'][this.week-1]/this.flights_lastyear.nbre_vols['west'][this.week-1] - 1)*100)} %</td>
-			<td>${MyFormat.format((this.flights.nbre_vols['west'][this.week-1]/this.flights_2019.nbre_vols['west'][this.week-1] - 1)*100)} %</td>`;
+			<td>${MyFormat.format((this.flights.nbre_vols['west'][this.week-1]/this.flights_2019.nbre_vols['west'][this.week-1] - 1)*100)} %</td></tr><tr>
+			<td>App</td><td>${this.flights.nbre_vols['app'][this.week-1]}</td>
+			<td>${MyFormat.format((this.flights.nbre_vols['app'][this.week-1]/lastweek_flights.nbre_vols['app'][this.lastweek_week-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.flights.nbre_vols['app'][this.week-1]/this.flights_lastyear.nbre_vols['app'][this.week-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.flights.nbre_vols['app'][this.week-1]/this.flights_2019.nbre_vols['app'][this.week-1] - 1)*100)} %</td>`;
             res += '</tr>';	
         res += '</tbody></table>';
 		
@@ -258,7 +266,7 @@ class weekly_briefing {
 
 	data_reguls() {
 		let result = `<h2>Régulations : semaine ${this.week} - Année ${this.year}</h2><br>`;
-		result += `<span class="rect">LFMM CTA : ${this.reguls.delay['cta'][this.week-1]} min</span><span class="rect">LFMM Est : ${this.reguls.delay['est'][this.week-1]} min</span><span class="rect">LFMM West : ${this.reguls.delay['west'][this.week-1]} min</span><span class="rect">LFMM App : ${this.reguls.delay['app'][this.week-1]} min</span>`;
+		result += `<span class="rect">LFMM CTA : ${this.reguls.delay['cta'][this.week-1]} min</span><span class="rect">Est : ${this.reguls.delay['est'][this.week-1]} min</span><span class="rect">West : ${this.reguls.delay['west'][this.week-1]} min</span><span class="rect">App : ${this.reguls.delay['app'][this.week-1]} min</span>`;
 		result += "<div class='delay'>";
 		const lastweek_reguls = this.year === this.lastweek_year ? this.reguls : this.reguls_lastyear; 
 		const MyFormat = new SignedFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits:1} )
