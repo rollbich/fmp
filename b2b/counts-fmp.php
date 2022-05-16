@@ -753,7 +753,7 @@ function get_vols_App($obj, $tv_arr, $wef, $unt) {
             if (is_array($res->data->flights)) {
                 $obj->VOLS_APP->$tv = $res->data->flights;
             } else {
-                $obj->VOLS_APP->$tv = $res->data->flights;
+                $obj->VOLS_APP->$tv = [$res->data->flights];
             }
         } else {
             $obj->VOLS_APP->$tv = [];
