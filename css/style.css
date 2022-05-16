@@ -267,7 +267,6 @@ span.rect {
 #result {
 	background: var(--result-bg-color);
 	padding: 10px;
-	width: 48%;
 	overflow: auto;
 	margin-right: 20px;
 	margin-left: 10px;
