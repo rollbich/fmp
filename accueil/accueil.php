@@ -3,7 +3,7 @@ session_start();
 require("../php/check_ok.inc.php");
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
 	<meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,9 +12,8 @@ require("../php/check_ok.inc.php");
 	<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
 	<link rel="stylesheet" type="text/css" href="../css/upload.css" />
 	<link rel="stylesheet" href="../css/bulma.css">
-	<!--<link rel="stylesheet" href="../css/nav.css"> -->
 	<link rel="stylesheet" href="../css/style.css"> 
-    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.ico">
     <script type="text/javascript" src="../js/utils.js"></script>
 	<script type="text/javascript" src="../js/list-component.js"></script>
 	<script type="text/javascript" src="../js/upload.js"></script>
