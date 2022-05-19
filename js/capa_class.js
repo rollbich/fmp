@@ -399,7 +399,6 @@ class feuille_capa extends capa {
 		//Object.keys(this.tour_supp_local[this.zone]).forEach(vac => {
 		//res += `${this.affiche_Jx(vac)}`;
 		//})
-		res += `${this.affiche_Jx("J0")}`;
 		
 		res += `${this.affiche_vac("J1")}`;
 		res += `${this.affiche_vac("J3")}`;
@@ -408,6 +407,7 @@ class feuille_capa extends capa {
 		res += `${this.affiche_vac("S1")}`;
 		res += `${this.affiche_vac("N")}`;
 		res += `${this.affiche_vac("N-1")}`;
+		res += `${this.affiche_Jx("J0")}`;
 		res += `${this.affiche_inst()}`;
 		res += `<tr class="titre"><td class='bottom_2px left_2px' colspan="3">Heures UTC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${this.heure()}`;
 		res += `${this.affiche_nbpc()}`;
