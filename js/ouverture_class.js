@@ -55,8 +55,6 @@ class ouverture extends schema_rea {
             });
             let c = "-";
             const nb_regroupements = regroupements.length;
-            console.log("length: "+nb_regroupements);
-            console.log("this: "+this.confs);
             for(let conf in this.confs[nb_regroupements]) {
                 const arr_tv = this.confs[nb_regroupements][conf];
                 if (regroupements.sort().toString() == arr_tv.sort().toString()) {

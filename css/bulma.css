@@ -180,9 +180,11 @@ td,th {
   padding: 0;
 }
 
+/*
 td:not([align]),th:not([align]) {
   text-align: inherit;
 }
+*/
 
 html {
   -moz-osx-font-smoothing: grayscale;
@@ -293,10 +295,6 @@ pre code {
 
 table td,table th {
   vertical-align: top;
-}
-
-table td:not([align]),table th:not([align]) {
-  text-align: inherit;
 }
 
 table th {
