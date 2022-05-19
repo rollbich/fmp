@@ -36,12 +36,13 @@ class vols {
 			if (value[0] === "LFMRAW") vols["LFMRAW"] = value[2];
 		});
 		vols["LFMMCTA"] = this.daily_vols["LFMMCTA"][2];
+		vols["LFMMAPP"] = this.daily_vols["LFMMAPP"]["flights"];
 		return vols;
 	}
 	
 	show_result_daily_vols(containerId) {
 		let delays = "<div class='delay'>";
-		delays += `<span class="reg-tot">Day : ${reverse_date(this.day)}</span><span class="reg-tot">LFMM Est : ${this.nbre_vols["LFMRAE"]}</span><span class="reg-tot">LFMM West : ${this.nbre_vols["LFMRAW"]}</span><span class="reg-tot">LFMM : ${this.nbre_vols["LFMMCTA"]}</span>`;
+		delays += `<span class="reg-tot">Day : ${reverse_date(this.day)}</span><span class="reg-tot">LFMM Est : ${this.nbre_vols["LFMRAE"]}</span><span class="reg-tot">LFMM West : ${this.nbre_vols["LFMRAW"]}</span><span class="reg-tot">LFMM : ${this.nbre_vols["LFMMCTA"]}</span><span class="reg-tot">APP : ${this.nbre_vols["LFMMAPP"]}</span>`;
 		delays += "</div>";
 		$(containerId).innerHTML = delays;	
 	}
@@ -85,15 +86,17 @@ class period_vols {
 
 	get_period_vols() {
 		const vols = {};
-		let total_vols_est = 0, total_vols_west = 0, total_vols_cta = 0; 
+		let total_vols_est = 0, total_vols_west = 0, total_vols_cta = 0, total_vols_app = 0; 
 		for (const date of this.dates_arr) {
 			total_vols_est += parseInt(this.vols[date]['LFMRAE']);
 			total_vols_west += parseInt(this.vols[date]['LFMRAW']);
 			total_vols_cta += parseInt(this.vols[date]['LFMMCTA']);
+			total_vols_app += parseInt(this.vols[date]['LFMMAPP']);
 		}
 		vols['est'] = total_vols_est;
 		vols['west'] = total_vols_west;
 		vols['cta'] = total_vols_cta;
+		vols['app'] = total_vols_app;
 		return vols;
 	}
 
@@ -106,20 +109,21 @@ class period_vols {
 		result_vols += "<div class='delay'>";
 		let res = `
 		<table class="regulation sortable">
-			<thead><tr class="titre"><th class="space">Date</th><th>Jour</th><th>CTA</th><th>Est</th><th>West</th></tr></thead>
+			<thead><tr class="titre"><th class="space">Date</th><th>Jour</th><th>CTA</th><th>Est</th><th>West</th><th>App</th></tr></thead>
 			<tbody>`;
-		let total_vols_est = 0, total_vols_west = 0, total_vols_cta = 0; 
+		let total_vols_est = 0, total_vols_west = 0, total_vols_cta = 0, total_vols_app = 0; 
         for (const date of this.dates_arr) {
                 res += '<tr>'; 
-                res +=`<td>${reverse_date(date)}</td><td>${jour_sem(date)}</td><td>${this.vols[date]['LFMMCTA']}</td><td>${this.vols[date]['LFMRAE']}</td><td>${this.vols[date]['LFMRAW']}</td>`;
+                res +=`<td>${reverse_date(date)}</td><td>${jour_sem(date)}</td><td>${this.vols[date]['LFMMCTA']}</td><td>${this.vols[date]['LFMRAE']}</td><td>${this.vols[date]['LFMRAW']}</td><td>${this.vols[date]['LFMMAPP']}</td>`;
                 res += '</tr>';	
 				total_vols_est += parseInt(this.vols[date]['LFMRAE']);
 				total_vols_west += parseInt(this.vols[date]['LFMRAW']);
 				total_vols_cta += parseInt(this.vols[date]['LFMMCTA']);
+				total_vols_app += parseInt(this.vols[date]['LFMMAPP']);
         }
         res += '</tbody></table>';
 		
-		result_vols += `<span class="rect">LFMM Est : ${total_vols_est} vols</span><span class="rect">LFMM West : ${total_vols_west} vols</span><span class="rect">LFMM CTA : ${total_vols_cta} vols</span>`;
+		result_vols += `<span class="rect">LFMM Est : ${total_vols_est} vols</span><span class="rect">LFMM West : ${total_vols_west} vols</span><span class="rect">LFMM CTA : ${total_vols_cta} vols</span><span class="rect">LFMM APP : ${total_vols_app} vols</span>`;
 		result_vols += "</div>";
 		result_vols += res;
 		$(containerId).innerHTML = result_vols;
