@@ -56,7 +56,7 @@ $soapClientFlight = $soapFlight->get_client();
 /*  ---------------------------------------------------------------------
 		Nombre de vols d'un TV par jour : FlightService
 	--------------------------------------------------------------------- */
-function get_nb_vols($tv, $wef, $unt) {
+function get_nb_vols_TV($tv, $wef, $unt) {
 
     global $soapClientFlight;
     global $receptionTime;
@@ -85,12 +85,68 @@ function get_nb_vols($tv, $wef, $unt) {
     catch (Exception $e) {echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";}
 }
 
-function get_vols_App($obj, $tv_arr, $wef, $unt) {
+/*  ---------------------------------------------------------------------
+		Nombre de vols d'un AD par jour : FlightService
+	--------------------------------------------------------------------- */
+function get_nb_vols_AD($ad, $wef, $unt) {
+
+	global $soapClientFlight;
+	global $receptionTime;
+	
+	$params = array(
+		'sendTime'=>gmdate("Y-m-d H:i:s"),
+		'dataset'=>array('type'=>'OPERATIONAL'),
+		'trafficType'=>'LOAD',
+		'includeProposalFlights'=>false,
+		'includeForecastFlights'=>false,
+		'trafficWindow'=>array('wef'=>$wef,'unt'=>$unt),
+		'requestedFlightFields'=>array('timeAtReferenceLocationEntry','aircraftType','aircraftOperator','actualTakeOffTime','actualTimeOfArrival'),
+		'aerodrome'=>$ad,
+		'aerodromeRole'=>'BOTH'
+	);
+						
+	try {
+		$output = $soapClientFlight->__soapCall('queryFlightsByAerodrome', array('parameters'=>$params));
+		$receptionTime = $output->requestReceptionTime;
+		echo "AD : ".$ad."<br>";
+        var_dump($output);
+        echo "<br><br>";
+		return $output;
+		}
+
+	catch (Exception $e) {echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";}
+}
+
+function get_vols_App($obj, $tv_arr, $tv_arr2, $wef, $unt) {
 	$obj->LFMMAPP = new stdClass();
 	$obj->VOLS_APP = new stdClass();
 	$date = new DateTime($wef);
 	foreach($tv_arr as $tv) {
-		$res = get_nb_vols($tv, $wef, $unt);
+		$res = get_nb_vols_TV($tv, $wef, $unt);
+        // S'il n'y a pas de vol alors pas de property "flights"
+        if (property_exists($res->data, "flights")) {
+            // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
+            if (is_array($res->data->flights)) {
+                $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), count($res->data->flights));
+            } else {
+                $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 1);
+            }
+        } else {
+            $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 0);
+        }
+        if (property_exists($res->data, "flights")) {
+            // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
+            if (is_array($res->data->flights)) {
+                $obj->VOLS_APP->$tv = $res->data->flights;
+            } else {
+                $obj->VOLS_APP->$tv = $res->data->flights;
+            }
+        } else {
+            $obj->VOLS_APP->$tv = new stdClass();
+        }
+	}
+	foreach($tv_arr2 as $tv) {
+		$res = get_nb_vols_AD($tv, $wef, $unt);
         // S'il n'y a pas de vol alors pas de property "flights"
         if (property_exists($res->data, "flights")) {
             // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
@@ -118,7 +174,7 @@ function get_vols_App($obj, $tv_arr, $wef, $unt) {
 include("tab_TV.inc.php");
 
 $flights = new stdClass();
-get_vols_App($flights, $tab_TVAPP, $wef_flights, $unt_flights);
+get_vols_App($flights, $tab_TVAPP, $tab_ADAPP, $wef_flights, $unt_flights);
 
 
 // Sauvegarde des fichiers
@@ -127,8 +183,8 @@ get_vols_App($flights, $tab_TVAPP, $wef_flights, $unt_flights);
 // Envoi d'un email en cas d'erreur
 
 try {	
-	
-	write_json($flights, "", "-vols", $wef_counts);
+	var_dump($flights);
+	//write_json($flights, "", "-vols", $wef_counts);
 
 }
 catch (Exception $e) {
