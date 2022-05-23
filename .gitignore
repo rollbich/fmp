@@ -17,3 +17,4 @@ js/base.js
 b2b/hour_config-fmp.inc.php
 b2b/hour_config-fmp-yesterday.inc.php
 b2b/config.inc.php
+b2b/save_weekly_traffic_json.php
