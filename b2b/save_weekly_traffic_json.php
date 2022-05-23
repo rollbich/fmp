@@ -50,7 +50,7 @@ function get_weekly_traffic($dateTime1, $dateTime2) {
         foreach ($donnees->LFMMFMPW as $value) {
             if ($value[0] == "LFMRAW") $west += intval($value[2]);
         } 
-        $app += intval($donnes->LFMMAPP->flights);
+        $app += intval($donnees->LFMMAPP->flights);
     }
     return [$cta, $est, $west, $app];
 }
