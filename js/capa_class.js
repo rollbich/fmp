@@ -174,6 +174,8 @@ class capa {
 				if (typeof Jx_date[this.zone][this.day] !== 'undefined') {
 					Object.keys(Jx_date[this.zone][this.day]).forEach( (vac_jx, index) => {
 						const nb = Jx_date[this.zone][this.day][vac_jx];
+						console.log(vac_jx);
+						console.log(tds_supp_utc);
 						if (tds_supp_utc[vac_jx][i][1] === 1) {
 							effectif_total_Jx_15mn[i] += nb;
 						}
