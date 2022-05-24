@@ -31,11 +31,9 @@ class capa {
 			const tab_vac_eq = this.get_vac_eq();
 			const instr = await loadJson("../instruction.json");
 			const Jx_date = await loadJson(date_supp_json);
-			
 			const yesterday = jmoins1(this.day);
 			// récupère l'objet contenant les propriétés equipes
 			this.effectif = this.effectif || await get_olaf(this.zone_olaf, this.day, yesterday);
-			console.log(this.effectif);
 			// si pas de donnée on retourne 0
 			if (this.effectif == 0) return 0;
 			
@@ -89,7 +87,13 @@ class capa {
 			let nb_pc = 0;
 			let pcs = [];
 			const in15mn = []; // nbre de pc instruction par 15 mn
-			const effectif_Jx_15mn = [];
+			// effectif_Jx_15mn = {
+			//	"J0A": [],
+			//	"J0B": []
+			//	...
+			//  }
+			const effectif_total_Jx_15mn = [];
+			const effectif_Jx_15mn = {};
 			const vacs = ["J1", "J3", "S2", "J2", "S1"];
 			const cds = 1;
 			for(var i=0;i<96;i++) {
@@ -166,17 +170,38 @@ class capa {
 					});
 				}
 
-				effectif_Jx_15mn[i] = 0;
+				effectif_total_Jx_15mn[i] = 0;
 				if (typeof Jx_date[this.zone][this.day] !== 'undefined') {
 					Object.keys(Jx_date[this.zone][this.day]).forEach( (vac_jx, index) => {
 						const nb = Jx_date[this.zone][this.day][vac_jx];
 						if (tds_supp_utc[vac_jx][i][1] === 1) {
-							effectif_Jx_15mn[i] += nb;
+							effectif_total_Jx_15mn[i] += nb;
+						}
+					});
+				}
+
+				// s'il y a un Jx ce jour là
+				if (typeof Jx_date[this.zone][this.day] !== 'undefined') {
+					const vac_jx_tab = Object.keys(Jx_date[this.zone][this.day]);
+					// on ne créé que les vac_jx existantes ce jour là
+					vac_jx_tab.forEach( (vac_jx, index) => {
+						if (Jx_date[this.zone][this.day][vac_jx] !== 0) {
+							if (typeof effectif_Jx_15mn[vac_jx] === 'undefined') effectif_Jx_15mn[vac_jx] = [];
+							effectif_Jx_15mn[vac_jx][i] = 0;
+						}
+					})
+					
+					vac_jx_tab.forEach( (vac_jx, index) => {
+						if (Jx_date[this.zone][this.day][vac_jx] !== 0) {
+							const nb = Jx_date[this.zone][this.day][vac_jx];
+							if (tds_supp_utc[vac_jx][i][1] === 1) {
+								effectif_Jx_15mn[vac_jx][i] = nb;
+							}
 						}
 					});
 				}
 			}
-			return {"pc_vac": pc, "pc_total_dispo_15mn": pcs, "pc_instr_15mn": in15mn, "pc_jx_15mn": effectif_Jx_15mn};
+			return {"pc_vac": pc, "pc_total_dispo_15mn": pcs, "pc_instr_15mn": in15mn, "pc_jx_15mn": effectif_Jx_15mn, "pc_total_jx_15mn": effectif_total_Jx_15mn};
 		//}
 		//catch (err) {
         //    alert(err);
@@ -296,14 +321,22 @@ class capa {
         push_utc("J2");
         push_utc("S1");
         push_utc("N");
-        console.log("tour utc");
-		console.log(tour_utc);    
         return tour_utc;
     }
 	/* -----------------------------------------------------------------------------------------
         Transformation du tour de service (défini en heure locale) en heure UTC
         @param {object} tour_local 	- le json du tour de service
-        @returns {object}  - tour_utc : { [ ["00:00", 0], ["hh:mm", nb], ... ] }
+			{"est":{
+				"J0A":[["00:00",0],["00:15",0],...],
+				"J0B":[["00:00",0],["00:15",0],...]
+				...
+			}}
+        @returns {object}  - tour_utc (sans la zone) 
+			{ 
+				"J0A": [ ["00:00", 0], ["hh:mm", nb], ... ],
+				"J0B": [ ["00:00", 0], ["hh:mm", nb], ... ]
+				...
+			}
     ----------------------------------------------------------------------------------------- */
 	async get_tds_supp_utc(tour_local) {
 		// récupère le décalage utc/local en heure
@@ -314,6 +347,7 @@ class capa {
         
         const index_deb = diff*4 - 1;
         const tour_utc = {};
+		// Jx = ["J0A","J0B",...]
 		const Jx = Object.keys(tour);
         Jx.forEach(vac => {
 			tour_utc[vac] = [];
@@ -341,8 +375,7 @@ class capa {
 		Jx.forEach(vac => {
 			push_utc(vac);
 		})
-        console.log("tour supp utc");
-		console.log(tour_utc);
+
         return tour_utc;
 	}
 
@@ -366,12 +399,13 @@ class feuille_capa extends capa {
 		this.update = {"est": {}, "ouest": {}};
 		this.update[this.zone][this.day] = {"update_count": {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0, "J1BV":0, "J3BV":0, "S2BV":0, "J2BV":0, "S1BV":0, "NBV":0, "N-1BV":0}, "update_name": {"J1":[], "J3":[], "S2":[], "J2":[], "S1":[], "N":[], "N-1":[]}};
 		this.pc = await this.get_nbpc_dispo(this.update[this.zone][this.day]['update_count']);
+		console.log("pc");
+		console.log(this.pc);
 		document.querySelector('.popup-close').click();
 		this.pc_15mn = this.pc["pc_total_dispo_15mn"];
 		this.pc_instr_15mn = this.pc["pc_instr_15mn"];
 		this.pc_jx_15mn = this.pc["pc_jx_15mn"];
-		console.log("jx15mn");
-		console.log(this.pc_jx_15mn);
+		this.pc_total_jx_15mn = this.pc["pc_total_jx_15mn"];
 		this.pc_vac = this.pc["pc_vac"];
 		this.tab_vac_eq = this.get_vac_eq(this.day);
 		this.tour_local = await loadJson(tour_json);
@@ -407,7 +441,7 @@ class feuille_capa extends capa {
 		res += `${this.affiche_vac("S1")}`;
 		res += `${this.affiche_vac("N")}`;
 		res += `${this.affiche_vac("N-1")}`;
-		res += `${this.affiche_Jx("J0")}`;
+		res += `${this.affiche_Jx()}`;
 		res += `${this.affiche_inst()}`;
 		res += `<tr class="titre"><td class='bottom_2px left_2px' colspan="3">Heures UTC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${this.heure()}`;
 		res += `${this.affiche_nbpc()}`;
@@ -512,7 +546,6 @@ class feuille_capa extends capa {
 		let res1 = "", res2 = "", res3 = "";
 		// A = effectif/2
 		// B = effectif/2 (+1)
-		console.log("VAC: "+vac+" "+this.pc_vac[vac]);
 		const cds = (vac == "J2" || vac == "S1") ? 0 : 1
 		const dispoA = Math.min(Math.floor(this.pc_vac[vac]["nbpc"]/2), Math.floor((this.pc_vac[vac]["BV"]+this.pc_vac[vac]["renfort"]-cds-this.pc_vac[vac]["ROinduit"])/2));
 		const dispoB = Math.min(Math.floor(this.pc_vac[vac]["nbpc"]/2)+(this.pc_vac[vac]["nbpc"])%2, Math.floor((this.pc_vac[vac]["BV"]+this.pc_vac[vac]["renfort"]-cds-this.pc_vac[vac]["ROinduit"])/2)+(this.pc_vac[vac]["BV"]+this.pc_vac[vac]["renfort"]-cds-this.pc_vac[vac]["ROinduit"])%2);
@@ -598,26 +631,30 @@ class feuille_capa extends capa {
 	}
 
 	// fabrique la ligne du supplément Jx
-	affiche_Jx(vac) {
-		let res2 = "";
-		if (this.pc_jx_15mn[0] === 0) {
-			res2 += `<td class='left_2px bottom_2px'></td>`; // border left à 2px pour la case 0
-		} else {
-			res2 += `<td class='bg bottom_2px'>${this.pc_jx_15mn[0]}</td>`;
-		}
-		for(let i=1;i<95;i++) {	
-			if (this.pc_jx_15mn[i] === 0) {
-				res2 += `<td class='bottom_2px'></td>`;
+	affiche_Jx() {
+		const vac_jx_tab = Object.keys(this.pc_jx_15mn);
+		let res = "";
+		vac_jx_tab.forEach( vac_jx => {
+			let res2 = "";
+			if (this.pc_jx_15mn[vac_jx][0] === 0) {
+				res2 += `<td class='left_2px bottom_2px'></td>`; // border left à 2px pour la case 0
 			} else {
-				res2 += `<td class='bg bottom_2px'>${this.pc_jx_15mn[i]}</td>`;
+				res2 += `<td class='bg bottom_2px'>${this.pc_jx_15mn[vac_jx][0]}</td>`;
 			}
-		} 
-		if (this.pc_jx_15mn[95] === 0) {
-			res2 += `<td class='bottom_2px right_2px'></td>`;
-		} else {
-			res2 += `<td class='bg bottom_2px'>${this.pc_jx_15mn[95]}</td>`;
-		}
-		let res = `<tr><td class='left_2px bottom_2px' colspan="3">${vac}</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
+			for(let i=1;i<95;i++) {	
+				if (this.pc_jx_15mn[vac_jx][i] === 0) {
+					res2 += `<td class='bottom_2px'></td>`;
+				} else {
+					res2 += `<td class='bg bottom_2px'>${this.pc_jx_15mn[vac_jx][i]}</td>`;
+				}
+			} 
+			if (this.pc_jx_15mn[vac_jx][95] === 0) {
+				res2 += `<td class='bottom_2px right_2px'></td>`;
+			} else {
+				res2 += `<td class='bg bottom_2px'>${this.pc_jx_15mn[vac_jx][95]}</td>`;
+			}
+			res += `<tr><td class='left_2px bottom_2px' colspan="3">${vac_jx}</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
+		})
 		return res;
 	}
 
@@ -628,7 +665,8 @@ class feuille_capa extends capa {
 			let cl = "left_1px";
 			if (index%4 === 0) cl = "left_2px";
 			if (index === 95) cl += " right_2px";
-			res2 += `<td class='${cl} bottom_2px'>${elem[1]+this.pc_instr_15mn[index][0]+this.pc_jx_15mn[index]}</td>`;
+			let total_jx = 0;
+			res2 += `<td class='${cl} bottom_2px'>${elem[1]+this.pc_instr_15mn[index][0]+this.pc_total_jx_15mn[index]}</td>`;
 		});
 		let res = `<tr><td class='left_2px bottom_2px' colspan="3">Nb PC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
 		return res;
@@ -651,7 +689,7 @@ class feuille_capa extends capa {
 	// fabrique la ligne du nbre d'uceso dispo
 	//	uceso = partie entière nbr_pc/2
 	affiche_uceso() {
-		const uc = this.pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + this.pc_instr_15mn[index][0] + this.pc_jx_15mn[index]) / 2) ]);
+		const uc = this.pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + this.pc_instr_15mn[index][0] + this.pc_total_jx_15mn[index]) / 2) ]);
 		let res3 = "";
 		this.compact(uc).forEach( elem => {
 			let nb_occ = elem[1] - elem[0] + 1;
@@ -676,7 +714,6 @@ class feuille_capa extends capa {
 	add_travailleurs_RO(vac, present) {
 		const values = Object.values(this.pc_vac[vac]["html"]);
 		for (const obj of values) {
-			//console.log(values[obj]);
 			for (const user in obj) {
 				if (obj[user].search(/reserve/) == -1 && obj[user].search(/detache/) == -1 && obj[user].search(/0ZE/) == -1 && obj[user].search(/0ZW/) == -1) {
 					if (obj[user].search(/RPL/) == -1) present.push([user, "PC"]);
@@ -983,8 +1020,6 @@ async function show_capa_graph(containerId, day, zone, pc = 0) {
 		pc_15mn = pc["pc_total_dispo_15mn"];
 		pc_instr_15mn = pc["pc_instr_15mn"];
 		pc_jx_15mn = pc["pc_jx_15mn"];
-		console.log("graph");
-		console.log(pc_jx_15mn);
 		uceso = pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn[index][0] + pc_jx_15mn[index]) / 2) ]);
 		//const uceso = pc_15mn.map( elem => [elem[0],Math.floor(elem[1]/2)]);
 		data_series_uceso = [];
