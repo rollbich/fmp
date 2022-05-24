@@ -539,14 +539,10 @@ class tds_editor {
                         let nb = parseInt($$(`span[data-vac='${vac}'][data-day='${day}'][data-zone='${zone}']`).innerHTML) + 1;
                         $$(`span[data-vac='${vac}'][data-day='${day}'][data-zone='${zone}']`).innerHTML = nb;
                         if (typeof this.date_supp[zone][day] === 'undefined') {
-                            this.date_supp[zone][day] = {
-                                "J0A": 0,
-                                "J0B": 0,
-                                "J0C": 0,
-                                "J0D": 0,
-                                "J0E": 0,
-                                "Jx": 0
-                            }
+                            this.date_supp[zone][day] = {};
+                            cles.forEach( vac_jx => {
+                                this.date_supp[zone][day][vac_jx] = 0;
+                            })
                         }
                         this.date_supp[zone][day][vac] = nb;
                     });
@@ -560,14 +556,10 @@ class tds_editor {
                         let nb = parseInt($$(`span[data-vac='${vac}'][data-day='${day}'][data-zone='${zone}']`).innerHTML) - 1;
                         $$(`span[data-vac='${vac}'][data-day='${day}'][data-zone='${zone}']`).innerHTML = nb;
                         if (typeof this.date_supp[zone][day] === 'undefined') {
-                            this.date_supp[zone][day] = {
-                                "J0A": 0,
-                                "J0B": 0,
-                                "J0C": 0,
-                                "J0D": 0,
-                                "J0E": 0,
-                                "Jx": 0
-                            }
+                            this.date_supp[zone][day] = {};
+                            cles.forEach( vac_jx => {
+                                this.date_supp[zone][day][vac_jx] = 0;
+                            })
                         }
                         this.date_supp[zone][day][vac] = nb;
                     });
