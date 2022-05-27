@@ -35,7 +35,7 @@
   }
 
   .navbar-dropdown .navbar-item {
-    justify-content: left;
+    /*justify-content: left;*/
   }
 
   div.navbar-dropdown a.navbar-item:hover {
