@@ -10,6 +10,12 @@
 	<meta name="robots" content="noindex">
 	<title>Capa</title>
 	<link rel="icon" href="../favicon.ico" />
+	<link rel="stylesheet" type="text/css" href="../css/font.css" />
+	<link rel="stylesheet" type="text/css" href="../css/list-component.css" />
+	<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
+	<link rel="stylesheet" type="text/css" href="../css/upload.css" />
+	<link rel="stylesheet" href="../css/bulma.css">
+	<link rel="stylesheet" type="text/css" href="../css/style.css" />
 	<script type="text/javascript" src="../js/base.js"></script>
 	<script type="text/javascript" src="../js/tds-name.js"></script>
 	<script type="text/javascript" src="../js/utils.js"></script>
@@ -24,13 +30,8 @@
 	<script type="text/javascript" src="../js/stats_confs.js"></script>
 	<script src="../js/dragger.js"></script>
 	<script src="../js/echarts.min.js"></script>
-	<link rel="stylesheet" href="../css/bulma.css">
-	<link rel="stylesheet" href="../css/nav.css"> 
-	<link rel="stylesheet" type="text/css" href="../css/font.css" />
-	<link rel="stylesheet" type="text/css" href="../css/list-component.css" />
-	<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
-	<link rel="stylesheet" type="text/css" href="../css/style.css" />
-	<link rel="stylesheet" type="text/css" href="../css/upload.css" />
+	
+		
 	<script>
 		document.addEventListener('DOMContentLoaded', (event) => {
 

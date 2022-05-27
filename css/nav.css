@@ -20,7 +20,7 @@
   .navbar-link, .navbar-item {
     color: #eee;
     font-size: 18px;
-    background: transparent;
+    /*background: transparent;*/
   }
 
   div.navbar-menu a.navbar-item:hover {
@@ -39,7 +39,7 @@
   }
 
   div.navbar-dropdown a.navbar-item:hover {
-    justify-content: left;
+    /*justify-content: left;*/
     /*border-bottom: none;*/
     text-decoration: none;
     color: orange;

@@ -19,7 +19,6 @@
 	<script src="../js/echarts.min.js"></script>
 	<script src="../js/sortable.min.js"></script>
 	<link rel="stylesheet" href="../css/bulma.css">
-	<link rel="stylesheet" href="../css/nav.css"> 
 	<link rel="stylesheet" type="text/css" href="../css/font.css" />
 	<link rel="stylesheet" type="text/css" href="../css/list-component.css" />
 	<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
