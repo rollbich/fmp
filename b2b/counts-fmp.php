@@ -14,6 +14,12 @@ require_once("B2B.php");
 		Range de requête : 24h max
 		trafficWindow (OPERATIONAL)	 : [yesterday .. tomorrow]
 		trafficWindow (FORECAST)	 : [yesterday 21:00 UTC .. today+5d]
+
+		TrafficType : 
+        	DEMAND : Traffic demand ("FTFM": Filed Tactical Flight Model).
+	        REGULATED_DEMAND : Regulated traffic demand ("RTFM": Regulated Tactical Flight Model).
+        	LOAD : Traffic load ("CTFM": Current Tactical Flight Model).
+
 	----------------------------------------------------------------------- */
  
 $soapFlow = new B2B("flow");
@@ -39,9 +45,9 @@ function query_entry_day_count($airspace) {
 		'includeProposalFlights'=>false,
 		'includeForecastFlights'=>false,
 		'trafficWindow'=>array('wef'=>$wef_flights,'unt'=>$unt_flights),
-		'computeSubTotals'=>false,
 		'countsInterval'=>array('duration'=>'2400','step'=>'2400'),
 		'airspace'=>$airspace,
+		'subTotalComputeMode'=>'NO_SUB_TOTALS',
 		'calculationType'=>'ENTRY'
 	);
 	
@@ -69,7 +75,7 @@ function query_entry_count($tv, $wef, $unt) {
 		'includeProposalFlights'=>false,
 		'includeForecastFlights'=>false,
 		'trafficWindow'=>array('wef'=>$wef,'unt'=>$unt),
-		'computeSubTotals'=>false,
+		'subTotalComputeMode'=>'NO_SUB_TOTALS',
 		'countsInterval'=>array('duration'=>'0060','step'=>'0020'),
 		'trafficVolume'=>$tv,
 		'calculationType'=>'ENTRY'
@@ -99,7 +105,7 @@ function query_occ_count($tv, $tv_duration, $wef, $unt) {
 		'includeProposalFlights'=>false,
 		'includeForecastFlights'=>false,
 		'trafficWindow'=>array('wef'=>$wef,'unt'=>$unt),
-		'computeSubTotals'=>false,
+		'subTotalComputeMode'=>'NO_SUB_TOTALS',
 		'countsInterval'=>array('duration'=>$tv_duration,'step'=>'0001'),
 		'trafficVolume'=>$tv,
 		'calculationType'=>'OCCUPANCY'
