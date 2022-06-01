@@ -1,4 +1,4 @@
-b2b/B2B/
+b2b/B2B*
 b2b/json/
 b2b/log/
 b2b/B2B_params.php
@@ -18,3 +18,4 @@ b2b/hour_config-fmp.inc.php
 b2b/hour_config-fmp-yesterday.inc.php
 b2b/config.inc.php
 b2b/save_weekly_traffic_json.php
+b2b/counts-app.php
