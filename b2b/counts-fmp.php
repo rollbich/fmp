@@ -32,7 +32,7 @@ $soapClientFlow = $soapFlow->get_client();
 		queryTrafficCountsByTrafficVolume et en remplacant
 		airspace par trafficVolume)
 	--------------------------------------------------------- */
-function query_entry_day_count($airspace) {
+function query_entry_day_count($airspace, $trafficType) {
 	
 	global $soapClientFlow;
 	global $wef_flights;
@@ -41,7 +41,7 @@ function query_entry_day_count($airspace) {
 	$params = array(
 		'sendTime'=>gmdate("Y-m-d H:i:s"),
 		'dataset'=>array('type'=>'OPERATIONAL'),
-		'trafficTypes'=>array('item'=>'DEMAND'),
+		'trafficTypes'=>array('item'=>$trafficType),
 		'includeProposalFlights'=>false,
 		'includeForecastFlights'=>false,
 		'trafficWindow'=>array('wef'=>$wef_flights,'unt'=>$unt_flights),
@@ -64,14 +64,14 @@ function query_entry_day_count($airspace) {
 		récupère le H20 (duration 60, step 20)
 		dans la plage horaire $wef-$unt en heure UTC
 	-------------------------------------------------- */
-function query_entry_count($tv, $wef, $unt) {
+function query_entry_count($tv, $wef, $unt, $trafficType) {
 	
 	global $soapClientFlow;
 	
 	$params = array(
 		'sendTime'=>gmdate("Y-m-d H:i:s"),
 		'dataset'=>array('type'=>'OPERATIONAL'),
-		'trafficTypes'=>array('item'=>'DEMAND'),
+		'trafficTypes'=>array('item'=>$trafficType),
 		'includeProposalFlights'=>false,
 		'includeForecastFlights'=>false,
 		'trafficWindow'=>array('wef'=>$wef,'unt'=>$unt),
@@ -94,14 +94,14 @@ function query_entry_count($tv, $wef, $unt) {
 		récupère l'occ (duration en fonction du TV, step 1)
 		dans la plage horaire $wef-$unt en heure UTC
 	------------------------------------------------------------ */
-function query_occ_count($tv, $tv_duration, $wef, $unt) {
+function query_occ_count($tv, $tv_duration, $wef, $unt, $trafficType) {
 	
 	global $soapClientFlow;
 	
 	$params = array(
 		'sendTime'=>gmdate("Y-m-d H:i:s"),
 		'dataset'=>array('type'=>'OPERATIONAL'),
-		'trafficTypes'=>array('item'=>'DEMAND'),
+		'trafficTypes'=>array('item'=>$trafficType),
 		'includeProposalFlights'=>false,
 		'includeForecastFlights'=>false,
 		'trafficWindow'=>array('wef'=>$wef,'unt'=>$unt),
@@ -125,7 +125,7 @@ function query_occ_count($tv, $tv_duration, $wef, $unt) {
 		dans la plage horaire $wef-$unt en heure UTC
 		@return [ ["TV", "yyyy-mm-dd", "hh:mm", MV, H/20], [...], ... ]
 	-------------------------------------------------------------------- */
-function get_entry($zone, $wef, $unt) {
+function get_entry($zone, $wef, $unt, $trafficType) {
 	
 	global $tvs_est;
 	global $tvs_west;
@@ -151,7 +151,7 @@ function get_entry($zone, $wef, $unt) {
 		
 		$date = new DateTime($wef);
 		$timestamp = $date->getTimestamp();
-		$result = query_entry_count("LFM".$tv, $wef, $unt);
+		$result = query_entry_count("LFM".$tv, $wef, $unt, $trafficType);
 
 		for ($i=0; $i<count($result->data->counts->item); $i++) {
 			  $date->setTimestamp($timestamp+$i*60*20);
@@ -167,7 +167,7 @@ function get_entry($zone, $wef, $unt) {
 		@return [ ["TV", "yyyy-mm-dd", "hh:mm", peak, sustain, H/20], [...], ... ]
 	------------------------------------------------------------------------------- */
 
-function get_occ($zone, $wef, $unt) {
+function get_occ($zone, $wef, $unt, $trafficType) {
 	
 	global $tvs_est;
 	global $tvs_west;
@@ -196,7 +196,7 @@ function get_occ($zone, $wef, $unt) {
 		
 		$date = new DateTime($wef);
 		$timestamp = $date->getTimestamp();
-		$result = query_occ_count("LFM".$tv, $tv_duration, $wef, $unt);
+		$result = query_occ_count("LFM".$tv, $tv_duration, $wef, $unt, $trafficType);
 	
 		for ($i=0; $i<count($result->data->counts->item); $i++) {
 			  $date->setTimestamp($timestamp+$i*60);
@@ -692,10 +692,10 @@ $tvs_west = $obj2["TV-OUEST"];
 
 // récupère les données H20, Occ et Reg
 
-$occ_est = get_occ("est", $wef_counts, $unt_counts);
-$occ_west = get_occ("west", $wef_counts, $unt_counts);
-$h20_est = get_entry("est", $wef_counts, $unt_counts);
-$h20_west = get_entry("west", $wef_counts, $unt_counts);
+$occ_est = get_occ("est", $wef_counts, $unt_counts, "DEMAND");
+$occ_west = get_occ("west", $wef_counts, $unt_counts, "DEMAND");
+$h20_est = get_entry("est", $wef_counts, $unt_counts, "DEMAND");
+$h20_west = get_entry("west", $wef_counts, $unt_counts, "DEMAND");
 
 $regul = get_regulations("LF", $wef_regs, $unt_regs);
 // objet contenant les reguls Europe
@@ -719,14 +719,27 @@ $atc_confs->ouest = $plan_w->data->plan->nmSchedule->item;
 // Attention avec les réglages "local", on récupère effectiveTrafficWindow sur 2 jours => $query_LFMMCTA->data->counts->item[0]->value
 // Alors qu'en prod, on récupère bien sur 1 journée => data->counts->item->value
 
-$query_LFMMCTA = query_entry_day_count("LFMMCTA");
-$today = substr($query_LFMMCTA->data->effectiveTrafficWindow->wef, 0, 10) ;
-if (is_array($query_LFMMCTA->data->counts->item)) {
-	$counts_LFMMCTA = $query_LFMMCTA->data->counts->item[0]->value->item->value->totalCounts;
+$query_LFMMCTA_DEMAND = query_entry_day_count("LFMMCTA","DEMAND");
+$today = substr($query_LFMMCTA_DEMAND->data->effectiveTrafficWindow->wef, 0, 10);
+if (is_array($query_LFMMCTA_DEMAND->data->counts->item)) {
+	$counts_LFMMCTA_DEMAND = $query_LFMMCTA_DEMAND->data->counts->item[0]->value->item->value->totalCounts;
 } else {
-	$counts_LFMMCTA = $query_LFMMCTA->data->counts->item->value->item->value->totalCounts;
+	$counts_LFMMCTA_DEMAND = $query_LFMMCTA_DEMAND->data->counts->item->value->item->value->totalCounts;
 }
 
+$query_LFMMCTA_LOAD = query_entry_day_count("LFMMCTA","LOAD");
+if (is_array($query_LFMMCTA_LOAD->data->counts->item)) {
+	$counts_LFMMCTA_LOAD = $query_LFMMCTA_LOAD->data->counts->item[0]->value->item->value->totalCounts;
+} else {
+	$counts_LFMMCTA_LOAD = $query_LFMMCTA_LOAD->data->counts->item->value->item->value->totalCounts;
+}
+
+$query_LFMMCTA_REGDEMAND = query_entry_day_count("LFMMCTA","REGULATED_DEMAND");
+if (is_array($query_LFMMCTA_REGDEMAND->data->counts->item)) {
+	$counts_LFMMCTA_REGDEMAND = $query_LFMMCTA_REGDEMAND->data->counts->item[0]->value->item->value->totalCounts;
+} else {
+	$counts_LFMMCTA_REGDEMAND = $query_LFMMCTA_REGDEMAND->data->counts->item->value->item->value->totalCounts;
+}
 
 /*  -----------------------------------------------------------------------
 		instanciation soap FLIGHT Services
@@ -832,7 +845,7 @@ function get_vols_App($obj, $tv_arr, $tv_arr2, $wef, $unt) {
 include("tab_TV.inc.php");
 
 $flights = new stdClass();
-$flights->LFMMCTA = ["LFMMCTA", $today, $counts_LFMMCTA];
+$flights->LFMMCTA = ["LFMMCTA", $today, $counts_LFMMCTA_LOAD, $counts_LFMMCTA_DEMAND, $counts_LFMMCTA_REGDEMAND];
 get_vols_Est($flights, $tab_TVE, $wef_flights, $unt_flights);
 get_vols_West($flights, $tab_TVW, $wef_flights, $unt_flights);
 get_vols_App($flights, $tab_TVAPP, $tab_ADAPP, $wef_flights, $unt_flights);
@@ -865,7 +878,7 @@ try {
 	$heure = gmdate('Y-m-d H:i');
 	$req_vols = "requete VOLS recue le ".$receptionTime." UTC pour la date du ".$wef_flights." UTC a ".$unt_flights." UTC<br>";
 	$req_vols = $req_vols."test nbr vols    RAE: ".$nbr_vols_rae."<br>RAW: ".$nbr_vols_raw."<br>";
-	$req_vols = $req_vols."LFMMCTA ".$counts_LFMMCTA." vols<br>";
+	$req_vols = $req_vols."LFMMCTA load ".$counts_LFMMCTA_LOAD." vols --- demand ".$counts_LFMMCTA_DEMAND." vols --- regdemand ".$counts_LFMMCTA_REGDEMAND." vols<br>";
 	$req_vols = $req_vols."Export du ".$heure." UTC terminé";
 	echo $req_vols;
 	write_log("", "", $req_vols);
