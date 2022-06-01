@@ -41,7 +41,7 @@ function query_entry_day_count($airspace) {
 	$params = array(
 		'sendTime'=>gmdate("Y-m-d H:i:s"),
 		'dataset'=>array('type'=>'OPERATIONAL'),
-		'trafficTypes'=>array('item'=>'LOAD'),
+		'trafficTypes'=>array('item'=>'DEMAND'),
 		'includeProposalFlights'=>false,
 		'includeForecastFlights'=>false,
 		'trafficWindow'=>array('wef'=>$wef_flights,'unt'=>$unt_flights),
@@ -71,7 +71,7 @@ function query_entry_count($tv, $wef, $unt) {
 	$params = array(
 		'sendTime'=>gmdate("Y-m-d H:i:s"),
 		'dataset'=>array('type'=>'OPERATIONAL'),
-		'trafficTypes'=>array('item'=>'LOAD'),
+		'trafficTypes'=>array('item'=>'DEMAND'),
 		'includeProposalFlights'=>false,
 		'includeForecastFlights'=>false,
 		'trafficWindow'=>array('wef'=>$wef,'unt'=>$unt),
@@ -101,7 +101,7 @@ function query_occ_count($tv, $tv_duration, $wef, $unt) {
 	$params = array(
 		'sendTime'=>gmdate("Y-m-d H:i:s"),
 		'dataset'=>array('type'=>'OPERATIONAL'),
-		'trafficTypes'=>array('item'=>'LOAD'),
+		'trafficTypes'=>array('item'=>'DEMAND'),
 		'includeProposalFlights'=>false,
 		'includeForecastFlights'=>false,
 		'trafficWindow'=>array('wef'=>$wef,'unt'=>$unt),
