@@ -3,29 +3,21 @@
 /*  --------------------------------------------------------------
 		sauvegarde le fichier des vols weekly tous les lundis
 	--------------------------------------------------------------  */
-/*
+
 $day_last_month = (int) gmdate('d', strtotime("yesterday 04:00"));
 $last_month = (int) gmdate('m', strtotime("yesterday 04:00"));
 $year_last_month = (int) gmdate('Y', strtotime("yesterday 04:00"));
 $first_day_last_month = new DateTime("$year_last_month-$last_month-01");
 $last_day_last_month = new DateTime("$year_last_month-$last_month-$day_last_month");
 $today = new DateTime();
-*/
+
+/*
 $last_month = 5;
 $year_last_month = 2022;
 $first_day_last_month = new DateTime("2022-05-01");
 $last_day_last_month = new DateTime("2022-05-31");
 $today = new DateTime("2022-06-01");
-
-echo $first_day_last_month->format('Y-m-d');
-echo "<br>";
-echo $last_day_last_month->format('Y-m-d');
-echo "<br>";
-echo $today->format('Y-m-d');
-echo "<br>";
-
-// 8 = aout
-//$longueur_last_month = cal_days_in_month(CAL_GREGORIAN, $last_month, $year_last_month);
+*/
 
 /*  ----------------------------------------------------
                      Monthly Traffic
