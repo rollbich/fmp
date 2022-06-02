@@ -172,13 +172,13 @@ function process_file_reg($file, $arr, $month_number, $year) {
 
 // ne fonctionne pas sans dirname(__FILE__)
 function write_json_traffic($json, $year) {
-	$fp = fopen(dirname(__FILE__)."/json/".$year."-weekly-flights.json", 'w');
+	$fp = fopen(dirname(__FILE__)."/json/".$year."-monthly-flights.json", 'w');
 	fwrite($fp, json_encode($json));
 	fclose($fp);
 }
 
 function write_json_reg($json, $year) {
-	$fp = fopen(dirname(__FILE__)."/json/".$year."-weekly-reg.json", 'w');
+	$fp = fopen(dirname(__FILE__)."/json/".$year."-monthly-reg.json", 'w');
 	fwrite($fp, json_encode($json));
 	fclose($fp);
 }
