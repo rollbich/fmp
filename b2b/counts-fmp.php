@@ -727,6 +727,20 @@ if (is_array($query_LFMMCTA_DEMAND->data->counts->item)) {
 	$counts_LFMMCTA_DEMAND = $query_LFMMCTA_DEMAND->data->counts->item->value->item->value->totalCounts;
 }
 
+$query_LFMMCTAE_DEMAND = query_entry_day_count("LFMMCTAE","DEMAND");
+if (is_array($query_LFMMCTAE_DEMAND->data->counts->item)) {
+	$counts_LFMMCTAE_DEMAND = $query_LFMMCTAE_DEMAND->data->counts->item[0]->value->item->value->totalCounts;
+} else {
+	$counts_LFMMCTAE_DEMAND = $query_LFMMCTAE_DEMAND->data->counts->item->value->item->value->totalCounts;
+}
+
+$query_LFMMCTAW_DEMAND = query_entry_day_count("LFMMCTAW","DEMAND");
+if (is_array($query_LFMMCTAW_DEMAND->data->counts->item)) {
+	$counts_LFMMCTAW_DEMAND = $query_LFMMCTAW_DEMAND->data->counts->item[0]->value->item->value->totalCounts;
+} else {
+	$counts_LFMMCTAW_DEMAND = $query_LFMMCTAW_DEMAND->data->counts->item->value->item->value->totalCounts;
+}
+
 $query_LFMMCTA_LOAD = query_entry_day_count("LFMMCTA","LOAD");
 if (is_array($query_LFMMCTA_LOAD->data->counts->item)) {
 	$counts_LFMMCTA_LOAD = $query_LFMMCTA_LOAD->data->counts->item[0]->value->item->value->totalCounts;
@@ -845,7 +859,9 @@ function get_vols_App($obj, $tv_arr, $tv_arr2, $wef, $unt) {
 include("tab_TV.inc.php");
 
 $flights = new stdClass();
-$flights->LFMMCTA = ["LFMMCTA", $today, $counts_LFMMCTA_LOAD, $counts_LFMMCTA_DEMAND, $counts_LFMMCTA_REGDEMAND];
+$flights->LFMMCTA = ["LFMMCTA", $today, $counts_LFMMCTA_DEMAND, $counts_LFMMCTA_LOAD, $counts_LFMMCTA_REGDEMAND];
+$flights->LFMMCTAE = ["LFMMCTAE", $today, $counts_LFMMCTAE_DEMAND];
+$flights->LFMMCTAW = ["LFMMCTAW", $today, $counts_LFMMCTAW_DEMAND];
 get_vols_Est($flights, $tab_TVE, $wef_flights, $unt_flights);
 get_vols_West($flights, $tab_TVW, $wef_flights, $unt_flights);
 get_vols_App($flights, $tab_TVAPP, $tab_ADAPP, $wef_flights, $unt_flights);
