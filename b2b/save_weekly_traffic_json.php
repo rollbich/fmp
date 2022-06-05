@@ -21,7 +21,7 @@ echo "Week number: ".$week_number."<br>";
                      Weekly Traffic
     ---------------------------------------------------- */
 $arr_traffic = get_weekly_traffic($monday_last_week, $monday);
-$file_traffic = "https://lfmm-fmp.fr/b2b/json/".$year.'-weekly-flights.json';
+$file_traffic = "https://dev.lfmm-fmp.fr/b2b/json/".$year.'-weekly-flights.json';
 
 process_file_traffic($file_traffic, $arr_traffic, $week_number, $year);
 
@@ -39,19 +39,16 @@ function get_weekly_traffic($dateTime1, $dateTime2) {
     $app = 0;
     foreach ($period as $key => $value) {
         //$file_name = $value->format('Ymd')."-vols.json";
-        $file_name = "https://lfmm-fmp.fr/b2b/json/".$value->format('Ymd')."-vols.json";
+        $file_name = "https://dev.lfmm-fmp.fr/b2b/json/".$value->format('Ymd')."-vols.json";
         //$data = file_get_contents("./json/".$file_name);
         $data = get_file($file_name);
         $donnees = json_decode($data[0]);
         $cta += intval($donnees->LFMMCTA[2]);
-        foreach ($donnees->LFMMFMPE as $value) {
-            if ($value[0] == "LFMRAE") $est += intval($value[2]);
-        }
-        foreach ($donnees->LFMMFMPW as $value) {
-            if ($value[0] == "LFMRAW") $west += intval($value[2]);
-        } 
+        $est += intval($donnees->LFMMCTAE[2]);
+        $west += intval($donnees->LFMMCTAW[2]);
         $app += intval($donnees->LFMMAPP->flights);
     }
+    
     return [$cta, $est, $west, $app];
 }
 
@@ -59,7 +56,7 @@ function get_weekly_traffic($dateTime1, $dateTime2) {
                      Weekly Regs
     ---------------------------------------------------- */
 $arr_reguls = get_weekly_regs($monday_last_week, $monday);
-$file_reg = "https://lfmm-fmp.fr/b2b/json/".$year.'-weekly-reg.json';
+$file_reg = "https://dev.lfmm-fmp.fr/b2b/json/".$year.'-weekly-reg.json';
 
 process_file_reg($file_reg, $arr_reguls, $week_number, $year);
 
@@ -76,7 +73,7 @@ function get_weekly_regs($dateTime1, $dateTime2) {
     $est = 0;
     $west = 0;
     foreach ($period as $key => $value) {
-        $file_name = "https://lfmm-fmp.fr/b2b/json/".$value->format('Ymd')."-reg.json";
+        $file_name = "https://dev.lfmm-fmp.fr/b2b/json/".$value->format('Ymd')."-reg.json";
         $data = get_file($file_name);
         $donnees = json_decode($data[0]);
         
