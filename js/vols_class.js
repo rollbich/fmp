@@ -606,21 +606,21 @@ class monthly_briefing {
 			<td>${MyFormat.format((this.reguls.delay['est'][this.month-1]/this.reguls_lastyear.delay['est'][this.month-1] - 1)*100)} %</td>
 			<td>${MyFormat.format((this.reguls.delay['est'][this.month-1]/this.reguls_2019.delay['est'][this.month-1] - 1)*100)} %</td>
 			<td>${this.get_monthly_reg_cumules()['est']}</td>
-			<td>${MyFormat.format((this.get_monthly_reg_cumules()['cta']/this.get_monthly_reg_cumules_lastyear()['est'] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.get_monthly_reg_cumules()['est']/this.get_monthly_reg_cumules_lastyear()['est'] - 1)*100)} %</td>
 			<td>${MyFormat.format((this.get_monthly_reg_cumules()['est']/this.get_monthly_reg_cumules_2019()['est'] - 1)*100)} %</td></tr><tr>
 			<td>West</td><td>${this.reguls.delay['west'][this.month-1]} min</td>
 			<td>${MyFormat.format((this.reguls.delay['west'][this.month-1]/lastmonth_reguls.delay['west'][this.lastmonth_month-1] - 1)*100)} %</td>
 			<td>${MyFormat.format((this.reguls.delay['west'][this.month-1]/this.reguls_lastyear.delay['west'][this.month-1] - 1)*100)} %</td>
 			<td>${MyFormat.format((this.reguls.delay['west'][this.month-1]/this.reguls_2019.delay['west'][this.month-1] - 1)*100)} %</td>
 			<td>${this.get_monthly_reg_cumules()['west']}</td>
-			<td>${MyFormat.format((this.get_monthly_reg_cumules()['cta']/this.get_monthly_reg_cumules_lastyear()['west'] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.get_monthly_reg_cumules()['west']/this.get_monthly_reg_cumules_lastyear()['west'] - 1)*100)} %</td>
 			<td>${MyFormat.format((this.get_monthly_reg_cumules()['west']/this.get_monthly_reg_cumules_2019()['west'] - 1)*100)} %</td></tr><tr>
 			<td>App</td><td>${this.reguls.delay['app'][this.month-1]} min</td>
 			<td>${MyFormat.format((this.reguls.delay['app'][this.month-1]/lastmonth_reguls.delay['app'][this.lastmonth_month-1] - 1)*100)} %</td>
 			<td>${MyFormat.format((this.reguls.delay['app'][this.month-1]/this.reguls_lastyear.delay['app'][this.month-1] - 1)*100)} %</td>
 			<td>${MyFormat.format((this.reguls.delay['app'][this.month-1]/this.reguls_2019.delay['app'][this.month-1] - 1)*100)} %</td>
 			<td>${this.get_monthly_reg_cumules()['app']}</td>
-			<td>${MyFormat.format((this.get_monthly_reg_cumules()['cta']/this.get_monthly_reg_cumules_lastyear()['app'] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.get_monthly_reg_cumules()['app']/this.get_monthly_reg_cumules_lastyear()['app'] - 1)*100)} %</td>
 			<td>${MyFormat.format((this.get_monthly_reg_cumules()['app']/this.get_monthly_reg_cumules_2019()['app'] - 1)*100)} %</td>`;
 			res += '</tr>';	
 		res += '</tbody></table>';
