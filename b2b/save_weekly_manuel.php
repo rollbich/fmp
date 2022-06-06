@@ -13,8 +13,6 @@ $monday_last_week->sub($one_week);
 $monday = new DateTime($d);
 
 for ($i = 1; $i <= 52; $i++) {
-    
-    
 
     $week_number = getWeekNumber($monday_last_week);
     if ((int) $week_number === 1) {

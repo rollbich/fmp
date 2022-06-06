@@ -11,14 +11,6 @@ $first_day_last_month = new DateTime("$year_last_month-$last_month-01");
 $last_day_last_month = new DateTime("$year_last_month-$last_month-$day_last_month");
 $today = new DateTime();
 
-/*
-$last_month = 5;
-$year_last_month = 2022;
-$first_day_last_month = new DateTime("2022-05-01");
-$last_day_last_month = new DateTime("2022-05-31");
-$today = new DateTime("2022-06-01");
-*/
-
 /*  ----------------------------------------------------
                      Monthly Traffic
     ---------------------------------------------------- */
@@ -41,18 +33,16 @@ function get_monthly_traffic($dateTime1, $dateTime2) {
     $app = 0;
     foreach ($period as $key => $value) {
         //$file_name = $value->format('Ymd')."-vols.json";
-        $file_name = "https://dev.lfmm-fmp.fr/b2b/json/".$value->format('Ymd')."-vols.json";
+        $file_name = "localhost/fmp/b2b/json/".$value->format('Ymd')."-vols.json";
         //$data = file_get_contents("./json/".$file_name);
         $data = get_file($file_name);
         $donnees = json_decode($data[0]);
         $cta += intval($donnees->LFMMCTA[2]);
-        foreach ($donnees->LFMMFMPE as $value) {
-            if ($value[0] == "LFMRAE") $est += intval($value[2]);
-        }
-        foreach ($donnees->LFMMFMPW as $value) {
-            if ($value[0] == "LFMRAW") $west += intval($value[2]);
+        $est += intval($donnees->LFMMCTAE[2]);
+        $west += intval($donnees->LFMMCTAW[2]);
+        if (isset($donnees->LFMMAPP)) {
+            $app += intval($donnees->LFMMAPP->flights);
         } 
-        $app += intval($donnees->LFMMAPP->flights);
     }
     return [$cta, $est, $west, $app];
 }
@@ -66,7 +56,21 @@ $file_reg = "https://dev.lfmm-fmp.fr/b2b/json/$year_last_month-monthly-reg.json"
 
 process_file_reg($file_reg, $arr_reguls, $last_month, $year_last_month);
 
-// get all json reg files file Between 2 Dates non incluse la dernière date
+/*  ------------------------------------------------------------------------------
+      get all json reg files file Between 2 Dates non incluse la dernière date
+        @return {
+            "LFMMFMPE" : {
+                "delay" : 321,
+                "causes" : {
+                    "ATC_STAFFING" : 39,
+                    "...." : xx
+                }
+            },
+            "nomTVsetFrance" : {
+                ...
+            }
+        }
+    ------------------------------------------------------------------------------ */
 function get_monthly_regs($dateTime1, $dateTime2) {
 
     $period = new DatePeriod(
@@ -74,27 +78,39 @@ function get_monthly_regs($dateTime1, $dateTime2) {
         new DateInterval('P1D'),
         $dateTime2
     );
-    $cta = 0;
-    $app = 0;
-    $est = 0;
-    $west = 0;
+    
+    // Chargement de tous les fichiers, tableau d'object journalier
+    $donnees = [];
     foreach ($period as $key => $value) {
-        $file_name = "https://dev.lfmm-fmp.fr/b2b/json/".$value->format('Ymd')."-reg.json";
+        $file_name = "localhost/fmp/b2b/json/".$value->format('Ymd')."-reg.json";
         $data = get_file($file_name);
-        $donnees = json_decode($data[0]);
-        
-        foreach ($donnees->LFMMFMPE as $obj) {
-            $est += intval($obj->delay);
-        }
-        foreach ($donnees->LFMMFMPW as $obj) {
-            $west += intval($obj->delay);
-        }
-        foreach ($donnees->LFMMAPP as $obj) {
-            $app += intval($obj->delay);
-        }
-        $cta = $est + $west;
+        array_push($donnees, json_decode($data[0]));
     }
-    return [$cta, $est, $west, $app];
+
+    // Récupération des tvset
+    $tvsetall = array_keys(get_object_vars($donnees[0]));
+
+    // Config de l'object $result
+    $result = new stdClass();
+    foreach ($tvsetall as $tvset) {
+        $result->$tvset = new stdClass();
+        $result->$tvset->delay = 0;
+        $result->$tvset->causes = new stdClass();
+    }
+
+    // Calcul des délais et des causes
+    foreach ($donnees as $obj_jour) {
+        foreach ($tvsetall as $tvset) {
+            foreach ($obj_jour->$tvset as $obj) { 
+                $result->$tvset->delay += intval($obj->delay);
+                $r = $obj->reason;
+                if (!isset($result->$tvset->causes->$r)) $result->$tvset->causes->$r = 0;
+                $result->$tvset->causes->$r += intval($obj->delay);
+            }
+        }
+    }
+    //var_dump($result);
+    return $result;
 }
 
 /*  -----------------------------------------------------------------------------
@@ -118,6 +134,7 @@ function process_file_traffic($file, $arr, $month_number, $year) {
         $json_year->est = new stdClass();
         $json_year->west = new stdClass();
         $json_year->cta = new stdClass();
+        $json_year->app = new stdClass();
     }
 
     $json_year->est->$month_number = $arr[1];
