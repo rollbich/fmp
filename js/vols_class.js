@@ -491,7 +491,7 @@ class monthly_briefing {
 		for(let i=0;i<this.month;i++) { 
 			vols['cta'] += this.flights_2019['nbre_vols']['cta'][i];
 			vols['est'] += this.flights_2019['nbre_vols']['est'][i];
-			vols['west'] += this.flights_2019['nbre_vols']['cta'][i];
+			vols['west'] += this.flights_2019['nbre_vols']['west'][i];
 			vols['app'] += this.flights_2019['nbre_vols']['app'][i];
 		}
 		return vols;
@@ -507,7 +507,7 @@ class monthly_briefing {
 		for(let i=0;i<this.month;i++) { 
 			vols['cta'] += this.reguls_2019['delay']['cta'][i];
 			vols['est'] += this.reguls_2019['delay']['est'][i];
-			vols['west'] += this.reguls_2019['delay']['cta'][i];
+			vols['west'] += this.reguls_2019['delay']['west'][i];
 			vols['app'] += this.reguls_2019['delay']['app'][i];
 		}
 		return vols;
