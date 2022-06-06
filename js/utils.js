@@ -238,6 +238,12 @@ function getPreviousWeekNumber(d) {
 	return getWeekNumber(d.addDays(-7));
 }
 
+function getPreviousMonthNumber(d) {
+	let m = d.getMonth();
+	let y = d.getFullYear();
+	return m === 1 ? [y-1, 12] : [y, m-1];
+}
+
 function isLeapYear(year) {
 	if (year % 400 === 0) return true;
 	if (year % 100 === 0) return false;

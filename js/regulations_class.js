@@ -262,15 +262,88 @@ class weekly_regs {
 		regs['west'] = [];
 		regs['app'] = [];
 		for(let i=1;i<54;i++) { //53 semaines max
-			if (typeof this.weekly_regs['cta'][i] !== 'undefined') regs['cta'].push(this.weekly_regs['cta'][i]);
-			if (typeof this.weekly_regs['est'][i] !== 'undefined') regs['est'].push(this.weekly_regs['est'][i]);
-			if (typeof this.weekly_regs['west'][i] !== 'undefined') regs['west'].push(this.weekly_regs['west'][i]);
-			if (typeof this.weekly_regs['app'][i] !== 'undefined') regs['app'].push(this.weekly_regs['app'][i]);
+			if (typeof this.weekly_regs[i] !== 'undefined') {
+				const reg_est = parseInt(this.weekly_regs[i]['LFMMFMPE']['delay']);
+				const reg_west = parseInt(this.weekly_regs[i]['LFMMFMPW']['delay']);
+				const reg_cta = reg_est+reg_west;
+				const reg_app = parseInt(this.weekly_regs[i]['LFMMAPP']['delay']);
+				regs['cta'].push(reg_cta);
+				regs['est'].push(reg_est);
+				regs['west'].push(reg_west);
+				regs['app'].push(reg_app);
+			} 
 		}
 		return regs;
 	}
 }
 
+class monthly_regs {
+	constructor(year) {
+		this.year = year;
+	}
+
+	async init() {
+		this.monthly_regs = await this.get_data_monthly_regs();
+		this.delay = this.get_monthly_delay();
+	}
+
+	/*  ----------------------------------------------------------------------------------
+		Lit le fichier json des delay monthly
+			@param {string} day - "yyyy-mm-dd"
+            @returns {
+				"year":2022,
+				"N°sem":{
+					"LFMMFMPE":{
+						"delay":2264,
+						"causes":{"ATC_STAFFING":1953,"SPECIAL_EVENT":311}},
+					"LFMMFMPW":{"delay":142,"causes":{"SPECIAL_EVENT":142}},
+					"LFMMAPP":{"delay":15042,"causes":{"ATC_CAPACITY":6577,"ATC_STAFFING":6162,"WEATHER":874,"AERODROME_CAPACITY":347,"AIRSPACE_MANAGEMENT":11,		 			"ATC_EQUIPMENT":349,"ATC_INDUSTRIAL_ACTION":722}},
+					"LFBBFMP":{
+						...
+					}	
+				},
+				...
+			} = this.delay
+	-------------------------------------------------------------------------------------*/
+	async get_data_monthly_regs() {
+		const url = `../b2b/json/${this.year}-monthly-reg.json`;	
+		const resp = await loadJson(url);
+		return resp;
+	}
+
+	/*  ----------------------------------------------------------------------------------
+			Calcul des délais totaux
+            @returns {
+				"year":2022,
+				"cta":[délai sem 1, délai sem 2, ...],
+				"est":[délai sem 1, délai sem 2, ...],
+				"west":[délai sem 1, délai sem 2, ...],
+				"app":[délai sem 1, délai sem 2, ...],		
+			} 
+	-------------------------------------------------------------------------------------*/
+
+	get_monthly_delay() {
+		const regs = {};
+		regs['year'] = parseInt(this.monthly_regs['year']);
+		regs['cta'] = [];
+		regs['est'] = [];
+		regs['west'] = [];
+		regs['app'] = [];
+		for(let i=1;i<13;i++) { 
+			if (typeof this.monthly_regs[i] !== 'undefined') {
+				const reg_est = parseInt(this.monthly_regs[i]['LFMMFMPE']['delay']);
+				const reg_west = parseInt(this.monthly_regs[i]['LFMMFMPW']['delay']);
+				const reg_cta = reg_est+reg_west;
+				const reg_app = parseInt(this.monthly_regs[i]['LFMMAPP']['delay']);
+				regs['cta'].push(reg_cta);
+				regs['est'].push(reg_est);
+				regs['west'].push(reg_west);
+				regs['app'].push(reg_app);
+			} 
+		}
+		return regs;
+	}
+}
 
 
 

@@ -49,6 +49,9 @@
 					<a class="navbar-item" href="../regulations">
             Régulations
           </a>
+          <a class="navbar-item" href="../stats-mensuelles">
+            Stats mensuelles
+          </a>
 				</div>
 			</div>
 			<a class="navbar-item" href="../overload">
