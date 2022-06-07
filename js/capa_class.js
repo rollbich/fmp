@@ -31,9 +31,13 @@ class capa {
 			const tab_vac_eq = this.get_vac_eq();
 			const instr = await loadJson("../instruction.json");
 			const Jx_date = await loadJson(date_supp_json);
+			console.log("Jx Date");
+			console.log(Jx_date);
 			const yesterday = jmoins1(this.day);
 			// récupère l'objet contenant les propriétés equipes
 			this.effectif = this.effectif || await get_olaf(this.zone_olaf, this.day, yesterday);
+			console.log("OLAF result");
+			console.log(this.effectif);
 			// si pas de donnée on retourne 0
 			if (this.effectif == 0) return 0;
 			
@@ -81,6 +85,35 @@ class capa {
 				}
 			} 
 			
+			/*  ---------------------------------------
+					pc["J0"] = {
+						"J0A": {
+							nombre: 2,
+							agent: {
+								"Jean Coco": "détaché",
+								"Moustache": "salle"
+							}
+						},
+						...
+				}
+				---------------------------------------  */
+			pc["J0"] = {};
+			const Renfort = this.effectif[this.day]['Renfort'];
+			for (let renf1 in Renfort) {
+				for (let cle in Renfort[renf1]) {
+					const obj = Renfort[renf1][cle];
+					let label = obj["contextmenutype"]["label"];
+					let agent = obj["agent"]["nomComplet"];
+					let j0_type = label.substring(0,3);
+					let agent_type = label.includes("det") === true ? "detaché" : "salle";
+					if (pc["J0"].hasOwnProperty(j0_type) === false) { pc["J0"][j0_type] = {"nombre": 0}; pc["J0"][j0_type]["agent"] = {}}
+					pc["J0"][j0_type]["agent"][agent] = agent_type;
+					pc["J0"][j0_type]["nombre"]++;
+				}
+			}
+			console.log("Renfort J0");
+			console.log(pc["J0"]);
+
 			// array du nombre de pc dispo associé au créneau horaire du tour de service
 			// En 24h, il y a 96 créneaux de 15mn.
 			// [ ["hh:mm", nb_pc_dispo], [...], ... ]
@@ -171,17 +204,45 @@ class capa {
 				}
 
 				effectif_total_Jx_15mn[i] = 0;
+
+				if (Object.keys(pc["J0"]).length !== 0) {
+					Object.keys(pc["J0"]).forEach( vac_jx => {
+						const nb = pc["J0"][vac_jx]["nombre"];
+						if (tds_supp_utc[vac_jx][i][1] === 1) {
+							effectif_total_Jx_15mn[i] += nb;
+						}
+					})
+				}
+				
+				// s'il y a un Jx ce jour là
+				if (Object.keys(pc["J0"]).length !== 0) {
+					const vac_jx_tab = Object.keys(pc["J0"]);
+					// on ne créé que les vac_jx existantes ce jour là
+					vac_jx_tab.forEach( (vac_jx, index) => {
+						if (typeof effectif_Jx_15mn[vac_jx] === 'undefined') effectif_Jx_15mn[vac_jx] = [];
+						effectif_Jx_15mn[vac_jx][i] = 0;
+					})
+					
+					vac_jx_tab.forEach( (vac_jx, index) => {
+						const nb = pc["J0"][vac_jx]["nombre"];
+						if (tds_supp_utc[vac_jx][i][1] === 1) {
+							effectif_Jx_15mn[vac_jx][i] = nb;
+						}
+					});
+				}
+				
+				/* backup J0
 				if (typeof Jx_date[this.zone][this.day] !== 'undefined') {
 					Object.keys(Jx_date[this.zone][this.day]).forEach( (vac_jx, index) => {
 						const nb = Jx_date[this.zone][this.day][vac_jx];
-						console.log(vac_jx);
-						console.log(tds_supp_utc);
+						//console.log(vac_jx);
+						//console.log(tds_supp_utc);
 						if (tds_supp_utc[vac_jx][i][1] === 1) {
 							effectif_total_Jx_15mn[i] += nb;
 						}
 					});
 				}
-
+				
 				// s'il y a un Jx ce jour là
 				if (typeof Jx_date[this.zone][this.day] !== 'undefined') {
 					const vac_jx_tab = Object.keys(Jx_date[this.zone][this.day]);
@@ -202,6 +263,7 @@ class capa {
 						}
 					});
 				}
+				*/
 			}
 			return {"pc_vac": pc, "pc_total_dispo_15mn": pcs, "pc_instr_15mn": in15mn, "pc_jx_15mn": effectif_Jx_15mn, "pc_total_jx_15mn": effectif_total_Jx_15mn};
 		//}
