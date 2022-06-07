@@ -31,8 +31,6 @@ class capa {
 			const tab_vac_eq = this.get_vac_eq();
 			const instr = await loadJson("../instruction.json");
 			const Jx_date = await loadJson(date_supp_json);
-			console.log("Jx Date");
-			console.log(Jx_date);
 			const yesterday = jmoins1(this.day);
 			// récupère l'objet contenant les propriétés equipes
 			this.effectif = this.effectif || await get_olaf(this.zone_olaf, this.day, yesterday);
@@ -235,8 +233,6 @@ class capa {
 				if (typeof Jx_date[this.zone][this.day] !== 'undefined') {
 					Object.keys(Jx_date[this.zone][this.day]).forEach( (vac_jx, index) => {
 						const nb = Jx_date[this.zone][this.day][vac_jx];
-						//console.log(vac_jx);
-						//console.log(tds_supp_utc);
 						if (tds_supp_utc[vac_jx][i][1] === 1) {
 							effectif_total_Jx_15mn[i] += nb;
 						}
