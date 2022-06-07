@@ -31,6 +31,7 @@ $soapClientFlow = $soapFlow->get_client();
 		(marche aussi pour un TV en changeant la requete par
 		queryTrafficCountsByTrafficVolume et en remplacant
 		airspace par trafficVolume)
+		Utilisé pour LFMMCTA, LFMMCTAE et LFMMCTAW
 	--------------------------------------------------------- */
 function query_entry_day_count($airspace, $trafficType) {
 	
@@ -692,10 +693,10 @@ $tvs_west = $obj2["TV-OUEST"];
 
 // récupère les données H20, Occ et Reg
 
-$occ_est = get_occ("est", $wef_counts, $unt_counts, "DEMAND");
-$occ_west = get_occ("west", $wef_counts, $unt_counts, "DEMAND");
-$h20_est = get_entry("est", $wef_counts, $unt_counts, "DEMAND");
-$h20_west = get_entry("west", $wef_counts, $unt_counts, "DEMAND");
+$occ_est = get_occ("est", $wef_counts, $unt_counts, "LOAD");
+$occ_west = get_occ("west", $wef_counts, $unt_counts, "LOAD");
+$h20_est = get_entry("est", $wef_counts, $unt_counts, "LOAD");
+$h20_west = get_entry("west", $wef_counts, $unt_counts, "LOAD");
 
 $regul = get_regulations("LF", $wef_regs, $unt_regs);
 // objet contenant les reguls Europe
