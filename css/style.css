@@ -76,6 +76,10 @@ nav.navbar{
   }
 
 /* ------- Accueil bilan --------- */
+#accueil_vols {
+	margin-top: 3rem;
+}
+
 #accueil_bilan h2 {
 	font-size: 2em;
 	margin-top: 0;

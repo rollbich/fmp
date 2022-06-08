@@ -32,7 +32,11 @@ require("../php/check_ok.inc.php");
 			const tabl = new monthly_briefing(year, month, "accueil_bilan");
 			await tabl.init();
 			tabl.show_data();
-			
+
+			const listMonth = [];
+			for (let k=1;k<13;k++) { listMonth.push(k);}
+			show_traffic_graph_mois_cumule("accueil_vols", year, listMonth, tabl.get_monthly_cumules()['cta'], tabl.get_monthly_cumules("lastyear")['cta'], tabl.get_monthly_cumules("2019")['cta'], "LFMMCTA");
+			show_delay_graph_mois_cumule("accueil_reguls", year, listMonth, tabl.get_monthly_reg_cumules()['cta'], tabl.get_monthly_reg_cumules("lastyear")['cta'], tabl.get_monthly_reg_cumules("2019")['cta'], "LFMMCTA");
       	});
     </script>
 </head>
@@ -41,11 +45,11 @@ require("../php/check_ok.inc.php");
 <h1>LFMM-FMP - Stats Mensuelles</h1>
 <div id="glob_container">
 <div id='accueil' style="display: flex; flex-wrap: wrap">
+	<div id="accueil_bilan"></div>
   	<div id="accueil_left">
 	  <div id="accueil_vols"></div>
 	  <div id="accueil_reguls"></div>
 	</div>
-  <div id="accueil_bilan"></div>
 </div>
 </div>
 <?php include("../php/upload.inc.php"); ?>

@@ -563,6 +563,124 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 }
 
 /*	--------------------------------------------------------------------------
+	 	Affiche le graph Traffic Cumulé Year par mois
+			@param {string} containerId - Id de l'HTML Element conteneur
+			@param {array} dataAxis - [1, 2, 3, month...]
+			@param {array} data - [load,...]
+	-------------------------------------------------------------------------- */
+function show_traffic_graph_mois_cumule(containerId, year, listMonth, data, data_lastyear, data2019, zon) {
+
+	let chartDom = $(containerId);
+	chartDom.style.height = "350px";
+	chartDom.style.width = "870px";
+	let myChart = echarts.init(chartDom);
+	
+	let option;
+	
+	option = {
+		title: {
+			text: `Trafic cumulé sur l'année - ${zon}`,
+			textStyle: {
+				color: '#FFF',
+				fontSize: '1.5rem'
+			},
+			x: 'center',
+			y: 'top'
+		},
+		tooltip: {
+			trigger: 'axis',
+			axisPointer: {
+				type: 'shadow',
+				label: {
+					show: true
+				}
+			}
+		},
+		/*
+		toolbox: {
+			feature: {
+				saveAsImage: {
+					name: `Trafic semaine sur l'année - ${zon}`,
+					title: 'PNG',
+					show: true
+				}
+			}
+		},
+		*/
+		grid: {
+			containLabel: true
+		},
+		legend: {
+			x: 'center', // 'center' | 'left' | {number},
+			y: 'top' | 30, // 'center' | 'bottom' | {number}
+			padding: -1,
+			textStyle: {
+				color: '#fff'
+			}
+		},
+		calculable: true,
+		xAxis: {
+			type: 'category',
+			name: 'Mois',
+			nameLocation: 'middle',
+			axisLabel: {
+				show: true,
+				interval: 'auto',    // {number}
+				margin: 8,
+				textStyle: {
+					color: '#fff'
+				}
+			},
+			nameGap: 30,
+			nameTextStyle: {
+				color: '#fff',
+				fontSize: '1.2rem'
+			},
+			data: listMonth
+		},
+		yAxis: {
+			type: 'value',
+			axisLabel: {
+				formatter: '{value}'
+			},
+			name: 'Cumul des vols',
+			nameTextStyle: {
+				color: '#fff',
+				fontSize: '1.2rem'
+			},
+			nameRotate: 90,
+			nameGap: 60,
+			nameLocation: 'middle'
+		},
+		series: [
+			{
+				name: "2019",
+				type: 'line',
+				color : '#339dff',
+				areaStyle: {},
+				data: data2019,
+			},
+			{
+				name: year-1,
+				type: 'line',
+				color: 'yellow',
+				areaStyle: {},
+				data: data_lastyear,
+			},
+			{
+				name: year,
+				type: 'line',
+				color: '#4CC417',
+				areaStyle: {},
+				data: data,
+			}]
+	};
+	
+	myChart.setOption(option);
+	
+}
+
+/*	--------------------------------------------------------------------------
 	 	Affiche le graph delay - Year
 			@param {string} containerId - Id de l'HTML Element conteneur
 			@param {array} dataAxis - [1, 2, 3, week...]
@@ -670,6 +788,124 @@ function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data
 			{
 				name: year,
 				type: 'bar',
+				color: '#4CC417',
+				areaStyle: {},
+				data: data,
+			}]
+	};
+	
+	myChart.setOption(option);
+	
+}
+
+/*	--------------------------------------------------------------------------
+	 	Affiche le graph Delay Cumulé Year par mois
+			@param {string} containerId - Id de l'HTML Element conteneur
+			@param {array} dataAxis - [1, 2, 3, month...]
+			@param {array} data - [load,...]
+	-------------------------------------------------------------------------- */
+function show_delay_graph_mois_cumule(containerId, year, listMonth, data, data_lastyear, data2019, zon) {
+
+	let chartDom = $(containerId);
+	chartDom.style.height = "350px";
+	chartDom.style.width = "870px";
+	let myChart = echarts.init(chartDom);
+	
+	let option;
+	
+	option = {
+		title: {
+			text: `Délai cumulé sur l'année - ${zon}`,
+			textStyle: {
+				color: '#FFF',
+				fontSize: '1.5rem'
+			},
+			x: 'center',
+			y: 'top'
+		},
+		tooltip: {
+			trigger: 'axis',
+			axisPointer: {
+				type: 'shadow',
+				label: {
+					show: true
+				}
+			}
+		},
+		/*
+		toolbox: {
+			feature: {
+				saveAsImage: {
+					name: `Trafic semaine sur l'année - ${zon}`,
+					title: 'PNG',
+					show: true
+				}
+			}
+		},
+		*/
+		grid: {
+			containLabel: true
+		},
+		legend: {
+			x: 'center', // 'center' | 'left' | {number},
+			y: 'top' | 30, // 'center' | 'bottom' | {number}
+			padding: -1,
+			textStyle: {
+				color: '#fff'
+			}
+		},
+		calculable: true,
+		xAxis: {
+			type: 'category',
+			name: 'Mois',
+			nameLocation: 'middle',
+			axisLabel: {
+				show: true,
+				interval: 'auto',    // {number}
+				margin: 8,
+				textStyle: {
+					color: '#fff'
+				}
+			},
+			nameGap: 30,
+			nameTextStyle: {
+				color: '#fff',
+				fontSize: '1.2rem'
+			},
+			data: listMonth
+		},
+		yAxis: {
+			type: 'value',
+			axisLabel: {
+				formatter: '{value}'
+			},
+			name: 'Cumul des délais',
+			nameTextStyle: {
+				color: '#fff',
+				fontSize: '1.2rem'
+			},
+			nameRotate: 90,
+			nameGap: 60,
+			nameLocation: 'middle'
+		},
+		series: [
+			{
+				name: "2019",
+				type: 'line',
+				color : '#339dff',
+				areaStyle: {},
+				data: data2019,
+			},
+			{
+				name: year-1,
+				type: 'line',
+				color: 'yellow',
+				areaStyle: {},
+				data: data_lastyear,
+			},
+			{
+				name: year,
+				type: 'line',
 				color: '#4CC417',
 				areaStyle: {},
 				data: data,
