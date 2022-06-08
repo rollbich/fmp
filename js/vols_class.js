@@ -366,7 +366,7 @@ class monthly_vols {
 		vols['app'] = [];
 		console.log("monthly vols");
 		console.log(this.monthly_vols);
-		for(let i=1;i<13;i++) { //53 semaines max
+		for(let i=1;i<13;i++) { 
 			if (typeof this.monthly_vols['cta'][i] !== 'undefined') vols['cta'].push(this.monthly_vols['cta'][i]);
 			if (typeof this.monthly_vols['est'][i] !== 'undefined') vols['est'].push(this.monthly_vols['est'][i]);
 			if (typeof this.monthly_vols['west'][i] !== 'undefined') vols['west'].push(this.monthly_vols['west'][i]);
@@ -411,25 +411,31 @@ class monthly_briefing {
 		Retourne l'objet des vols mensuels cumulés depuis le début de l'année
 			@returns {
 				"year":2022,
-				"cta":vols_cumulés,
-				"est":vols_cumulés,
-				"west":vols_cumulés,
-				"app":vols_cumulés
+				"cta": [vols_cumulés janvier, fev...],
+				"est": [vols_cumulés janv, fev, ...],
+				"west": [vols_cumulés janv, fev, ...],
+				"app": [vols_cumulés janv, fev, ...]
 			} 
 	-------------------------------------------------------------------------------------*/
 	get_monthly_cumules() {
 		const vols = {};
 		vols['year'] = this.year;
-		vols['cta'] = 0;
-		vols['est'] = 0;
-		vols['west'] = 0;
-		vols['app'] = 0;
+		let cta = 0, est = 0, west = 0, app = 0;
+		vols['cta'] = [];
+		vols['est'] = [];
+		vols['west'] = [];
+		vols['app'] = [];
 		for(let i=0;i<this.month;i++) { 
-			vols['cta'] += this.flights['nbre_vols']['cta'][i];
-			vols['est'] += this.flights['nbre_vols']['est'][i];
-			vols['west'] += this.flights['nbre_vols']['west'][i];
-			vols['app'] += this.flights['nbre_vols']['app'][i];
+			cta += this.flights['nbre_vols']['cta'][i];
+			vols['cta'].push(cta);
+			est += this.flights['nbre_vols']['est'][i];
+			vols['est'].push(est);
+			west += this.flights['nbre_vols']['west'][i];
+			vols['west'].push(west);
+			app += this.flights['nbre_vols']['app'][i];
+			vols['app'].push(app);
 		}
+		console.log(vols);
 		return vols;
 	}
 
@@ -452,15 +458,20 @@ class monthly_briefing {
 	get_monthly_cumules_lastyear() {
 		const vols = {};
 		vols['year'] = this.year-1;
-		vols['cta'] = 0;
-		vols['est'] = 0;
-		vols['west'] = 0;
-		vols['app'] = 0;
+		let cta = 0, est = 0, west = 0, app = 0;
+		vols['cta'] = [];
+		vols['est'] = [];
+		vols['west'] = [];
+		vols['app'] = [];
 		for(let i=0;i<this.month;i++) { 
-			vols['cta'] += this.flights_lastyear['nbre_vols']['cta'][i];
-			vols['est'] += this.flights_lastyear['nbre_vols']['est'][i];
-			vols['west'] += this.flights_lastyear['nbre_vols']['west'][i];
-			vols['app'] += this.flights_lastyear['nbre_vols']['app'][i];
+			cta += this.flights_lastyear['nbre_vols']['cta'][i];
+			vols['cta'].push(cta);
+			est += this.flights_lastyear['nbre_vols']['est'][i];
+			vols['est'].push(est);
+			west += this.flights_lastyear['nbre_vols']['west'][i];
+			vols['west'].push(west);
+			app += this.flights_lastyear['nbre_vols']['app'][i];
+			vols['app'].push(app);
 		}
 		return vols;
 	}
@@ -484,15 +495,20 @@ class monthly_briefing {
 	get_monthly_cumules_2019() {
 		const vols = {};
 		vols['year'] = 2019;
-		vols['cta'] = 0;
-		vols['est'] = 0;
-		vols['west'] = 0;
-		vols['app'] = 0;
+		let cta = 0, est = 0, west = 0, app = 0;
+		vols['cta'] = [];
+		vols['est'] = [];
+		vols['west'] = [];
+		vols['app'] = [];
 		for(let i=0;i<this.month;i++) { 
-			vols['cta'] += this.flights_2019['nbre_vols']['cta'][i];
-			vols['est'] += this.flights_2019['nbre_vols']['est'][i];
-			vols['west'] += this.flights_2019['nbre_vols']['west'][i];
-			vols['app'] += this.flights_2019['nbre_vols']['app'][i];
+			cta += this.flights_2019['nbre_vols']['cta'][i];
+			vols['cta'].push(cta);
+			est += this.flights_2019['nbre_vols']['est'][i];
+			vols['est'].push(est);
+			west += this.flights_2019['nbre_vols']['west'][i];
+			vols['west'].push(west);
+			app += this.flights_2019['nbre_vols']['app'][i];
+			vols['app'].push(app);
 		}
 		return vols;
 	}
@@ -551,30 +567,30 @@ class monthly_briefing {
 			<td>${MyFormat.format((this.flights.nbre_vols['cta'][this.month-1]/lastmonth_flights.nbre_vols['cta'][this.lastmonth_month-1] - 1)*100)} %</td>
 			<td>${MyFormat.format((this.flights.nbre_vols['cta'][this.month-1]/this.flights_lastyear.nbre_vols['cta'][this.month-1] - 1)*100)} %</td>
 			<td>${MyFormat.format((this.flights.nbre_vols['cta'][this.month-1]/this.flights_2019.nbre_vols['cta'][this.month-1] - 1)*100)} %</td>
-			<td>${this.get_monthly_cumules()['cta']}</td>
-			<td>${MyFormat.format((this.get_monthly_cumules()['cta']/this.get_monthly_cumules_lastyear()['cta'] - 1)*100)} %</td>
-			<td>${MyFormat.format((this.get_monthly_cumules()['cta']/this.get_monthly_cumules_2019()['cta'] - 1)*100)} %</td></tr>
+			<td>${this.get_monthly_cumules()['cta'][this.month-1]}</td>
+			<td>${MyFormat.format((this.get_monthly_cumules()['cta'][this.month-1]/this.get_monthly_cumules_lastyear()['cta'][this.month-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.get_monthly_cumules()['cta'][this.month-1]/this.get_monthly_cumules_2019()['cta'][this.month-1] - 1)*100)} %</td></tr>
 			<tr><td>Est</td><td>${this.flights.nbre_vols['est'][this.month-1]}</td>
 			<td>${MyFormat.format((this.flights.nbre_vols['est'][this.month-1]/lastmonth_flights.nbre_vols['est'][this.lastmonth_month-1] - 1)*100)} %</td>
 			<td>${MyFormat.format((this.flights.nbre_vols['est'][this.month-1]/this.flights_lastyear.nbre_vols['est'][this.month-1] - 1)*100)} %</td>
 			<td>${MyFormat.format((this.flights.nbre_vols['est'][this.month-1]/this.flights_2019.nbre_vols['est'][this.month-1] - 1)*100)} %</td>
-			<td>${this.get_monthly_cumules()['est']}</td>
-			<td>${MyFormat.format((this.get_monthly_cumules()['cta']/this.get_monthly_cumules_lastyear()['est'] - 1)*100)} %</td>
-			<td>${MyFormat.format((this.get_monthly_cumules()['est']/this.get_monthly_cumules_2019()['est'] - 1)*100)} %</td></tr><tr>
+			<td>${this.get_monthly_cumules()['est'][this.month-1]}</td>
+			<td>${MyFormat.format((this.get_monthly_cumules()['est'][this.month-1]/this.get_monthly_cumules_lastyear()['est'][this.month-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.get_monthly_cumules()['est'][this.month-1]/this.get_monthly_cumules_2019()['est'][this.month-1] - 1)*100)} %</td></tr><tr>
 			<td>West</td><td>${this.flights.nbre_vols['west'][this.month-1]}</td>
 			<td>${MyFormat.format((this.flights.nbre_vols['west'][this.month-1]/lastmonth_flights.nbre_vols['west'][this.lastmonth_month-1] - 1)*100)} %</td>
 			<td>${MyFormat.format((this.flights.nbre_vols['west'][this.month-1]/this.flights_lastyear.nbre_vols['west'][this.month-1] - 1)*100)} %</td>
 			<td>${MyFormat.format((this.flights.nbre_vols['west'][this.month-1]/this.flights_2019.nbre_vols['west'][this.month-1] - 1)*100)} %</td>
-			<td>${this.get_monthly_cumules()['west']}</td>
-			<td>${MyFormat.format((this.get_monthly_cumules()['cta']/this.get_monthly_cumules_lastyear()['west'] - 1)*100)} %</td>
-			<td>${MyFormat.format((this.get_monthly_cumules()['west']/this.get_monthly_cumules_2019()['west'] - 1)*100)} %</td></tr><tr>
+			<td>${this.get_monthly_cumules()['west'][this.month-1]}</td>
+			<td>${MyFormat.format((this.get_monthly_cumules()['west'][this.month-1]/this.get_monthly_cumules_lastyear()['west'][this.month-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.get_monthly_cumules()['west'][this.month-1]/this.get_monthly_cumules_2019()['west'][this.month-1] - 1)*100)} %</td></tr><tr>
 			<td>App</td><td>${this.flights.nbre_vols['app'][this.month-1]}</td>
 			<td>${MyFormat.format((this.flights.nbre_vols['app'][this.month-1]/lastmonth_flights.nbre_vols['app'][this.lastmonth_month-1] - 1)*100)} %</td>
 			<td>${MyFormat.format((this.flights.nbre_vols['app'][this.month-1]/this.flights_lastyear.nbre_vols['app'][this.month-1] - 1)*100)} %</td>
 			<td>${MyFormat.format((this.flights.nbre_vols['app'][this.month-1]/this.flights_2019.nbre_vols['app'][this.month-1] - 1)*100)} %</td>
-			<td>${this.get_monthly_cumules()['app']}</td>
-			<td>${MyFormat.format((this.get_monthly_cumules()['cta']/this.get_monthly_cumules_lastyear()['app'] - 1)*100)} %</td>
-			<td>${MyFormat.format((this.get_monthly_cumules()['app']/this.get_monthly_cumules_2019()['app'] - 1)*100)} %</td>`;
+			<td>${this.get_monthly_cumules()['app'][this.month-1]}</td>
+			<td>${MyFormat.format((this.get_monthly_cumules()['app'][this.month-1]/this.get_monthly_cumules_lastyear()['app'][this.month-1] - 1)*100)} %</td>
+			<td>${MyFormat.format((this.get_monthly_cumules()['app'][this.month-1]/this.get_monthly_cumules_2019()['app'][this.month-1] - 1)*100)} %</td>`;
 			res += '</tr>';	
 		res += '</tbody></table>';
 		
