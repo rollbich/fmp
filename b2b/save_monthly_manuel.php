@@ -60,7 +60,7 @@ function get_monthly_traffic($dateTime1, $dateTime2) {
 /*  ------------------------------------------------------------------------------
       get all json reg files file Between 2 Dates non incluse la dernière date
         @return {
-            "LFMMFMPE" : {
+            "1": {"LFMMFMPE" : {
                 "delay" : 321,
                 "causes" : {
                     "ATC_STAFFING" : 39,
@@ -69,7 +69,8 @@ function get_monthly_traffic($dateTime1, $dateTime2) {
             },
             "nomTVsetFrance" : {
                 ...
-            }
+            },
+            "N° sem": {}
         }
     ------------------------------------------------------------------------------ */
 function get_monthly_regs($dateTime1, $dateTime2) {

@@ -58,7 +58,8 @@ process_file_reg($file_reg, $arr_reguls, $last_month, $year_last_month);
 
 /*  ------------------------------------------------------------------------------
       get all json reg files file Between 2 Dates non incluse la dernière date
-        @return {
+        @return 
+           "1": {
             "LFMMFMPE" : {
                 "delay" : 321,
                 "causes" : {
@@ -68,7 +69,8 @@ process_file_reg($file_reg, $arr_reguls, $last_month, $year_last_month);
             },
             "nomTVsetFrance" : {
                 ...
-            }
+            },
+            "N° sem": {}
         }
     ------------------------------------------------------------------------------ */
 function get_monthly_regs($dateTime1, $dateTime2) {
