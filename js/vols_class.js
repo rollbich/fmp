@@ -514,7 +514,8 @@ class monthly_briefing {
 			this.lastmonth_month = this.get_last_month()[1];
 			this.lastmonth_year = this.get_last_month()[0];
 			this.show_data();
-			show_delay_graph_mois_par_causes("accueil_causes", this.year, this.month, this.reguls.delay_par_cause['cta'][this.month-1]);
+			show_delay_graph_mois_par_causes("accueil_causes_cta", year, month, tabl.reguls.delay_par_cause['cta'][month-1], "LFMM CTA");
+			show_delay_graph_mois_par_causes("accueil_causes_app", year, month, tabl.reguls.delay_par_cause['app'][month-1], "Approches");
 		})
 	}
 
