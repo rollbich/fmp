@@ -260,6 +260,7 @@ span.rect {
 	flex-wrap: wrap;
 	justify-content: center;
 	margin: 5px;
+	margin-bottom : 100px;
 	height: auto;
 	width: auto;
 }
