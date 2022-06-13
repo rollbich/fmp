@@ -37,6 +37,8 @@ require("../php/check_ok.inc.php");
 			for (let k=1;k<13;k++) { listMonth.push(k);}
 			show_traffic_graph_mois_cumule("accueil_vols", year, listMonth, tabl.get_monthly_cumules()['cta'], tabl.get_monthly_cumules("lastyear")['cta'], tabl.get_monthly_cumules("2019")['cta'], "LFMMCTA");
 			show_delay_graph_mois_cumule("accueil_reguls", year, listMonth, tabl.get_monthly_reg_cumules()['cta'], tabl.get_monthly_reg_cumules("lastyear")['cta'], tabl.get_monthly_reg_cumules("2019")['cta'], "LFMMCTA");
+			show_delay_graph_mois_par_causes("accueil_causes_cta", year, month, tabl.reguls.delay_par_cause['cta'][month-1], "LFMM CTA");
+			show_delay_graph_mois_par_causes("accueil_causes_app", year, month, tabl.reguls.delay_par_cause['app'][month-1], "Approches");
       	});
     </script>
 </head>
@@ -50,6 +52,8 @@ require("../php/check_ok.inc.php");
 	  <div id="accueil_vols"></div>
 	  <div id="accueil_reguls"></div>
 	</div>
+	<div id="accueil_causes_cta"></div>
+	<div id="accueil_causes_app"></div>
 </div>
 </div>
 <?php include("../php/upload.inc.php"); ?>

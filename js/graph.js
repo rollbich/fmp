@@ -915,3 +915,98 @@ function show_delay_graph_mois_cumule(containerId, year, listMonth, data, data_l
 	myChart.setOption(option);
 	
 }
+
+/*	--------------------------------------------------------------------------
+	 	Affiche le graph Delay par causes du mois 
+			@param {string} containerId - Id de l'HTML Element conteneur
+			@param {array} dataAxis - [1, 2, 3, month...]
+			@param {array} data - [...]
+	-------------------------------------------------------------------------- */
+function show_delay_graph_mois_par_causes(containerId, year, month, data, titre) {
+	const nom_mois = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+	let chartDom = $(containerId);
+	chartDom.style.height = "400px";
+	chartDom.style.width = "870px";
+	let myChart = echarts.init(chartDom);
+	
+	let option;
+	const result = [];
+	data.forEach(cause_obj => {
+		for (cause in cause_obj) {
+			let obj = {};
+			obj["value"] = cause_obj[cause];
+			obj["name"] = cause;
+			result.push(obj);
+		}
+	}) 
+	
+	option = {
+		// Global palette:
+		color: [
+			'#d66',
+			'#6b6',
+			'lightblue',
+			'orange',
+			'pink',
+			'yellow',
+			'white',
+			'#bda29a',
+			'#6e7074',
+			'#546570',
+			'#c4ccd3'
+		  ],
+		title: {
+			text: `Délai par cause - ${nom_mois[month-1]} - ${titre}`,
+			textStyle: {
+				fontSize: '1.5rem',
+				color: '#FFF'
+			},
+			x: 'center',
+			y: 'top',
+			padding: 10
+		},
+		tooltip: {
+		  trigger: 'item'
+		},
+		legend: {
+		  top: 'center',
+		  left: 'left',
+		  textStyle: {
+			fontSize: '1.2rem',
+			color: '#eee'
+		  },
+		  orient: 'vertical'
+		},
+		series: [
+		  {
+			name: 'Reason',
+			type: 'pie',
+			radius: ['60%', '90%'],
+			avoidLabelOverlap: false,
+			itemStyle: {
+			  borderRadius: 10,
+			  borderWidth: 2
+			},
+			top: '20%',
+			label: {
+			  show: false,
+			  position: 'center'
+			},
+			emphasis: {
+			  label: {
+				show: true,
+				fontSize: '20',
+				fontWeight: 'bold'
+			  }
+			},
+			labelLine: {
+			  show: false
+			},
+			data: result
+		  }
+		]
+	};
+	
+	myChart.setOption(option);
+	
+}

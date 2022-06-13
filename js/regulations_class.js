@@ -87,6 +87,7 @@ class period_regul {
 		this.end_day = end_day;
 		this.zone = zone;
         this.dates_arr = get_dates_array(new Date(start_day), new Date(end_day));
+		this.rates = {};
 	}
 	
     /*  ----------------------------------------------------------------------
@@ -182,10 +183,14 @@ class period_regul {
 		
         for (const date of this.dates_arr) {
             this.reguls[date]["reguls"]["LFMMFMPE"].forEach( value => {
-                let deb = extract_time(value.applicability.wef);
+				let deb = extract_time(value.applicability.wef);
                 let fin = extract_time(value.applicability.unt);
+				const id = value.regId;
+				this.rates[id] = {};
+				this.rates[id]["limites"]  = value["constraints"];
+				this.rates[id]["lastUpdate"] = value["lastUpdate"];
                 res += '<tr>'; 
-                res +=`<td>${reverse_date(date)}</td><td>${value.regId}</td><td>${value.tv}</td><td>${deb} TU</td><td>${fin} TU</td><td>${value.delay}</td><td>${value.reason}</td><td>${value.impactedFlights}</td>`;
+                res +=`<td>${reverse_date(date)}</td><td id='${id}' class='hover_reg_id'>${value.regId}</td><td>${value.tv}</td><td>${deb} TU</td><td>${fin} TU</td><td>${value.delay}</td><td>${value.reason}</td><td>${value.impactedFlights}</td>`;
                 res += '</tr>';	
             });
         }
@@ -199,8 +204,12 @@ class period_regul {
             this.reguls[date]["reguls"]["LFMMFMPW"].forEach( value => {
                 let deb = extract_time(value.applicability.wef);
                 let fin = extract_time(value.applicability.unt);
+				const id = value.regId;
+				this.rates[id] = {};
+				this.rates[id]["limites"]  = value["constraints"];
+				this.rates[id]["lastUpdate"] = value["lastUpdate"];
                 res += '<tr>'; 
-                res +=`<td>${reverse_date(date)}</td><td>${value.regId}</td><td>${value.tv}</td><td>${deb} TU</td><td>${fin} TU</td><td>${value.delay}</td><td>${value.reason}</td><td>${value.impactedFlights}</td>`;
+                res +=`<td>${reverse_date(date)}</td><td id='${id}' class='hover_reg_id'>${id}</td><td>${value.tv}</td><td>${deb} TU</td><td>${fin} TU</td><td>${value.delay}</td><td>${value.reason}</td><td>${value.impactedFlights}</td>`;
                 res += '</tr>';	
             });
         }
@@ -214,8 +223,12 @@ class period_regul {
             this.reguls[date]["reguls"]["LFMMAPP"].forEach( value => {
                 let deb = extract_time(value.applicability.wef);
                 let fin = extract_time(value.applicability.unt);
+				const id = value.regId;
+				this.rates[id] = {};
+				this.rates[id]["limites"]  = value["constraints"];
+				this.rates[id]["lastUpdate"] = value["lastUpdate"];
                 res += '<tr>'; 
-                res +=`<td>${reverse_date(date)}</td><td>${value.regId}</td><td>${value.tv}</td><td>${deb} TU</td><td>${fin} TU</td><td>${value.delay}</td><td>${value.reason}</td><td>${value.impactedFlights}</td>`;
+                res +=`<td>${reverse_date(date)}</td><td id='${id}' class='hover_reg_id'>${id}</td><td>${value.tv}</td><td>${deb} TU</td><td>${fin} TU</td><td>${value.delay}</td><td>${value.reason}</td><td>${value.impactedFlights}</td>`;
                 res += '</tr>';	
             });
         }
@@ -224,7 +237,40 @@ class period_regul {
 		delays += "</div>";
 		delays += res;
 		$(containerId).innerHTML = delays;
-		
+		console.log("this.rates");
+		console.log(this.rates);
+		const td_reg_id = document.querySelectorAll('.hover_reg_id');
+		td_reg_id.forEach(td_el => {
+			td_el.addEventListener('mouseover', (event) => {
+				const reg_id = td_el.id;
+				const el = document.createElement('div');
+				el.setAttribute('id', 'popratereg');
+				let contenu = reg_id+"<br>";
+				let data = this.rates[reg_id];
+				if (typeof data.lastUpdate !== 'undefined') {
+					contenu += data.lastUpdate.userUpdateType + " on " + data.lastUpdate.userUpdateEventTime + "<br>";
+				}
+				contenu += "<br>";
+				data.limites.forEach( con => {
+					contenu += extract_time(con.constraintPeriod.wef) + " - " + extract_time(con.constraintPeriod.unt) + "  : " + con.normalRate + "<br>";
+				})
+				// const pos = td_el.parentNode.parentNode.parentNode.getBoundingClientRect();   element Table
+				const pos = td_el.getBoundingClientRect();
+				const tabl = td_el.parentNode.parentNode.parentNode.getBoundingClientRect();
+				el.style.position = 'absolute';
+				el.style.left = tabl.right + 30 + 'px';
+				el.style.top = pos.top - 50 + window.scrollY + 'px';
+				el.style.backgroundColor = '#d99';
+				el.style.padding = '10px';
+				el.style.width = '250px';
+				let parentDiv = td_el.parentNode;
+				parentDiv.insertBefore(el, $('globalcontainer'));
+				el.innerHTML = contenu;
+			})
+			td_el.addEventListener('mouseleave', (event) => {
+				$('popratereg').remove();
+			})
+		})
 	}
 }
 
@@ -275,6 +321,53 @@ class weekly_regs {
 		}
 		return regs;
 	}
+
+	/* 	----------------------------------------------------
+		@returns : {
+			"cta": {
+				"ATC_STAFFING":1953,
+				"SPECIAL_EVENT":311,
+				"cause": delai
+				...
+			},
+			"est" : {...},
+			"west" : {...},
+			"app": { ...} 
+		}
+	---------------------------------------------------- */
+
+	get_weekly_reg_by_cause() {
+		const regs = {};
+		regs['year'] = parseInt(this.weekly_regs['year']);
+		regs['cta'] = [];
+		regs['est'] = [];
+		regs['west'] = [];
+		regs['app'] = [];
+		for(let i=1;i<54;i++) { 
+			if (typeof this.weekly_regs[i] !== 'undefined') {
+				const reg_est = this.weekly_regs[i]['LFMMFMPE']['causes'];
+				const reg_west = this.weekly_regs[i]['LFMMFMPW']['causes'];
+				const reg_app = this.weekly_regs[i]['LFMMAPP']['causes'];
+				// Fusion des objets reg_est et reg_west
+				const reg_cta = {};
+				Object.assign(reg_cta, this.weekly_regs[i]['LFMMFMPE']['causes']);
+				const key_est = Object.keys(reg_est);
+				const key_west = Object.keys(reg_west);
+				key_west.forEach( elem => {
+					if (!key_est.includes(elem)) {
+						reg_cta[elem] = reg_west[elem];
+					} else {
+						reg_cta[elem] += reg_west[elem];
+					}
+				})
+				regs['cta'].push(reg_cta);
+				regs['est'].push(reg_est);
+				regs['west'].push(reg_west);
+				regs['app'].push(reg_app);
+			} 
+		}
+		return regs;
+	}
 }
 
 class monthly_regs {
@@ -285,6 +378,7 @@ class monthly_regs {
 	async init() {
 		this.monthly_regs = await this.get_data_monthly_regs();
 		this.delay = this.get_monthly_delay();
+		this.delay_par_cause = this.get_monthly_reg_by_cause();
 	}
 
 	/*  ----------------------------------------------------------------------------------
@@ -339,6 +433,122 @@ class monthly_regs {
 				regs['est'].push(reg_est);
 				regs['west'].push(reg_west);
 				regs['app'].push(reg_app);
+			} 
+		}
+		return regs;
+	}
+
+/* 	-----------------------------------------------------------------
+		@input "causes": {"ATC_STAFFING":1953,"SPECIAL_EVENT":311}
+		@returns : {
+			"cta": [ [ array du mois janvier
+				{"ATC_STAFFING":1953},  
+				{"SPECIAL_EVENT":311},
+				{"cause": delai}
+				...
+				], [ array du mois février
+				...
+				]... ]
+			"est" : [[...]],
+			"west" : [[...]],
+			"app": [[...]] 
+		}
+	----------------------------------------------------------------- */
+
+	get_monthly_reg_by_cause() {
+		const regs = {};
+		regs['year'] = parseInt(this.monthly_regs['year']);
+		regs['cta'] = [];
+		regs['est'] = [];
+		regs['west'] = [];
+		regs['app'] = [];
+		for(let i=1;i<13;i++) { 
+			if (typeof this.monthly_regs[i] !== 'undefined') {
+				const reg_est = this.monthly_regs[i]['LFMMFMPE']['causes'];
+				const reg_west = this.monthly_regs[i]['LFMMFMPW']['causes'];
+				const reg_app = this.monthly_regs[i]['LFMMAPP']['causes'];
+				const key_est = Object.keys(reg_est);
+				const r_est = [];
+				key_est.forEach (elem => {
+					if (elem === 'ATC_STAFFING') r_est.push({ [elem]: reg_est[elem] });
+				})
+				key_est.forEach (elem => {
+					if (elem === 'ATC_CAPACITY') r_est.push({ [elem]: reg_est[elem] });
+				})
+				key_est.forEach (elem => {
+					if (elem === 'WEATHER') r_est.push({ [elem]: reg_est[elem] });
+				})
+				key_est.forEach (elem => {
+					if (elem === 'AIRSPACE_MANAGEMENT') r_est.push({ [elem]: reg_est[elem] });
+				})
+				key_est.forEach (elem => {
+					if (elem !== 'ATC_STAFFING' && elem !== 'ATC_CAPACITY' && elem !== 'WEATHER' && elem !== 'AIRSPACE_MANAGEMENT') r_est.push({ [elem]: reg_est[elem] });
+				})
+				const key_west = Object.keys(reg_west);
+				const r_west = [];
+				key_west.forEach (elem => {
+					if (elem === 'ATC_STAFFING') r_west.push({ [elem]: reg_west[elem] });
+				})
+				key_west.forEach (elem => {
+					if (elem === 'ATC_CAPACITY') r_west.push({ [elem]: reg_west[elem] });
+				})
+				key_west.forEach (elem => {
+					if (elem === 'WEATHER') r_west.push({ [elem]: reg_west[elem] });
+				})
+				key_west.forEach (elem => {
+					if (elem === 'AIRSPACE_MANAGEMENT') r_west.push({ [elem]: reg_west[elem] });
+				})
+				key_west.forEach (elem => {
+					if (elem !== 'ATC_STAFFING' && elem !== 'ATC_CAPACITY' && elem !== 'WEATHER' && elem !== 'AIRSPACE_MANAGEMENT') r_west.push({ [elem]: reg_west[elem] });
+				})
+				// Fusion des objets reg_est et reg_west
+				const reg_cta = {};
+				Object.assign(reg_cta, this.monthly_regs[i]['LFMMFMPE']['causes']);
+				key_west.forEach( elem => {
+					if (!key_est.includes(elem)) {
+						reg_cta[elem] = reg_west[elem];
+					} else {
+						reg_cta[elem] += reg_west[elem];
+					}
+				})
+				const key_cta = Object.keys(reg_cta);
+				const r_cta = [];
+				key_cta.forEach (elem => {
+					if (elem === 'ATC_STAFFING') r_cta.push({ [elem]: reg_cta[elem] });
+				})
+				key_cta.forEach (elem => {
+					if (elem === 'ATC_CAPACITY') r_cta.push({ [elem]: reg_cta[elem] });
+				})
+				key_cta.forEach (elem => {
+					if (elem === 'WEATHER') r_cta.push({ [elem]: reg_cta[elem] });
+				})
+				key_cta.forEach (elem => {
+					if (elem === 'AIRSPACE_MANAGEMENT') r_cta.push({ [elem]: reg_cta[elem] });
+				})
+				key_cta.forEach (elem => {
+					if (elem !== 'ATC_STAFFING' && elem !== 'ATC_CAPACITY' && elem !== 'WEATHER' && elem !== 'AIRSPACE_MANAGEMENT') r_cta.push({ [elem]: reg_cta[elem] });
+				})
+				const key_app = Object.keys(reg_app);
+				const r_app = [];
+				key_app.forEach (elem => {
+					if (elem === 'ATC_STAFFING') r_app.push({ [elem]: reg_app[elem] });
+				})
+				key_app.forEach (elem => {
+					if (elem === 'ATC_CAPACITY') r_app.push({ [elem]: reg_app[elem] });
+				})
+				key_app.forEach (elem => {
+					if (elem === 'WEATHER') r_app.push({ [elem]: reg_app[elem] });
+				})
+				key_app.forEach (elem => {
+					if (elem === 'AIRSPACE_MANAGEMENT') r_app.push({ [elem]: reg_app[elem] });
+				})
+				key_app.forEach (elem => {
+					if (elem !== 'ATC_STAFFING' && elem !== 'ATC_CAPACITY' && elem !== 'WEATHER' && elem !== 'AIRSPACE_MANAGEMENT') r_app.push({ [elem]: reg_app[elem] });
+				})
+				regs['cta'].push(r_cta);
+				regs['est'].push(r_est);
+				regs['west'].push(r_west);
+				regs['app'].push(r_app);
 			} 
 		}
 		return regs;

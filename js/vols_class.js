@@ -404,6 +404,10 @@ class monthly_briefing {
 		await this.reguls.init();
 		await this.reguls_lastyear.init();
 		await this.reguls_2019.init();
+
+		this.k = this.reguls.get_monthly_reg_by_cause();
+		console.log("k");
+		console.log(this.k);
 	}
 
 	get_last_month() {
@@ -510,6 +514,7 @@ class monthly_briefing {
 			this.lastmonth_month = this.get_last_month()[1];
 			this.lastmonth_year = this.get_last_month()[0];
 			this.show_data();
+			show_delay_graph_mois_par_causes("accueil_causes", this.year, this.month, this.reguls.delay_par_cause['cta'][this.month-1]);
 		})
 	}
 
