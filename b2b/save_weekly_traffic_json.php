@@ -68,27 +68,38 @@ function get_weekly_regs($dateTime1, $dateTime2) {
         new DateInterval('P1D'),
         $dateTime2
     );
-    $cta = 0;
-    $app = 0;
-    $est = 0;
-    $west = 0;
+    // Chargement de tous les fichiers, tableau d'object journalier
+    $donnees = [];
     foreach ($period as $key => $value) {
         $file_name = "https://dev.lfmm-fmp.fr/b2b/json/".$value->format('Ymd')."-reg.json";
         $data = get_file($file_name);
-        $donnees = json_decode($data[0]);
-        
-        foreach ($donnees->LFMMFMPE as $obj) {
-            $est += intval($obj->delay);
-        }
-        foreach ($donnees->LFMMFMPW as $obj) {
-            $west += intval($obj->delay);
-        }
-        foreach ($donnees->LFMMAPP as $obj) {
-            $app += intval($obj->delay);
-        }
-        $cta = $est + $west;
+        array_push($donnees, json_decode($data[0]));
     }
-    return [$cta, $est, $west, $app];
+
+    // Récupération des tvset
+    $tvsetall = array_keys(get_object_vars($donnees[0]));
+
+    // Config de l'object $result
+    $result = new stdClass();
+    foreach ($tvsetall as $tvset) {
+        $result->$tvset = new stdClass();
+        $result->$tvset->delay = 0;
+        $result->$tvset->causes = new stdClass();
+    }
+
+    // Calcul des délais et des causes
+    foreach ($donnees as $obj_jour) {
+        foreach ($tvsetall as $tvset) {
+            foreach ($obj_jour->$tvset as $obj) { 
+                $result->$tvset->delay += intval($obj->delay);
+                $r = $obj->reason;
+                if (!isset($result->$tvset->causes->$r)) $result->$tvset->causes->$r = 0;
+                $result->$tvset->causes->$r += intval($obj->delay);
+            }
+        }
+    }
+    //var_dump($result);
+    return $result;
 }
 
 /*  -----------------------------------------------------------------------------
@@ -125,6 +136,9 @@ function process_file_traffic($file, $arr, $week_number, $year) {
 }
 
 function process_file_reg($file, $arr, $week_number, $year) {
+    // Récupération des tvset
+    $tvsetall = array_keys(get_object_vars($arr));
+
     $data = get_file($file);
     // existence du fichier
     if ($data[1] == 200) {
@@ -136,16 +150,11 @@ function process_file_reg($file, $arr, $week_number, $year) {
         echo "Fichier ".$file." inexistant"."<br>";
         $json_year = new stdClass();
         $json_year->year = intval($year);
-        $json_year->cta = new stdClass();
-        $json_year->est = new stdClass();
-        $json_year->west = new stdClass();
-        $json_year->app = new stdClass();
     }
 
-    $json_year->cta->$week_number = $arr[0];
-    $json_year->est->$week_number = $arr[1];
-    $json_year->west->$week_number = $arr[2];
-    $json_year->app->$week_number = $arr[3];
+    foreach ($tvsetall as $tvset) {
+        $json_year->$week_number = $arr;
+    }
     
     echo "Nouveau json reg"."<br>";
     var_dump($json_year);
