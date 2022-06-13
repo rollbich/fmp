@@ -85,7 +85,7 @@
         </div>
         <div class="form-group">
             <label class="form-label" for="com_in">Comm:</label>
-            <input class="form-control" id="com_in" name="com_in" placeholder="Commentaire" type="texte" maxlength="12">
+            <input class="form-control" id="com_in" name="com_in" placeholder="Secteur / Commentaire" type="texte" maxlength="12">
         </div>
         <button id='button_ajout' type='button' class="btn">Ajouter</button>
     </form>

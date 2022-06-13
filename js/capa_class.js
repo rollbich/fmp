@@ -178,7 +178,10 @@ class capa {
 				}
 				pcs.push([tour_utc["J1"][i][0], nb_pc]);
 				nb_pc = 0;
-
+				
+				/* 	----------------------------------------------------------------------------------------
+						in15mn[i] = [nb_pc_supp, { "type": "Inst ou Eleve ....", "comm": "commentaire"}]
+					---------------------------------------------------------------------------------------- */
 				in15mn[i] = [0, []];
 				if (typeof instr[this.zone][this.day] !== 'undefined') {
 					instr[this.zone][this.day].forEach( (elem, index) => {
@@ -521,6 +524,7 @@ class feuille_capa extends capa {
 				let det = "";
 				detail.forEach(value => {
 					const v = value.split(":");
+					if (v[1] === "") v[1] = "-";
 					det += `<div style="float:left;width:50%;">${v[0]} : </div><div style="float:left;width:50%;">${v[1]}</div>`;
 				})
 				const pos = td_el.getBoundingClientRect();
@@ -530,7 +534,8 @@ class feuille_capa extends capa {
 				el.style.backgroundColor = '#fbb';
 				el.style.padding = '10px';
 				el.style.width = '200px';
-				document.body.insertBefore(el, $('feuille_capa_tour'));
+				let parentDiv = document.getElementById("glob_container");
+				parentDiv.insertBefore(el, $('feuille_capa_tour'));
 				el.innerHTML = det;
 			})
 			td_el.addEventListener('mouseleave', (event) => {
