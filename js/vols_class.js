@@ -495,7 +495,7 @@ class monthly_briefing {
 	}
 
 	show_data() {
-		let sel =  `<select id="semaine" class="select">`;
+		let sel =  `<select id="mois" class="select">`;
 		for(let i=1;i<13;i++) {
 			if (i === this.month) { sel += `<option selected value="${i}">${this.nom_mois[i-1]}</option>`; } else 
 			{ sel += `<option value="${i}">${this.nom_mois[i-1]}</option>`; }
@@ -508,8 +508,8 @@ class monthly_briefing {
 	}
 
 	change_month() {
-		$('semaine').addEventListener('change', (e) => {
-			const val = $('semaine').value;
+		$('mois').addEventListener('change', (e) => {
+			const val = $('mois').value;
 			this.month = parseInt(val);
 			this.lastmonth_month = this.get_last_month()[1];
 			this.lastmonth_year = this.get_last_month()[0];
