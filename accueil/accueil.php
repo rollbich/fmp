@@ -64,6 +64,7 @@ require("../php/check_ok.inc.php");
 <body>
 <?php include("../php/nav.inc.php"); ?>
 <h1>LFMM-FMP - Briefing semaine dernière</h1>
+<p class="center">Source trafic : données FPL (B2B)</p>
 <div id="glob_container">
 <div id='accueil' style="display: flex; flex-wrap: wrap">
   	<div id="accueil_left">

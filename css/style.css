@@ -51,6 +51,12 @@ h2 {
 	cursor: pointer;
 }
 
+.center {
+	text-align: center;
+	margin-left: auto;
+	margin-right: auto;
+}
+
 .red {
 	color: rgb(147, 218, 147);
 }
@@ -241,6 +247,10 @@ select, option {
 }
 
 /* ------- Résultats ------- */
+
+#semaine {
+	margin-top: 3rem;
+}
 
 .delay {
 	display: flex;
