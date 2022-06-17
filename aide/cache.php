@@ -35,7 +35,8 @@ require("../php/check_ok.inc.php");
     <div>
     <h2 id="cache" class="center">Inhiber le cache du navigateur Firefox</h2>
     <p class="intro">Tous les navigateurs possèdent un cache pour stocker des fichiers jugés 'statiques' localement afin d'éviter leurs téléchargements : cela permet l'accélération de l'affichage de la page.</p>
-    <p class="intro">En cas de mise à jour du site, Firefox peut continuer à utiliser les anciens fichiers stockés dans le cache du navigateur.</p>
+    <p class="intro">Sur le site lfmm-fmp.fr, le cache est désactivé. Par conséquent, l'affichage du site est toujours à jour.</p>
+    <p class="intro">Cela peut ne pas être le cas pour d'autres sites.</p>
     <p class="intro">Pour forcer Firefox à utiliser les fichiers à jour, il faut désactiver le cache le temps de recharger la page.</p>
     <p>C'est ce que décrit la manipulation ci-dessous. Celle-ci permet de ne pas toucher au cache des autres pages.</p>
     <hr>
