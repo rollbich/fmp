@@ -574,3 +574,86 @@ li.orange {
 li.vert {
 	color: var(--color-j);
 }
+
+/*  --------------
+	  Aide
+	-------------- */
+body.aide article {
+	font-family: 'Avenir Next Regular';
+	width: 800px;
+	background: #ddd;
+	color: black;
+	border-radius: 20px;
+}
+
+body.aide article h2 {
+	font-size: 2.5rem;
+	font-weight: bold;
+	text-decoration: underline;
+	padding: 3rem;
+}
+
+body.aide article p.intro {
+	margin-bottom: 1.6rem;
+}
+
+body.aide article p {
+	font-size: 1.6rem;
+	line-height: 1.3;
+	margin: 1rem;
+	text-align: left;
+	padding-left: 3rem;
+	padding-right: 3rem;
+}
+
+body.aide article p span{
+	background: yellow;
+}
+
+body.aide img {
+	margin: 2rem;
+}
+
+body.aide .card_container {
+	display: grid;
+	grid-template-columns: repeat(1, 100%);
+	gap: 10px;
+	height: auto;
+	width: 759px;
+	margin: 60px auto;
+}
+
+body.aide .card {
+	display: flex;
+	text-align: left;
+	padding: 30px;
+}
+
+body.aide .card h2 a:hover {
+	color: var(--color-2019);
+}
+
+body.aide .card img {
+	height: 200px;
+	width: 320px;
+	margin: 0 auto 0 0;
+}
+
+body.aide .card div.content {
+	display:flex;
+	flex-direction: column;
+	padding: 1.2rem;
+}
+
+body.aide .card div.content h2 {
+	font-family: 'Roboto';
+	font-size: 2.4rem;
+	font-weight: 700;
+	line-height: 1.1;
+}
+
+body.aide .card div.content p {
+	font-size: 1.2rem;
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+}

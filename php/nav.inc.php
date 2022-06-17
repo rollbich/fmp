@@ -27,6 +27,9 @@
           <!--<a class="navbar-item" href="../php/reloadB2B.php">
             Reload B2B
           </a>-->
+          <a class="navbar-item" href="../aide/index.php">
+            Aide et Tutos
+          </a>
 					<a class="navbar-item" href="../php/logout.php">
             Logout
           </a>
