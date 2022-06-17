@@ -643,6 +643,7 @@ body.aide .card div.content {
 	display:flex;
 	flex-direction: column;
 	padding: 1.2rem;
+	padding-top: 0;
 }
 
 body.aide .card div.content h2 {
