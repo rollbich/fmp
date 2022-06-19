@@ -252,7 +252,7 @@ class period_regul {
 				}
 				contenu += "<br>";
 				data.limites.forEach( con => {
-					contenu += extract_time(con.constraintPeriod.wef) + " - " + extract_time(con.constraintPeriod.unt) + "  : " + con.normalRate + "<br>";
+					contenu += extract_time(con.constraintPeriod.wef) + " - " + extract_time(con.constraintPeriod.unt) + "  : Rate " + con.normalRate + "<br>";
 				})
 				// const pos = td_el.parentNode.parentNode.parentNode.getBoundingClientRect();   element Table
 				const pos = td_el.getBoundingClientRect();
