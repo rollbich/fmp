@@ -163,11 +163,11 @@ class schema_rea {
         return `${dd[0]}/${dd[1]}/COUR-${d}.${this.zone}.sch.rea`;
     }
 
-/*  -----------------------------------------
+/*  -------------------------------------------------------------
 	  trie tv par groupe pour l'est
-	 	@param {array}  - array non trié
-		@returns {array} - array trié
-	----------------------------------------- */
+	 	@param {array}  - array non trié [[tv, n°position],...]
+		@returns {array} - array trié [[tv, n°position],...]
+	------------------------------------------------------------- */
     tri(arr_tv) {
         // on met dans un tableau les tv du groupe 1, puis du groupe 2, etc...
         const bloc1 = ["RAE", "RAEE", "RAEM", "RAES", "RAEE1", "SBAM", "MNST", "BTAJ", "SAB", "BAM", "MN", "ST", "AJ", "BT"];

@@ -35,9 +35,19 @@
           </a>
 				</div>
 			</div>	
-    <a class="navbar-item" href="../ouverture">
-        Ouverture
-      </a>
+      <div class="navbar-item has-dropdown is-hoverable">
+				<a class="navbar-link" style="background: transparent;">
+          Secteurs
+        </a>
+        <div class="navbar-dropdown">
+          <a class="navbar-item" href="../ouverture">
+            Ouverture
+          </a>
+          <a class="navbar-item" href="../confs">
+            Confs
+          </a>
+        </div>
+      </div>
 			<a class="navbar-item" href="../capa">
         Capa
       </a>
