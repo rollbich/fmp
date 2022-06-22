@@ -8,7 +8,7 @@
 	<meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="robots" content="noindex">
-	<title>Ouverture</title>
+	<title>Confs</title>
 	<link rel="icon" href="../favicon.ico" />
 	<link rel="stylesheet" type="text/css" href="../css/font.css" />
 	<link rel="stylesheet" type="text/css" href="../css/list-component.css" />
@@ -36,15 +36,10 @@
 		document.addEventListener('DOMContentLoaded', (event) => {
 
 			<?php include("../php/nav.js.inc.php"); ?>
-			
-			new dragger('graph-container-h20', 'drag-container');
-			new dragger('graph-container-occ', 'drag-container');
 
 			const z = document.querySelector('#zone');
 			z.addEventListener('change', (e) => {
 				$('result').innerHTML = "";
-				$('graph-container-h20').classList.add('off');
-				$('graph-container-occ').classList.add('off');
 			});
 			
 			$$('.help_close_button').addEventListener('click', e => {
@@ -57,24 +52,28 @@
 				$("help_frame").classList.remove('off');
 			});
 			
-			$('bouton_ouverture').addEventListener('click', async e => {
-				$('graph-container-h20').classList.add('off');
-				$('graph-container-occ').classList.add('off');
-				let zone = $('zone').value;
-				let start_day = $('start').value;
-				const ouv = new ouverture('result', start_day, zone);
-				await ouv.init();
-				ouv.show_ouverture();
-			});
-			
-			$('bouton_uceso').addEventListener('click', async e => {
-				let zone = $('zone').value;
+			$('bouton_stat_confs').addEventListener('click', async e => {
+				/*
+                let zone = $('zone').value;
 				let day = $('start').value;
-				const cap = new capa(day, zone);
-				show_popup("Patientez !", "Chargement en cours...");
-				const pc = await cap.get_nbpc_dispo();
-				document.querySelector('.popup-close').click();
-				show_capa_graph("feuille_capa_uceso", day, zone, pc);
+				const year = parseInt(new Date(day).getFullYear());
+				new stat_confs("result",year,zone);	
+                */
+				show_popup("Stat confs", "Cette fonctionnalité n'est pas encore disponible");
+			});
+
+			$('bouton_conf').addEventListener('click', async e => {
+				let day = $('start').value;
+				const c = new conf(day);
+				await c.init();
+				c.show_result_confs("result");
+			});
+
+            $('bouton_confs_existantes').addEventListener('click', async e => {
+                let zone = $('zone').value;
+				const c = new conf(convertDate(new Date()));
+				await c.init_b2b();
+				c.show_existing_confs(zone, "result");
 			});
 			
 			document.querySelector('.popup-close').addEventListener('click', e => {
@@ -90,16 +89,17 @@
 
 <header>
 <?php include("../php/nav.inc.php"); ?>
-<h1>OUVERTURE</h1>
+<h1>CONFS</h1>
 <div id="help_frame" class="off">
 	<h2>Help</h2>
-	<p><span>Le bouton "Ouverture"</span> :<br>Il permet d'afficher graphiquement le fichier schéma réalisé de Courage. On peut ensuite cliquer sur un TV pour afficher la courbe de H20 et l'Occupancy pendant la période d'ouverture.<br>Si le TV n'est pas resté ouvert assez longtemps, le graphique H20 ne sera pas affiché.</p>
-	<p><span>Le bouton Uceso</span> :<br>Il affiche le graph proposé/réalisé. Une latence de 4 à 5s est posible le temps du chargement des données.<br>Si la date est passée, réalisé du jour J est affiché, sinon c'est le réalisé J-7 si disponible.</p>
+    <p><span>Le bouton "Confs NM"</span> :<br>Il permet d'afficher les confs NM existantes. Les données affichées sont à jour puisqu'une requête B2B a lieu en temps réel.</p>
+	<p><span>Le bouton "Prep jour"</span> :<br>Il permet d'afficher les préps déclarées au NM</p>
 	<button class="help_close_button pointer">Close</button>
 </div>
 <ul class="menu">
-	<li id="bouton_ouverture" class="pointer"><span>Ouverture</span></li>
-	<li id="bouton_uceso" class="pointer"><span>UCESO</span></li>
+    <li id="bouton_confs_existantes" class="pointer"><span>Confs NM</span></li>
+	<li id="bouton_conf" class="pointer"><span>Prép jour</span></li>
+	<li id="bouton_stat_confs" class="pointer"><span>Stats Confs</span></li>
 	<li><button class="help_button">Help</button></li>
 </ul>
 <div id="dates">
@@ -114,23 +114,8 @@
 </div>
 </header>
 
-<div id='feuille_capa_uceso'>
-</div>
-
 <div id="glob_container">
 	<div id='result'>
-	</div>
-	
-	<div id="graph-container">
-		<div id="graph-container-h20" draggable="true" class="off">
-		Drag me
-		<div id="graph_h20" class=""></div>
-		</div>
-
-		<div id="graph-container-occ" draggable="true" class="off">
-		Drag me
-		<div id="graph_occ" class=""></div>
-		</div>
 	</div>
 </div>
 

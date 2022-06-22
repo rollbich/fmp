@@ -368,6 +368,12 @@ table.conf tr.two {
 	background-color: transparent;
 }
 
+table.conf th, table.conf td {
+	/*border: solid 1px #ddd;*/
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
 /* ------- Graphes ------- */
 
 #graph-container{
