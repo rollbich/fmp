@@ -47,7 +47,7 @@ require("../php/check_ok.inc.php");
 <h1>LFMM-FMP - Stats Mensuelles</h1>
 <p class="center">Source trafic : données FPL (B2B)</p>
 <div id="glob_container">
-<div id='accueil' style="display: flex; flex-wrap: wrap">
+<div id='accueil'>
 	<div id="accueil_bilan"></div>
   	<div id="accueil_left">
 	  <div id="accueil_vols"></div>
