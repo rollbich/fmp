@@ -82,6 +82,12 @@ nav.navbar{
   }
 
 /* ------- Accueil bilan --------- */
+#accueil{
+	display: flex; 
+	flex-wrap: wrap; 
+	overflow-x: scroll;
+}
+
 #accueil_vols {
 	margin-top: 3rem;
 }

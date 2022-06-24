@@ -928,13 +928,14 @@ function show_delay_graph_mois_par_causes(containerId, year, month, data, titre)
 	chartDom.style.height = "400px";
 	chartDom.style.width = "870px";
 	let myChart = echarts.init(chartDom);
-	
+	let total = 0;
 	let option;
 	const result = [];
 	data.forEach(cause_obj => {
 		for (cause in cause_obj) {
 			let obj = {};
 			obj["value"] = cause_obj[cause];
+			total += cause_obj[cause];
 			obj["name"] = cause;
 			result.push(obj);
 		}
@@ -983,9 +984,25 @@ function show_delay_graph_mois_par_causes(containerId, year, month, data, titre)
 			type: 'pie',
 			radius: ['60%', '90%'],
 			avoidLabelOverlap: false,
-			itemStyle: {
-			  borderRadius: 10,
-			  borderWidth: 2
+			itemStyle : {
+				borderRadius: 10,
+				borderColor: '#eee',
+			  	borderWidth: 2,
+				normal : {
+					 label : {
+						show: true, position: 'inner',
+						formatter : function (params){
+							var val = ((parseInt(params.value)/parseInt(total))*100).toFixed(1);
+							return  val.toString() + '%\n'
+						},
+						textStyle : {
+							color: 'black'
+						}
+					},
+					labelLine : {
+						show : false
+					}
+				}
 			},
 			top: '20%',
 			label: {
