@@ -1,7 +1,7 @@
 <?php
 
 /*  --------------------------------------------------------------
-		sauvegarde le fichier des vols weekly tous les lundis
+		sauvegarde le fichier des vols monthly le 1er du mois
 	--------------------------------------------------------------  */
 
 $day_last_month = (int) gmdate('d', strtotime("yesterday 04:00"));
@@ -33,7 +33,7 @@ function get_monthly_traffic($dateTime1, $dateTime2) {
     $app = 0;
     foreach ($period as $key => $value) {
         //$file_name = $value->format('Ymd')."-vols.json";
-        $file_name = "localhost/fmp/b2b/json/".$value->format('Ymd')."-vols.json";
+        $file_name = "https://dev.lfmm-fmp.fr/b2b/json/".$value->format('Ymd')."-vols.json";
         //$data = file_get_contents("./json/".$file_name);
         $data = get_file($file_name);
         $donnees = json_decode($data[0]);
@@ -84,7 +84,7 @@ function get_monthly_regs($dateTime1, $dateTime2) {
     // Chargement de tous les fichiers, tableau d'object journalier
     $donnees = [];
     foreach ($period as $key => $value) {
-        $file_name = "localhost/fmp/b2b/json/".$value->format('Ymd')."-reg.json";
+        $file_name = "https://dev.lfmm-fmp.fr/b2b/json/".$value->format('Ymd')."-reg.json";
         $data = get_file($file_name);
         array_push($donnees, json_decode($data[0]));
     }
