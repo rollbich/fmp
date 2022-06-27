@@ -64,8 +64,10 @@
 
 			$('bouton_conf').addEventListener('click', async e => {
 				let day = $('start').value;
-				const c = new conf(day);
+				const zone = $('zone').value === "AE" ? "est" : "ouest";
+				const c = new conf(day, zone);
 				await c.init();
+				await c.init_b2b();
 				c.show_result_confs("result");
 			});
 

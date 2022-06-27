@@ -15,14 +15,10 @@ class conf {
 	async init_b2b() {
 		this.b2b_confs = await this.get_b2b_confs();
 		this.b2b_sorted_confs = this.sort_b2b_confs();
-		console.log("b2b confs");
-		console.log(this.b2b_confs);
-		console.log("b2b confs sorted");
-		console.log(this.b2b_sorted_confs);
 	}
 
 	/*  ---------------------------------------------
-			Lit le fichier json de conf
+			Lit le fichier json de confs declarées
 		--------------------------------------------- */
 	async get_conf() {
 		const date = this.day.replace(/-/g, ''); // yyyymmdd
@@ -130,27 +126,19 @@ class conf {
 			let res = "<div class='conf'>";
 			res += `
 			<table class="regulation sortable">
-				<caption>LFMM-EST : ${reverse_date(this.day)}</caption>
-				<thead><tr class="titre"><th>Début</th><th>Fin</th><th>Conf</th></tr></thead>
+				<caption>LFMM-${this.zone.toUpperCase()} : ${reverse_date(this.day)}</caption>
+				<thead><tr class="titre"><th>Début</th><th>Fin</th><th>Conf</th><th colspan="15"></th></tr></thead>
 				<tbody>`;
-			this.confs["est"].forEach( value => {
+			this.confs[this.zone].forEach( value => {
 				let deb = extract_time(value.applicabilityPeriod.wef);
 				let fin = extract_time(value.applicabilityPeriod.unt);
+				let regr = this.get_tvs_confs(value.sectorConfigurationId);
 				res += '<tr>'; 
 				res +=`<td>${deb} TU</td><td>${fin} TU</td><td>${value.sectorConfigurationId}</td>`;
-				res += '</tr>';	
-			});
-			res += '</tbody></table>';
-			res += `
-			<table class="regulation sortable">
-				<caption>LFMM-OUEST : ${reverse_date(this.day)}</caption>
-				<thead><tr class="titre"><th>Début</th><th>Fin</th><th>Conf</th></tr></thead>
-				<tbody>`;
-			this.confs["ouest"].forEach( value => {
-				let deb = extract_time(value.applicabilityPeriod.wef);
-				let fin = extract_time(value.applicabilityPeriod.unt);
-				res += '<tr>'; 
-				res +=`<td>${deb} TU</td><td>${fin} TU</td><td>${value.sectorConfigurationId}</td>`;
+				const arr = this.zone === "est" ? this.tri_est(regr) : this.tri_west(regr);
+				arr.forEach(tv => {
+					res += `<td>${tv}</td>`;
+				})
 				res += '</tr>';	
 			});
 			res += '</tbody></table>';
@@ -164,6 +152,43 @@ class conf {
 		
 	}
 
+	get_nb_tv(conf) {
+		const p = conf.substring(1,3);
+		let sup = null;
+		//console.log("3è digit");
+		//console.log(p[1]);
+		if (!isNaN(p[1])) sup = p; else	sup = p.substring(0,1);
+		let inf = null;
+		if (conf.length === 3) inf = 0; else inf = conf.slice(-2,-1);
+		console.log("nb_tv : "+conf);
+		console.log("sup : "+sup+"  inf: "+inf);
+		return parseInt(sup)+parseInt(inf);
+	}
+
+/*  ------------------------------------------------------------------------------
+	  Cherche les tvs correspondants à la conf
+        @param {string} "conf" - "E3C"
+        @return [array] tvs - ["RAEE", "GY", "AB"]
+	------------------------------------------------------------------------------ */
+    get_tvs_confs(conf) {
+        let regroupements = null;
+		let nb_tvs = this.get_nb_tv(conf);
+		console.log("nb_tvs de la conf: "+conf);
+		console.log(nb_tvs);
+		console.log("this.sorted_confs[nb_tvs]");
+		console.log(this.b2b_sorted_confs);
+        for(let cf in this.b2b_sorted_confs[this.zone][nb_tvs]) {
+			console.log("Conf : "+conf);
+			console.log("Cf : "+cf);
+            if (conf == cf) {
+                regroupements = this.b2b_sorted_confs[this.zone][nb_tvs][cf];
+                break;
+            }
+        }
+		console.log(regroupements);
+        return regroupements;
+    }
+
 	/*  -----------------------------------------------------------
 			Affiche les confs existantes
 			@param {string} containerId - Id de l'HTML Element container	
@@ -172,19 +197,18 @@ class conf {
 	async show_existing_confs(zone, containerId) {
 		if (typeof this.b2b_sorted_confs === 'undefined') return;
 		const max_secteur = 15;
-		const zon = zone === "AE" ? "est" : "ouest";
 		let res = "<div>";
 		res += `
 		<table class="sortable conf">
-			<caption>Confs existantes - Zone ${zon}</caption>
+			<caption>Confs existantes - Zone ${this.zone}</caption>
 			<thead><tr class="titre"><th class="space">Nb sect</th><th>Conf</th><th>TVs</th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th></tr></thead>
 			<tbody>`.trimStart();
 		
 		// confs_list : { "E2A": ["LFMMRAEM","LFMMGYA"], "E2B": [...]}
-        for (const [nbr_sect, confs_list] of Object.entries(this.b2b_sorted_confs[zon])) { // on itère sur le nombre de regroupements 
+        for (const [nbr_sect, confs_list] of Object.entries(this.b2b_sorted_confs[this.zone])) { // on itère sur le nombre de regroupements 
 			Object.keys(confs_list).forEach (conf => { // on itère sur les différentes confs
 				if (nbr_sect%2) {res += '<tr class="one">'; } else {res += '<tr class="two">'; }
-				let tvs = zone === "AE" ? this.tri_est(confs_list[conf]) : this.tri_west(confs_list[conf]);
+				let tvs = zone === "est" ? this.tri_est(confs_list[conf]) : this.tri_west(confs_list[conf]);
 				res +=`<td>${nbr_sect}</td><td>${conf}</td>`;
 				const l = max_secteur - tvs.length + 1;
 				tvs.forEach (tv => {
