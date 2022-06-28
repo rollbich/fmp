@@ -354,7 +354,8 @@ function get_area_situation($output, $area) {
 	
 	for ($i=0; $i<count($output->data->regulations->item); $i++) {
 		$r = $output->data->regulations->item[$i];
-		$delay_h = (int) substr($r->delay, 0, 2);
+		$delay_h = null;
+		if (strlen($r->delay) === 5) $delay_h = (int) substr($r->delay, 0, 3); else $delay_h = (int) substr($r->delay, 0, 2);
 		$delay_mn = (int) substr($r->delay, -2);
 		$delay = $delay_h*60 + $delay_mn;
 		if (substr($r->trafficVolumeId, 0, 2) == $area) {
