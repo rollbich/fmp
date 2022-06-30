@@ -56,29 +56,36 @@ function affiche(containerId, instr) {
         </thead>
         <tbody>`;
     const cles_est = Object.keys(instr["est"]);
+    // On affiche que les dates > à day-2
+    const d = new Date().addDays(-2);
+    console.log("DD: "+d);
     for (const dat of cles_est) {
         instr["est"][dat].forEach(elem => {
-            const debut = elem["debut"];
-            const fin = elem["fin"];
-            const d = elem["date"];
-            const zone = elem["zone"];
-            const type = elem["type"];
-            const comm = elem["comm"];
-            const id = elem["id"];
-            res += `<tr><td>${d}</td><td>${debut}</td><td>${fin}</td><td>${zone}</td><td>${type}</td><td>${comm}</td><td class="supprime" data-zone="${zone}" data-date="${d}" data-id="${id}">x</td></tr>`;
+            if (new Date(dat) > d) {
+                const debut = elem["debut"];
+                const fin = elem["fin"];
+                const d = elem["date"];
+                const zone = elem["zone"];
+                const type = elem["type"];
+                const comm = elem["comm"];
+                const id = elem["id"];
+                res += `<tr><td>${d}</td><td>${debut}</td><td>${fin}</td><td>${zone}</td><td>${type}</td><td>${comm}</td><td class="supprime" data-zone="${zone}" data-date="${d}" data-id="${id}">x</td></tr>`;
+            }
         });
     }
     const cles_ouest = Object.keys(instr["ouest"]);
     for (const dat of cles_ouest) {
         instr["ouest"][dat].forEach(elem => {
-            const debut = elem["debut"];
-            const fin = elem["fin"];
-            const d = elem["date"];
-            const zone = elem["zone"];
-            const type = elem["type"];
-            const comm = elem["comm"];
-            const id = elem["id"];
-            res += `<tr><td>${d}</td><td>${debut}</td><td>${fin}</td><td>${zone}</td><td>${type}</td><td>${comm}</td><td class="supprime" data-zone="${zone}" data-date="${d}" data-id="${id}">x</td></tr>`;
+            if (new Date(dat) > d) {
+                const debut = elem["debut"];
+                const fin = elem["fin"];
+                const d = elem["date"];
+                const zone = elem["zone"];
+                const type = elem["type"];
+                const comm = elem["comm"];
+                const id = elem["id"];
+                res += `<tr><td>${d}</td><td>${debut}</td><td>${fin}</td><td>${zone}</td><td>${type}</td><td>${comm}</td><td class="supprime" data-zone="${zone}" data-date="${d}" data-id="${id}">x</td></tr>`;
+            }
         });
     }
     res += '</tbody></table>';
