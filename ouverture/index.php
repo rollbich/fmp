@@ -57,14 +57,55 @@
 				$("help_frame").classList.remove('off');
 			});
 			
+			async function get_fichier_confs() {
+				const zon = $('zone').value === "AE" ? "est" : "ouest";
+				const cf = new conf(new Date(), zon);
+				await cf.init_b2b();
+				const confs_exist = cf.b2b_sorted_confs;
+				
+				const url_est =  `../confs-est-supp.json`;	
+				const url_west =  `../confs-west-supp.json`;	
+				//const url = $('zone').value === "AE" ? url_est : url_west;
+				const confs_supp_est = await loadJson(url_est);
+				const confs_supp_ouest = await loadJson(url_west);
+
+
+				// merge les 2 fichiers
+				const conf_tot = {"est": {}, "ouest":{}};
+				Object.assign(conf_tot["est"], confs_exist["est"]);
+				Object.keys(confs_supp_est).forEach( elem => {
+					conf_tot["est"][elem] = {...conf_tot["est"][elem], ...confs_supp_est[elem]}
+				})
+				Object.assign(conf_tot["ouest"], confs_exist["ouest"]);
+				Object.keys(confs_supp_ouest).forEach( elem => {
+					conf_tot["ouest"][elem] = {...conf_tot["ouest"][elem], ...confs_supp_ouest[elem]}
+				})
+
+				console.log("Confs existantes");
+				console.log(confs_exist);
+				console.log("Confs supp est");
+				console.log(confs_supp_est);
+				console.log("Confs supp west");
+				console.log(confs_supp_ouest);
+				console.log("Confs totale mergée est");
+				console.log(conf_tot["est"]);
+				console.log("Confs totale mergée ouest");
+				console.log(conf_tot["ouest"]);
+				return conf_tot;
+			}
+
+			let confs = null;
+
 			$('bouton_ouverture').addEventListener('click', async e => {
 				$('graph-container-h20').classList.add('off');
 				$('graph-container-occ').classList.add('off');
 				let zone = $('zone').value;
 				let start_day = $('start').value;
+				const zon = $('zone').value === "AE" ? "est" : "ouest";
+				// ne prépare le fichier de conf qu'une fois
+				if (confs === null) confs = await get_fichier_confs();
 				const ouv = new ouverture('result', start_day, zone);
-				await ouv.init();
-				ouv.show_ouverture();
+				ouv.show_ouverture(confs[zon]);
 			});
 			
 			$('bouton_uceso').addEventListener('click', async e => {

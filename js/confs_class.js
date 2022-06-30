@@ -69,7 +69,7 @@ class conf {
 			Formatte les confs B2B pour les classer
 			par nombre de secteurs
 			@return {
-				"1": "E1A": ["RAE"],
+				"1": {"E1A": ["RAE"]},
 				"2":{"E2A":["GYA","RAEM"],"E2B":["GY","RAES"],"E2C":["GYAB","RAEE"],"E1A1A":["AIET","SBAM"]},
 				"3": ...
 			}
@@ -205,6 +205,7 @@ class conf {
 			<tbody>`.trimStart();
 		
 		// confs_list : { "E2A": ["LFMMRAEM","LFMMGYA"], "E2B": [...]}
+		console.log("GG: "+this.b2b_sorted_confs[this.zone]);
         for (const [nbr_sect, confs_list] of Object.entries(this.b2b_sorted_confs[this.zone])) { // on itère sur le nombre de regroupements 
 			Object.keys(confs_list).forEach (conf => { // on itère sur les différentes confs
 				if (nbr_sect%2) {res += '<tr class="one">'; } else {res += '<tr class="two">'; }
@@ -212,6 +213,7 @@ class conf {
 				res +=`<td>${nbr_sect}</td><td>${conf}</td>`;
 				const l = max_secteur - tvs.length + 1;
 				tvs.forEach (tv => {
+					//if (tv == "OLYO") tv = "MOLYO"; // patch erreur nom airspace NM
 					res += `<td>${tv}</td>`;
 				})
 				for(let i=1;i<l;i++) {

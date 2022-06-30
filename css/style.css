@@ -57,8 +57,12 @@ h2 {
 	margin-right: auto;
 }
 
-.red {
+.green {
 	color: rgb(147, 218, 147);
+}
+
+.red {
+	color: rgb(240, 100, 100);
 }
 
 /* Bandeau de navigation */
