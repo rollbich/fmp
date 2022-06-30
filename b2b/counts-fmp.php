@@ -500,7 +500,15 @@ function write_xls($zone, $wef) {
 	$header_flights = array(
 	  'TV'=>'string',
 	  'Date'=>'date',
-	  'Vols'=>'integer',
+	  'Vols'=>'integer'
+	);
+
+	$header_cta = array(
+	  'Airspace'=>'string',
+	  'Date'=>'date',
+	  'Load'=>'integer',
+	  'Demand'=>'integer',
+	  'RegDemand'=>'integer'
 	);
 	
 	$style_header = array( 'font'=>'Arial','font-size'=>12,'font-style'=>'bold', 'halign'=>'center');
@@ -552,6 +560,13 @@ function write_xls($zone, $wef) {
 			$writer->writeSheetRow('Vols jour', $row, $style);
 		}
 	}
+
+	// Vols CTA
+	$writer->writeSheetHeader('Vols CTAs', $header_flights, $style_header );
+	$writer->writeSheetRow('Vols CTAs', $flights->LFMMCTA, $style);
+	$writer->writeSheetRow('Vols CTAs', $flights->LFMMCTAE, $style);
+	$writer->writeSheetRow('Vols CTAs', $flights->LFMMCTAW, $style);
+	
 	
 	$date = new DateTime($wef);
 	$d = $date->format('Ymd');
