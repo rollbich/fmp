@@ -14,9 +14,19 @@ class stat_confs {
 	}
 	
     async init() {
+        const zon = this.zone === "AE" ? "est" : "ouest";
+        const cf = new conf(new Date(), zon);
+        await cf.init_b2b();
         this.sch_rea = await this.get_sch_rea();
-		this.confs = await this.get_fichier_confs();
-		console.log(this.confs);
+        this.confs_exist = cf.b2b_sorted_confs;
+		this.confs_supp = await this.get_fichier_confs();
+        this.confs = this.merge_conf();
+        console.log("Confs existantes");
+        console.log(this.confs_exist);
+        console.log("Confs supp");
+        console.log(this.confs_supp);
+		console.log("Confs totale mergée");
+        console.log(this.confs);
         this.add_stat();
         this.show_result_stat();
 	}
@@ -41,12 +51,25 @@ class stat_confs {
 	  Lit le fichier de correspondance confs-regroupements
 	--------------------------------------------------------------------------------------------- */
     async get_fichier_confs() {
-		const url_est =  `../confs-est-test.json`;	
-        const url_west =  `../confs-west.json`;	
+		const url_est =  `../confs-est-supp.json`;	
+        const url_west =  `../confs-west-supp.json`;	
         const url = this.zone === "AE" ? url_est : url_west;
-        console.log("load confs OK");
+        console.log("load confs supp OK");
         return await loadJson(url);
 	}
+
+    /*  --------------------------------------------------------------------------------------------- 
+	        Fusion confs existantes avec le fichier confs supplémentaire
+	--------------------------------------------------------------------------------------------- */
+    merge_conf() {
+        const conf_tot = {};
+        const zon = this.zone === "AE" ? "est" : "ouest";
+        Object.assign(conf_tot, this.confs_exist[zon]);
+        Object.keys(this.confs_supp).forEach( elem => {
+            conf_tot[elem] = {...conf_tot[elem], ...this.confs_supp[elem]}
+        })
+        return conf_tot;
+    }
 
 /*  ------------------------------------------------------------------------------
 	  Cherche la conf correspondante
@@ -105,6 +128,7 @@ class stat_confs {
                 });
             }
         }
+        console.log("Stats");
         console.log(this.stats);
     }
 
@@ -121,7 +145,7 @@ class stat_confs {
 			<thead><tr class="titre"><th class="space">Nb sect</th><th>Conf</th><th>Occ</th><th>Durée</th><th>% occ</th><th>% tps</th><th>TVs</th></tr></thead>
 			<tbody>`.trimStart();
 		
-        for (const [nbr_sect, confs_list] of Object.entries(this.stats)) { // on itère sur le nombre de regroupements
+        for (const [nbr_sect, confs_list] of Object.entries(this.stats)) { // on itère sur le nombre de regroupements 
             console.log("nbr regr: "+nbr_sect);
             // nbre occurence total pour un regroupement à n secteurs
             let count_occur = 0;

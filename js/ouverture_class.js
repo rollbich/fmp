@@ -7,30 +7,51 @@ class ouverture extends schema_rea {
     constructor(containerId, day, zone) {
         super(day, zone);
         this.container = $(containerId);
-        this.show_ouverture();
     }
 
 /*  --------------------------------------------------------------------------------------------- 
 	  Lit le schema réalisé, affiche le tableau des ouvertures et ajoute les 'clicks' sur les TV
 	--------------------------------------------------------------------------------------------- */
 // 
-    async show_ouverture() {
+    async show_ouverture(confs) {
         this.schema = await this.read_schema_realise();
-        if (typeof this.schema === 'undefined') return;	
-        await this.get_fichier_confs();
+        if (typeof this.schema === 'undefined') {
+            show_popup("Fichier inexistant",`Le fichier du ${this.day} n'existe pas`);
+            return;
+        }
+        this.confs = confs;	
         this.show_table_ouverture();
         this.add_ouverture_listener();
     }
 
 /*  --------------------------------------------------------------------------------------------- 
-	  Lit le fichier de correspondance confs-regroupements
+	  Prépare le fichier de correspondance confs-regroupements
 	--------------------------------------------------------------------------------------------- */
     async get_fichier_confs() {
-		const url_est =  `../confs-est-test.json`;	
-        const url_west =  `../confs-west.json`;	
+        const zon = this.zone === "AE" ? "est" : "ouest";
+        const cf = new conf(new Date(), zon);
+        await cf.init_b2b();
+        const confs_exist = cf.b2b_sorted_confs;
+		
+        const url_est =  `../confs-est-supp.json`;	
+        const url_west =  `../confs-west-supp.json`;	
         const url = this.zone === "AE" ? url_est : url_west;
-		this.confs = await loadJson(url);
-        console.log("load confs: "+this.confs);
+		const confs_supp = await loadJson(url);
+
+        // merge les 2 fichiers
+        const conf_tot = {};
+        Object.assign(conf_tot, confs_exist[zon]);
+        Object.keys(confs_supp).forEach( elem => {
+            conf_tot[elem] = {...conf_tot[elem], ...confs_supp[elem]}
+        })
+
+        console.log("Confs existantes");
+        console.log(confs_exist);
+        console.log("Confs supp");
+        console.log(confs_supp);
+		console.log("Confs totale mergée");
+        console.log(conf_tot);
+        return conf_tot;
 	}
 
 /*  ------------------------------------------------------------------------------
@@ -62,7 +83,17 @@ class ouverture extends schema_rea {
                     break;
                 }
             }
-            if (c.substring(0,1) === "N") { res += `<td class='red'>${c}</td>`; } else { res += `<td>${c}</td>`;}				
+            switch (c.substring(0,1)) {
+                case 'N':
+                    res += `<td class='green'>${c}</td>`;
+                  break;
+                case 'Z':
+                    res += `<td class='red'>${c}</td>`;
+                  break;
+                default:
+                    res += `<td>${c}</td>`;
+            }
+            //if (c.substring(0,1) === "N") { res += `<td class='green'>${c}</td>`; } else { res += `<td>${c}</td>`;}				
             row[4].forEach(tv => {
                 let r = this.get_ouverture_totale(tv[0], time_to_min(row[1]), time_to_min(row[2]));
                 res += `<td title="${tv[1]}" class="tv" data-tv="${tv[0]}" data-deb="${r[0]}" data-fin="${r[1]}">${tv[0]}</td>`;

@@ -53,13 +53,13 @@
 			});
 			
 			$('bouton_stat_confs').addEventListener('click', async e => {
-				/*
+				
                 let zone = $('zone').value;
 				let day = $('start').value;
 				const year = parseInt(new Date(day).getFullYear());
 				new stat_confs("result",year,zone);	
-                */
-				show_popup("Stat confs", "Cette fonctionnalité n'est pas encore disponible");
+                
+				//show_popup("Stat confs", "Cette fonctionnalité n'est pas encore disponible");
 			});
 
 			$('bouton_conf').addEventListener('click', async e => {
@@ -72,8 +72,8 @@
 			});
 
             $('bouton_confs_existantes').addEventListener('click', async e => {
-                let zone = $('zone').value;
-				const c = new conf(convertDate(new Date()));
+                const zone = $('zone').value === "AE" ? "est" : "ouest";
+				const c = new conf(convertDate(new Date()), zone);
 				await c.init_b2b();
 				c.show_existing_confs(zone, "result");
 			});
