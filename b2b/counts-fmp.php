@@ -562,7 +562,7 @@ function write_xls($zone, $wef) {
 	}
 
 	// Vols CTA
-	$writer->writeSheetHeader('Vols CTAs', $header_flights, $style_header );
+	$writer->writeSheetHeader('Vols CTAs', $header_cta, $style_header );
 	$writer->writeSheetRow('Vols CTAs', $flights->LFMMCTA, $style);
 	$writer->writeSheetRow('Vols CTAs', $flights->LFMMCTAE, $style);
 	$writer->writeSheetRow('Vols CTAs', $flights->LFMMCTAW, $style);
