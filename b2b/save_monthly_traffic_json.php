@@ -150,30 +150,29 @@ function process_file_traffic($file, $arr, $month_number, $year) {
 }
 
 function process_file_reg($file, $arr, $month_number, $year) {
+    
+	// Récupération des tvset
+    $tvsetall = array_keys(get_object_vars($arr));
+
     $data = get_file($file);
     // existence du fichier
     if ($data[1] == 200) {
         echo "Fichier ".$file." existant"."<br>";
         $json_year = json_decode($data[0]);
-        var_dump($json_year);
+        //var_dump($json_year);
         echo "<br>";
     } else {
         echo "Fichier ".$file." inexistant"."<br>";
         $json_year = new stdClass();
         $json_year->year = intval($year);
-        $json_year->cta = new stdClass();
-        $json_year->est = new stdClass();
-        $json_year->west = new stdClass();
-        $json_year->app = new stdClass();
     }
 
-    $json_year->cta->$month_number = $arr[0];
-    $json_year->est->$month_number = $arr[1];
-    $json_year->west->$month_number = $arr[2];
-    $json_year->app->$month_number = $arr[3];
+    foreach ($tvsetall as $tvset) {
+        $json_year->$month_number = $arr;
+    }
     
     echo "Nouveau json reg"."<br>";
-    var_dump($json_year);
+    //var_dump($json_year);
     write_json_reg($json_year, $year);
 }
 
