@@ -21,21 +21,21 @@ $dat = new DateTime();
 if ($dat <= $date_ete || $dat > $date_hiver) {
 	echo "Heure hiver<br/>";
 	// Plage horaire de récupération du H20 et Occ (6h loc à minuit loc)
-	$wef_counts = gmdate('Y-m-d H:i', strtotime("today 06:00"));
-	$unt_counts = gmdate('Y-m-d H:i', strtotime("today 23:59"));
+	$wef_counts = gmdate('Y-m-d H:i', strtotime("yesterday 06:00"));
+	$unt_counts = gmdate('Y-m-d H:i', strtotime("today 00:01"));
 
 	// Plage horaire de récupération des reguls (minuit UTC à minuit UTC)
-	$wef_regs = gmdate('Y-m-d H:i', strtotime("today 01:00"));
-	$unt_regs = gmdate('Y-m-d H:i', strtotime("tomorrow 00:59"));
+	$wef_regs = gmdate('Y-m-d H:i', strtotime("yesterday 01:00"));
+	$unt_regs = gmdate('Y-m-d H:i', strtotime("today 00:59"));
 
 	// Plage horaire de récupération du nombre de vol par TV (minuit UTC à minuit UTC)
-	$wef_flights = gmdate('Y-m-d H:i', strtotime("today 01:00"));
-	$unt_flights = gmdate('Y-m-d H:i', strtotime("tomorrow 00:59"));
+	$wef_flights = gmdate('Y-m-d H:i', strtotime("yesterday 01:00"));
+	$unt_flights = gmdate('Y-m-d H:i', strtotime("today 00:59"));
 } else {
 	echo "Heure ete<br/>";
 	// Plage horaire de récupération du H20 et Occ (6h loc à 2h loc)
 	$wef_counts = gmdate('Y-m-d H:i', strtotime("yesterday 06:00"));
-	$unt_counts = gmdate('Y-m-d H:i', strtotime("today 00:00"));
+	$unt_counts = gmdate('Y-m-d H:i', strtotime("today 00:01"));
 
 	// Plage horaire de récupération des reguls (minuit UTC à minuit UTC)
 	$wef_regs = gmdate('Y-m-d H:i', strtotime("yesterday 02:00"));
