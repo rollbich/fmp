@@ -486,7 +486,10 @@ class monthly_regs {
 					if (elem === 'ATC_EQUIPMENT') r_est.push({ [elem]: reg_est[elem] });
 				})
 				key_est.forEach (elem => {
-					if (elem !== 'ATC_STAFFING' && elem !== 'ATC_CAPACITY' && elem !== 'WEATHER' && elem !== 'AIRSPACE_MANAGEMENT' && elem !== 'ATC_EQUIPMENT') r_est.push({ [elem]: reg_est[elem] });
+					if (elem === 'ATC_INDUSTRIAL_ACTION') r_est.push({ [elem]: reg_est[elem] });
+				})
+				key_est.forEach (elem => {
+					if (elem !== 'ATC_STAFFING' && elem !== 'ATC_CAPACITY' && elem !== 'WEATHER' && elem !== 'AIRSPACE_MANAGEMENT' && elem !== 'ATC_EQUIPMENT' && elem !== 'ATC_INDUSTRIAL_ACTION') r_est.push({ [elem]: reg_est[elem] });
 				})
 				const key_west = Object.keys(reg_west);
 				const r_west = [];
@@ -506,7 +509,10 @@ class monthly_regs {
 					if (elem === 'ATC_EQUIPMENT') r_west.push({ [elem]: reg_west[elem] });
 				})
 				key_west.forEach (elem => {
-					if (elem !== 'ATC_STAFFING' && elem !== 'ATC_CAPACITY' && elem !== 'WEATHER' && elem !== 'AIRSPACE_MANAGEMENT' && elem !== 'ATC_EQUIPMENT') r_west.push({ [elem]: reg_west[elem] });
+					if (elem === 'ATC_INDUSTRIAL_ACTION') r_west.push({ [elem]: reg_west[elem] });
+				})
+				key_west.forEach (elem => {
+					if (elem !== 'ATC_STAFFING' && elem !== 'ATC_CAPACITY' && elem !== 'WEATHER' && elem !== 'AIRSPACE_MANAGEMENT' && elem !== 'ATC_EQUIPMENT' && elem !== 'ATC_INDUSTRIAL_ACTION') r_west.push({ [elem]: reg_west[elem] });
 				})
 				// Fusion des objets reg_est et reg_west
 				const reg_cta = {};
@@ -536,7 +542,10 @@ class monthly_regs {
 					if (elem === 'ATC_EQUIPMENT') r_cta.push({ [elem]: reg_cta[elem] });
 				})
 				key_cta.forEach (elem => {
-					if (elem !== 'ATC_STAFFING' && elem !== 'ATC_CAPACITY' && elem !== 'WEATHER' && elem !== 'AIRSPACE_MANAGEMENT' && elem !== 'ATC_EQUIPMENT') r_cta.push({ [elem]: reg_cta[elem] });
+					if (elem === 'ATC_INDUSTRIAL_ACTION') r_cta.push({ [elem]: reg_cta[elem] });
+				})
+				key_cta.forEach (elem => {
+					if (elem !== 'ATC_STAFFING' && elem !== 'ATC_CAPACITY' && elem !== 'WEATHER' && elem !== 'AIRSPACE_MANAGEMENT' && elem !== 'ATC_EQUIPMENT' && elem !== 'ATC_INDUSTRIAL_ACTION') r_cta.push({ [elem]: reg_cta[elem] });
 				})
 				const key_app = Object.keys(reg_app);
 				const r_app = [];
@@ -556,10 +565,13 @@ class monthly_regs {
 					if (elem === 'ATC_EQUIPMENT') r_app.push({ [elem]: reg_app[elem] });
 				})
 				key_app.forEach (elem => {
+					if (elem === 'ATC_INDUSTRIAL_ACTION') r_app.push({ [elem]: reg_app[elem] });
+				})
+				key_app.forEach (elem => {
 					if (elem === 'AERODROME_CAPACITY') r_app.push({ [elem]: reg_app[elem] });
 				})
 				key_app.forEach (elem => {
-					if (elem !== 'ATC_STAFFING' && elem !== 'ATC_CAPACITY' && elem !== 'WEATHER' && elem !== 'AIRSPACE_MANAGEMENT' && elem !== 'ATC_EQUIPMENT' && elem !=='AERODROME_CAPACITY') r_app.push({ [elem]: reg_app[elem] });
+					if (elem !== 'ATC_STAFFING' && elem !== 'ATC_CAPACITY' && elem !== 'WEATHER' && elem !== 'AIRSPACE_MANAGEMENT' && elem !== 'ATC_EQUIPMENT' && elem !== 'ATC_INDUSTRIAL_ACTION' && elem !=='AERODROME_CAPACITY') r_app.push({ [elem]: reg_app[elem] });
 				})
 				regs['cta'].push(r_cta);
 				regs['est'].push(r_est);
