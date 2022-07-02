@@ -4,9 +4,9 @@ require_once("xlsxwriter.class.php");
 require_once("mail-msg.php");
 require_once("B2B.php");
 
-/*  -------------------------------------------
-		LFMM-FMP.FR : tâche CRON à 23h42 loc
-    ------------------------------------------- */
+/*  --------------------------------------------------
+		LFMM-FMP.FR : tâche CRON à 01h42dev/01h56 loc
+    -------------------------------------------------- */
 
 /*  -----------------------------------------------------------------------
 		instanciation soap FLOW Services
@@ -506,9 +506,9 @@ function write_xls($zone, $wef) {
 	$header_cta = array(
 	  'Airspace'=>'string',
 	  'Date'=>'date',
+	  'RegDemand'=>'integer',
 	  'Load'=>'integer',
-	  'Demand'=>'integer',
-	  'RegDemand'=>'integer'
+	  'Demand'=>'integer'
 	);
 	
 	$style_header = array( 'font'=>'Arial','font-size'=>12,'font-style'=>'bold', 'halign'=>'center');
