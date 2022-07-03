@@ -81,7 +81,8 @@ function get_monthly_regs($dateTime1, $dateTime2) {
         $dateTime2
     );
     
-    // Chargement de tous les fichiers, tableau d'object journalier
+    // Chargement de tous les fichiers
+    // $donnees = [{reg-json du 1er jour}, ..., {reg-json lastday of month}]
     $donnees = [];
     foreach ($period as $key => $value) {
         $file_name = "https://dev.lfmm-fmp.fr/b2b/json/".$value->format('Ymd')."-reg.json";
@@ -89,7 +90,7 @@ function get_monthly_regs($dateTime1, $dateTime2) {
         array_push($donnees, json_decode($data[0]));
     }
 
-    // Récupération des tvset
+    // Récupération des tvset (on prend ceux du 1er objet)
     $tvsetall = array_keys(get_object_vars($donnees[0]));
 
     // Config de l'object $result
@@ -98,16 +99,54 @@ function get_monthly_regs($dateTime1, $dateTime2) {
         $result->$tvset = new stdClass();
         $result->$tvset->delay = 0;
         $result->$tvset->causes = new stdClass();
+        $result->$tvset->tvs = new stdClass();
     }
 
     // Calcul des délais et des causes
+    // Itération sur chaque jour : $obj_jour = object reg-json du fichier du jour
+    /* 
+    {
+    "LFMMFMPE" : [{regul1}, ..., {regul n}],
+    "LFMMFMPW" : [{regul1}, ..., {regul n}],
+    "LFMMAPP": [
+    {
+      "regId": "LFMTFA30",
+      "tv": "LFMTFAAT",
+      "lastUpdate": {
+        "eventTime": "2022-06-30 06:27:00",
+        "userUpdateEventTime": "2022-06-30 06:27:00",
+        "userUpdateType": "DELETION",
+        "userId": "F4ROS"
+      },
+      "applicability": { "wef": "2022-06-30 07:30", "unt": "2022-06-30 09:30" },
+      "constraints": [
+        {
+          "constraintPeriod": {
+            "wef": "2022-06-30 07:30",
+            "unt": "2022-06-30 09:30"
+          },
+          "normalRate": 10,
+          "pendingRate": 0,
+          "equipmentRate": 0
+        }
+      ],
+      "reason": "ATC_CAPACITY",
+      "delay": 0,
+      "impactedFlights": 6,
+      "TVSet": "LFMMAPP"
+    }, ... ]
+    }
+    */
     foreach ($donnees as $obj_jour) {
         foreach ($tvsetall as $tvset) {
             foreach ($obj_jour->$tvset as $obj) { 
                 $result->$tvset->delay += intval($obj->delay);
                 $r = $obj->reason;
+                $t = $obj->tv;
                 if (!isset($result->$tvset->causes->$r)) $result->$tvset->causes->$r = 0;
+                if (!isset($result->$tvset->tvs->$t)) $result->$tvset->tvs->$t = 0;
                 $result->$tvset->causes->$r += intval($obj->delay);
+                $result->$tvset->tvs->$t += intval($obj->delay);
             }
         }
     }
