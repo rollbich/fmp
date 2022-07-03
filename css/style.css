@@ -92,6 +92,12 @@ nav.navbar{
 	overflow-x: scroll;
 }
 
+.accueil {
+	display: flex; 
+	flex-wrap: wrap; 
+	overflow-x: scroll;
+}
+
 #accueil_vols {
 	margin-top: 3rem;
 }
@@ -136,6 +142,11 @@ table.table_bilan tr:nth-child(odd) {
   
 table.table_bilan tr:nth-child(even) {
 	background-color: transparent;
+}
+
+/* ------- Stats Mensuelles ------ */
+.mt3 {
+	margin-top: 3rem;
 }
 
 /* ------- Titre ------- */
@@ -423,6 +434,10 @@ table.conf th, table.conf td {
 
 .blur {
   filter: blur(1.3px) sepia(1);
+}
+
+.l-30 {
+	left: -32px;
 }
 
 /* ------- Help ------- */
