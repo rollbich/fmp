@@ -47,6 +47,8 @@ require("../php/check_ok.inc.php");
 			show_traffic_graph_mois_cumule("accueil_trafic_cumul_app", year, listMonth, tabl.get_monthly_cumules()['app'], tabl.get_monthly_cumules("lastyear")['app'], tabl.get_monthly_cumules("2019")['app'], "Approches");
 			show_traffic_graph_mois("accueil_trafic_mois_app", year, listMonth, tabl.flights.nbre_vols['app'], tabl.flights_lastyear.nbre_vols['app'], tabl.flights_2019.nbre_vols['app'], "Approches");
 			show_delay_graph_mois_par_tvs("accueil_tvs_cta", year, month, tabl.reguls.delay_par_tvs['cta'][month-1], "LFMMCTA");
+			show_delay_graph_mois_par_tvs("accueil_tvs_est", year, month, tabl.reguls.delay_par_tvs['est'][month-1], "Zone EST");
+			show_delay_graph_mois_par_tvs("accueil_tvs_west", year, month, tabl.reguls.delay_par_tvs['west'][month-1], "Zone WEST");
 			show_delay_graph_mois_par_tvs("accueil_tvs_app", year, month, tabl.reguls.delay_par_tvs['app'][month-1], "Approches");
       	});
     </script>
@@ -68,6 +70,8 @@ require("../php/check_ok.inc.php");
 	<div id="accueil_reguls_mois_west" class="l-30"></div>
 	<div id="accueil_causes_cta"></div>
 	<div id="accueil_tvs_cta"></div>
+	<div id="accueil_tvs_est" class="mt3"></div>
+	<div id="accueil_tvs_west" class="mt3"></div>
 </div>
 <div class='accueil'>
 	<div id="accueil_trafic_mois_app" class="l-30 mt3"></div>
