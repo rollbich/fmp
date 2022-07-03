@@ -511,6 +511,8 @@ class monthly_briefing {
 			show_delay_graph_mois_par_causes("accueil_causes_cta", this.year, this.month, this.reguls.delay_par_cause['cta'][this.month-1], "LFMM CTA");
 			show_delay_graph_mois_par_causes("accueil_causes_app", this.year, this.month, this.reguls.delay_par_cause['app'][this.month-1], "Approches");
 			show_delay_graph_mois_par_tvs("accueil_tvs_cta", this.year, this.month, this.reguls.delay_par_tvs['cta'][this.month-1], "LFMMCTA");
+			show_delay_graph_mois_par_tvs("accueil_tvs_est", this.year, this.month, this.reguls.delay_par_tvs['est'][this.month-1], "Zone EST");
+			show_delay_graph_mois_par_tvs("accueil_tvs_west", this.year, this.month, this.reguls.delay_par_tvs['west'][this.month-1], "Zone WEST");
 			show_delay_graph_mois_par_tvs("accueil_tvs_app", this.year, this.month, this.reguls.delay_par_tvs['app'][this.month-1], "Approches");
 		})
 	}
