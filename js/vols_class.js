@@ -71,7 +71,7 @@ class period_vols {
 	----------------------------------------------------------------- */
     async init() {
 		this.vols = await this.get_vols();
-		console.log(this.vols);
+		//console.log(this.vols);
 	}
 
 	async get_vols() {
@@ -164,8 +164,8 @@ class weekly_vols {
 		vols['est'] = [];
 		vols['west'] = [];
 		vols['app'] = [];
-		console.log("weekly vols");
-		console.log(this.weekly_vols);
+		//console.log("weekly vols");
+		//console.log(this.weekly_vols);
 		for(let i=1;i<54;i++) { //53 semaines max
 			if (typeof this.weekly_vols['cta'][i] !== 'undefined') vols['cta'].push(this.weekly_vols['cta'][i]);
 			if (typeof this.weekly_vols['est'][i] !== 'undefined') vols['est'].push(this.weekly_vols['est'][i]);
@@ -191,7 +191,6 @@ class weekly_briefing {
 		this.week = week;
 		this.lastweek_year = this.get_last_week()[0];
 		this.lastweek_week = this.get_last_week()[1];
-		console.log("lwy: "+this.lastweek_year+"    lww: "+this.lastweek_week);
 		this.init();
 	}
 
@@ -233,7 +232,6 @@ class weekly_briefing {
 			this.week = parseInt(val);
 			this.lastweek_week = this.get_last_week()[1];
 			this.lastweek_year = this.get_last_week()[0];
-			console.log("lwy: "+this.lastweek_year+"    lww: "+this.lastweek_week);
 			this.show_data();
 		})
 	}
@@ -404,10 +402,6 @@ class monthly_briefing {
 		await this.reguls.init();
 		await this.reguls_lastyear.init();
 		await this.reguls_2019.init();
-
-		this.k = this.reguls.get_monthly_reg_by_cause();
-		console.log("k");
-		console.log(this.k);
 	}
 
 	get_last_month() {
@@ -516,6 +510,8 @@ class monthly_briefing {
 			this.show_data();
 			show_delay_graph_mois_par_causes("accueil_causes_cta", this.year, this.month, this.reguls.delay_par_cause['cta'][this.month-1], "LFMM CTA");
 			show_delay_graph_mois_par_causes("accueil_causes_app", this.year, this.month, this.reguls.delay_par_cause['app'][this.month-1], "Approches");
+			show_delay_graph_mois_par_tvs("accueil_tvs_cta", this.year, this.month, this.reguls.delay_par_tvs['cta'][this.month-1], "LFMMCTA");
+			show_delay_graph_mois_par_tvs("accueil_tvs_app", this.year, this.month, this.reguls.delay_par_tvs['app'][this.month-1], "Approches");
 		})
 	}
 

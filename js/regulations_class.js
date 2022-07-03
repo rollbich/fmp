@@ -69,7 +69,7 @@ class regul {
 		this.regul[tvset].forEach( value => {
 			reg[value] += value.delay;
 		});
-		console.log(reg);
+		//console.log(reg);
 		return reg;
 	}
 
@@ -99,7 +99,7 @@ class period_regul {
     async init() {
 		this.reguls = await this.get_reguls();
 		this.tot_delays = this.get_total_period_delay();
-		console.log(this.reguls);
+		//console.log(this.reguls);
 	}
 
 	async get_reguls() {
@@ -237,8 +237,8 @@ class period_regul {
 		delays += "</div>";
 		delays += res;
 		$(containerId).innerHTML = delays;
-		console.log("this.rates");
-		console.log(this.rates);
+		//console.log("this.rates");
+		//console.log(this.rates);
 		const td_reg_id = document.querySelectorAll('.hover_reg_id');
 		td_reg_id.forEach(td_el => {
 			td_el.addEventListener('mouseover', (event) => {
@@ -380,6 +380,7 @@ class monthly_regs {
 		this.monthly_regs = await this.get_data_monthly_regs();
 		this.delay = this.get_monthly_delay();
 		this.delay_par_cause = this.get_monthly_reg_by_cause();
+		this.delay_par_tvs = this.get_monthly_reg_by_tvs();
 	}
 
 	/*  ----------------------------------------------------------------------------------
@@ -579,6 +580,92 @@ class monthly_regs {
 				regs['app'].push(r_app);
 			} 
 		}
+		return regs;
+	}
+
+	/* 	-----------------------------------------------------------------
+		@input "causes": {"ATC_STAFFING":1953,"SPECIAL_EVENT":311}
+		@returns : {
+			"cta": [ [ array du mois janvier
+				{"ATC_STAFFING":1953},  
+				{"SPECIAL_EVENT":311},
+				{"cause": delai}
+				...
+				], [ array du mois février
+				...
+				]... ]
+			"est" : [[...]],
+			"west" : [[...]],
+			"app": [[...]] 
+		}
+	----------------------------------------------------------------- */
+
+	get_monthly_reg_by_tvs() {
+		const regs = {};
+		regs['year'] = parseInt(this.monthly_regs['year']);
+		regs['cta'] = [];
+		regs['est'] = [];
+		regs['west'] = [];
+		regs['app'] = [];
+		for(let i=1;i<13;i++) { 
+			if (typeof this.monthly_regs[i] !== 'undefined') {
+			  if (typeof this.monthly_regs[i]['LFMMFMPE']['tvs'] !== 'undefined') {
+				const reg_est = this.monthly_regs[i]['LFMMFMPE']['tvs'];
+				const reg_west = this.monthly_regs[i]['LFMMFMPW']['tvs'];
+				const reg_app = this.monthly_regs[i]['LFMMAPP']['tvs'];
+				const key_est = Object.keys(reg_est);
+				const r_est = [];
+				key_est.forEach (elem => {
+					r_est.push({ [elem]: reg_est[elem] });
+				})
+				const key_west = Object.keys(reg_west);
+				const r_west = [];
+				key_west.forEach (elem => {
+					r_west.push({ [elem]: reg_west[elem] });
+				})
+				// Fusion des objets reg_est et reg_west
+				const reg_cta = {};
+				Object.assign(reg_cta, this.monthly_regs[i]['LFMMFMPE']['tvs']);
+				key_west.forEach( elem => {
+					if (!key_est.includes(elem)) {
+						reg_cta[elem] = reg_west[elem];
+					} else {
+						reg_cta[elem] += reg_west[elem];
+					}
+				})
+				const key_cta = Object.keys(reg_cta);
+				const r_cta = [];
+				key_cta.forEach (elem => {
+					r_cta.push({ [elem]: reg_cta[elem] });
+				})
+				const key_app = Object.keys(reg_app);
+				const r_app = [];
+				key_app.forEach (elem => {
+					r_app.push({ [elem]: reg_app[elem] });
+				})
+
+				// tri
+				function tri_obj(a,b) {
+					return b[Object.keys(b)[0]] - a[Object.keys(a)[0]];
+				}
+				const max_tv = 15;
+				r_cta.sort(tri_obj);
+				if (r_cta.length > max_tv) r_cta.length = max_tv;
+				r_est.sort(tri_obj);
+				if (r_est.length > max_tv) r_est.length = max_tv;
+				r_west.sort(tri_obj);
+				if (r_west.length > max_tv) r_west.length = max_tv;
+				r_app.sort(tri_obj);
+				if (r_app.length > max_tv) r_app.length = max_tv;
+				regs['cta'].push(r_cta);
+				regs['est'].push(r_est);
+				regs['west'].push(r_west);
+				regs['app'].push(r_app);
+		      }
+			} 
+		}
+		console.log("REGS");
+		console.log(regs);
 		return regs;
 	}
 }
