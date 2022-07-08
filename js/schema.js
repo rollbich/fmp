@@ -194,9 +194,9 @@ class schema_rea {
     tri_west(arr_tv) {
         const bloc1 = ["RAW", "RAWM", "RAWN", "RAWS", "MALY", "LYO", "MOLYO", "OLYO", "MML", "LE", "LOLS", "LELS", "LOLE", "LS", "LO", "MO", "ML"];
         const bloc2 = ["MOML", "WMO", "WMOML", "MFML", "WLMO", "WMFDZ", "MFDZ", "W1", "W23", "W12", "W2", "W3", "WM", "WW"];
-        const bloc3 = ["MM", "MF", "M12", "M1", "MF1", "MF2", "F1", "F2"];
-        const bloc4 = ["M34", "M2", "M3", "M4", "FDZ", "FF", "F12", "MF12", "MF3", "MF4", "F123", "MFDZL"];
-        const bloc5 = ["MF34", "F34", "F3", "F4", "DZ", "DD", "ZZ", "DH", "ZH", "DL", "DZL", "DZH", "MFDZH"];
+        const bloc3 = ["MM", "MF", "M12", "M1", "M123", "MF1", "MF2", "F1", "F2"];
+        const bloc4 = ["M34", "M234", "M2", "M3", "M4", "FDZ", "FF", "F12", "MF12", "MF3", "MF4", "F123", "FDZL", "MFDZL"];
+        const bloc5 = ["MF34", "F234", "F34", "F3", "F4", "DZ", "DD", "ZZ", "DH", "ZH", "DL", "DZL", "DZH", "FDZH", "MFDZH"];
         let bloc1_tv_array = arr_tv.filter(tv => bloc1.includes(tv[0]));
         let bloc2_tv_array = arr_tv.filter(tv => bloc2.includes(tv[0]));
         let bloc3_tv_array = arr_tv.filter(tv => bloc3.includes(tv[0]));

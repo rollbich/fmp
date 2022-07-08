@@ -62,7 +62,7 @@ h2 {
 }
 
 .red {
-	color: rgb(240, 100, 100);
+	color: rgb(240, 122, 122);
 }
 
 /* Bandeau de navigation */
@@ -382,7 +382,7 @@ div.conf th {
 }
 
 table.conf tr.one {
-	background-color: var(--ligne-paire-color);
+	background-color: var(--table-titre-color);
 }
 
 table.conf tr.two {
@@ -491,7 +491,7 @@ table.conf th, table.conf td {
 	padding:30px;
 	transform:translate(-50%, -50%) scale(0.5);
 	position:absolute;
-	top:280px;
+	top:50%;
 	left:50%;
 	box-shadow:0px 2px 16px rgba(0,0,0,0.5);
 	border-radius:3px;
