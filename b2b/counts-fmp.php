@@ -468,7 +468,8 @@ function write_xls($zone, $wef) {
 	  'Time'=>'string',
 	  'Peak'=>'integer',
 	  'Sustain'=>'integer',
-	  'Occ'=>'integer'
+	  'Load'=>'integer',
+	  'Reg_Dem'=>'integer'
 	);
 	
 	$header_h20 = array(
@@ -476,7 +477,8 @@ function write_xls($zone, $wef) {
 	  'Date'=>'date',
 	  'Time'=>'string',
 	  'MV'=>'integer',
-	  'H20'=>'integer'
+	  'Load'=>'integer',
+	  'Reg_Dem'=>'integer'
 	);
 	
 	$header_reg = array(
@@ -706,19 +708,60 @@ $obj2 = json_decode($fichier_tv_count, true);
 $tvs_est = $obj2["TV-EST"];
 $tvs_west = $obj2["TV-OUEST"];
 
+// ---------------------------------------
+// 		récupère les données H20, Occ
+// ---------------------------------------
+$occ_est1 = get_occ("est", $wef_counts, $unt_counts, "LOAD");
+$occ_est2 = get_occ("est", $wef_counts, $unt_counts, "REGULATED_DEMAND");
+$occ_west1 = get_occ("west", $wef_counts, $unt_counts, "LOAD");
+$occ_west2 = get_occ("west", $wef_counts, $unt_counts, "REGULATED_DEMAND");
+$h20_est1 = get_entry("est", $wef_counts, $unt_counts, "LOAD");
+$h20_est2 = get_entry("est", $wef_counts, $unt_counts, "REGULATED_DEMAND");
+$h20_west1 = get_entry("west", $wef_counts, $unt_counts, "LOAD");
+$h20_west2 = get_entry("west", $wef_counts, $unt_counts, "REGULATED_DEMAND");
 
-// récupère les données H20, Occ et Reg
+// ------------------------------------------------------------------------------------------
+//	 Merger les 2 tableaux de H20
+//	@params (array) : [ ["RAE", "2022-06-07", "05:20", mv, load], [...] ]
+//	@params (array)	: [ ["RAE", "2022-06-07", "05:20", mv, regulated_demand], [...] ] 
+//  @return	(array)	: [ ["RAE", "2022-06-07", "05:20", mv, load, regulated_demand], [...] ]
+// -------------------------------------------------------------------------------------------
+$h20_est = array();
+$h20_west = array();
+foreach($h20_est1 as $key=>$val) {
+	array_push($val, $h20_est2[$key][4]);
+    array_push($h20_est, $val);
+}
+foreach($h20_west1 as $key=>$val) {
+	array_push($val, $h20_west2[$key][4]);
+    array_push($h20_west, $val);
+}
 
-$occ_est = get_occ("est", $wef_counts, $unt_counts, "LOAD");
-$occ_west = get_occ("west", $wef_counts, $unt_counts, "LOAD");
-$h20_est = get_entry("est", $wef_counts, $unt_counts, "LOAD");
-$h20_west = get_entry("west", $wef_counts, $unt_counts, "LOAD");
+// ----------------------------------------------------------------------------------------------------
+//	 Merger les 2 tableaux Occ
+//	@params (array) : [ ["RAE", "2022-07-07", "17:48", peak, sustain, load], [...] ]
+//	@params (array)	: [ ["RAE", "2022-07-07", "17:48", peak, sustain, regulated_demand], [...] ] 
+//  @return	(array)	: [ ["RAE", "2022-06-07", "17:48", peak, sustain, load, regulated_demand], [...] ]
+// ----------------------------------------------------------------------------------------------------
+$occ_est = array();
+$occ_west = array();
+foreach($occ_est1 as $key=>$val) {
+	array_push($val, $occ_est2[$key][5]);
+    array_push($occ_est, $val);
+}
+foreach($occ_west1 as $key=>$val) {
+	array_push($val, $occ_west2[$key][5]);
+    array_push($occ_west, $val);
+}
 
+// ---------------------------------------
+// 		récupère les données Reg
+// ---------------------------------------
 $regul = get_regulations("LF", $wef_regs, $unt_regs);
 // objet contenant les reguls Europe
 $json_atfcm_reg = get_ATFCM_situation();
 
-// ATC conf du lendemain
+// ATC conf du jour
 $airspace1 = "LFMMCTAE";
 $airspace2 = "LFMMCTAW";
 $today = gmdate('Y-m-d', strtotime("today"));
