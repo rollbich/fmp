@@ -419,7 +419,7 @@ function show_popup(text1, text2) {
     
 	document.querySelector('.popup-box').classList.remove('transform-out');
 	document.querySelector('.popup-box').classList.add('transform-in');
-	
+	document.querySelector('.popup-box').style.top = window.innerHeight/2 + window.scrollY + 'px';
 }
 
 /*  ------------------------------------------------------------
