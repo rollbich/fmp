@@ -198,7 +198,7 @@ class ouverture extends schema_rea {
                     let dataAxis = [];	
                     let data_occ = [];
                     let dataAxis_occ = [];
-                    //try {
+                    try {
                         h[tv].forEach(value => {
                             if (time_to_min(value[0]) > time_to_min(deb)-graph_margin && time_to_min(value[0]) < time_to_min(fin)+graph_margin) {
                                 dataAxis.push(value[0]);
@@ -232,12 +232,12 @@ class ouverture extends schema_rea {
                             show_h20_graph('graph_h20', dataAxis, data, mv, tv);
                             show_occ_graph('graph_occ', dataAxis_occ, data_occ, peak, sustain, tv);
                         }
-                    //}
-                    /*
+                    }
+                    
                     catch (err) {
                         show_popup("Attention ! ", "Les données du TV: "+tv+" n'ont pas été récupérées en B2B.");
                     }
-                    */
+                    
                 })
             }
         }

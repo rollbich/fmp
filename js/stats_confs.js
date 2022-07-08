@@ -96,7 +96,11 @@ class stat_confs {
             "E1A": {
               "occur": nbre_occurence,
               "tps" : durée en minutes,
-              "tv": ["RAE"]}
+              "tv": ["RAE"]},
+              "conf": "E1A"
+            },
+            "conf_name": {
+                ...
             }
           "nbr_sect": {
               "conf1": { },
@@ -122,6 +126,7 @@ class stat_confs {
                         this.stats[nb_regr][cn]["occur"] = 0;
                         this.stats[nb_regr][cn]["tps"] = 0;
                         this.stats[nb_regr][cn]["tv"] = regroupements;
+                        this.stats[nb_regr][cn]["conf"] = cn;
                     }
                     this.stats[nb_regr][cn]["occur"]++;
                     this.stats[nb_regr][cn]["tps"] += elapsed;
@@ -144,24 +149,49 @@ class stat_confs {
 			<caption>STATS Confs : Zone ${zon} - Année ${this.year}</caption>
 			<thead><tr class="titre"><th class="space">Nb sect</th><th>Conf</th><th>Occ</th><th>Durée</th><th>% occ</th><th>% tps</th><th>TVs</th></tr></thead>
 			<tbody>`.trimStart();
-		
+		// -----------------------------------
+        //    fonction de tri
+        // -----------------------------------
+        function tri_obj(a,b) {
+            return b["occur"] - a["occur"];
+        }
         for (const [nbr_sect, confs_list] of Object.entries(this.stats)) { // on itère sur le nombre de regroupements 
             console.log("nbr regr: "+nbr_sect);
             // nbre occurence total pour un regroupement à n secteurs
             let count_occur = 0;
+            // nbre minutes total pour un regroupement à n secteurs
             let count_min = 0;
             for (const conf of Object.entries(confs_list)) { // on itère sur les différentes confs
                 count_occur += parseInt(conf[1]["occur"]);
                 count_min += parseInt(conf[1]["tps"]);
             }
-            for (const conf of Object.entries(confs_list)) { // on itère sur les différentes confs
-                //console.log(conf);
+            // ------------------------------------------------------------------------------------------------------
+            //      Tri suivant nbre_occur
+            // arr = [{"occur": nbre_occurence,"tps" : durée en minutes,"tv": ["RAEM","GYA"],"conf": "E2A"}, {...} ] 
+            // ------------------------------------------------------------------------------------------------------
+            let arr = [];
+            for (const conf of Object.entries(confs_list)) { // on itère sur les différentes confs (conf = [ "nom_conf", { object conf} ])
+                arr.push(this.stats[nbr_sect][conf[0]]);
+            }
+            arr.sort(tri_obj);
+            arr.forEach(el => {
 				if (nbr_sect%2) {res += '<tr class="one">'; } else {res += '<tr class="two">'; }
-				res +=`<td>${nbr_sect}</td><td>${conf[0]}</td><td>${conf[1].occur}</td><td>${conf[1].tps}</td>`;
-                res += `<td>${Math.round(conf[1].occur*1000/count_occur)/10}</td><td>${Math.round(conf[1].tps*1000/count_min)/10}</td></td>`;
-                if (conf[0] === "-") { res += '<td>---</td>';} else { res += `<td>${conf[1]["tv"].join("  ")}</td>`;}
+                const p_occur = Math.round(el.occur*1000/count_occur)/10;
+                const p_tps = Math.round(el.tps*1000/count_min)/10;
+                if (p_occur > 4.99 && el.conf.substring(0,1) === "N") {
+                    res +=`<td>${nbr_sect}</td>`;
+                    res +=`<td class="red">${el.conf}</td><td class="red">${el.occur}</td>`;
+                    res +=`<td>${el.tps}</td>`;
+                    res += `<td class="red">${p_occur}</td><td>${p_tps}</td></td>`;
+                } else {
+                    res +=`<td>${nbr_sect}</td>`;
+                    res +=`<td>${el.conf}</td><td>${el.occur}</td>`;
+                    res +=`<td>${el.tps}</td>`;
+                    res += `<td>${p_occur}</td><td>${p_tps}</td></td>`;
+                }
+                if (el.conf === "-") { res += '<td>---</td>';} else { res += `<td>${el["tv"].join("  ")}</td>`;}
 				res += '</tr>';	
-			}
+            })
 		}
 		
 		res += '</tbody></table>';
