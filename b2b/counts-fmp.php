@@ -469,7 +469,7 @@ function write_xls($zone, $wef) {
 	  'Peak'=>'integer',
 	  'Sustain'=>'integer',
 	  'Load'=>'integer',
-	  'Reg_Dem'=>'integer'
+	  'Demand'=>'integer'
 	);
 	
 	$header_h20 = array(
@@ -478,7 +478,7 @@ function write_xls($zone, $wef) {
 	  'Time'=>'string',
 	  'MV'=>'integer',
 	  'Load'=>'integer',
-	  'Reg_Dem'=>'integer'
+	  'Demand'=>'integer'
 	);
 	
 	$header_reg = array(
@@ -712,19 +712,19 @@ $tvs_west = $obj2["TV-OUEST"];
 // 		récupère les données H20, Occ
 // ---------------------------------------
 $occ_est1 = get_occ("est", $wef_counts, $unt_counts, "LOAD");
-$occ_est2 = get_occ("est", $wef_counts, $unt_counts, "REGULATED_DEMAND");
+$occ_est2 = get_occ("est", $wef_counts, $unt_counts, "DEMAND");
 $occ_west1 = get_occ("west", $wef_counts, $unt_counts, "LOAD");
-$occ_west2 = get_occ("west", $wef_counts, $unt_counts, "REGULATED_DEMAND");
+$occ_west2 = get_occ("west", $wef_counts, $unt_counts, "DEMAND");
 $h20_est1 = get_entry("est", $wef_counts, $unt_counts, "LOAD");
-$h20_est2 = get_entry("est", $wef_counts, $unt_counts, "REGULATED_DEMAND");
+$h20_est2 = get_entry("est", $wef_counts, $unt_counts, "DEMAND");
 $h20_west1 = get_entry("west", $wef_counts, $unt_counts, "LOAD");
-$h20_west2 = get_entry("west", $wef_counts, $unt_counts, "REGULATED_DEMAND");
+$h20_west2 = get_entry("west", $wef_counts, $unt_counts, "DEMAND");
 
 // ------------------------------------------------------------------------------------------
 //	 Merger les 2 tableaux de H20
 //	@params (array) : [ ["RAE", "2022-06-07", "05:20", mv, load], [...] ]
 //	@params (array)	: [ ["RAE", "2022-06-07", "05:20", mv, regulated_demand], [...] ] 
-//  @return	(array)	: [ ["RAE", "2022-06-07", "05:20", mv, load, regulated_demand], [...] ]
+//  @return	(array)	: [ ["RAE", "2022-06-07", "05:20", mv, load, demand], [...] ]
 // -------------------------------------------------------------------------------------------
 $h20_est = array();
 $h20_west = array();
