@@ -107,7 +107,7 @@
 				// ne prépare le fichier de conf qu'une fois
 				if (confs === null) confs = await get_fichier_confs();
 				const ouv = new ouverture('result', start_day, zone);
-				//ouv.show_ouverture(confs[zon]);
+				ouv.show_ouverture(confs[zon]);
 			});
 			
 			$('bouton_uceso').addEventListener('click', async e => {
