@@ -134,7 +134,7 @@
 
 </header>
 <div id="glob_container" class="off">
-	<div id='result' class='result'>
+	<div id='result'>
 	</div>
 	
 	<div id="graph-container">

@@ -59,7 +59,7 @@ class ouverture extends schema_rea {
 	 	 - Tri par horaire
 	------------------------------------------------------------------------------ */
     show_table_ouverture() {
-        let res = `<table class="ouverture">
+        let res = `<div class='result'><table class="ouverture">
                         <caption>Journée du ${this.schema.date}</caption>
                         <thead>
                         <tr class="titre"><th>Début</th><th>Fin</th><th>Nb sect.</th><th>Conf</th><th class="colspan">Confs</th></tr>
@@ -103,7 +103,7 @@ class ouverture extends schema_rea {
         });
         res += '</tbody></table>';
         res += `<div class="max">Max secteurs : ${this.schema.max_secteurs}</div>`;
-        res += `<button id='bouton_ouv_par_pos'>Afficher par position</button>`;                  
+        res += `<button id='bouton_ouv_par_pos'>Afficher par position</button></div>`;                  
         this.container.innerHTML = res;
         $('bouton_ouv_par_pos').addEventListener('click', e => {
             this.show_table_ouverture_par_position();
