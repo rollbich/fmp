@@ -47,13 +47,15 @@
 				$('graph-container-occ').classList.add('off');
 			});
 			
-			$$('.help_close_button').addEventListener('click', e => {
+			document.querySelector('.help_close_button').addEventListener('click', e => {
+				e.preventDefault();
 				$("help_frame").classList.add('off');
 			});
 			
 			<?php include("../php/upload.js.php"); ?>
 			
 			document.querySelector('.help_button').addEventListener('click', e => {
+				e.preventDefault();
 				$("help_frame").classList.remove('off');
 			});
 			
@@ -105,7 +107,7 @@
 				// ne prépare le fichier de conf qu'une fois
 				if (confs === null) confs = await get_fichier_confs();
 				const ouv = new ouverture('result', start_day, zone);
-				ouv.show_ouverture(confs[zon]);
+				//ouv.show_ouverture(confs[zon]);
 			});
 			
 			$('bouton_uceso').addEventListener('click', async e => {

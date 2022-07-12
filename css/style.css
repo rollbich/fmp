@@ -205,9 +205,6 @@ ul.menu li label {
 
 ul.menu li span{
 	transition: all .5s ease 0s;
-	width: 140px;
-	margin-left: 20px;
-	margin-right: 20px;
 	padding: 10px 20px 10px;
 	border-radius: 2px;
 }
@@ -267,6 +264,29 @@ select, option {
 	width: 60px;
 }
 
+#bouton_stat_confs::after {
+	border: 3px solid lightblue;
+	border-radius: 2px;
+	border-right: 0;
+	border-right-color: currentcolor;
+	border-top: 0;
+	border-top-color: currentcolor;
+	content: " ";
+	display: inline-block;
+	height: 0.625em;
+	margin-left: 0.75em;
+	margin-bottom: 2px;
+	pointer-events: none;
+	top: 50%;
+	transform: rotate(-45deg);
+	transform-origin: center;
+	width: 0.625em;
+}
+
+#dates.content {
+	display: none;
+}
+
 /* ------- Résultats ------- */
 
 #semaine {
@@ -302,16 +322,20 @@ span.rect {
 
 #result {
 	background: var(--result-bg-color);
-	padding: 10px;
 	overflow: auto;
 	margin-right: 20px;
 	margin-left: 10px;
+}
+
+#result div.result {
+	margin: 10px;
 }
 
 table {
 	border-collapse: collapse;
 	font-size: 1.1rem;
 	margin-top: 20px;
+	margin: 10px;
 }
 
 table.ouverture {
