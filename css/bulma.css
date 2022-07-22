@@ -7,7 +7,7 @@
   --bulma-dropdown-bg-color: black;
   --bulma-dropdown-bg-hover-color: #444;
   --bulma-dropdown-bg-active-color: whitesmoke;
-  --bulma-dropdown-color: #white;
+  --bulma-dropdown-color: white;
   --bulma-dropdown-hover-color: orange;
   --bulma-dropdown-active-color: #485fc7;
   --bulma-navbar-divider-color: #ededed;
@@ -769,6 +769,31 @@ a.navbar-item:focus, a.navbar-item:focus-within, a.navbar-item:hover, a.navbar-i
   margin: 0.5rem 0;
 }
 
+/* --- nested menu + bouton --- */
+
+.nested.dropdown:hover > .dropdown-menu {
+  display: block;
+}
+.nested.dropdown .dropdown-menu {
+  top: -15px;
+  margin-left: 100%;
+}
+.nested.dropdown .dropdown-trigger button::after {
+  /*content: "⦠";*/
+  content: "";
+}
+.nested.dropdown .dropdown-trigger button {
+  padding: 0px 0px;
+  border: 0px;
+  font-size: 18px;
+  font-weight: 400;
+  height: 2em;
+  color: var(--main-color);
+  background: var(--bulma-dropdown-bg-color);
+}
+
+/* --- fin nested menu --- */
+
 @media screen and (max-width: 1023px) {
   .navbar > .container {
     display: block;
@@ -879,13 +904,20 @@ a.navbar-item:focus, a.navbar-item:focus-within, a.navbar-item:hover, a.navbar-i
     padding: 0.375rem 1rem;
     white-space: nowrap;
   }
-  .navbar-dropdown a.navbar-item {
+  .navbar-dropdown a.navbar-item, .navbar-dropdown div.navbar-item {
     padding-right: 3rem;
   }
-  .navbar-dropdown a.navbar-item:focus, .navbar-dropdown a.navbar-item:hover {
+  .navbar-dropdown a.navbar-item:focus, .navbar-dropdown a.navbar-item:hover, .navbar-dropdown div.navbar-item:hover {
     background-color: var(--bulma-dropdown-bg-hover-color);
     color: var(--bulma-dropdown-hover-color);
   }
+
+  .navbar-dropdown div.navbar-item:hover button{
+    background-color: var(--bulma-dropdown-bg-hover-color);
+    color: var(--bulma-dropdown-hover-color);
+    cursor: pointer;
+  }
+
   .navbar-dropdown a.navbar-item.is-active {
     background-color: var(--bulma-dropdown-bg-active-color);
     color: var(--bulma-dropdown-active-color);
