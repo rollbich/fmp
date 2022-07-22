@@ -150,6 +150,7 @@ class ouverture extends schema_rea {
                 let nbr_regroup = td_el.dataset.nbregr;
                 let tvs = td_el.dataset.tvs.split(",");
                 tvs = this.zone === "AE" ? tri_est(tvs) : tri_west(tvs);
+                const confs_name = [];
                 const el = document.createElement('div');
 				el.setAttribute('id', 'popup-cree-conf');
                 el.setAttribute('class', 'popup-conf1 off');
@@ -165,6 +166,7 @@ class ouverture extends schema_rea {
                     <thead><tr class="titre"><th>Conf</th><th colspan="15"></th></tr></thead>
                     <tbody>`;
                     for(let conf in this.confs[nbr_regroup]) {
+                        confs_name.push(conf);
                         let arr_tv = this.confs[nbr_regroup][conf];
                         arr_tv = this.zone === "AE" ? tri_est(arr_tv) : tri_west(arr_tv);
                         res2 += `<tr><td style="background: var(--color-2019);">${conf}</td>`; 
@@ -181,6 +183,10 @@ class ouverture extends schema_rea {
                 $('popup-cree-conf').classList.remove('off');
                 $('bouton_creer_conf').addEventListener('click', async (e) => {
                     const n = $('nom').value;
+                    if (confs_name.includes(n)) {
+                        show_popup('Add Confs', `Conf non créée<br>Ce nom existe déjà`);
+                        return;
+                    }
                     const json = await this.get_bdd_confs(zon);
                     json[nbr_regroup][n] = tvs;
                     console.log("Creation");
