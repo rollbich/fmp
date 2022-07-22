@@ -545,13 +545,13 @@ class feuille_capa extends capa {
 
 		// ajoute les clicks sur la case du nbre de pc de la vac
 		const td_pc = document.querySelectorAll('.pc');
-
+		$('popup-wrap').classList.add('popup-modif');
+		$$('.popup-box').classList.add('popup-modif');
 		td_pc.forEach(td_el => {
 			let vac = td_el.dataset.vac;
 			if (this.update[this.zone][this.day]['update_count'][vac] !== 0) $$(`td[data-vac=${vac}].pc`).classList.add('bg_red');	
 			td_el.addEventListener('click', (event) => {
-				$('popup-wrap').classList.add('popup-modif');
-				$$('.popup-box').classList.add('popup-modif');
+
 				for (const user in this.pc_vac[vac]["userList"]) {
 					let ih = `
 					<div id="modif_eq">
@@ -816,7 +816,7 @@ class feuille_capa extends capa {
 	}
 
 	add_pers (vac) {
-		let res = `<table><caption>${vac} : <span data-vac='${vac}'>${this.update[this.zone][this.day]['update_count'][vac]}</span></caption><thead><tr><th>Nom</th><th>Type</th></tr></thead><tbody>`;
+		let res = `<table><caption>${vac}<span data-vac='${vac}'></span></caption><thead><tr><th style="background: #444;">Nom</th><th style="background: #444;">Type</th></tr></thead><tbody>`;
 		const pres = [];
 		const present = [];
 		this.add_travailleurs_RO(vac, present);
