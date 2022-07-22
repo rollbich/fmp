@@ -12,18 +12,28 @@ class ouverture extends schema_rea {
 /*  --------------------------------------------------------------------------------------------- 
 	  Lit le schema réalisé, affiche le tableau des ouvertures et ajoute les 'clicks' sur les TV
 	--------------------------------------------------------------------------------------------- */
-// 
-    async show_ouverture(confs) {
+    async show_ouverture(confs, bool) {
         this.schema = await this.read_schema_realise();
         if (typeof this.schema === 'undefined') {
             show_popup("Fichier inexistant",`Le fichier du ${this.day} n'existe pas`);
             return;
         }
         this.confs = confs;	
-        this.show_table_ouverture();
+        this.show_table_ouverture(bool);
         this.add_ouverture_listener();
     }
 
+    /*  --------------------------------------------------------------------------------------------- 
+	  Lit le fichier de confs supp
+        @params {string} zone - "est" ou "west"
+	--------------------------------------------------------------------------------------------- */
+    async get_bdd_confs(zone) {
+		const url_est =  `../confs-est-supp.json`;	
+        const url_west =  `../confs-west-supp.json`;	
+        const url = zone === "est" ? url_est : url_west;
+        console.log("load confs supp OK");
+        return await loadJson(url);
+	}
 /*  --------------------------------------------------------------------------------------------- 
 	  Prépare le fichier de correspondance confs-regroupements
 	--------------------------------------------------------------------------------------------- */
@@ -54,11 +64,26 @@ class ouverture extends schema_rea {
         return conf_tot;
 	}
 
+    /*  --------------------------------------------------------------------------------------------- 
+	        Update les confs du fichier confs supplémentaire
+			@params {string} "est" ou "ouest"
+	    --------------------------------------------------------------------------------------------- */
+	async update_conf_file(json, zone) {
+		const url = zone === "est" ? "../admin/export_confsEst_to_json.php" : "../admin/export_confsWest_to_json.php";
+		const data = {
+			method: "post",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(json)
+		};
+		fetch(url, data);
+	}
+
 /*  ------------------------------------------------------------------------------
 	  Affiche la table du schema d'ouvertures dans le container
+        @params {boolean} bool - false accès de base
 	 	 - Tri par horaire
 	------------------------------------------------------------------------------ */
-    show_table_ouverture() {
+    show_table_ouverture(bool) {
         let res = `<div class='result'><table class="ouverture">
                         <caption>Journée du ${this.schema.date}</caption>
                         <thead>
@@ -74,7 +99,7 @@ class ouverture extends schema_rea {
             row[4].forEach(tv => {
                 regroupements.push(tv[0]);
             });
-            let c = "-";
+            let c = bool === true ? "Add" : "-";
             const nb_regroupements = regroupements.length;
             for(let conf in this.confs[nb_regroupements]) {
                 const arr_tv = this.confs[nb_regroupements][conf];
@@ -90,10 +115,13 @@ class ouverture extends schema_rea {
                 case 'Z':
                     res += `<td class='red'>${c}</td>`;
                   break;
+                case 'A':
+                    res += `<td class='yellow pointer' data-nbregr='${nb_regroupements}' data-tvs='${regroupements}'>${c}</td>`;
+                  break;
                 default:
                     res += `<td>${c}</td>`;
             }
-            //if (c.substring(0,1) === "N") { res += `<td class='green'>${c}</td>`; } else { res += `<td>${c}</td>`;}				
+           		
             row[4].forEach(tv => {
                 let r = this.get_ouverture_totale(tv[0], time_to_min(row[1]), time_to_min(row[2]));
                 res += `<td title="${tv[1]}" class="tv" data-tv="${tv[0]}" data-deb="${r[0]}" data-fin="${r[1]}">${tv[0]}</td>`;
@@ -108,6 +136,63 @@ class ouverture extends schema_rea {
         $('bouton_ouv_par_pos').addEventListener('click', e => {
             this.show_table_ouverture_par_position();
         });
+        const td_add = document.querySelectorAll('[data-nbregr]');
+        td_add.forEach(td_el => {
+
+        })
+        if (td_add.length === 0) return;
+        const zon = this.zone === "AE" ? "est" : "ouest";
+        
+		td_add.forEach(td_el => {
+            td_el.addEventListener('click', (event) => {
+                const exist = $('popup-cree-conf');
+                if (!!exist === true) exist.remove();
+                let nbr_regroup = td_el.dataset.nbregr;
+                let tvs = td_el.dataset.tvs.split(",");
+                tvs = this.zone === "AE" ? tri_est(tvs) : tri_west(tvs);
+                const el = document.createElement('div');
+				el.setAttribute('id', 'popup-cree-conf');
+                el.setAttribute('class', 'popup-conf1 off');
+                let res2 = `<h2 class="center">Add conf - ${nbr_regroup} secteurs</h2>`;
+                res2 += `<div class="popup-conf2">`;
+                res2 += `<label for="nom" class="">Choisissez un nom : </label>`;
+                res2 += `<input type="text" id="nom" value="" maxlength="6">`;
+                res2 += `<button id="bouton_creer_conf" style="margin-left: 5px; padding-bottom: 2px;">Ok</button>`;
+                res2 += `<div style="margin-bottom: 5px;">${tvs.join("-")}</div>`;
+                res2 += "<div id='add_conf'>";
+                res2 += `
+                <table class="">
+                    <thead><tr class="titre"><th>Conf</th><th colspan="15"></th></tr></thead>
+                    <tbody>`;
+                    for(let conf in this.confs[nbr_regroup]) {
+                        let arr_tv = this.confs[nbr_regroup][conf];
+                        arr_tv = this.zone === "AE" ? tri_est(arr_tv) : tri_west(arr_tv);
+                        res2 += `<tr><td style="background: var(--color-2019);">${conf}</td>`; 
+                        arr_tv.forEach(tv => {
+                            res2 +=`<td>${tv}</td>`;
+                        })
+                        res2 += '</tr>';	
+                    }
+                res2 += '</tbody></table>';
+                res2 += '</div><div class="center"><button id="close_creer_conf">Close</button></div>';
+                let parentDiv = document.getElementById("glob_container");
+				parentDiv.insertBefore(el, $('result'));
+				el.innerHTML = res2;
+                $('popup-cree-conf').classList.remove('off');
+                $('bouton_creer_conf').addEventListener('click', async (e) => {
+                    const n = $('nom').value;
+                    const json = await this.get_bdd_confs(zon);
+                    json[nbr_regroup][n] = tvs;
+                    console.log("Creation");
+                    console.log(json);
+                    await this.update_conf_file(json, zon);
+                    show_popup('Add Confs', `Conf ${n} créée`);
+                })
+                $('close_creer_conf').addEventListener('click', e => {
+                    el.remove();
+                })
+            })
+        })
     }
 
 /*  ------------------------------------------------------------------------------

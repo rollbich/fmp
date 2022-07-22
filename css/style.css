@@ -57,6 +57,11 @@ h2 {
 	margin-right: auto;
 }
 
+.yellow {
+	font-weight: bold;
+	color: rgb(239, 243, 116);
+}
+
 .green {
 	color: rgb(147, 218, 147);
 }
@@ -232,7 +237,6 @@ select, option {
 }
 
 /* ------- Date Picker ------- */
-
 #dates {
 	display: flex;
 	flex-direction: row;
@@ -245,7 +249,33 @@ select, option {
 	align-items: center;
 }
 
-#dates input {
+#dates_stats_confs {
+	display: grid;
+	grid-template-columns: 33% 33% 33%;
+	grid-template-rows: 33% 33% 33%;
+	grid-gap: 5px;
+	width: 190px;
+	border: 2px solid pink;
+	background:#537c9f;
+	padding-bottom: 5px;
+	padding-left: 3px;
+}
+
+#dates_stats_confs button.no {
+	color :rgb(240, 122, 122);
+}
+
+#dates_stats_confs button.ok {
+	color :rgb(47, 168, 107);
+}
+
+#dates button, #dates_stats_confs button {
+	margin-top: 3px;
+	margin-left: 2px;
+	margin-right: 15px;
+}
+
+#dates input, #dates_stats_confs input {
 	font-size: 11px;
 	width: 104px;
 	margin-top: 5px;
@@ -253,7 +283,7 @@ select, option {
 	margin-left: 5px;
 }
 
-#dates label {
+#dates label, #dates_stats_confs label {
 	line-height: 24px;
 	font-size: 14px;
 	margin-left: 0px;
@@ -283,7 +313,7 @@ select, option {
 	width: 0.625em;
 }
 
-#dates.content {
+#dates_stats_confs.content {
 	display: none;
 }
 
@@ -477,6 +507,9 @@ table.conf th, table.conf td {
   text-transform: uppercase;
 }
 
+.help_close_button {
+	margin-bottom: 0.5rem;
+}
 
 #help_frame {
 	width: 570px;	
@@ -576,6 +609,51 @@ table.conf th, table.conf td {
 	-webkit-transform:translate(-50%, -50%) scale(0.5);
 	transform:translate(-50%, -50%) scale(0.5);
 	opacity: 0;
+}
+
+#add_conf {
+	height: 400px;
+	overflow-y: scroll;
+	border: solid 1px rgb(238, 230, 230);
+	padding-bottom: 4px;
+}
+
+#add_conf table {
+	margin-top: 1rem;
+}
+
+#add_conf table tr {
+	background-color: transparent;
+}
+
+#add_conf table thead > tr.titre {
+	background-color: var(--table-titre-color);
+}
+
+.popup-conf1 {
+	height: 500px;
+}
+
+#popup-cree-conf {
+	padding: 7px;
+	/*border: solid 1px orange;*/
+	height: 550px;
+	font-size: 1.2rem;
+	background: var(--result-bg-color);
+}
+
+#close_creer_conf {
+	margin-top: 5px;
+}
+
+td.supprime {
+	color: rgb(214, 172, 172);
+	cursor: pointer;
+}
+
+td.supprime:hover {
+	background: rgb(136, 122, 122);
+	cursor: pointer;
 }
 
 /* ------- Scroll to Top Button ------- */

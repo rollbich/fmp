@@ -9,7 +9,9 @@ class conf {
 	}
 
 	async init() {
-		this.confs = await this.get_conf();
+		if (this.day !== null) this.confs_prep = await this.get_conf();
+		this.confs_supp_est = await this.get_fichier_confs("est");
+		this.confs_supp_west = await this.get_fichier_confs("ouest");
 	}
 
 	async init_b2b() {
@@ -21,6 +23,7 @@ class conf {
 			Lit le fichier json de confs declarées
 		--------------------------------------------- */
 	async get_conf() {
+		if (typeof this.day === 'undefined') return {};
 		const date = this.day.replace(/-/g, ''); // yyyymmdd
 		const url = `../b2b/json/${date}-confs.json`;	
 		const resp = await loadJson(url);
@@ -61,7 +64,8 @@ class conf {
 		}
 		
 		catch (err) {
-			alert('Get confs existantes Load json error: '+err.message);
+			show_popup("Erreur", "Chargement des Confs impossible<br>Vérifiez la connexion internet");
+			console.log('Get confs existantes Load json error: '+err.message);
 		}
 	}
 
@@ -115,27 +119,150 @@ class conf {
 		return s;
 	}
 
+	/*  --------------------------------------------------------------------------------------------- 
+	  Lit le fichier de correspondance confs-regroupements
+	--------------------------------------------------------------------------------------------- */
+    async get_fichier_confs(zone) {
+		const url_est =  `../confs-est-supp.json`;	
+        const url_west =  `../confs-west-supp.json`;	
+        const url = zone === "est" ? url_est : url_west;
+        console.log("load confs supp OK");
+        return await loadJson(url);
+	}
+
+	/*  --------------------------------------------------------------------------------------------- 
+	        Détecte les confs déjà existantes dans le fichier confs supplémentaire
+			@params {string} "est" ou "ouest"
+	    --------------------------------------------------------------------------------------------- */
+	get_conf_to_clean(zone) {
+		const cf = zone === "est" ? this.confs_supp_est : this.confs_supp_west;
+		const conf_supprime = [];
+		Object.keys(this.b2b_sorted_confs[zone]).forEach( numero => {
+			Object.keys(this.b2b_sorted_confs[zone][numero]).forEach( conf => {
+				const s = this.get_conf_name(this.b2b_sorted_confs[zone][numero][conf], cf);
+				if (s !== "-") {
+					conf_supprime.push([s, conf]);
+					console.log(s+" = "+conf);
+					delete cf[numero][s];
+				}
+			})
+		})
+		console.log(cf);
+		return conf_supprime;
+	}
+
+	/*  --------------------------------------------------------------------------------------------- 
+	        affiche les doublons de confs
+			@params {string} "est" ou "ouest"
+	    --------------------------------------------------------------------------------------------- */
+	affiche_doublon_confs(containerId) {
+		const cf_est = this.get_conf_to_clean("est");
+		const cf_west = this.get_conf_to_clean("ouest");
+		if (cf_est.length === 0 && cf_west.length === 0) {
+			$(containerId).innerHTML = "";
+			show_popup("Doublons confs", "La bdd est déjà clean");
+		} else {
+		let res = "<div class='conf'>";
+		res += `
+		<table class="sortable">
+			<caption>Doublon de confs</caption>
+			<thead><tr class="titre"><th>Conf NM</th><th></th><th>Conf bdd</th></tr></thead>
+			<tbody>`;
+			cf_est.forEach( value => {
+				res += '<tr>'; 
+				res += `<td>${value[1]}</td><td> = </td><td>${value[0]}</td>`;
+				res += '</tr>';	
+			});
+			cf_west.forEach( value => {
+				res += '<tr>'; 
+				res += `<td>${value[1]}</td><td> = </td><td>${value[0]}</td>`;
+				res += '</tr>';	
+			});
+		res += '</tbody></table>';
+		res += '<div class="center"><button id="bouton_clean">Clean local BDD</button></div>';
+		res += '</div>';
+		$(containerId).innerHTML = res;
+
+		$('bouton_clean').addEventListener('click', async e => {
+			await this.clean_conf_file();
+			$(containerId).innerHTML = "";
+			show_popup("Doublons confs", "Nettoyage effectué");
+		})
+		}
+
+	}
+
+	/*  --------------------------------------------------------------------------------------------- 
+	        Supprime les confs déjà existantes du fichier confs supplémentaire
+			@params {string} "est" ou "ouest"
+	    --------------------------------------------------------------------------------------------- */
+	async clean_conf_file() {
+		const cf = {};
+		cf["est"] = this.confs_supp_est;
+		cf["ouest"] = this.confs_supp_west;
+		const data = {
+			method: "post",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(cf)
+		};
+		fetch("export_confs_to_json.php", data);
+	}
+
+	/*  --------------------------------------------------------------------------------------------- 
+	        Update les confs du fichier confs supplémentaire
+			@params {string} "est" ou "ouest"
+	    --------------------------------------------------------------------------------------------- */
+	async update_conf_file(zone) {
+		const url = zone === "est" ? "export_confsEst_to_json.php" : "export_confsWest_to_json.php";
+		const cf = zone === "est" ? this.confs_supp_est : this.confs_supp_west;
+		const data = {
+			method: "post",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(cf)
+		};
+		fetch(url, data);
+	}
+	
+/*  ------------------------------------------------------------------------------
+	  Cherche la conf correspondante
+        @param {array} [array de regroupements] - ["SBAM","GY","EK","AB"]
+        @param {object} this.confs / this.confs_exist / this.confs_supp
+        @return {string} conf - "E5W2B" ou "-" si non trouvé
+	------------------------------------------------------------------------------ */
+    get_conf_name(regroupements, confs) {
+        let cf = "-";
+        const nb_regroupements = regroupements.length;
+        for(let conf in confs[nb_regroupements]) {
+            const arr_tv = confs[nb_regroupements][conf];
+            if (regroupements.sort().toString() == arr_tv.sort().toString()) {
+                cf = conf;
+                break;
+            }
+        }
+        return cf;
+    }
+
 	/*  -----------------------------------------------------------
-			Affiche les confs
+			Affiche les confs déclarées au NM à la prep
 			@param {string} containerId - Id de l'HTML Element container	
 			@param {string} day - "yyyy-mm-dd"
 		------------------------------------------------------------------ */
 	async show_result_confs(containerId) {
-		if (typeof this.confs === 'undefined') return;
+		if (typeof this.confs_prep === 'undefined') return;
 		try {
 			let res = "<div class='conf'>";
 			res += `
-			<table class="regulation sortable">
+			<table class="sortable">
 				<caption>LFMM-${this.zone.toUpperCase()} : ${reverse_date(this.day)}</caption>
 				<thead><tr class="titre"><th>Début</th><th>Fin</th><th>Conf</th><th colspan="15"></th></tr></thead>
 				<tbody>`;
-			this.confs[this.zone].forEach( value => {
+			this.confs_prep[this.zone].forEach( value => {
 				let deb = extract_time(value.applicabilityPeriod.wef);
 				let fin = extract_time(value.applicabilityPeriod.unt);
 				let regr = this.get_tvs_confs(value.sectorConfigurationId);
 				res += '<tr>'; 
 				res +=`<td>${deb} TU</td><td>${fin} TU</td><td>${value.sectorConfigurationId}</td>`;
-				const arr = this.zone === "est" ? this.tri_est(regr) : this.tri_west(regr);
+				const arr = this.zone === "est" ? tri_est(regr) : tri_west(regr);
 				arr.forEach(tv => {
 					res += `<td>${tv}</td>`;
 				})
@@ -166,35 +293,27 @@ class conf {
 	}
 
 /*  ------------------------------------------------------------------------------
-	  Cherche les tvs correspondants à la conf
+	  Cherche les tvs correspondants à la conf déclaré à la prep
         @param {string} "conf" - "E3C"
         @return [array] tvs - ["RAEE", "GY", "AB"]
 	------------------------------------------------------------------------------ */
     get_tvs_confs(conf) {
         let regroupements = null;
 		let nb_tvs = this.get_nb_tv(conf);
-		console.log("nb_tvs de la conf: "+conf);
-		console.log(nb_tvs);
-		console.log("this.sorted_confs[nb_tvs]");
-		console.log(this.b2b_sorted_confs);
         for(let cf in this.b2b_sorted_confs[this.zone][nb_tvs]) {
-			console.log("Conf : "+conf);
-			console.log("Cf : "+cf);
             if (conf == cf) {
                 regroupements = this.b2b_sorted_confs[this.zone][nb_tvs][cf];
                 break;
             }
         }
-		console.log(regroupements);
         return regroupements;
     }
 
 	/*  -----------------------------------------------------------
 			Affiche les confs existantes
 			@param {string} containerId - Id de l'HTML Element container	
-			@param {string} day - "yyyy-mm-dd"
 		------------------------------------------------------------------ */
-	async show_existing_confs(zone, containerId) {
+	async show_existing_confs(containerId) {
 		if (typeof this.b2b_sorted_confs === 'undefined') return;
 		const max_secteur = 15;
 		let res = "<div>";
@@ -205,11 +324,10 @@ class conf {
 			<tbody>`.trimStart();
 		
 		// confs_list : { "E2A": ["LFMMRAEM","LFMMGYA"], "E2B": [...]}
-		console.log("GG: "+this.b2b_sorted_confs[this.zone]);
         for (const [nbr_sect, confs_list] of Object.entries(this.b2b_sorted_confs[this.zone])) { // on itère sur le nombre de regroupements 
 			Object.keys(confs_list).forEach (conf => { // on itère sur les différentes confs
 				if (nbr_sect%2) {res += '<tr class="one">'; } else {res += '<tr class="two">'; }
-				let tvs = zone === "est" ? this.tri_est(confs_list[conf]) : this.tri_west(confs_list[conf]);
+				let tvs = this.zone === "est" ? tri_est(confs_list[conf]) : tri_west(confs_list[conf]);
 				res +=`<td>${nbr_sect}</td><td>${conf}</td>`;
 				const l = max_secteur - tvs.length + 1;
 				tvs.forEach (tv => {
@@ -228,46 +346,60 @@ class conf {
 			
 	}
 
-	/*  ----------------------------------------------------
-	  trie tv par groupe pour l'est
-	 	@param {array}  - array non trié ["tv1", "tv2",...]
-		@returns {array} - array trié
-	-------------------------------------------------------- */
-    tri_est(arr_tv) {
-        // on met dans un tableau les tv du groupe 1, puis du groupe 2, etc...
-        const bloc1 = ["RAE", "RAEE", "RAEM", "RAES", "RAEE1", "SBAM", "MNST", "BTAJ", "SAB", "BAM", "MN", "ST", "AJ", "BT"];
-        const bloc2 = ["AIET", "ABEK", "BEK", "EK", "EK1", "EK2", "EK3", "EK12", "EK3", "EK23", "E12", "E3", "E23", "KK", "K12", "K3", "K23", "EE", "KK", "E1", "E2", "K1", "K2"];
-        const bloc3 = ["AB", "AB1", "AB2", "AB3", "AB4", "AB12", "AB34", "B12", "B34", "B1", "B2", "B3", "B4", "AA", "BB", "A12", "A34", "A1", "A2", "A3", "A4"];
-        const bloc4 = ["GYAB", "GYA", "GY", "GY1", "GY2", "GY3", "GY4", "GY12", "GY34", "GG", "YY", "Y12", "Y34", "Y1", "Y2", "Y3", "Y4", "G12", "G34", "G1", "G2", "G3", "G123", "G4"];
-        // on place les tv appartenant au groupe 1 dans un tableau, idem pour le groupe 2, etc...
-        let bloc1_tv_array = arr_tv.filter(tv => bloc1.includes(tv));
-        let bloc2_tv_array = arr_tv.filter(tv => bloc2.includes(tv));
-        let bloc3_tv_array = arr_tv.filter(tv => bloc3.includes(tv));
-        let bloc4_tv_array = arr_tv.filter(tv => bloc4.includes(tv));
-        // on concatène les 4 tableaux en 1
-        arr_tv = [...bloc1_tv_array, ...bloc2_tv_array, ...bloc3_tv_array, ...bloc4_tv_array];
-        return arr_tv;	
-    }
-
-/*  --------------------------------------------------------
-	  trie tv par groupe pour l'ouest
-	 	@param {array}  - array non trié ["tv1", "tv2",...]
-		@returns {array} - array trié
-	-------------------------------------------------------- */
-    tri_west(arr_tv) {
-        const bloc1 = ["RAW", "RAWM", "RAWN", "RAWS", "MALY", "LYO", "MOLYO", "OLYO", "MML", "LE", "LOLS", "LELS", "LOLE", "LS", "LO", "MO", "ML"];
-        const bloc2 = ["MOML", "WMO", "WMOML", "MFML", "WLMO", "WMFDZ", "MFDZ", "W1", "W23", "W12", "W2", "W3", "WM", "WW"];
-        const bloc3 = ["MM", "MF", "M12", "M1", "M123", "MF1", "MF2", "F1", "F2"];
-        const bloc4 = ["M34", "M234", "M2", "M3", "M4", "FDZ", "FF", "F12", "MF12", "MF3", "MF4", "F123", "FDZL", "MFDZL"];
-        const bloc5 = ["MF34", "F234", "F34", "F3", "F4", "DZ", "DD", "ZZ", "DH", "ZH", "DL", "DZL", "DZH", "FDZH", "MFDZH"];
-        let bloc1_tv_array = arr_tv.filter(tv => bloc1.includes(tv));
-        let bloc2_tv_array = arr_tv.filter(tv => bloc2.includes(tv));
-        let bloc3_tv_array = arr_tv.filter(tv => bloc3.includes(tv));
-        let bloc4_tv_array = arr_tv.filter(tv => bloc4.includes(tv));
-        let bloc5_tv_array = arr_tv.filter(tv => bloc5.includes(tv));
-        // on concatène les 4 tableaux en 1
-        arr_tv = [...bloc1_tv_array, ...bloc2_tv_array, ...bloc3_tv_array, ...bloc4_tv_array, ...bloc5_tv_array];
-        return arr_tv;	
-    }
-
+/*  ------------------------------------------------------------------
+		Affiche les confs de la bdd
+		@param {string} containerId - Id de l'HTML Element container	
+	------------------------------------------------------------------ */
+	async show_bdd_confs(containerId) {
+		const max_secteur = 15;
+		const zc = this.zone === "AE" ? this.confs_supp_est : this.confs_supp_west;
+		const zone = this.zone === "AE" ? "est" : "west";
+		let res = "<div>";
+		res += `
+		<table class="sortable conf">
+			<caption>Confs supplémentaires bdd - Zone ${zone}</caption>
+			<thead><tr class="titre"><th class="space">Nb sect</th><th>Conf</th><th>Supprime</th><th>TVs</th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th></tr></thead>
+			<tbody>`.trimStart();
+		
+		// confs_list : { "E2A": ["LFMMRAEM","LFMMGYA"], "E2B": [...]}
+		for (const [nbr_sect, confs_list] of Object.entries(zc)) { // on itère sur le nombre de regroupements 
+			// le fichier de conf supp contient une clé "zone" qu'il faut exclure
+			if (Object.keys(confs_list).length !== 0 && nbr_sect !== "zone") {
+				console.log(nbr_sect+" : ");
+				console.log(confs_list);
+				Object.keys(confs_list).forEach (conf => { // on itère sur les différentes confs
+					if (nbr_sect%2) {res += '<tr class="one">'; } else {res += '<tr class="two">'; }
+					let tvs = this.zone === "AE" ? tri_est(confs_list[conf]) : tri_west(confs_list[conf]);
+					//let tvs = confs_list[conf];
+					console.log("TVS");
+					console.log(tvs);
+					res +=`<td>${nbr_sect}</td><td>${conf}</td><td data-nbrsect="${nbr_sect}" data-conf="${conf}" data-zone="${zone}" class="supprime">x</td>`;
+					const l = max_secteur - tvs.length + 1;
+					tvs.forEach (tv => {
+						//if (tv == "OLYO") tv = "MOLYO"; // patch erreur nom airspace NM
+						res += `<td>${tv}</td>`;
+					})
+					for(let i=1;i<l;i++) {
+						res += `<td></td>`;
+					}
+					res += '</tr>';	
+				})
+			}
+		}
+		res += '</tbody></table>';
+		res += '</div>';
+		$(containerId).innerHTML = res;
+		
+		const supp = document.querySelectorAll('.supprime');
+		for (const elem of supp) {
+			elem.addEventListener('click', async (e) => {
+				const nbr_sect = elem.dataset.nbrsect;
+				const conf_name = elem.dataset.conf;
+				const zone = elem.dataset.zone.toLowerCase();
+				delete zc[nbr_sect][conf_name];
+				await this.update_conf_file(zone);
+				show_popup('Delete Confs', `Conf ${conf_name} supprimée`);
+			});
+		}
+	}
 }
