@@ -19,6 +19,7 @@
 	<script type="text/javascript" src="../js/base.js"></script>
 	<script type="text/javascript" src="../js/tds-name.js"></script>
 	<script type="text/javascript" src="../js/utils.js"></script>
+	<script type="text/javascript" src="../js/tri.js"></script>
 	<script type="text/javascript" src="../js/list-component.js"></script>
 	<script type="text/javascript" src="../js/graph.js"></script>
 	<script type="text/javascript" src="../js/schema.js"></script>
@@ -53,19 +54,33 @@
 			});
 			
 			$('bouton_stat_confs').addEventListener('click', async e => {
-				
-                let zone = $('zone').value;
-				let day = $('start').value;
-				const year = parseInt(new Date(day).getFullYear());
-				new stat_confs("result",year,zone);	
-                
+				const el = $('dates_stats_confs');
+				el.classList.remove('content');
+				const pos = $('bouton_stat_confs').getBoundingClientRect();
+				el.style.position = 'absolute';
+				el.style.left = pos.left + 'px';
+				const click_ok = (ev) => {
+					let zone = $('zone').value;
+					let start = $('start').value;
+					let end = $('end').value;
+					new stat_confs("result",start,end,zone);
+					el.classList.add('content');
+					document.querySelector('.ok').removeEventListener('click', click_ok);
+					document.querySelector('.no').removeEventListener('click', click_no);
+				}
+				const click_no = (ev) => {
+					el.classList.add('content');
+					document.querySelector('.ok').removeEventListener('click', click_ok);
+					document.querySelector('.no').removeEventListener('click', click_no);
+				}
+				document.querySelector('.ok').addEventListener('click', click_ok);
+				document.querySelector('.no').addEventListener('click', click_no);
 				//show_popup("Stat confs", "Cette fonctionnalité n'est pas encore disponible");
 			});
 
 			$('bouton_conf').addEventListener('click', async e => {
-				let day = $('start').value;
 				const zone = $('zone').value === "AE" ? "est" : "ouest";
-				const c = new conf(day, zone);
+				const c = new conf($('day').value, zone);
 				await c.init();
 				await c.init_b2b();
 				c.show_result_confs("result");
@@ -75,7 +90,7 @@
                 const zone = $('zone').value === "AE" ? "est" : "ouest";
 				const c = new conf(convertDate(new Date()), zone);
 				await c.init_b2b();
-				c.show_existing_confs(zone, "result");
+				c.show_existing_confs("result");
 			});
 			
 			document.querySelector('.popup-close').addEventListener('click', e => {
@@ -100,19 +115,22 @@
 </div>
 <ul class="menu">
     <li id="bouton_confs_existantes" class="pointer"><span>Confs NM</span></li>
-	<li id="bouton_conf" class="pointer"><span>Prép jour</span></li>
-	<li id="bouton_stat_confs" class="pointer"><span>Stats Confs</span></li>
+	<li class="pointer"><span id="bouton_conf">Prép jour :</span><input type="date" id="day" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2018-12-31"></li>
+	<li class="pointer"><span id="bouton_stat_confs">Stats Confs</span></li>
+	<span>
+		<select id="zone" class="select">
+			<option selected value="AE">Zone EST</option>
+			<option value="AW">Zone WEST</option>
+		</select>
+	</span>
 	<li><button class="help_button">Help</button></li>
 </ul>
-<div id="dates">
-	<label for="start" class="dates">Date:</label>
-	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2019-01-01">
-	<span>
-	  <select id="zone" class="select">
-		<option selected value="AE">Zone EST</option>
-		<option value="AW">Zone WEST</option>
-	  </select>
-	</span>
+<div id="dates_stats_confs" class="content">
+	<label for="start" class="dates one">D&eacute;but:</label>
+	<input type="date" id="start" class="two" value="<?php $t = new DateTime(); $year = $t->format('Y'); echo $year."-01-01"; ?>" min="2018-12-31"><div></div>
+	<label for="end" class="dates three">Fin:</label>
+	<input type="date" id="end" class="four" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2018-12-31"><div></div>
+	<div></div><button class="ok five">Ok</button><button class="no six">No</button>
 </div>
 </header>
 

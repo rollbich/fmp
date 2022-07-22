@@ -19,6 +19,7 @@
 	<script type="text/javascript" src="../js/base.js"></script>
 	<script type="text/javascript" src="../js/tds-name.js"></script>
 	<script type="text/javascript" src="../js/utils.js"></script>
+	<script type="text/javascript" src="../js/tri.js"></script>
 	<script type="text/javascript" src="../js/list-component.js"></script>
 	<script type="text/javascript" src="../js/graph.js"></script>
 	<script type="text/javascript" src="../js/schema.js"></script>
@@ -107,7 +108,13 @@
 				// ne prépare le fichier de conf qu'une fois
 				if (confs === null) confs = await get_fichier_confs();
 				const ouv = new ouverture('result', start_day, zone);
-				ouv.show_ouverture(confs[zon]);
+				<?php
+				if ($_SESSION['login_bureau'] === true) {
+					echo "ouv.show_ouverture(confs[zon], true);";
+				} else {
+					echo "ouv.show_ouverture(confs[zon], false);";
+				}
+				?>
 			});
 			
 			$('bouton_uceso').addEventListener('click', async e => {

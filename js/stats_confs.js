@@ -4,11 +4,12 @@ class stat_confs {
 			@param {string} zone - "AE" ou "AW"
 		------------------------------------------------------------------ */
         
-	constructor(containerId, year, zone) {
+	constructor(containerId, start, end, zone) {
         this.container = $(containerId);
-		this.year = year;
+        this.start = start;
+        this.end = end;
 		this.zone = zone;
-		this.dates_arr = get_dates_array(new Date(this.year,0,1), new Date(this.year,11,31)); // 1er janvier au 31 décembre
+		this.dates_arr = get_dates_array(new Date(start), new Date(end));
         this.stats = {};
 		this.init();
 	}
@@ -74,13 +75,14 @@ class stat_confs {
 /*  ------------------------------------------------------------------------------
 	  Cherche la conf correspondante
         @param {array} [array de regroupements] - ["SBAM","GY","EK","AB"]
+        @param {object} this.confs / this.confs_exist / this.confs_supp
         @return {string} conf - "E5W2B" ou "-" si non trouvé
 	------------------------------------------------------------------------------ */
-    get_conf_name(regroupements) {
+    get_conf_name(regroupements, confs) {
         let cf = "-";
         const nb_regroupements = regroupements.length;
-        for(let conf in this.confs[nb_regroupements]) {
-            const arr_tv = this.confs[nb_regroupements][conf];
+        for(let conf in confs[nb_regroupements]) {
+            const arr_tv = confs[nb_regroupements][conf];
             if (regroupements.sort().toString() == arr_tv.sort().toString()) {
                 cf = conf;
                 break;
@@ -119,7 +121,7 @@ class stat_confs {
                         regroupements.push(tv[0]);
                     });
                     const nb_regr = regroupements.length;
-                    const cn = this.get_conf_name(regroupements);				                          
+                    const cn = this.get_conf_name(regroupements, this.confs);				                          
                     if (typeof this.stats[nb_regr] === 'undefined') this.stats[nb_regr] = {};
                     if (typeof this.stats[nb_regr][cn] === 'undefined') { 
                         this.stats[nb_regr][cn] = {}; 
@@ -146,7 +148,7 @@ class stat_confs {
 		let res = "<div>";
 		res += `
 		<table class="sortable conf">
-			<caption>STATS Confs : Zone ${zon} - Année ${this.year}</caption>
+			<caption>STATS Confs : Zone ${zon}<br>${reverse_date(this.start)} / ${reverse_date(this.end)}</caption>
 			<thead><tr class="titre"><th class="space">Nb sect</th><th>Conf</th><th>Occ</th><th>Durée</th><th>% occ</th><th>% tps</th><th>TVs</th></tr></thead>
 			<tbody>`.trimStart();
 		// -----------------------------------
