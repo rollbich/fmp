@@ -13,7 +13,7 @@
 
 	<div id="navbarBasicExample" class="navbar-menu">
 		<div class="navbar-center"> 
-		<div class="navbar-item has-dropdown is-hoverable">
+		  <div class="navbar-item has-dropdown is-hoverable">
 				<a class="navbar-link" style="background: transparent;">
             Appli
         </a>
@@ -21,12 +21,29 @@
           <a class="navbar-item" href="../accueil/accueil.php">
             Accueil
           </a>
+          <?php
+          if ($_SESSION['login_bureau'] === true) {
+            echo '
+            <div class="nested navbar-item dropdown">
+              <div class="dropdown-trigger">
+                <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
+                  <span>Admin</span>
+                </button>
+              </div>
+              <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                <div class="dropdown-content">
+                  <a class="navbar-item" href="../admin/b2b-admin.php">Admin B2B</a>
+                  <a class="navbar-item" href="../admin/confs-admin.php">Admin Confs</a>
+                </div>
+              </div>
+            </div>';
+          }
+          ?>
+         
           <a class="navbar-item upload_button">
             Upload Schema
           </a>
-          <!--<a class="navbar-item" href="../php/reloadB2B.php">
-            Reload B2B
-          </a>-->
+          <!--<hr class="navbar-divider">-->
           <a class="navbar-item" href="../aide/index.php">
             Aide et Tutos
           </a>
