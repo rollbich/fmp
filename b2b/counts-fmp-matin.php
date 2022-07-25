@@ -420,14 +420,14 @@ function write_xls($zone, $wef) {
 
 	$date = new DateTime($wef);
 	$d = $date->format('Ymd');
-	$h = $date->format('Hi');
+	$h = $date->format('H');
 	$dir = dirname(__FILE__)."/xls/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);
 	}
 	
-	$writer->writeToFile($dir.$d."-Occ-H20-".$zone.$h.".xlsx");
+	$writer->writeToFile($dir.$d."-Occ-H20-".$zone.$h."20.xlsx");
 
 }
 
@@ -443,14 +443,14 @@ function write_json($arr, $zone, $type, $wef) {
 	
 	$date = new DateTime($wef);
 	$d = $date->format('Ymd');
-	$h = $date->format('Hi');
+	$h = $date->format('H');
 	$dir = dirname(__FILE__)."/json/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);
 	}
 	
-	$fp = fopen($dir.$d.$type.$zone.$h.".json", 'w');
+	$fp = fopen($dir.$d.$type.$zone.$h."20.json", 'w');
 	fwrite($fp, json_encode($arr));
 	fclose($fp);
 
@@ -532,12 +532,12 @@ $tvs_west = $obj2["TV-OUEST"];
 
 $h20_est = get_entry("est", $wef_counts, $unt_counts, "LOAD");
 //$h20_est2 = get_entry("est", $wef_counts, $unt_counts, "DEMAND");
-$h20_west = get_entry("west", $wef_counts, $unt_counts, "LOAD");
+//$h20_west = get_entry("west", $wef_counts, $unt_counts, "LOAD");
 //$h20_west2 = get_entry("west", $wef_counts, $unt_counts, "DEMAND");
 
 $occ_est = get_occ("est", $wef_counts, $unt_counts, "LOAD");
 //$occ_est2 = get_occ("est", $wef_counts, $unt_counts, "DEMAND");
-$occ_west = get_occ("west", $wef_counts, $unt_counts, "LOAD");
+//$occ_west = get_occ("west", $wef_counts, $unt_counts, "LOAD");
 //$occ_west2 = get_occ("west", $wef_counts, $unt_counts, "DEMAND");
 
 
@@ -591,12 +591,12 @@ $regul = get_regulations("LF", $wef_regs, $unt_regs);
 try {	
 	
 	write_xls("est", $wef_counts);
-	write_xls("west", $wef_counts);
+	//write_xls("west", $wef_counts);
 	
 	write_json($occ_est, "est", "-Occ-", $wef_counts);
-	write_json($occ_west, "west", "-Occ-", $wef_counts);
+	//write_json($occ_west, "west", "-Occ-", $wef_counts);
 	write_json($h20_est, "est", "-H20-", $wef_counts);
-	write_json($h20_west, "west", "-H20-", $wef_counts);
+	//write_json($h20_west, "west", "-H20-", $wef_counts);
 	
 	write_json($json_reg, "", "-reg", $wef_counts);
 	echo "<br>Recup OK<br>";
