@@ -17,6 +17,9 @@ class regul {
 
 	async init() {
 		this.regul = await this.get_regul();
+		await this.add_earlier_data();
+		console.log("UPDATE");
+		console.log(this.regul);
 	
 		lfmm_tvset.forEach(tvset => {
 			this[tvset] = {};
@@ -30,15 +33,68 @@ class regul {
 
 	/*  -------------------------------------------------------------
 		Lit le fichier json de regul
-			@param {string} day - "yyyy-mm-dd"
-			@param {string} zone - "AE" ou "AW"
+			@param {string} type - "" ou "0320" ou "0420" ou "0620"
             @returns {"LFMMFMPE":[],"LFMMFMPW":[],"LFMMAPP":[],...}
 	----------------------------------------------------------------- */
-	async get_regul() {
+	async get_regul(heure = "") {
 		const date = this.day.replace(/-/g, ''); // yyyymmdd
-		const url = `../b2b/json/${date}-reg.json`;	
+		const url = `../b2b/json/${date}-reg${heure}.json`;	
 		const resp = await loadJson(url);
 		return resp;
+	}
+
+	/*  -----------------------------------------------------------------------
+		Ajoute les propriétés "CREATION" et/ou "UPDATE" et/ou "DELETION"
+		pour chaque regulation
+			@param {string} type - "" ou "0320" ou "0420" ou "0620"
+            @returns {"LFMMFMPE":[],"LFMMFMPW":[],"LFMMAPP":[],...}
+	--------------------------------------------------------------------------- */
+	async add_earlier_data() {
+		lfmm_tvset.forEach(tvset => {
+			this.regul[tvset].forEach(obj => {
+				const type = obj["lastUpdate"]["userUpdateType"];
+				obj[type] = obj["lastUpdate"]["userUpdateEventTime"];
+			})
+		})
+		const update0320 = await this.get_regul("0320");
+		const update0420 = await this.get_regul("0420");
+		const update0620 = await this.get_regul("0620");
+		if (typeof update0320 !== 'undefined') {
+			lfmm_tvset.forEach(tvset => {
+				this.regul[tvset].forEach(obj => {
+					update0320[tvset].forEach(obj0320 => {
+						if (typeof obj0320["regId"] !== 'undefined' && obj0320["regId"] === obj["regId"]) {
+							const type = obj0320["lastUpdate"]["userUpdateType"];
+							obj[type] = obj0320["lastUpdate"]["userUpdateEventTime"];
+						}
+					})
+				})
+			})
+		}
+		if (typeof update0420 !== 'undefined') {
+			lfmm_tvset.forEach(tvset => {
+				this.regul[tvset].forEach(obj => {
+					update0420[tvset].forEach(obj0420 => {
+						if (typeof obj0420["regId"] !== 'undefined' && obj0420["regId"] === obj["regId"]) {
+							const type = obj0420["lastUpdate"]["userUpdateType"];
+							obj[type] = obj0420["lastUpdate"]["userUpdateEventTime"];
+						}
+					})
+				})
+			})
+		}
+		if (typeof update0620 !== 'undefined') {
+			lfmm_tvset.forEach(tvset => {
+				this.regul[tvset].forEach(obj => {
+					update0620[tvset].forEach(obj0620 => {
+						if (typeof obj0620["regId"] !== 'undefined' && obj0620["regId"] === obj["regId"]) {
+							const type = obj0620["lastUpdate"]["userUpdateType"];
+							obj[type] = obj0620["lastUpdate"]["userUpdateEventTime"];
+						}
+					})
+				})
+			})
+		}
 	}
 
 	get_total_delay(tvset) {
@@ -188,7 +244,9 @@ class period_regul {
 				const id = value.regId;
 				this.rates[id] = {};
 				this.rates[id]["limites"]  = value["constraints"];
-				this.rates[id]["lastUpdate"] = value["lastUpdate"];
+				this.rates[id]["CREATION"] = (typeof value["CREATION"] !== 'undefined') ? value["CREATION"] : null;
+				this.rates[id]["UPDATE"] = (typeof value["UPDATE"] !== 'undefined') ? value["UPDATE"] : null;
+				this.rates[id]["DELETION"] = (typeof value["DELETION"] !== 'undefined') ? value["DELETION"] : null;
                 res += '<tr>'; 
                 res +=`<td>${reverse_date(date)}</td><td id='${id}' class='hover_reg_id'>${value.regId}</td><td>${value.tv}</td><td>${deb} TU</td><td>${fin} TU</td><td>${value.delay}</td><td>${value.reason}</td><td>${value.impactedFlights}</td>`;
                 res += '</tr>';	
@@ -207,7 +265,9 @@ class period_regul {
 				const id = value.regId;
 				this.rates[id] = {};
 				this.rates[id]["limites"]  = value["constraints"];
-				this.rates[id]["lastUpdate"] = value["lastUpdate"];
+				this.rates[id]["CREATION"] = (typeof value["CREATION"] !== 'undefined') ? value["CREATION"] : null;
+				this.rates[id]["UPDATE"] = (typeof value["UPDATE"] !== 'undefined') ? value["UPDATE"] : null;
+				this.rates[id]["DELETION"] = (typeof value["DELETION"] !== 'undefined') ? value["DELETION"] : null;
                 res += '<tr>'; 
                 res +=`<td>${reverse_date(date)}</td><td id='${id}' class='hover_reg_id'>${id}</td><td>${value.tv}</td><td>${deb} TU</td><td>${fin} TU</td><td>${value.delay}</td><td>${value.reason}</td><td>${value.impactedFlights}</td>`;
                 res += '</tr>';	
@@ -226,7 +286,9 @@ class period_regul {
 				const id = value.regId;
 				this.rates[id] = {};
 				this.rates[id]["limites"]  = value["constraints"];
-				this.rates[id]["lastUpdate"] = value["lastUpdate"];
+				this.rates[id]["CREATION"] = (typeof value["CREATION"] !== 'undefined') ? value["CREATION"] : null;
+				this.rates[id]["UPDATE"] = (typeof value["UPDATE"] !== 'undefined') ? value["UPDATE"] : null;
+				this.rates[id]["DELETION"] = (typeof value["DELETION"] !== 'undefined') ? value["DELETION"] : null;
                 res += '<tr>'; 
                 res +=`<td>${reverse_date(date)}</td><td id='${id}' class='hover_reg_id'>${id}</td><td>${value.tv}</td><td>${deb} TU</td><td>${fin} TU</td><td>${value.delay}</td><td>${value.reason}</td><td>${value.impactedFlights}</td>`;
                 res += '</tr>';	
@@ -247,8 +309,16 @@ class period_regul {
 				el.setAttribute('id', 'popratereg');
 				let contenu = reg_id+"<br>";
 				let data = this.rates[reg_id];
-				if (typeof data.lastUpdate !== 'undefined') {
-					contenu += data.lastUpdate.userUpdateType + " on " + data.lastUpdate.userUpdateEventTime + "<br>";
+				console.log("data");
+				console.log(data);
+				if (data["CREATION"] !== null) {
+					contenu += "CREATION" + " on " + data["CREATION"] + "<br>";
+				}
+				if (data["UPDATE"] !== null) {
+					contenu += "UPDATE" + " on " + data["UPDATE"] + "<br>";
+				}
+				if (data["DELETION"] !== null) {
+					contenu += "DELETION" + " on " + data["DELETION"] + "<br>";
 				}
 				contenu += "<br>";
 				data.limites.forEach( con => {
