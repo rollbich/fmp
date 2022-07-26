@@ -365,7 +365,7 @@ async function loadJson(url) {
     return json;
   }
   catch (err) {
-	alert('Error message: '+err.message);
+	console.error('Error loadJson : '+err.message);
   }
 }
 
