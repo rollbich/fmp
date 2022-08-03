@@ -622,7 +622,8 @@ function write_json($arr, $zone, $type, $wef) {
 	
 	$date = new DateTime($wef);
 	$d = $date->format('Ymd');
-	$dir = dirname(__FILE__)."/json/";
+	$y = $date->format('Y');
+	$dir = dirname(__FILE__)."/json/$y/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);

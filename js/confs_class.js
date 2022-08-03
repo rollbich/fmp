@@ -25,7 +25,8 @@ class conf {
 	async get_conf() {
 		if (typeof this.day === 'undefined') return {};
 		const date = this.day.replace(/-/g, ''); // yyyymmdd
-		const url = `../b2b/json/${date}-confs.json`;	
+		const year = this.day.substr(0,4);
+		const url = `../b2b/json/${year}/${date}-confs.json`;	
 		const resp = await loadJson(url);
 		return resp;
 	}

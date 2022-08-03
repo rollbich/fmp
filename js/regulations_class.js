@@ -38,7 +38,8 @@ class regul {
 	----------------------------------------------------------------- */
 	async get_regul(heure = "") {
 		const date = this.day.replace(/-/g, ''); // yyyymmdd
-		const url = `../b2b/json/${date}-reg${heure}.json`;	
+		const year = this.day.substr(0,4);
+		const url = `../b2b/json/${year}/${date}-reg${heure}.json`;	
 		const resp = await loadJson(url);
 		return resp;
 	}
@@ -366,7 +367,7 @@ class weekly_regs {
 			} = this.delay
 	-------------------------------------------------------------------------------------*/
 	async get_data_weekly_regs() {
-		const url = `../b2b/json/${this.year}-weekly-reg.json`;	
+		const url = `../b2b/json/${this.year}/${this.year}-weekly-reg.json`;	
 		const resp = await loadJson(url);
 		return resp;
 	}
@@ -472,7 +473,7 @@ class monthly_regs {
 			} = this.delay
 	-------------------------------------------------------------------------------------*/
 	async get_data_monthly_regs() {
-		const url = `../b2b/json/${this.year}-monthly-reg.json`;	
+		const url = `../b2b/json/${this.year}/${this.year}-monthly-reg.json`;	
 		const resp = await loadJson(url);
 		return resp;
 	}
