@@ -17,12 +17,12 @@ $today = new DateTime("2022-08-01");
 
 $arr_traffic = get_monthly_traffic($first_day_last_month, $today);
 //$file_traffic = "localhost/fmp/b2b/json/$year_last_month/$year_last_month-monthly-flights.json";
-$file_traffic = "https://dev.lfmm-fmp.fr/b2b/$year_last_month/$year_last_month-monthly-flights.json";
+$file_traffic = "https://dev.lfmm-fmp.fr/b2b/json/$year_last_month/$year_last_month-monthly-flights.json";
 process_file_traffic($file_traffic, $arr_traffic, $last_month, $year_last_month);
 
 $arr_reguls = get_monthly_regs($first_day_last_month, $today);
 //$file_reg = "localhost/fmp/b2b/json/$year_last_month/$year_last_month-monthly-reg.json";
-$file_reg = "https://dev.lfmm-fmp.fr/b2b/$year_last_month/$year_last_month-monthly-reg.json";
+$file_reg = "https://dev.lfmm-fmp.fr/b2b/json/$year_last_month/$year_last_month-monthly-reg.json";
 process_file_reg($file_reg, $arr_reguls, $last_month, $year_last_month);
 
 
@@ -42,7 +42,7 @@ function get_monthly_traffic($dateTime1, $dateTime2) {
         $year = $value->format('Y');
         $d = $value->format('Ymd');
         //$file_name = "localhost/fmp/b2b/json/$year/$d-vols.json";
-        $file_name = "https://dev.lfmm-fmp.fr/b2b/$year/$d-vols.json";
+        $file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$d-vols.json";
         //$data = file_get_contents("./json/".$file_name);
         $data = get_file($file_name);
         $donnees = json_decode($data[0]);
@@ -93,7 +93,7 @@ function get_monthly_regs($dateTime1, $dateTime2) {
         $year = $value->format('Y');
         $d = $value->format('Ymd');
         //$file_name = "localhost/fmp/b2b/json/$year/$d-reg.json";
-        $file_name = "https://dev.lfmm-fmp.fr/b2b/$year/$d-reg.json";
+        $file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$d-reg.json";
         $data = get_file($file_name);
         array_push($donnees, json_decode($data[0]));
     }
