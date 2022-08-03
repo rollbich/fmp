@@ -26,7 +26,8 @@ class vols {
 	-------------------------------------------------------------------------------------*/
 	async get_data_daily_vols() {
 		const date = this.day.replace(/-/g, ''); // yyyymmdd
-		const url = `../b2b/json/${date}-vols.json`;	
+		const year = this.day.substr(0,4);
+		const url = `../b2b/json/${year}/${date}-vols.json`;	
 		const resp = await loadJson(url);
 		return resp;
 	}
@@ -152,7 +153,7 @@ class weekly_vols {
 			} = this.nbre_vols
 	-------------------------------------------------------------------------------------*/
 	async get_data_weekly_vols() {
-		const url = `../b2b/json/${this.year}-weekly-flights.json`;	
+		const url = `../b2b/json/${this.year}/${this.year}-weekly-flights.json`;	
 		const resp = await loadJson(url);
 		return resp;
 	}
@@ -344,7 +345,7 @@ class monthly_vols {
 			} = this.nbre_vols
 	-------------------------------------------------------------------------------------*/
 	async get_data_monthly_vols() {
-		const url = `../b2b/json/${this.year}-monthly-flights.json`;	
+		const url = `../b2b/json/${this.year}/${this.year}-monthly-flights.json`;	
 		const resp = await loadJson(url);
 		return resp;
 	}

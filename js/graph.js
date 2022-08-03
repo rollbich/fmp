@@ -30,7 +30,7 @@ function rep_status_B2B(response) {
 		return Promise.resolve(response)
 	} else {
 		const d = response.url.split('json/');
-		const date = hyphen_date(d[1].substr(0,8));
+		const date = hyphen_date(d[1].substr(5,8));
 		// l'erreur est transmise au bloc catch de loadJsonB2B
 		if (response.status == 404) { return Promise.reject(new Error(`Le fichier B2B du ${date} n'existe pas`)); }
 		return Promise.reject(new Error('Erreur: '+response.statusText))
@@ -56,13 +56,13 @@ const graph_margin = 15;
 	//	ex	"2021-06-21": { RAE: [ ["04:00": "4"], ["04:20": "15"] ... ], AB: [ ["00:00": "5"], ... }
 	-------------------------------------------------------------------------------------------------- */
 async function get_h20_b2b(day, zone, schema = undefined) {
-	console.log("get_h20");
-	console.log(schema);
+
 	if (typeof schema === 'undefined') schema = await read_schema_realise(day, zone);
 	const date = day.replace(/-/g, ''); // yyyymmdd
+	const year = day.substr(0,4);
 	const area = zone === "AE" ? "est" : "west";
 	
-	const url = `../b2b/json/${date}-H20-${area}.json`;	
+	const url = `../b2b/json/${year}/${date}-H20-${area}.json`;	
 	const resp = await loadJsonB2B(url, "H20", zone);
 		
 	result = {};
@@ -99,6 +99,45 @@ async function get_h20_b2b(day, zone, schema = undefined) {
 }
 
 /*	---------------------------------------------------------------------------------------------------
+	 get H20 depuis nos fichiers récupérés en B2B à partir de 06:00 local (05:00 ou 04:00 UTC) 
+		 on charge le tableau [ [TV, yyyy-mm-dd, hh:mm, mv, h20], ...] du json H20
+		@param {string} day - "yyyy-mm-dd"
+		@param {string} zone - "AE" ou "AW"
+		@returns {object} 
+		 result : {
+			tv: [ ["heure:min": trafic], ... ], ...
+		 }
+	//	ex	{ RAE: [ ["04:00": "4"], ["04:20": "15"] ... ], AB: [ ["00:00": "5"], ... }
+	-------------------------------------------------------------------------------------------------- */
+async function get_visu_h20(day, zone, time = "") {
+	const date = day.replace(/-/g, ''); // yyyymmdd
+	const year = day.substr(0,4);
+	const area = zone === "AE" ? "est" : "west";
+	const url = `../b2b/json/${year}/${date}-H20-${area}${time}.json`;	
+	const resp = await loadJsonB2B(url, "H20", zone);
+	if (typeof resp === 'undefined') return 'undefined';	
+	result = {};
+		
+	resp.forEach( arr => {
+						
+		const tv = arr[0];
+		const time = arr[2];
+		const time_min = time_to_min(arr[2]);
+		const mv = arr[3];
+		const h20 = arr[4];
+							
+		if (!(result.hasOwnProperty(tv))) { 
+			result[tv] = [];
+		}
+		
+		result[tv].push([time, h20, mv]);
+						
+	});
+	
+	return result;
+}
+
+/*	---------------------------------------------------------------------------------------------------
 	 get Occ depuis nos fichiers récupérés en B2B à partir de 06:00 local (05:00 ou 04:00 UTC) 
 		 on charge le tableau [ [TV, yyyy-mm-dd, hh:mm, peak, sustain, occ], ...] du json Occ
 		@param {string} day - "yyyy-mm-dd"
@@ -112,9 +151,10 @@ async function get_h20_b2b(day, zone, schema = undefined) {
 async function get_occ_b2b(day, zone, schema = undefined) {
 	if (typeof schema === 'undefined') schema = await read_schema_realise(day, zone);
 	const date = day.replace(/-/g, ''); // yyyymmdd
+	const year = day.substr(0,4);
 	const area = zone === "AE" ? "est" : "west";
 	
-	const url = `../b2b/json/${date}-Occ-${area}.json`;	
+	const url = `../b2b/json/${year}/${date}-Occ-${area}.json`;	
 	const resp = await loadJsonB2B(url, "OCC", zone);
 		
 	const result = {};
@@ -150,6 +190,45 @@ async function get_occ_b2b(day, zone, schema = undefined) {
 	
 }
 
+/*	---------------------------------------------------------------------------------------------------
+	 get Occ depuis nos fichiers récupérés en B2B à partir de 06:00 local (05:00 ou 04:00 UTC) 
+		 on charge le tableau [ [TV, yyyy-mm-dd, hh:mm, peak, sustain, occ], ...] du json Occ
+		@param {string} day - "yyyy-mm-dd"
+		@param {string} zone - "AE" ou "AW"
+		@returns {object} 
+		 result : {
+			tv: [ ["heure:min": trafic], ... ], ... }
+		 }
+	//	ex	{ RAE: [ ["04:00": "4"], ["04:01": "5"] ... ], AB: [ ["00:00": "5"], ... }
+	-------------------------------------------------------------------------------------------------- */
+async function get_visu_occ(day, zone, time = "") {
+	const date = day.replace(/-/g, ''); // yyyymmdd
+	const year = day.substr(0,4);
+	const area = zone === "AE" ? "est" : "west";
+	const url = `../b2b/json/${year}/${date}-Occ-${area}${time}.json`;	
+	const resp = await loadJsonB2B(url, "OCC", zone);
+	if (typeof resp === 'undefined') return 'undefined';
+	const result = {};
+	
+	resp.forEach( arr => {			
+		const tv = arr[0];
+		const time = arr[2];
+		const time_min = time_to_min(arr[2]);
+		const peak = arr[3];
+		const sustain = arr[4];
+		const occ = arr[5];		
+						
+		if (!(result.hasOwnProperty(tv))) { 
+			result[tv] = [];
+		}
+		
+		result[tv].push([time, occ, peak, sustain]);
+									
+	});	
+	return result;
+	
+}
+
 /*	--------------------------------------------------------------------------
 	 	Affiche le graph H20
 			@param {string} containerId - Id de l'HTML Element conteneur
@@ -158,7 +237,7 @@ async function get_occ_b2b(day, zone, schema = undefined) {
 			@param {integer} mv - valeur de la MV
 			@param {string} tv - nom du TV
 	-------------------------------------------------------------------------- */
-function show_h20_graph(containerId, dataAxis, data, mv, tv) {
+function show_h20_graph(containerId, dataAxis, data, mv, tv, time_visu = "") {
 	let myChart = echarts.init(document.getElementById(containerId));
 	let yMax = mv*1.6;
 	let dataShadow = [];
@@ -167,10 +246,10 @@ function show_h20_graph(containerId, dataAxis, data, mv, tv) {
 		dataShadow.push(yMax);
 	}
 	let option;
-	
+	if (time_visu === "") time_visu = "Load vue à minuit UTC"; else time_visu = `Load vue à ${time_visu} UTC`;
 	option = {
 		title: {
-			text: `H/20 : ${tv}`,
+			text: `H/20 : ${tv} - ${time_visu}`,
 			subtext: 'Click or Scroll to Zoom',
 			textStyle: { color: '#FFF' },
 			left: 'center'
@@ -295,7 +374,7 @@ function show_h20_graph(containerId, dataAxis, data, mv, tv) {
 			@param {integer} sustain - valeur du sustain
 			@param {string} tv - nom du TV
 	-------------------------------------------------------------------------- */
-function show_occ_graph(containerId, dataAxis, data, peak, sustain, tv) {
+function show_occ_graph(containerId, dataAxis, data, peak, sustain, tv, time_visu = "") {
 	let myChart = echarts.init(document.getElementById(containerId));
 	let yMax = peak*1.5;
 	let dataShadow = [];
@@ -303,10 +382,10 @@ function show_occ_graph(containerId, dataAxis, data, peak, sustain, tv) {
 	for (var i = 0; i < data.length; i++) {
 		dataShadow.push(yMax);
 	}
-
+	if (time_visu === "") time_visu = "Load vue à minuit UTC"; else time_visu = `Load vue à ${time_visu} UTC`;
 	option = {
 		title: {
-			text: `Occ : ${tv}`,
+			text: `Occ : ${tv} - ${time_visu}`,
 			subtext: 'Click or Scroll to Zoom',
 			textStyle: { color: '#FFF' },
 			left: 'center'

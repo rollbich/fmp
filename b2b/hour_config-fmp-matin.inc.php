@@ -37,7 +37,7 @@ if ($dat <= $date_ete || $dat > $date_hiver) {
         $wef_counts = gmdate('Y-m-d H:i', strtotime("now"));
             break;
     }
-	$unt_counts = gmdate('Y-m-d H:i', strtotime("+4 hours"));
+	$unt_counts = gmdate('Y-m-d H:i', strtotime("+5 hours"));
 
     // Plage horaire de récupération des reguls (minuit UTC à minuit UTC)
 	$wef_regs = gmdate('Y-m-d H:i', strtotime("today 03:00"));
@@ -61,7 +61,7 @@ if ($dat <= $date_ete || $dat > $date_hiver) {
         $wef_counts = gmdate('Y-m-d H:i', strtotime("now"));
             break;
     }
-	$unt_counts = gmdate('Y-m-d H:i', strtotime("+4 hours"));
+	$unt_counts = gmdate('Y-m-d H:i', strtotime("+5 hours"));
 
     // Plage horaire de récupération des reguls (minuit UTC à minuit UTC)
 	$wef_regs = gmdate('Y-m-d H:i', strtotime("today 03:00"));
