@@ -572,7 +572,9 @@ function write_xls($zone, $wef) {
 	
 	$date = new DateTime($wef);
 	$d = $date->format('Ymd');
-	$dir = dirname(__FILE__)."/xls/";
+	$y = $date->format('Y');
+	$m = $date->format('m');
+	$dir = dirname(__FILE__)."/xls/$y/$m/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);
@@ -594,7 +596,9 @@ function write_csv($arr, $zone, $type, $wef) {
 	
 	$date = new DateTime($wef);
 	$d = $date->format('Ymd');
-	$dir = dirname(__FILE__)."/csv/";
+	$y = $date->format('Y');
+	$m = $date->format('m');
+	$dir = dirname(__FILE__)."/csv/$y/$m/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);
@@ -623,7 +627,8 @@ function write_json($arr, $zone, $type, $wef) {
 	$date = new DateTime($wef);
 	$d = $date->format('Ymd');
 	$y = $date->format('Y');
-	$dir = dirname(__FILE__)."/json/$y/";
+	$m = $date->format('m');
+	$dir = dirname(__FILE__)."/json/$y/$m/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);
@@ -642,7 +647,9 @@ function write_log($occ_text, $reg_text, $vol_text) {
 	
 	$date = new DateTime();
 	$d = $date->format('Ymd');
-	$dir = dirname(__FILE__)."/log/";
+	$y = $date->format('Y');
+	$m = $date->format('m');
+	$dir = dirname(__FILE__)."/log/$y/$m/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);
