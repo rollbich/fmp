@@ -444,8 +444,9 @@ function write_json($arr, $zone, $type, $wef) {
 	$date = new DateTime($wef);
 	$d = $date->format('Ymd');
 	$y = $date->format('Y');
+	$m = $date->format('m');
 	$h = $date->format('H');
-	$dir = dirname(__FILE__)."/json/$y/";
+	$dir = dirname(__FILE__)."/json/$y/$m/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);
