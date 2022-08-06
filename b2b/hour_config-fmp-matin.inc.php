@@ -20,52 +20,22 @@ $dat = new DateTime();
 // en php pas scope dans if
 if ($dat <= $date_ete || $dat > $date_hiver) {
 	echo "Heure hiver<br/>";
-	// Plage horaire de récupération du H20 et Occ (now loc à now+4h loc)
-    $d = new DateTime();
-    $h = $d->format('H');
-    switch ($h) {
-        case '05':
-            $wef_counts = gmdate('Y-m-d H:i', mktime(5, 20, 0));
-            break;
-        case '06':
-            $wef_counts = gmdate('Y-m-d H:i', mktime(6, 20, 0));
-            break;
-        case '08':
-            $wef_counts = gmdate('Y-m-d H:i', mktime(8, 20, 0));
-            break;
-        default;
-        $wef_counts = gmdate('Y-m-d H:i', strtotime("now"));
-            break;
-    }
-	$unt_counts = gmdate('Y-m-d H:i', strtotime("+5 hours"));
+	// Plage horaire de récupération du H20 et Occ (now loc à now+6h loc)
+    $wef_counts = gmdate('Y-m-d H:i', strtotime("now"));
+	$unt_counts = gmdate('Y-m-d H:i', strtotime("+6 hours"));
 
     // Plage horaire de récupération des reguls (minuit UTC à minuit UTC)
-	$wef_regs = gmdate('Y-m-d H:i', strtotime("today 03:00"));
-	$unt_regs = gmdate('Y-m-d H:i', strtotime("today 14:00"));
+	$wef_regs = gmdate('Y-m-d H:i', strtotime("now"));
+	$unt_regs = gmdate('Y-m-d H:i', strtotime("tomorrow 00:59"));
 } else {
 	echo "Heure ete<br/>";
-	// Plage horaire de récupération du H20 et Occ (now loc à now+4h loc)
-    $d = new DateTime();
-    $h = $d->format('H');
-    switch ($h) {
-        case '05':
-            $wef_counts = gmdate('Y-m-d H:i', mktime(5, 20, 0));
-            break;
-        case '06':
-            $wef_counts = gmdate('Y-m-d H:i', mktime(6, 20, 0));
-            break;
-        case '08':
-            $wef_counts = gmdate('Y-m-d H:i', mktime(8, 20, 0));
-            break;
-        default;
-        $wef_counts = gmdate('Y-m-d H:i', strtotime("now"));
-            break;
-    }
-	$unt_counts = gmdate('Y-m-d H:i', strtotime("+5 hours"));
+	// Plage horaire de récupération du H20 et Occ (now loc à now+6h loc)
+    $wef_counts = gmdate('Y-m-d H:i', strtotime("now"));
+	$unt_counts = gmdate('Y-m-d H:i', strtotime("+6 hours"));
 
     // Plage horaire de récupération des reguls (minuit UTC à minuit UTC)
-	$wef_regs = gmdate('Y-m-d H:i', strtotime("today 03:00"));
-	$unt_regs = gmdate('Y-m-d H:i', strtotime("today 14:00"));
+	$wef_regs = gmdate('Y-m-d H:i', strtotime("now"));
+	$unt_regs = gmdate('Y-m-d H:i', strtotime("tomorrow 01:59"));
 }
 
 // 	---------------------------------------------------------
