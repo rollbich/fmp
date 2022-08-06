@@ -123,7 +123,7 @@ class schema_rea {
                     // calcul du nbre max de secteurs
                     schema.max_secteurs = Math.max(schema.max_secteurs, ouverture.length);
                     // trier temp par ordre alphabétique
-                    let arr_ouv = this.zone === "AE" ? tri_est(ouv) : tri_west(ouv);
+                    let arr_ouv = this.zone === "AE" ? tri(ouv, "est") : tri(ouv, "ouest");
                     temp.push(arr_ouv);
                     schema.ouverture.push(temp);
                 }

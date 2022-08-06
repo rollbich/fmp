@@ -60,9 +60,10 @@ async function get_h20_b2b(day, zone, schema = undefined) {
 	if (typeof schema === 'undefined') schema = await read_schema_realise(day, zone);
 	const date = day.replace(/-/g, ''); // yyyymmdd
 	const year = day.substr(0,4);
+	const month = date.substr(4,2);
 	const area = zone === "AE" ? "est" : "west";
 	
-	const url = `../b2b/json/${year}/${date}-H20-${area}.json`;	
+	const url = `../b2b/json/${year}/${month}/${date}-H20-${area}.json`;	
 	const resp = await loadJsonB2B(url, "H20", zone);
 		
 	result = {};
@@ -112,8 +113,9 @@ async function get_h20_b2b(day, zone, schema = undefined) {
 async function get_visu_h20(day, zone, time = "") {
 	const date = day.replace(/-/g, ''); // yyyymmdd
 	const year = day.substr(0,4);
+	const month = date.substr(4,2);
 	const area = zone === "AE" ? "est" : "west";
-	const url = `../b2b/json/${year}/${date}-H20-${area}${time}.json`;	
+	const url = `../b2b/json/${year}/${month}/${date}-H20-${area}${time}.json`;	
 	const resp = await loadJsonB2B(url, "H20", zone);
 	if (typeof resp === 'undefined') return 'undefined';	
 	result = {};
@@ -152,9 +154,10 @@ async function get_occ_b2b(day, zone, schema = undefined) {
 	if (typeof schema === 'undefined') schema = await read_schema_realise(day, zone);
 	const date = day.replace(/-/g, ''); // yyyymmdd
 	const year = day.substr(0,4);
+	const month = date.substr(4,2);
 	const area = zone === "AE" ? "est" : "west";
 	
-	const url = `../b2b/json/${year}/${date}-Occ-${area}.json`;	
+	const url = `../b2b/json/${year}/${month}/${date}-Occ-${area}.json`;	
 	const resp = await loadJsonB2B(url, "OCC", zone);
 		
 	const result = {};
@@ -204,8 +207,9 @@ async function get_occ_b2b(day, zone, schema = undefined) {
 async function get_visu_occ(day, zone, time = "") {
 	const date = day.replace(/-/g, ''); // yyyymmdd
 	const year = day.substr(0,4);
+	const month = date.substr(4,2);
 	const area = zone === "AE" ? "est" : "west";
-	const url = `../b2b/json/${year}/${date}-Occ-${area}${time}.json`;	
+	const url = `../b2b/json/${year}/${month}/${date}-Occ-${area}${time}.json`;	
 	const resp = await loadJsonB2B(url, "OCC", zone);
 	if (typeof resp === 'undefined') return 'undefined';
 	const result = {};

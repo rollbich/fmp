@@ -26,7 +26,8 @@ class conf {
 		if (typeof this.day === 'undefined') return {};
 		const date = this.day.replace(/-/g, ''); // yyyymmdd
 		const year = this.day.substr(0,4);
-		const url = `../b2b/json/${year}/${date}-confs.json`;	
+		const month = date.substr(4,2);
+		const url = `../b2b/json/${year}/${month}/${date}-confs.json`;	
 		const resp = await loadJson(url);
 		return resp;
 	}
@@ -263,7 +264,7 @@ class conf {
 				let regr = this.get_tvs_confs(value.sectorConfigurationId);
 				res += '<tr>'; 
 				res +=`<td>${deb} TU</td><td>${fin} TU</td><td>${value.sectorConfigurationId}</td>`;
-				const arr = this.zone === "est" ? tri_est(regr) : tri_west(regr);
+				const arr = tri(regr, this.zone);
 				arr.forEach(tv => {
 					res += `<td>${tv}</td>`;
 				})
@@ -328,7 +329,7 @@ class conf {
         for (const [nbr_sect, confs_list] of Object.entries(this.b2b_sorted_confs[this.zone])) { // on itère sur le nombre de regroupements 
 			Object.keys(confs_list).forEach (conf => { // on itère sur les différentes confs
 				if (nbr_sect%2) {res += '<tr class="one">'; } else {res += '<tr class="two">'; }
-				let tvs = this.zone === "est" ? tri_est(confs_list[conf]) : tri_west(confs_list[conf]);
+				let tvs = tri(confs_list[conf], this.zone);
 				res +=`<td>${nbr_sect}</td><td>${conf}</td>`;
 				const l = max_secteur - tvs.length + 1;
 				tvs.forEach (tv => {
@@ -370,7 +371,7 @@ class conf {
 				console.log(confs_list);
 				Object.keys(confs_list).forEach (conf => { // on itère sur les différentes confs
 					if (nbr_sect%2) {res += '<tr class="one">'; } else {res += '<tr class="two">'; }
-					let tvs = this.zone === "AE" ? tri_est(confs_list[conf]) : tri_west(confs_list[conf]);
+					let tvs = this.zone === "AE" ? tri(confs_list[conf], "est") : tri(confs_list[conf], "west");
 					//let tvs = confs_list[conf];
 					console.log("TVS");
 					console.log(tvs);

@@ -63,6 +63,9 @@
           <a class="navbar-item" href="../confs">
             Confs
           </a>
+          <a class="navbar-item" href="../visu">
+            Visu
+          </a>
         </div>
       </div>
 			<a class="navbar-item" href="../capa">
