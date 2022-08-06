@@ -24,6 +24,23 @@
   --rect-bg-color: #5fafd0;
 }
 
+.tv_color1 {
+	background-color: #FFCC66;
+}
+
+.tv_color2 {
+	background-color: #77ce77;
+}
+
+.tv_color3 {
+	background-color: #00caff;
+}
+
+.tv_color4 {
+	background-color:  #6dd6cc;
+}
+
+
 html {
 	scroll-behavior: smooth;
 	font-family: Avenir, sans-serif;
@@ -791,3 +808,68 @@ body.aide .card div.content p {
 	margin-top: 1rem;
 	margin-bottom: 1rem;
 }
+
+/* ---- Visu ----- */
+
+#tvs {
+	display: flex;
+	flex-wrap: wrap;
+	margin: 5px;
+}
+
+#timeline {
+	margin: 15px;
+	margin-left: auto;
+	margin-right: auto;
+	width: 800px;
+}
+
+.visu {
+	margin-bottom: 50px;
+}
+
+.visu-liste-tvs {
+	padding: 5px;
+	border: 1px solid orange;
+	cursor: pointer;
+}
+
+.range {
+	position: relative;
+	width: 644px;
+	height: 5px;
+	background: #b2b2b2;
+  }
+  
+  .range-labels {
+	margin: 18px -41px 0;
+	padding: 0;
+	list-style: none;
+  }
+  .range-labels li {
+	position: relative;
+	float: left;
+	width: 80.25px;
+	text-align: center;
+	color: #b2b2b2;
+	font-size: 14px;
+	cursor: pointer;
+  }
+  .range-labels li::before {
+	position: absolute;
+	top: -27px;
+	right: 0;
+	left: 0;
+	content: "";
+	margin: 0 auto;
+	width: 12px;
+	height: 12px;
+	background: #b2b2b2;
+	border-radius: 50%;
+  }
+  .range-labels .active {
+	color: #37adbf;
+  }
+  .range-labels .selected::before {
+	background: #37adbf;
+  }
