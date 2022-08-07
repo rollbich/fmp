@@ -39,7 +39,8 @@ class regul {
 	async get_regul(heure = "") {
 		const date = this.day.replace(/-/g, ''); // yyyymmdd
 		const year = this.day.substr(0,4);
-		const url = `../b2b/json/${year}/${date}-reg${heure}.json`;	
+		const month = date.substr(4,2);
+		const url = `../b2b/json/${year}/${month}/${date}-reg${heure}.json`;	
 		const resp = await loadJson(url);
 		return resp;
 	}
