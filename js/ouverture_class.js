@@ -149,7 +149,7 @@ class ouverture extends schema_rea {
                 if (!!exist === true) exist.remove();
                 let nbr_regroup = td_el.dataset.nbregr;
                 let tvs = td_el.dataset.tvs.split(",");
-                tvs = this.zone === "AE" ? tri(tvs, "est") : tri(tvs, "ouest");
+                tvs = this.zone === "AE" ? tri(tvs, "est") : tri(tvs, "west");
                 const confs_name = [];
                 const el = document.createElement('div');
 				el.setAttribute('id', 'popup-cree-conf');
@@ -168,7 +168,7 @@ class ouverture extends schema_rea {
                     for(let conf in this.confs[nbr_regroup]) {
                         confs_name.push(conf);
                         let arr_tv = this.confs[nbr_regroup][conf];
-                        arr_tv = this.zone === "AE" ? tri(arr_tv, "est") : tri(arr_tv, "ouest");
+                        arr_tv = this.zone === "AE" ? tri(arr_tv, "est") : tri(arr_tv, "west");
                         res2 += `<tr><td style="background: var(--color-2019);">${conf}</td>`; 
                         arr_tv.forEach(tv => {
                             res2 +=`<td>${tv}</td>`;
