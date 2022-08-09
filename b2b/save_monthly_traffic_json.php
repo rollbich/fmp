@@ -34,7 +34,8 @@ function get_monthly_traffic($dateTime1, $dateTime2) {
     foreach ($period as $key => $value) {
         //$file_name = $value->format('Ymd')."-vols.json";
         $year = $value->format('Y');
-        $file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/".$value->format('Ymd')."-vols.json";
+		$month = $value->format('m');
+        $file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$month/".$value->format('Ymd')."-vols.json";
         //$data = file_get_contents("./json/".$file_name);
         $data = get_file($file_name);
         $donnees = json_decode($data[0]);
@@ -87,7 +88,8 @@ function get_monthly_regs($dateTime1, $dateTime2) {
     $donnees = [];
     foreach ($period as $key => $value) {
         $year = $value->format('Y');
-        $file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/".$value->format('Ymd')."-reg.json";
+		$month = $value->format('m');
+        $file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$month/".$value->format('Ymd')."-reg.json";
         $data = get_file($file_name);
         array_push($donnees, json_decode($data[0]));
     }
