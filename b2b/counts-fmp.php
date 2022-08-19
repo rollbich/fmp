@@ -5,9 +5,11 @@ require_once("mail-msg.php");
 require_once("B2B.php");
 require_once("B2B-functions.inc.php");
 
-/*  --------------------------------------------------
-		LFMM-FMP.FR : tâche CRON à 01h42dev/01h56 loc
-    -------------------------------------------------- */
+/*  ---------------------------------------------------------------------------------------
+		LFMM-FMP.FR : tâche CRON à 01h42dev/01h56 loc récupérant les données J-1
+		Si la tâche ne s'est pas faite, il suffit de placer l'url dans la barre d'adresse
+		pour récupérer les données 
+    --------------------------------------------------------------------------------------- */
 
 /*  ------------------------------------------
 		Ecriture du fichier Excel XLS
@@ -276,9 +278,10 @@ $obj2 = json_decode($fichier_tv_count, true);
 $tvs_est = $obj2["TV-EST"];
 $tvs_west = $obj2["TV-OUEST"];
 
-// ---------------------------------------
+// -------------------------------------------------
 // 		récupère les données H20, Occ
-// ---------------------------------------
+//			LOAD + DEMAND (request DEMAND Adonis)
+// -------------------------------------------------
 $occ_est1 = get_occ("est", $wef_counts, $unt_counts, "LOAD");
 $occ_est2 = get_occ("est", $wef_counts, $unt_counts, "DEMAND");
 $occ_west1 = get_occ("west", $wef_counts, $unt_counts, "LOAD");
@@ -291,7 +294,7 @@ $h20_west2 = get_entry("west", $wef_counts, $unt_counts, "DEMAND");
 // ------------------------------------------------------------------------------------------
 //	 Merger les 2 tableaux de H20
 //	@params (array) : [ ["RAE", "2022-06-07", "05:20", mv, load], [...] ]
-//	@params (array)	: [ ["RAE", "2022-06-07", "05:20", mv, regulated_demand], [...] ] 
+//	@params (array)	: [ ["RAE", "2022-06-07", "05:20", mv, demand], [...] ] 
 //  @return	(array)	: [ ["RAE", "2022-06-07", "05:20", mv, load, demand], [...] ]
 // -------------------------------------------------------------------------------------------
 $h20_est = array();
@@ -308,8 +311,8 @@ foreach($h20_west1 as $key=>$val) {
 // ----------------------------------------------------------------------------------------------------
 //	 Merger les 2 tableaux Occ
 //	@params (array) : [ ["RAE", "2022-07-07", "17:48", peak, sustain, load], [...] ]
-//	@params (array)	: [ ["RAE", "2022-07-07", "17:48", peak, sustain, regulated_demand], [...] ] 
-//  @return	(array)	: [ ["RAE", "2022-06-07", "17:48", peak, sustain, load, regulated_demand], [...] ]
+//	@params (array)	: [ ["RAE", "2022-07-07", "17:48", peak, sustain, demand], [...] ] 
+//  @return	(array)	: [ ["RAE", "2022-06-07", "17:48", peak, sustain, load, demand], [...] ]
 // ----------------------------------------------------------------------------------------------------
 $occ_est = array();
 $occ_west = array();
