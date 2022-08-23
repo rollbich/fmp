@@ -321,14 +321,40 @@ $atc_confs->ouest = $plan_w->data->plan->nmSchedule->item;
 // Attention avec les réglages "local", on récupère effectiveTrafficWindow sur 2 jours => $query_LFMMCTA->data->counts->item[0]->value
 // Alors qu'en prod, on récupère bien sur 1 journée => data->counts->item->value
 
+$query_LFMMCTA_LOAD = $soapClient->flowServices()->query_entry_day_count("LFMMCTA","LOAD", $wef_flights, $unt_flights);
+if (is_array($query_LFMMCTA_LOAD->data->counts->item)) {
+	$counts_LFMMCTA_LOAD = $query_LFMMCTA_LOAD->data->counts->item[0]->value->item->value->totalCounts;
+} else {
+	$counts_LFMMCTA_LOAD = $query_LFMMCTA_LOAD->data->counts->item->value->item->value->totalCounts;
+}
+
+echo "get CTA LOAD OK<br>";
+
+$query_LFMMCTA_DEMAND = $soapClient->flowServices()->query_entry_day_count("LFMMCTA","DEMAND", $wef_flights, $unt_flights);
+$today = substr($query_LFMMCTA_DEMAND->data->effectiveTrafficWindow->wef, 0, 10);
+if (is_array($query_LFMMCTA_DEMAND->data->counts->item)) {
+	$counts_LFMMCTA_DEMAND = $query_LFMMCTA_DEMAND->data->counts->item[0]->value->item->value->totalCounts;
+} else {
+	$counts_LFMMCTA_DEMAND = $query_LFMMCTA_DEMAND->data->counts->item->value->item->value->totalCounts;
+}
+
+echo "get CTA DEMAND OK<br>";
+
+$query_LFMMCTA_REGDEMAND = $soapClient->flowServices()->query_entry_day_count("LFMMCTA","REGULATED_DEMAND", $wef_flights, $unt_flights);
+if (is_array($query_LFMMCTA_REGDEMAND->data->counts->item)) {
+	$counts_LFMMCTA_REGDEMAND = $query_LFMMCTA_REGDEMAND->data->counts->item[0]->value->item->value->totalCounts;
+} else {
+	$counts_LFMMCTA_REGDEMAND = $query_LFMMCTA_REGDEMAND->data->counts->item->value->item->value->totalCounts;
+}
+
+echo "get CTA REGULATED_DEMAND OK<br>";
+
 $query_LFMMCTAE_LOAD = $soapClient->flowServices()->query_entry_day_count("LFMMCTAE","LOAD", $wef_flights, $unt_flights);
 if (is_array($query_LFMMCTAE_LOAD->data->counts->item)) {
 	$counts_LFMMCTAE_LOAD = $query_LFMMCTAE_LOAD->data->counts->item[0]->value->item->value->totalCounts;
 } else {
 	$counts_LFMMCTAE_LOAD = $query_LFMMCTAE_LOAD->data->counts->item->value->item->value->totalCounts;
 }
-
-echo "get CTAE LOAD OK<br>";
 
 $query_LFMMCTAE_DEMAND = $soapClient->flowServices()->query_entry_day_count("LFMMCTAE","DEMAND", $wef_flights, $unt_flights);
 if (is_array($query_LFMMCTAE_DEMAND->data->counts->item)) {
@@ -337,16 +363,12 @@ if (is_array($query_LFMMCTAE_DEMAND->data->counts->item)) {
 	$counts_LFMMCTAE_DEMAND = $query_LFMMCTAE_DEMAND->data->counts->item->value->item->value->totalCounts;
 }
 
-echo "get CTAE DEMAND OK<br>";
-
 $query_LFMMCTAE_REGDEMAND = $soapClient->flowServices()->query_entry_day_count("LFMMCTAE","REGULATED_DEMAND", $wef_flights, $unt_flights);
 if (is_array($query_LFMMCTAE_REGDEMAND->data->counts->item)) {
 	$counts_LFMMCTAE_REGDEMAND = $query_LFMMCTAE_REGDEMAND->data->counts->item[0]->value->item->value->totalCounts;
 } else {
 	$counts_LFMMCTAE_REGDEMAND = $query_LFMMCTAE_REGDEMAND->data->counts->item->value->item->value->totalCounts;
 }
-
-echo "get CTAE REG DEMAND OK<br>";
 
 $query_LFMMCTAW_LOAD = $soapClient->flowServices()->query_entry_day_count("LFMMCTAW","LOAD", $wef_flights, $unt_flights);
 if (is_array($query_LFMMCTAW_LOAD->data->counts->item)) {
@@ -369,31 +391,9 @@ if (is_array($query_LFMMCTAW_REGDEMAND->data->counts->item)) {
 	$counts_LFMMCTAW_REGDEMAND = $query_LFMMCTAW_REGDEMAND->data->counts->item->value->item->value->totalCounts;
 }
 
-$query_LFMMCTA_LOAD = $soapClient->flowServices()->query_entry_day_count("LFMMCTA","LOAD", $wef_flights, $unt_flights);
-if (is_array($query_LFMMCTA_LOAD->data->counts->item)) {
-	$counts_LFMMCTA_LOAD = $query_LFMMCTA_LOAD->data->counts->item[0]->value->item->value->totalCounts;
-} else {
-	$counts_LFMMCTA_LOAD = $query_LFMMCTA_LOAD->data->counts->item->value->item->value->totalCounts;
-}
+echo "get Entry day count Est-West OK<br>";
 
-$query_LFMMCTA_DEMAND = $soapClient->flowServices()->query_entry_day_count("LFMMCTA","DEMAND", $wef_flights, $unt_flights);
-$today = substr($query_LFMMCTA_DEMAND->data->effectiveTrafficWindow->wef, 0, 10);
-if (is_array($query_LFMMCTA_DEMAND->data->counts->item)) {
-	$counts_LFMMCTA_DEMAND = $query_LFMMCTA_DEMAND->data->counts->item[0]->value->item->value->totalCounts;
-} else {
-	$counts_LFMMCTA_DEMAND = $query_LFMMCTA_DEMAND->data->counts->item->value->item->value->totalCounts;
-}
-
-$query_LFMMCTA_REGDEMAND = $soapClient->flowServices()->query_entry_day_count("LFMMCTA","REGULATED_DEMAND", $wef_flights, $unt_flights);
-if (is_array($query_LFMMCTA_REGDEMAND->data->counts->item)) {
-	$counts_LFMMCTA_REGDEMAND = $query_LFMMCTA_REGDEMAND->data->counts->item[0]->value->item->value->totalCounts;
-} else {
-	$counts_LFMMCTA_REGDEMAND = $query_LFMMCTA_REGDEMAND->data->counts->item->value->item->value->totalCounts;
-}
-
-echo "get Entry day count OK<br>";
-
-include("tab_TV.inc.php");
+include("tab_TV-test.inc.php");
 
 $flights = new stdClass();
 $flights->LFMMCTA = ["LFMMCTA", $today, $counts_LFMMCTA_REGDEMAND, $counts_LFMMCTA_LOAD, $counts_LFMMCTA_DEMAND];
@@ -430,7 +430,5 @@ catch (Exception $e) {
 	echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";
 	$soapClient->flightServices()->send_mail($err);
 }
-
-
 
 ?>
