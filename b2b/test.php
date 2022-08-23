@@ -60,8 +60,8 @@ $flights = new stdClass();
 //$flights->LFMMCTA = ["LFMMCTA", $today, $counts_LFMMCTA_REGDEMAND, $counts_LFMMCTA_LOAD, $counts_LFMMCTA_DEMAND];
 //$flights->LFMMCTAE = ["LFMMCTAE", $today, $counts_LFMMCTAE_REGDEMAND, $counts_LFMMCTAE_LOAD, $counts_LFMMCTAE_DEMAND];
 //$flights->LFMMCTAW = ["LFMMCTAW", $today, $counts_LFMMCTAW_REGDEMAND, $counts_LFMMCTAW_LOAD, $counts_LFMMCTAW_DEMAND];
-
-$res = $soapClient->flightServices()->get_nb_vols_TV("LFMB12", $wef_flights, $unt_flights);
+$soapClient->flightServices()->get_vols_Est($flights, $tab_TVE, $wef_flights, $unt_flights);
+//$res = $soapClient->flightServices()->get_nb_vols_TV("LFMB12", $wef_flights, $unt_flights);
 
 /*
 get_vols_Est($flights, $tab_TVE, $wef_flights, $unt_flights);
@@ -75,7 +75,7 @@ get_vols_App($flights, $tab_TVAPP, $tab_ADAPP, $wef_flights, $unt_flights);
 // Envoi d'un email en cas d'erreur
 
 try {	
-	var_dump($res);
+	var_dump($flights);
 	//write_json($flights, "", "-vols", $wef_counts);
 	
 }
