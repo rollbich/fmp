@@ -105,7 +105,7 @@ function write_xls($zone, $wef, $occ_est, $occ_west, $h20_est, $h20_west, $regul
 		mkdir($dir, 0777, true);
 	}
 	
-	$writer->writeToFile($dir.$d."-Occ-H20-".$zone.$h."20-test.xlsx");
+	$writer->writeToFile($dir.$d."-Occ-H20-".$zone.$h."20.xlsx");
 
 }
 
@@ -130,7 +130,7 @@ function write_json($arr, $zone, $type, $wef) {
 		mkdir($dir, 0777, true);
 	}
 	
-	$fp = fopen($dir.$d.$type.$zone.$h."20-test.json", 'w');
+	$fp = fopen($dir.$d.$type.$zone.$h."20.json", 'w');
 	fwrite($fp, json_encode($arr));
 	fclose($fp);
 
