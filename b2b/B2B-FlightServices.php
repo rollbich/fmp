@@ -22,7 +22,7 @@ class FlightServices extends Service {
                             
         try {
             $output = $this->getSoapClient()->__soapCall('queryFlightsByTrafficVolume', array('parameters'=>$params));
-            if (isset($output->data->flightsQQ) == false) {
+            if (isset($output->data->flights) == false) {
                 $erreur = $this->getFullErrorMessage("Erreur get_nb_vols_TV : output->data->flights n'existe pas");
                 echo $erreur."\n<br>";
                 $this->send_mail($erreur);

@@ -422,24 +422,12 @@ try {
 	
 	write_json($flights, "", "-vols", $wef_counts);
 	
-
-	// logs
-	$nbr_vols_rae = $flights->LFMMFMPE[0][2];
-	$nbr_vols_raw = $flights->LFMMFMPW[0][2];
-	$heure = gmdate('Y-m-d H:i');
-	$req_vols = "requete VOLS recue pour la date du ".$wef_flights." UTC a ".$unt_flights." UTC<br>";
-	$req_vols = $req_vols."test nbr vols    RAE: ".$nbr_vols_rae."<br>RAW: ".$nbr_vols_raw."<br>";
-	$req_vols = $req_vols."LFMMCTA load ".$counts_LFMMCTA_LOAD." vols --- demand ".$counts_LFMMCTA_DEMAND." vols --- regdemand ".$counts_LFMMCTA_REGDEMAND." vols<br>";
-	$req_vols = $req_vols."Export du ".$heure." UTC terminé";
-	echo $req_vols;
-	//write_log("", "", $req_vols);
-	
 }
+
 catch (Exception $e) {
 	$err = "Erreur, verifier les sauvegardes\n"."Exception reçue : ".$e->getMessage()."\n";
 	echo "Erreur, verifier les sauvegardes\n<br>";
 	echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";
-	write_log("", "", $err);
 	$soapClient->flightServices()->send_mail($err);
 }
 
