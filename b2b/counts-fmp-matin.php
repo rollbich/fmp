@@ -8,7 +8,7 @@ require_once("B2B-AirspaceServices.php");
 require_once("B2B-FlightServices.php");
 require_once("B2B-FlowServices.php");
 include_once("config.inc.php");
-include_once("hour_config".$config.".inc.php");
+include_once("hour_config".$config."-matin.inc.php");
 
 /*  ----------------------------------------------------
 		LFMM-FMP.FR : tâche CRON à 05h20, 6h20

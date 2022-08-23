@@ -291,7 +291,7 @@ $reg["LFDSNA"] = array();
 
 // objet contenant les reguls Europe
 $json_atfcm_reg = $soapClient->flowServices()->get_ATFCM_situation();
-var_dump($json_atfcm_reg);
+
 echo "get atfcm_situation OK<br>";
 
 // Remplit l'object $json_reg (et l'array $reg pour l'export xls)
