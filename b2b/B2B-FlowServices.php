@@ -240,12 +240,11 @@ class FlowServices extends Service {
             récupère la situation ATFCM en europe
             - delai, nbre vols (landed, suspendus...), reason globaux europe
             - reguls europe avec delai de chaque TV (format string HHMM), vols impactés
-            @param $day (string) - "yesterday"ou "today"
         ----------------------------------------------------------------------------------- */
 
-    public function get_ATFCM_situation($day = "today") {
+    public function get_ATFCM_situation() {
 
-        if ($day === "yesterday") $day = gmdate('Y-m-d', strtotime("yesterday")); else $day = gmdate('Y-m-d');
+        $day = gmdate('Y-m-d', strtotime("today"));
 
         $params = array(
             'sendTime'=>gmdate("Y-m-d H:i:s"),
@@ -368,12 +367,13 @@ class FlowServices extends Service {
         return $arr;
     }
 
-    /* -----------------------------------------------------------------
+    /* ----------------------------------------------------------------------------
         Récupère les confs déclarés
         @param {string} $airspace - "LFMMCTAE"
-        @param {gmdate} $day - gmdate('Y-m-d', strtotime("tomorrow"));
+        @param {gmdate} $day - gmdate('Y-m-d', strtotime("today"));
             possible : yesterday, today, tomorrow 
-    -----------------------------------------------------------------*/
+            "today" = minuit local = 22h00 UTC la veille(=> données de la veille)
+    -------------------------------------------------------------------------------*/
     public function get_atc_conf($airspace, $day) {
         
         $params = array(
