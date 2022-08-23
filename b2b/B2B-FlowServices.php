@@ -244,7 +244,7 @@ class FlowServices extends Service {
 
     public function get_ATFCM_situation() {
 
-        $day = gmdate('Y-m-d', strtotime("today"));
+        $day = gmdate('Y-m-d', strtotime("now"));
 
         $params = array(
             'sendTime'=>gmdate("Y-m-d H:i:s"),
