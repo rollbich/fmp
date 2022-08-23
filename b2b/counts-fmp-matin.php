@@ -3,7 +3,12 @@ ini_set('memory_limit', '1G');
 require_once("xlsxwriter.class.php");
 require_once("mail-msg.php");
 require_once("B2B.php");
-require_once("B2B-functions.inc.php");
+require_once("B2B-Service.php");
+require_once("B2B-AirspaceServices.php");
+require_once("B2B-FlightServices.php");
+require_once("B2B-FlowServices.php");
+include_once("config.inc.php");
+include_once("hour_config".$config.".inc.php");
 
 /*  ----------------------------------------------------
 		LFMM-FMP.FR : tâche CRON à 05h20, 6h20
@@ -14,14 +19,7 @@ require_once("B2B-functions.inc.php");
 		Ecriture du fichier Excel XLS
 		4 onglets H20, Occ, Regul et flights
 	------------------------------------------ */
-function write_xls($zone, $wef) {
-
-	global $occ_est;
-	global $occ_west;
-	global $h20_est;
-	global $h20_west;
-	global $regul;
-	global $flights;
+function write_xls($zone, $wef, $occ_est, $occ_west, $h20_est, $h20_west, $regul) {
 		
 	$header_occ = array(
 	  'TV'=>'string',
@@ -107,7 +105,7 @@ function write_xls($zone, $wef) {
 		mkdir($dir, 0777, true);
 	}
 	
-	$writer->writeToFile($dir.$d."-Occ-H20-".$zone.$h."20.xlsx");
+	$writer->writeToFile($dir.$d."-Occ-H20-".$zone.$h."20-test.xlsx");
 
 }
 
@@ -132,7 +130,7 @@ function write_json($arr, $zone, $type, $wef) {
 		mkdir($dir, 0777, true);
 	}
 	
-	$fp = fopen($dir.$d.$type.$zone.$h."20.json", 'w');
+	$fp = fopen($dir.$d.$type.$zone.$h."20-test.json", 'w');
 	fwrite($fp, json_encode($arr));
 	fclose($fp);
 
@@ -163,35 +161,13 @@ function write_log($occ_text, $reg_text, $vol_text) {
 	
 }
 
-
 /*  ---------------------------------------------------------- */
 /* 						début du programme
 /*  ---------------------------------------------------------- */
 
-// objet contenant les reguls de LF*
-$json_reg = new stdClass();
-$json_reg->LFMMFMPE = array();
-$json_reg->LFMMFMPW = array();
-$json_reg->LFMMAPP = array();
+$soapClient = new B2B();
+$today = gmdate('Y-m-d', strtotime("today"));
 
-$json_reg->LFBBFMP = array();
-$json_reg->LFBBAPP = array();
-
-$json_reg->LFEEFMP = array();
-$json_reg->LFEEAPP = array();
-
-$json_reg->LFDSNA = array();
-
-$json_reg->LFFFFMPE = array();
-$json_reg->LFFFFMPW = array();
-$json_reg->LFFFAD = array();
-
-$json_reg->LFRRFMP = array();
-$json_reg->LFRRAPP = array();
-
-include_once("config.inc.php");
-include_once("hour_config".$config."-matin.inc.php");
-	
 // récupère les données MV, duration, sustain, peak des TV LFMM
 // données du fichier MV.json
 // $tve : données de la zone est et $tvw : données west
@@ -199,6 +175,8 @@ $fichier_mv = file_get_contents(dirname(__FILE__)."/MV.json");
 $obj = json_decode($fichier_mv, true);
 $tve = $obj["TV-EST"];
 $tvw = $obj["TV-OUEST"];
+
+echo "Fichier MV.json OK<br>";
 
 // récupère les TV que l'on veut compter en H/20 et Occ
 // données du fichier TV_count.json
@@ -208,20 +186,21 @@ $obj2 = json_decode($fichier_tv_count, true);
 $tvs_est = $obj2["TV-EST"];
 $tvs_west = $obj2["TV-OUEST"];
 
+echo "Fichier TV_count.json OK<br>";
+
 // ---------------------------------------
 // 		récupère les données H20, Occ
 // ---------------------------------------
 
-$h20_est = get_entry("est", $wef_counts, $unt_counts, "LOAD");
+$h20_est = $soapClient->flowServices()->get_entry("LFM", $tvs_est, $tve, $wef_counts, $unt_counts, "LOAD");
 //$h20_est2 = get_entry("est", $wef_counts, $unt_counts, "DEMAND");
 //$h20_west = get_entry("west", $wef_counts, $unt_counts, "LOAD");
 //$h20_west2 = get_entry("west", $wef_counts, $unt_counts, "DEMAND");
 
-$occ_est = get_occ("est", $wef_counts, $unt_counts, "LOAD");
+$occ_est = $soapClient->flowServices()->get_occ("LFM", $tvs_est, $tve, $wef_counts, $unt_counts, "LOAD");
 //$occ_est2 = get_occ("est", $wef_counts, $unt_counts, "DEMAND");
 //$occ_west = get_occ("west", $wef_counts, $unt_counts, "LOAD");
 //$occ_west2 = get_occ("west", $wef_counts, $unt_counts, "DEMAND");
-
 
 /*
 // ------------------------------------------------------------------------------------------
@@ -262,8 +241,46 @@ foreach($occ_west1 as $key=>$val) {
 // ---------------------------------------
 // 		récupère les données Reg
 // ---------------------------------------
-$regul = get_regulations("LF", $wef_regs, $unt_regs);
+// objet contenant les reguls de LF*
+$json_reg = new stdClass();
+$json_reg->LFMMFMPE = array();
+$json_reg->LFMMFMPW = array();
+$json_reg->LFMMAPP = array();
+$json_reg->LFBBFMP = array();
+$json_reg->LFBBAPP = array();
+$json_reg->LFEEFMP = array();
+$json_reg->LFEEAPP = array();
+$json_reg->LFFFFMPE = array();
+$json_reg->LFFFFMPW = array();
+$json_reg->LFFFAD = array();
+$json_reg->LFRRFMP = array();
+$json_reg->LFRRAPP = array();
+$json_reg->LFDSNA = array();
 
+$reg = [];
+$reg["LFMMFMPE"] = array();
+$reg["LFMMFMPW"] = array();
+$reg["LFMMAPP"] = array();
+$reg["LFBBFMP"] = array();
+$reg["LFBBAPP"] = array();
+$reg["LFEEFMP"] = array();
+$reg["LFEEAPP"] = array();
+$reg["LFFFFMPE"] = array();
+$reg["LFFFFMPW"] = array();
+$reg["LFFFAD"] = array();
+$reg["LFRRFMP"] = array();
+$reg["LFRRAPP"] = array();
+$reg["LFDSNA"] = array();
+
+// objet contenant les reguls Europe
+$json_atfcm_reg = $soapClient->flowServices()->get_ATFCM_situation();
+
+echo "get atfcm_situation OK<br>";
+
+// Remplit l'object $json_reg (et l'array $reg pour l'export xls)
+$soapClient->flowServices()->get_full_regulations("LF", $wef_regs, $unt_regs, $json_atfcm_reg, $json_reg, $reg);
+
+echo "get regulation OK<br>";
 
 // Sauvegarde des fichiers
 // Affichage d'un message suivant la réussite de la sauvegarde
@@ -272,8 +289,8 @@ $regul = get_regulations("LF", $wef_regs, $unt_regs);
 
 try {	
 	
-	write_xls("est", $wef_counts);
-	//write_xls("west", $wef_counts);
+	write_xls("est", $wef_counts, $occ_est, [], $h20_est, [], $reg);
+	//write_xls("west", $wef_counts, $occ_est, $occ_west, $h20_est, $h20_west, $reg);
 	
 	write_json($occ_est, "est", "-Occ-", $wef_counts);
 	//write_json($occ_west, "west", "-Occ-", $wef_counts);
