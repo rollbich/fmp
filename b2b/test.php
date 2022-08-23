@@ -54,7 +54,7 @@ function write_json($arr, $zone, $type, $wef) {
 $soapClient = new B2B();
 $today = gmdate('Y-m-d', strtotime("today"));
 
-include("tab_TV.inc.php");
+include("tab_TV-test.inc.php");
 
 $flights = new stdClass();
 //$flights->LFMMCTA = ["LFMMCTA", $today, $counts_LFMMCTA_REGDEMAND, $counts_LFMMCTA_LOAD, $counts_LFMMCTA_DEMAND];
