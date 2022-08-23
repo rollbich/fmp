@@ -21,7 +21,8 @@ $dat = new DateTime();
 if ($dat <= $date_ete || $dat > $date_hiver) {
 	echo "Heure hiver<br/>";
 	// Plage horaire de récupération du H20 et Occ (now loc à now+6h loc)
-    $wef_counts = gmdate('Y-m-d H:i', strtotime("now"));
+    //$wef_counts = gmdate('Y-m-d H:i', strtotime("now"));
+	$wef_counts = gmdate('Y-m-d H:i', strtotime("-7 minutes");
 	$unt_counts = gmdate('Y-m-d H:i', strtotime("+6 hours"));
 
     // Plage horaire de récupération des reguls (minuit UTC à minuit UTC)
@@ -30,7 +31,8 @@ if ($dat <= $date_ete || $dat > $date_hiver) {
 } else {
 	echo "Heure ete<br/>";
 	// Plage horaire de récupération du H20 et Occ (now loc à now+6h loc)
-    $wef_counts = gmdate('Y-m-d H:i', strtotime("now"));
+    //$wef_counts = gmdate('Y-m-d H:i', strtotime("now"));
+	$wef_counts = gmdate('Y-m-d H:i', strtotime("-7 minutes");
 	$unt_counts = gmdate('Y-m-d H:i', strtotime("+6 hours"));
 
     // Plage horaire de récupération des reguls (minuit UTC à minuit UTC)
