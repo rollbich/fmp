@@ -11,6 +11,7 @@ class B2B {
 	private $Location_MM;
 	private $local_cert_MM;
 	private $params;
+	private $wsdl_file;
 	
 	private $context_param = 
 		array(
@@ -20,13 +21,11 @@ class B2B {
 			'allow_self_signed' => true)
 			);
 
-	// @param {string} $service - "flow" ou "airspace" ou "flight"
-	public function __construct($service)
-    {
-		$this->service = $service;
-		$this->wsdl_flow_services_MM = __DIR__."/B2B/FlowServices_OPS_".$this->version.".wsdl";
-	 	$this->wsdl_airspace_services_MM = __DIR__."/B2B/AirspaceServices_OPS_".$this->version.".wsdl";
-		$this->wsdl_flight_services_MM = __DIR__."/B2B/FlightServices_OPS_".$this->version.".wsdl";
+	private $airspaceServices;
+	private $flowServices;
+	private $flightServices;
+
+	public function __construct() {
 		$this->Location_MM = "https://www.b2b.nm.eurocontrol.int/B2B_OPS/gateway/spec/".$this->version;
 		//Certificat OPS LFMM
 		$this->local_cert_MM = __DIR__."/B2B/certif2021.pem";
@@ -44,11 +43,72 @@ class B2B {
 		);
     }
 
-	public function get_client()
-	{
-		$service_name = "wsdl_".$this->service."_services_MM";
-		return new SoapClient($this->{$service_name}, $this->params);
+	// @param {string} $service - "flow" ou "airspace" ou "flight"
+	private function get_wsdl_file($service) {
+		switch ($service) {
+			case "flow":
+				return __DIR__."/B2B/FlowServices_OPS_".$this->version.".wsdl";
+			case "flight":
+				return __DIR__."/B2B/FlightServices_OPS_".$this->version.".wsdl";
+			case "airspace":
+				return __DIR__."/B2B/AirspaceServices_OPS_".$this->version.".wsdl";
+			default:
+				return null;
+		}
 	}
+
+
+    //	@return FlightServices
+    public function flightServices() : FlightServices
+    {
+        if($this->flightServices == null) {
+
+			$wsdl_file = $this->get_wsdl_file("flight");
+
+			if(file_exists($wsdl_file)) {
+				$this->flightServices = new FlightServices($wsdl_file, $this->params);
+			} else {
+				throw new Exception('Fichier FlightServices WSDL introuvable.');
+			}
+          
+        }
+        return $this->flightServices;
+    }
+
+	//	@return AirspaceServices
+    public function airspaceServices() : AirspaceServices
+    {
+        if($this->airspaceServices == null) {
+
+			$wsdl_file = $this->get_wsdl_file("airspace");
+           
+			if(file_exists($wsdl_file)) {
+				$this->airspaceServices = new AirspaceServices($wsdl_file, $this->params);
+			} else {
+				throw new Exception('Fichier AirspaceServices WSDL introuvable.');
+			}
+          
+        }
+        return $this->airspaceServices;
+    }
+
+	//	@return FlowServices
+    public function flowServices() : FlowServices
+    {
+        if($this->flowServices == null) {
+
+			$wsdl_file = $this->get_wsdl_file("flow");
+           
+			if(file_exists($wsdl_file)) {
+				$this->flowServices = new FlowServices($wsdl_file, $this->params);
+			} else {
+				throw new Exception('Fichier FlowServices WSDL introuvable.');
+			}
+          
+        }
+        return $this->flowServices;
+    }
+
 }
 
 ?>
