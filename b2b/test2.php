@@ -300,7 +300,7 @@ $soapClient->flowServices()->get_full_regulations("LF", $wef_regs, $unt_regs, $j
 echo "get regulation OK<br>";
 
 // ATC conf du jour
-$airspace1 = "LFMMCTAL";
+$airspace1 = "LFMMCTAE";
 $airspace2 = "LFMMCTAW";
 // today = minuit locale soit la veille 22h00 UTC
 $today = gmdate('Y-m-d', strtotime("today"));
