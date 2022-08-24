@@ -27,18 +27,18 @@ class FlowServices extends Service {
         
         try {
             $output = $this->getSoapClient()->__soapCall('queryTrafficCountsByAirspace', array('parameters'=>$params));
-            if (isset($output->data->counts) == false) {
-                $erreur = $this->getFullErrorMessage("Erreur query_entry_day_count : output->data->counts n'existe pas");
-                echo $erreur."\n<br>";
+            if ($output->status !== "OK") {
+                $erreur = $this->getFullErrorMessage("Erreur query_entry_day_count $airspace : ".$output->reason);
+                echo $erreur."<br>\n";
                 $this->send_mail($erreur);
             }
             return $output;
         }
 
         catch (Exception $e) {
-            echo 'Exception reçue query_entry_day_count: ',  $e->getMessage(), "\n<br>";
+            echo 'Exception reçue query_entry_day_count: ',  $e->getMessage(), "<br>\n";
             $erreur = $this->getFullErrorMessage("Erreur query_entry_day_count");
-            echo $erreur."\n<br>";
+            echo $erreur."<br>\n";
             $this->send_mail($erreur);
         }
     }
@@ -68,18 +68,18 @@ class FlowServices extends Service {
         
         try {
             $output = $this->getSoapClient()->__soapCall('queryTrafficCountsByTrafficVolume', array('parameters'=>$params));
-            if (isset($output->data->counts) == false) {
-                $erreur = $this->getFullErrorMessage("Erreur query_entry_count : output->data->counts n'existe pas");
-                echo $erreur."\n<br>";
+            if ($output->status !== "OK") {
+                $erreur = $this->getFullErrorMessage("Erreur query_entry_count $tv : ".$output->reason);
+                echo $erreur."<br>\n";
                 $this->send_mail($erreur);
             }
             return $output;
         }
 
         catch (Exception $e) {
-            echo 'Exception reçue query_entry_count: ',  $e->getMessage(), "\n<br>";
+            echo 'Exception reçue query_entry_count: ',  $e->getMessage(), "<br>\n";
             $erreur = $this->getFullErrorMessage("Erreur query_entry_count");
-            echo $erreur."\n<br>";
+            echo $erreur."<br>\n";
             $this->send_mail($erreur);
         }
     }
@@ -109,8 +109,8 @@ class FlowServices extends Service {
                                 
         try {
             $output = $this->getSoapClient()->__soapCall('queryTrafficCountsByTrafficVolume', array('parameters'=>$params));
-            if (isset($output->data->counts) == false) {
-                $erreur = $this->getFullErrorMessage("Erreur query_occ_count : output->data->counts n'existe pas");
+            if ($output->status !== "OK") {
+                $erreur = $this->getFullErrorMessage("Erreur query_occ_count $tv : ".$output->reason);
                 echo $erreur."\n<br>";
                 $this->send_mail($erreur);
             }
@@ -118,7 +118,7 @@ class FlowServices extends Service {
         }
 
         catch (Exception $e) {
-            echo 'Exception reçue query_occ_count: ',  $e->getMessage(), "\n<br>";
+            echo 'Exception reçue query_occ_count: ',  $e->getMessage(), "<br>\n";
             $erreur = $this->getFullErrorMessage("Erreur query_occ_count");
             echo $erreur."\n<br>";
             $this->send_mail($erreur);
@@ -180,9 +180,30 @@ class FlowServices extends Service {
 
         foreach($tv_group as $tv) {
             
-            if (isset($tv_zone_mv[$tv]["peak"])) { $tv_peak = $tv_zone_mv[$tv]["peak"]; } else { throw new Exception("Le TV ".$tv." a un peak non defini dans MV.json"); }
-            if (isset($tv_zone_mv[$tv]["sustain"])) { $tv_sustain = $tv_zone_mv[$tv]["sustain"]; } else { throw new Exception("Le TV ".$tv." a un sustain non defini dans MV.json"); }
-            if (isset($tv_zone_mv[$tv]["duration"])) { $tv_duration = str_pad($tv_zone_mv[$tv]["duration"], 4, '0', STR_PAD_LEFT); } else { throw new Exception("Le TV ".$tv." a une duration non defini dans MV.json"); }
+            if (isset($tv_zone_mv[$tv]["peak"])) { 
+                $tv_peak = $tv_zone_mv[$tv]["peak"]; 
+            } else { 
+                $erreur = "Erreur get_occ : Le TV $tv a un peak non defini dans MV.json";
+                echo $erreur."<br>\n";
+                $this->send_mail($erreur);
+                throw new Exception("Le TV $tv a un peak non defini dans MV.json"); 
+            }
+            if (isset($tv_zone_mv[$tv]["sustain"])) { 
+                $tv_sustain = $tv_zone_mv[$tv]["sustain"]; 
+            } else { 
+                $erreur = "Erreur get_occ : Le TV $tv a un sustain non defini dans MV.json";
+                echo $erreur."<br>\n";
+                $this->send_mail($erreur);
+                throw new Exception("Le TV $tv a un sustain non defini dans MV.json"); 
+            }
+            if (isset($tv_zone_mv[$tv]["duration"])) { 
+                $tv_duration = str_pad($tv_zone_mv[$tv]["duration"], 4, '0', STR_PAD_LEFT); 
+            } else { 
+                $erreur = "Erreur get_occ : Le TV $tv a une duration non defini dans MV.json";
+                echo $erreur."<br>\n";
+                $this->send_mail($erreur);
+                throw new Exception("Le TV a une duration non defini dans MV.json"); 
+            }
             
             $date = new DateTime($wef);
             $timestamp = $date->getTimestamp();
@@ -219,18 +240,18 @@ class FlowServices extends Service {
 
         try {
             $output = $this->getSoapClient()->__soapCall('queryRegulations', array('parameters'=>$params));
-            if (isset($output->data) == false) {
-                $erreur = $this->getFullErrorMessage("Erreur get_regulations : output->data n'existe pas");
-                echo $erreur."\n<br>";
+            if ($output->status !== "OK") {
+                $erreur = $this->getFullErrorMessage("Erreur get_regulations : ".$output->reason);
+                echo $erreur."<br>\n";
                 $this->send_mail($erreur);
             }
             return $output;
         }
 
         catch (Exception $e) {
-            echo 'Exception reçue get_regulations: ',  $e->getMessage(), "\n<br>";
+            echo 'Exception reçue get_regulations: ',  $e->getMessage(), "<br>\n";
             $erreur = $this->getFullErrorMessage("Erreur get_regulations");
-            echo $erreur."\n<br>";
+            echo $erreur."<br>\n";
             $this->send_mail($erreur);
         }
     
@@ -254,18 +275,18 @@ class FlowServices extends Service {
                             
         try {
             $output = $this->getSoapClient()->__soapCall('retrieveATFCMSituation', array('parameters'=>$params));
-            if (isset($output->data) == false) {
-                $erreur = $this->getFullErrorMessage("Erreur get_ATFCM_situation : output->data n'existe pas");
-                echo $erreur."\n<br>";
+            if ($output->status !== "OK") {
+                $erreur = $this->getFullErrorMessage("Erreur get_ATFCM_situation : ".$output->reason);
+                echo $erreur."<br>\n";
                 $this->send_mail($erreur);
             }
             return $output;
         }
 
         catch (Exception $e) {
-            echo 'Exception reçue get_ATFCM_situation: ',  $e->getMessage(), "\n<br>";
+            echo 'Exception reçue get_ATFCM_situation: ',  $e->getMessage(), "<br>\n";
             $erreur = $this->getFullErrorMessage("Erreur get_ATFCM_situation");
-            echo $erreur."\n<br>";
+            echo $erreur."<br>\n";
             $this->send_mail($erreur);
         }	
     }
@@ -336,9 +357,9 @@ class FlowServices extends Service {
         }
         
         catch (Exception $e) {
-            echo 'Exception reçue get_full_regulations: ',  $e->getMessage(), "\n<br>";
+            echo 'Exception reçue get_full_regulations: ',  $e->getMessage(), "<br>\n";
             $erreur = $this->getFullErrorMessage("Erreur get_full_regulations");
-            echo $erreur."\n<br>";
+            echo $erreur."<br>\n";
             $this->send_mail($erreur);
         }
             
@@ -385,13 +406,18 @@ class FlowServices extends Service {
                             
         try {
             $output = $this->getSoapClient()->__soapCall('retrieveSectorConfigurationPlan', array('parameters'=>$params));
+            if ($output->status !== "OK") {
+                $erreur = $this->getFullErrorMessage("Erreur get_atc_conf $airspace, $day : ".$output->reason);
+                echo $erreur."<br>\n";
+                $this->send_mail($erreur);
+            }
             return $output;
             }
 
         catch (Exception $e) {
-            echo 'Exception reçue get_atc_conf: ',  $e->getMessage(), "\n<br>";
+            echo 'Exception reçue get_atc_conf: ',  $e->getMessage(), "<br>\n";
             $erreur = $this->getFullErrorMessage("Erreur get_atc_conf");
-            echo $erreur."\n<br>";
+            echo $erreur."<br>\n";
             $this->send_mail($erreur);
         }
     }

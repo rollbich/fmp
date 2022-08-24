@@ -22,8 +22,8 @@ class FlightServices extends Service {
                             
         try {
             $output = $this->getSoapClient()->__soapCall('queryFlightsByTrafficVolume', array('parameters'=>$params));
-            if (isset($output->data->flights) == false) {
-                $erreur = $this->getFullErrorMessage("Erreur get_nb_vols_TV : output->data->flights n'existe pas");
+            if ($output->status !== "OK") {
+                $erreur = $this->getFullErrorMessage("Erreur get_nb_vols_TV $tv : ".$output->reason);
                 echo $erreur."\n<br>";
                 $this->send_mail($erreur);
             }
@@ -59,8 +59,8 @@ class FlightServices extends Service {
                             
         try {
             $output = $this->getSoapClient()->__soapCall('queryFlightsByAerodrome', array('parameters'=>$params));
-            if (isset($output->data->flights) == false) {
-                $erreur = $this->getFullErrorMessage("Erreur get_nb_vols_AD : output->data->flights n'existe pas");
+            if ($output->status !== "OK") {
+                $erreur = $this->getFullErrorMessage("Erreur get_nb_vols_AD pour $ad : ".$output->reason);
                 echo $erreur."\n<br>";
                 $this->send_mail($erreur);
             }
@@ -106,60 +106,64 @@ class FlightServices extends Service {
         $total_app = 0;
         foreach($tv_arr as $tv) {
             $res = $this->get_nb_vols_TV($tv, $wef, $unt);
-            $nb_flight = 0;
-            // S'il n'y a pas de vol alors pas de property "flights"
-            if (property_exists($res->data, "flights")) {
-                // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
-                if (is_array($res->data->flights)) {
-                    $nb_flight = count($res->data->flights);
-                    $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), count($res->data->flights));
-                } else {
-                    $nb_flight = 1;
-                    $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 1);
-                }
-            } else {
+            if ($res->status == "OK") {
                 $nb_flight = 0;
-                $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 0);
-            }
-            $total_app += $nb_flight;
-            if (property_exists($res->data, "flights")) {
-                // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
-                if (is_array($res->data->flights)) {
-                    $obj->VOLS_APP->$tv = $res->data->flights;
+                // S'il n'y a pas de vol alors pas de property "flights"
+                if (property_exists($res->data, "flights")) {
+                    // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
+                    if (is_array($res->data->flights)) {
+                        $nb_flight = count($res->data->flights);
+                        $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), count($res->data->flights));
+                    } else {
+                        $nb_flight = 1;
+                        $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 1);
+                    }
                 } else {
-                    $obj->VOLS_APP->$tv = $res->data->flights;
+                    $nb_flight = 0;
+                    $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 0);
                 }
-            } else {
-                $obj->VOLS_APP->$tv = new stdClass();
+                $total_app += $nb_flight;
+                if (property_exists($res->data, "flights")) {
+                    // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
+                    if (is_array($res->data->flights)) {
+                        $obj->VOLS_APP->$tv = $res->data->flights;
+                    } else {
+                        $obj->VOLS_APP->$tv = $res->data->flights;
+                    }
+                } else {
+                    $obj->VOLS_APP->$tv = new stdClass();
+                }
             }
         }
         foreach($tv_arr2 as $tv) {
             $res = $this->get_nb_vols_AD($tv, $wef, $unt);
-            $nb_flight = 0;
-            // S'il n'y a pas de vol alors pas de property "flights"
-            if (property_exists($res->data, "flights")) {
-                // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
-                if (is_array($res->data->flights)) {
-                    $nb_flight = count($res->data->flights);
-                    $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), count($res->data->flights));
-                } else {
-                    $nb_flight = 1;
-                    $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 1);
-                }
-            } else {
+            if ($res->status == "OK") {
                 $nb_flight = 0;
-                $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 0);
-            }
-            $total_app += $nb_flight;
-            if (property_exists($res->data, "flights")) {
-                // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
-                if (is_array($res->data->flights)) {
-                    $obj->VOLS_APP->$tv = $res->data->flights;
+                // S'il n'y a pas de vol alors pas de property "flights"
+                if (property_exists($res->data, "flights")) {
+                    // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
+                    if (is_array($res->data->flights)) {
+                        $nb_flight = count($res->data->flights);
+                        $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), count($res->data->flights));
+                    } else {
+                        $nb_flight = 1;
+                        $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 1);
+                    }
                 } else {
-                    $obj->VOLS_APP->$tv = $res->data->flights;
+                    $nb_flight = 0;
+                    $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 0);
                 }
-            } else {
-                $obj->VOLS_APP->$tv = new stdClass();
+                $total_app += $nb_flight;
+                if (property_exists($res->data, "flights")) {
+                    // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
+                    if (is_array($res->data->flights)) {
+                        $obj->VOLS_APP->$tv = $res->data->flights;
+                    } else {
+                        $obj->VOLS_APP->$tv = $res->data->flights;
+                    }
+                } else {
+                    $obj->VOLS_APP->$tv = new stdClass();
+                }
             }
         }
         $obj->LFMMAPP->flights = $total_app;
