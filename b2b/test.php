@@ -60,14 +60,15 @@ $flights = new stdClass();
 //$flights->LFMMCTA = ["LFMMCTA", $today, $counts_LFMMCTA_REGDEMAND, $counts_LFMMCTA_LOAD, $counts_LFMMCTA_DEMAND];
 //$flights->LFMMCTAE = ["LFMMCTAE", $today, $counts_LFMMCTAE_REGDEMAND, $counts_LFMMCTAE_LOAD, $counts_LFMMCTAE_DEMAND];
 //$flights->LFMMCTAW = ["LFMMCTAW", $today, $counts_LFMMCTAW_REGDEMAND, $counts_LFMMCTAW_LOAD, $counts_LFMMCTAW_DEMAND];
-$soapClient->flightServices()->get_vols_Est($flights, $tab_TVE, $wef_flights, $unt_flights);
+//$soapClient->flightServices()->get_vols_Est($flights, $tab_TVE, $wef_flights, $unt_flights);
 //$res = $soapClient->flightServices()->get_nb_vols_TV("LFMB12", $wef_flights, $unt_flights);
 
 /*
 get_vols_Est($flights, $tab_TVE, $wef_flights, $unt_flights);
 get_vols_West($flights, $tab_TVW, $wef_flights, $unt_flights);
-get_vols_App($flights, $tab_TVAPP, $tab_ADAPP, $wef_flights, $unt_flights);
 */
+$soapClient->flightServices()->get_vols_App($flights, $tab_TVAPP, $tab_ADAPP, $wef_flights, $unt_flights);
+
 
 // Sauvegarde des fichiers
 // Affichage d'un message suivant la réussite de la sauvegarde
@@ -84,7 +85,7 @@ catch (Exception $e) {
 	echo "Erreur, verifier les sauvegardes\n<br>";
 	echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";
 	write_log("", "", $err);
-	send_mail();
+	//send_mail();
 }
 
 
