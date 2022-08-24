@@ -1,18 +1,9 @@
 <?php
 ini_set('memory_limit', '1G');
+require_once("mail-msg.php");
 require_once("B2B.php");
-
-/*  -----------------------------------------------------------------------
-		instanciation soap FLOW Services
-		
-		Range de requête : 24h max
-		trafficWindow (OPERATIONAL)	 : [yesterday .. tomorrow]
-		trafficWindow (FORECAST)	 : [yesterday 21:00 UTC .. today+5d]
-
-	----------------------------------------------------------------------- */
- 
-$soapFlow = new B2B("flow");
-$soapClientFlow = $soapFlow->get_client();
+require_once("B2B-Service.php");
+require_once("B2B-FlowServices.php");
 
 /* -----------------------------------------------------------------
 	Récupère les confs déclarés
@@ -42,35 +33,18 @@ $soapClientFlow = $soapFlow->get_client();
 }
 
    -----------------------------------------------------------------*/
-function get_atc_conf($airspace, $day) {
-	
-	global $soapClientFlow;
-	
-	$params = array(
-		'sendTime'=>gmdate("Y-m-d H:i:s"),
-		'dataset'=>array('type'=>'OPERATIONAL'),
-		'day'=> $day,
-		'airspace' => $airspace
-	);
-						
-	try {
-		$output = $soapClientFlow->__soapCall('retrieveSectorConfigurationPlan', array('parameters'=>$params));
-		return $output;
-		}
-
-	catch (Exception $e) {echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";}
-}
 
 /*  ---------------------------------------------------------- */
 /* 						début du programme
 /*  ---------------------------------------------------------- */
 
-// ATC conf du jour (attention : il faut demander tomorrow dans la requête)
+$soapClient = new B2B();
+
 $airspace1 = "LFMMCTAE";
 $airspace2 = "LFMMCTAW";
-$today = gmdate('Y-m-d', strtotime("tomorrow"));
-$plan_e = get_atc_conf($airspace1, $today);
-$plan_w = get_atc_conf($airspace2, $today);
+$today = gmdate('Y-m-d', strtotime("now"));
+$plan_e = $soapClient->flowServices()->get_atc_conf($airspace1, $today);
+$plan_w = $soapClient->flowServices()->get_atc_conf($airspace2, $today);
 $atc_confs = new stdClass();
 $atc_confs->est = $plan_e->data->plan->nmSchedule->item;
 $atc_confs->ouest = $plan_w->data->plan->nmSchedule->item;
