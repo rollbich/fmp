@@ -96,7 +96,11 @@ class conf {
 					if (i === 1) {
 						s["est"][i][elem.key] = [elem.value.item.substr(4)];
 					} else {
-						s["est"][i][elem.key] = elem.value.item.map(el => el.substr(4)); 
+						console.log("Tri Salto Est");
+						console.log(`Conf : ${elem.key}`);
+						console.log(elem.value.item.map(el => el.substr(4)));
+						s["est"][i][elem.key] = tri_salto(elem.value.item.map(el => el.substr(4)), "est"); 
+						console.log(s["est"][i][elem.key]);
 					}
 					
 				}
