@@ -58,44 +58,24 @@ class regul {
 				obj[type] = obj["lastUpdate"]["userUpdateEventTime"];
 			})
 		})
-		const update0320 = await this.get_regul("0320");
-		const update0420 = await this.get_regul("0420");
-		const update0620 = await this.get_regul("0620");
-		if (typeof update0320 !== 'undefined') {
-			lfmm_tvset.forEach(tvset => {
-				this.regul[tvset].forEach(obj => {
-					update0320[tvset].forEach(obj0320 => {
-						if (typeof obj0320["regId"] !== 'undefined' && obj0320["regId"] === obj["regId"]) {
-							const type = obj0320["lastUpdate"]["userUpdateType"];
-							obj[type] = obj0320["lastUpdate"]["userUpdateEventTime"];
-						}
-					})
-				})
-			})
+		const time_array = ["0320","0420","0620","0820","1020","1220","1420","1620"];
+		const update = {};
+		for(const temps of time_array) {
+			update[temps] = await this.get_regul(temps);
 		}
-		if (typeof update0420 !== 'undefined') {
-			lfmm_tvset.forEach(tvset => {
-				this.regul[tvset].forEach(obj => {
-					update0420[tvset].forEach(obj0420 => {
-						if (typeof obj0420["regId"] !== 'undefined' && obj0420["regId"] === obj["regId"]) {
-							const type = obj0420["lastUpdate"]["userUpdateType"];
-							obj[type] = obj0420["lastUpdate"]["userUpdateEventTime"];
-						}
+		for(const temps of time_array) {
+			if (typeof update[temps] !== 'undefined') {
+				lfmm_tvset.forEach(tvset => {
+					this.regul[tvset].forEach(obj => {
+						update[temps][tvset].forEach(el => {
+							if (typeof el["regId"] !== 'undefined' && el["regId"] === obj["regId"]) {
+								const type = el["lastUpdate"]["userUpdateType"];
+								obj[type] = el["lastUpdate"]["userUpdateEventTime"];
+							}
+						})
 					})
 				})
-			})
-		}
-		if (typeof update0620 !== 'undefined') {
-			lfmm_tvset.forEach(tvset => {
-				this.regul[tvset].forEach(obj => {
-					update0620[tvset].forEach(obj0620 => {
-						if (typeof obj0620["regId"] !== 'undefined' && obj0620["regId"] === obj["regId"]) {
-							const type = obj0620["lastUpdate"]["userUpdateType"];
-							obj[type] = obj0620["lastUpdate"]["userUpdateEventTime"];
-						}
-					})
-				})
-			})
+			}
 		}
 	}
 
