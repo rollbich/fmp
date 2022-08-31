@@ -9,14 +9,14 @@ class stat_confs {
         this.start = start;
         this.end = end;
 		this.zone = zone;
+        this.zon = this.zone === "AE" ? "est" : "ouest";
 		this.dates_arr = get_dates_array(new Date(start), new Date(end));
         this.stats = {};
 		this.init();
 	}
 	
-    async init() {
-        const zon = this.zone === "AE" ? "est" : "ouest";
-        const cf = new conf(new Date(), zon);
+    async init() { 
+        const cf = new conf(new Date(), this.zon);
         await cf.init_b2b();
         this.sch_rea = await this.get_sch_rea();
         this.confs_exist = cf.b2b_sorted_confs;
@@ -64,8 +64,7 @@ class stat_confs {
 	--------------------------------------------------------------------------------------------- */
     merge_conf() {
         const conf_tot = {};
-        const zon = this.zone === "AE" ? "est" : "ouest";
-        Object.assign(conf_tot, this.confs_exist[zon]);
+        Object.assign(conf_tot, this.confs_exist[this.zon]);
         Object.keys(this.confs_supp).forEach( elem => {
             conf_tot[elem] = {...conf_tot[elem], ...this.confs_supp[elem]}
         })
@@ -127,7 +126,7 @@ class stat_confs {
                         this.stats[nb_regr][cn] = {}; 
                         this.stats[nb_regr][cn]["occur"] = 0;
                         this.stats[nb_regr][cn]["tps"] = 0;
-                        this.stats[nb_regr][cn]["tv"] = regroupements;
+                        this.stats[nb_regr][cn]["tv"] = tri_salto(regroupements, this.zon);
                         this.stats[nb_regr][cn]["conf"] = cn;
                     }
                     this.stats[nb_regr][cn]["occur"]++;
@@ -144,11 +143,10 @@ class stat_confs {
 		------------------------------------------------------------------ */	 
 		
 	async show_result_stat() {
-        const zon = this.zone === "AE" ? "Est" : "West";
 		let res = "<div>";
 		res += `
 		<table class="sortable conf">
-			<caption>STATS Confs : Zone ${zon}<br>${reverse_date(this.start)} / ${reverse_date(this.end)}</caption>
+			<caption>STATS Confs : Zone ${this.zon}<br>${reverse_date(this.start)} / ${reverse_date(this.end)}</caption>
 			<thead><tr class="titre"><th class="space">Nb sect</th><th>Conf</th><th>Occ</th><th>Durée</th><th>% occ</th><th>% tps</th><th>TVs</th></tr></thead>
 			<tbody>`.trimStart();
 		// -----------------------------------

@@ -90,7 +90,7 @@ class ouverture extends schema_rea {
                         <tr class="titre"><th>Début</th><th>Fin</th><th>Nb sect.</th><th>Conf</th><th class="colspan">Confs</th></tr>
                     </thead>
                     <tbody>`;
-                            
+        const zon = this.zone === "AE" ? "est" : "ouest";                    
         this.schema.ouverture.forEach(row => {
                                 
             res += '<tr>'; 
@@ -124,7 +124,8 @@ class ouverture extends schema_rea {
            		
             row[4].forEach(tv => {
                 let r = this.get_ouverture_totale(tv[0], time_to_min(row[1]), time_to_min(row[2]));
-                res += `<td title="${tv[1]}" class="tv" data-tv="${tv[0]}" data-deb="${r[0]}" data-fin="${r[1]}">${tv[0]}</td>`;
+                const color = get_group_color(tv[0], zon);
+                res += `<td title="${tv[1]}" class="tv" data-tv="${tv[0]}" data-deb="${r[0]}" data-fin="${r[1]}" style="background: ${color}">${tv[0]}</td>`;
             });
             res += '</tr>';
                                     
@@ -141,7 +142,6 @@ class ouverture extends schema_rea {
 
         })
         if (td_add.length === 0) return;
-        const zon = this.zone === "AE" ? "est" : "ouest";
         
 		td_add.forEach(td_el => {
             td_el.addEventListener('click', (event) => {
@@ -149,7 +149,7 @@ class ouverture extends schema_rea {
                 if (!!exist === true) exist.remove();
                 let nbr_regroup = td_el.dataset.nbregr;
                 let tvs = td_el.dataset.tvs.split(",");
-                tvs = this.zone === "AE" ? tri(tvs, "est") : tri(tvs, "west");
+                tvs = this.zone === "AE" ? tri_salto(tvs, "est") : tri_salto(tvs, "west");
                 const confs_name = [];
                 const el = document.createElement('div');
 				el.setAttribute('id', 'popup-cree-conf');
@@ -168,7 +168,7 @@ class ouverture extends schema_rea {
                     for(let conf in this.confs[nbr_regroup]) {
                         confs_name.push(conf);
                         let arr_tv = this.confs[nbr_regroup][conf];
-                        arr_tv = this.zone === "AE" ? tri(arr_tv, "est") : tri(arr_tv, "west");
+                        arr_tv = this.zone === "AE" ? tri_salto(arr_tv, "est") : tri_salto(arr_tv, "west");
                         res2 += `<tr><td style="background: var(--color-2019);">${conf}</td>`; 
                         arr_tv.forEach(tv => {
                             res2 +=`<td>${tv}</td>`;
