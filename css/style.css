@@ -438,7 +438,7 @@ table td.tv, table th.tv {
 
 table td.tv:hover {
 	color: var(--table-cell-hover-color);
-	background: var(--table-cell-hover-bg-color);
+	background: var(--table-cell-hover-bg-color) !important;
 }
 
 .max {

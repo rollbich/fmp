@@ -96,11 +96,7 @@ class conf {
 					if (i === 1) {
 						s["est"][i][elem.key] = [elem.value.item.substr(4)];
 					} else {
-						console.log("Tri Salto Est");
-						console.log(`Conf : ${elem.key}`);
-						console.log(elem.value.item.map(el => el.substr(4)));
-						s["est"][i][elem.key] = tri_salto(elem.value.item.map(el => el.substr(4)), "est"); 
-						console.log(s["est"][i][elem.key]);
+						s["est"][i][elem.key] = elem.value.item.map(el => el.substr(4)); 
 					}
 					
 				}
@@ -248,7 +244,7 @@ class conf {
         return cf;
     }
 
-	/*  -----------------------------------------------------------
+	/*  ------------------------------------------------------------------
 			Affiche les confs déclarées au NM à la prep
 			@param {string} containerId - Id de l'HTML Element container	
 			@param {string} day - "yyyy-mm-dd"
@@ -268,9 +264,10 @@ class conf {
 				let regr = this.get_tvs_confs(value.sectorConfigurationId);
 				res += '<tr>'; 
 				res +=`<td>${deb} TU</td><td>${fin} TU</td><td>${value.sectorConfigurationId}</td>`;
-				const arr = tri(regr, this.zone);
+				const arr = tri_salto(regr, this.zone);
 				arr.forEach(tv => {
-					res += `<td>${tv}</td>`;
+					const color = get_group_color(tv, this.zone);
+					res += `<td style='background: ${color}'>${tv}</td>`;
 				})
 				res += '</tr>';	
 			});
@@ -333,12 +330,12 @@ class conf {
         for (const [nbr_sect, confs_list] of Object.entries(this.b2b_sorted_confs[this.zone])) { // on itère sur le nombre de regroupements 
 			Object.keys(confs_list).forEach (conf => { // on itère sur les différentes confs
 				if (nbr_sect%2) {res += '<tr class="one">'; } else {res += '<tr class="two">'; }
-				let tvs = tri(confs_list[conf], this.zone);
+				let tvs = tri_salto(confs_list[conf], this.zone);
 				res +=`<td>${nbr_sect}</td><td>${conf}</td>`;
 				const l = max_secteur - tvs.length + 1;
 				tvs.forEach (tv => {
-					//if (tv == "OLYO") tv = "MOLYO"; // patch erreur nom airspace NM
-					res += `<td>${tv}</td>`;
+					const color = get_group_color(tv, this.zone);
+					res += `<td style='background: ${color}'>${tv}</td>`;
 				})
 				for(let i=1;i<l;i++) {
 					res += `<td></td>`;
@@ -375,7 +372,7 @@ class conf {
 				console.log(confs_list);
 				Object.keys(confs_list).forEach (conf => { // on itère sur les différentes confs
 					if (nbr_sect%2) {res += '<tr class="one">'; } else {res += '<tr class="two">'; }
-					let tvs = this.zone === "AE" ? tri(confs_list[conf], "est") : tri(confs_list[conf], "west");
+					let tvs = this.zone === "AE" ? tri_salto(confs_list[conf], "est") : tri_salto(confs_list[conf], "west");
 					//let tvs = confs_list[conf];
 					console.log("TVS");
 					console.log(tvs);
