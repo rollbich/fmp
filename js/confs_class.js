@@ -379,8 +379,8 @@ class conf {
 					res +=`<td>${nbr_sect}</td><td>${conf}</td><td data-nbrsect="${nbr_sect}" data-conf="${conf}" data-zone="${zone}" class="supprime">x</td>`;
 					const l = max_secteur - tvs.length + 1;
 					tvs.forEach (tv => {
-						//if (tv == "OLYO") tv = "MOLYO"; // patch erreur nom airspace NM
-						res += `<td>${tv}</td>`;
+						const color = get_group_color(tv, zone);
+						res += `<td style='background: ${color}'>${tv}</td>`;
 					})
 					for(let i=1;i<l;i++) {
 						res += `<td></td>`;
