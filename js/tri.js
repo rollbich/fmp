@@ -14,16 +14,18 @@ const bloc_west = {
 
 /*  --------------------------------------------------------------------------
 	  Récupère la couleur de fond du tv
-	 	@param {string} tv      - 
-		@returns {string} zone  - 
+        @param {string} tv	    - "AB1"
+        @param {string} zone    - "est"
+		@returns {string} color 
 	-------------------------------------------------------------------------- */
 function get_group_color(tv, zone) {
-    // on met dans un tableau les tv du groupe 1, puis du groupe 2, etc...
     const bloc_zone = zone === "est" ? bloc_est : bloc_west;
     let bloc_tv;
-    // on place les tv appartenant au groupe 1 dans un tableau, idem pour le groupe 2, etc...
     for (const [bloc, value] of Object.entries(bloc_zone)) {
-       if (value.includes(tv)) bloc_tv = bloc; 
+       if (value.includes(tv)) {
+            bloc_tv = bloc; 
+            break;
+       }
     }
     switch (bloc_tv) {
         case "bloc1": 
