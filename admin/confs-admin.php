@@ -59,7 +59,12 @@
 			});
 			
 			$('bouton_export_salto').addEventListener('click', async e => {
-				show_popup("Export Salto","Cette fonctionnalité n'est pas encore disponible");
+				//show_popup("Export Salto","Cette fonctionnalité n'est pas encore disponible");
+				const zone = $('zone').value === "AE" ? "est" : "ouest";
+				const c = new conf(convertDate(new Date()), zone);
+				await c.init_b2b();
+				console.log(c.b2b_sorted_confs);
+				c.export_salto(zone);
 			});
 		});		
 	</script>
