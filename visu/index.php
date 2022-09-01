@@ -157,7 +157,6 @@
 </div>
 <ul class="menu">
 	<li id="bouton_ouverture" class="pointer"><span>Ouverture</span></li>
-	<li id="bouton_uceso" class="pointer"><span>UCESO</span></li>
 	<li id="bouton_visu" class="pointer"><span>Visu Est</span></li>
 	<li><button class="help_button">Help</button></li>
 </ul>
