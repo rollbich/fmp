@@ -45,7 +45,7 @@ class conf {
 							"item": ["LFMMG12", "LFMMG34", "LFMMB12", "LFMMB34", "LFMMY12", "LFMMY34", "LFMMMNST", "LFMMAA", "LFMMBTAJ", "LFMMEK1", "LFMMEK3", "LFMMEK2" ]
 						}
 					},
-					...(ne pr
+					...
 					{...}],
 					"west" : []
 				},
@@ -96,7 +96,7 @@ class conf {
 					if (i === 1) {
 						s["est"][i][elem.key] = [elem.value.item.substr(4)];
 					} else {
-						s["est"][i][elem.key] = elem.value.item.map(el => el.substr(4)); 
+						s["est"][i][elem.key] = tri_salto(elem.value.item.map(el => el.substr(4)), "est"); 
 					}
 					
 				}
@@ -113,7 +113,7 @@ class conf {
 					if (i === 1) {
 						s["ouest"][i][elem.key] = [elem.value.item.substr(4)];
 					} else {
-						s["ouest"][i][elem.key] = elem.value.item.map(el => el.substr(4)); 
+						s["ouest"][i][elem.key] = tri_salto(elem.value.item.map(el => el.substr(4)), "ouest"); 
 					}
 				}
 			})
@@ -404,5 +404,30 @@ class conf {
 				show_popup('Delete Confs', `Conf ${conf_name} supprimée`);
 			});
 		}
+	}
+
+/*  ------------------------------------------------------------------
+		Exporte les confs NM vers Salto	
+	------------------------------------------------------------------ */
+	export_salto(zone) {
+		console.log("Export_salto: "+zone);
+		const obj = {};
+		const tvs_est = [...bloc_est['bloc1'],...bloc_est['bloc2'],...bloc_est['bloc3'],...bloc_est['bloc3']];
+		const tvs_west = [...bloc_west['bloc1'],...bloc_west['bloc2'],...bloc_west['bloc3'],...bloc_west['bloc3']];
+		obj["confs"] = this.b2b_sorted_confs;
+		obj["tvs_est"] = tvs_est;
+		obj["tvs_west"] = tvs_west;
+		const url = zone === "est" ? "export_salto_est.php" : "export_salto_west.php";
+		const data = {
+			method: "post",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(obj)
+		};
+		fetch(url, data)
+		.then(function(response) {
+			return response.text().then(function(texte) {
+				show_popup("Export XML réussi", `Cliquer pour télécharger le fichier<br><a href='download_file.php?filename=${texte}'>${texte}</a>`); 
+			});
+		});
 	}
 }
