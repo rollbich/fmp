@@ -152,7 +152,7 @@
 <div id="help_frame" class="off">
 	<h2>Help</h2>
 	<p><span>Le bouton "Ouverture"</span> :<br>Il permet d'afficher graphiquement le fichier schéma réalisé de Courage. On peut ensuite cliquer sur un TV pour afficher la courbe de H20 et l'Occupancy pendant la période d'ouverture.<br>Si le TV n'est pas resté ouvert assez longtemps, le graphique H20 ne sera pas affiché.</p>
-	<p><span>Le bouton Uceso</span> :<br>Il affiche le graph proposé/réalisé. Une latence de 4 à 5s est posible le temps du chargement des données.<br>Si la date est passée, réalisé du jour J est affiché, sinon c'est le réalisé J-7 si disponible.</p>
+	<p><span>Le bouton Visu Est</span> :<br>Il affiche ce qu'a vu l'ACDS à l'heure indiquée.</p>
 	<button class="help_close_button pointer">Close</button>
 </div>
 <ul class="menu">
