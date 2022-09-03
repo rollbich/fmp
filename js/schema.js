@@ -45,9 +45,9 @@ class schema_rea {
             const z = this.zone === "AE" ? "EST" : "OUEST";
             if (response.status == 404) { 
                 //return Promise.reject(new Error(`Le fichier courage ${z} du ${date} n'existe pas`)); 
-                //show_popup(`Fichier courage ${z}`, `Le fichier du ${date} n'existe pas`);
-		        //await wait(1000);
-		        //document.querySelector('.popup-close').click();
+                show_popup(`Fichier courage ${z}`, `Le fichier du ${date} n'existe pas`);
+		        await wait(1000);
+		        document.querySelector('.popup-close').click();
                 console.log(`Fichier courage ${z} : Le fichier du ${date} n'existe pas`);
             }
             //return Promise.reject(new Error('Erreur'+response.statusText))
