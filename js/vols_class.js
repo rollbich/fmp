@@ -5,7 +5,9 @@ class vols {
 
 	async init() {
 		this.daily_vols = await this.get_data_daily_vols();
-		this.nbre_vols = this.get_daily_vols();
+		if (typeof this.daily_vols !== 'undefined') {
+			this.nbre_vols = this.get_daily_vols();
+		}
 	}
 
 	/*  ----------------------------------------------------------------------------------
@@ -30,7 +32,14 @@ class vols {
 		const month = date.substr(4,2);
 		const url = `../b2b/json/${year}/${month}/${date}-vols.json`;	
 		const resp = await loadJson(url);
-		return resp;
+		if (typeof resp !== 'undefined') {
+			return resp;
+		}
+		else {
+			show_popup(`Erreur`, `Le fichier du ${date} n'existe pas`);
+			await wait(800);
+		    document.querySelector('.popup-close').click();
+		}
 	}
 
 	get_daily_vols() {
@@ -81,7 +90,9 @@ class period_vols {
         for (const date of this.dates_arr) {
              const v = new vols(date);
 			 await v.init();
-             plage_vols[date] = v.get_daily_vols();
+			 if (typeof v.nbre_vols !== 'undefined') {
+             	plage_vols[date] = v.nbre_vols;
+			 }
         }
 		return plage_vols;
 	}
@@ -115,6 +126,7 @@ class period_vols {
 			<tbody>`;
 		let total_vols_est = 0, total_vols_west = 0, total_vols_cta = 0, total_vols_app = 0; 
         for (const date of this.dates_arr) {
+			if (typeof this.vols[date] !== 'undefined') {
                 res += '<tr>'; 
                 res +=`<td>${reverse_date(date)}</td><td>${jour_sem(date)}</td><td>${this.vols[date]['LFMMCTA']}</td><td>${this.vols[date]['LFMCTAE']}</td><td>${this.vols[date]['LFMCTAW']}</td><td>${this.vols[date]['LFMMAPP']}</td>`;
                 res += '</tr>';	
@@ -122,6 +134,7 @@ class period_vols {
 				total_vols_west += parseInt(this.vols[date]['LFMCTAW']);
 				total_vols_cta += parseInt(this.vols[date]['LFMMCTA']);
 				total_vols_app += parseInt(this.vols[date]['LFMMAPP']);
+			}
         }
         res += '</tbody></table>';
 		
