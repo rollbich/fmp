@@ -42,7 +42,14 @@ class regul {
 		const month = date.substr(4,2);
 		const url = `../b2b/json/${year}/${month}/${date}-reg${heure}.json`;	
 		const resp = await loadJson(url);
-		return resp;
+		if (typeof resp !== 'undefined') {
+			return resp;
+		}
+		else {
+			show_popup(`Erreur`, `Le fichier Reg du ${date} n'existe pas`);
+			await wait(800);
+		    document.querySelector('.popup-close').click();
+		}
 	}
 
 	/*  -----------------------------------------------------------------------
@@ -52,39 +59,43 @@ class regul {
             @returns {"LFMMFMPE":[],"LFMMFMPW":[],"LFMMAPP":[],...}
 	--------------------------------------------------------------------------- */
 	async add_earlier_data() {
-		lfmm_tvset.forEach(tvset => {
-			this.regul[tvset].forEach(obj => {
-				const type = obj["lastUpdate"]["userUpdateType"];
-				obj[type] = obj["lastUpdate"]["userUpdateEventTime"];
+		if (typeof this.regul !== 'undefined') {
+			lfmm_tvset.forEach(tvset => {
+				this.regul[tvset].forEach(obj => {
+					const type = obj["lastUpdate"]["userUpdateType"];
+					obj[type] = obj["lastUpdate"]["userUpdateEventTime"];
+				})
 			})
-		})
-		const time_array = ["0320","0420","0620","0820","1020","1220","1420","1620"];
-		const update = {};
-		for(const temps of time_array) {
-			update[temps] = await this.get_regul(temps);
-		}
-		for(const temps of time_array) {
-			if (typeof update[temps] !== 'undefined') {
-				lfmm_tvset.forEach(tvset => {
-					this.regul[tvset].forEach(obj => {
-						update[temps][tvset].forEach(el => {
-							if (typeof el["regId"] !== 'undefined' && el["regId"] === obj["regId"]) {
-								const type = el["lastUpdate"]["userUpdateType"];
-								obj[type] = el["lastUpdate"]["userUpdateEventTime"];
-							}
+			const time_array = ["0320","0420","0620","0820","1020","1220","1420","1620"];
+			const update = {};
+			for(const temps of time_array) {
+				update[temps] = await this.get_regul(temps);
+			}
+			for(const temps of time_array) {
+				if (typeof update[temps] !== 'undefined') {
+					lfmm_tvset.forEach(tvset => {
+						this.regul[tvset].forEach(obj => {
+							update[temps][tvset].forEach(el => {
+								if (typeof el["regId"] !== 'undefined' && el["regId"] === obj["regId"]) {
+									const type = el["lastUpdate"]["userUpdateType"];
+									obj[type] = el["lastUpdate"]["userUpdateEventTime"];
+								}
+							})
 						})
 					})
-				})
+				}
 			}
 		}
 	}
 
 	get_total_delay(tvset) {
-		let total_delay = 0;
-		this.regul[tvset].forEach( value => {
-			total_delay += value.delay;
-		});
-		return total_delay;
+		if (typeof this.regul !== 'undefined') {
+			let total_delay = 0;
+			this.regul[tvset].forEach( value => {
+				total_delay += value.delay;
+			});
+			return total_delay;
+		}
 	}
 
 	/*  --------------------------
@@ -94,21 +105,23 @@ class regul {
 		  }
 		-------------------------- */
 	get_reg_by_causes(tvset) {
-		const reg = {};
-		let causes = [];
-		this.regul[tvset].forEach( value => {
-			causes.push(value.reason);
-		});
-		// enlève les doublons
-		causes = [...new Set(causes)];
-		causes.forEach(value => {
-			reg[value] = 0;
-		})
-		this.regul[tvset].forEach( value => {
-			reg[value] += value.delay;
-		});
-		//console.log(reg);
-		return reg;
+		if (typeof this.regul !== 'undefined') {
+			const reg = {};
+			let causes = [];
+			this.regul[tvset].forEach( value => {
+				causes.push(value.reason);
+			});
+			// enlève les doublons
+			causes = [...new Set(causes)];
+			causes.forEach(value => {
+				reg[value] = 0;
+			})
+			this.regul[tvset].forEach( value => {
+				reg[value] += value.delay;
+			});
+			//console.log(reg);
+			return reg;
+		}
 	}
 
 }
@@ -145,11 +158,13 @@ class period_regul {
         for (const date of this.dates_arr) {
              const r = new regul(date, this.zone);
 			 await r.init();
-             reguls[date] = {
-				 "reguls": r.regul,
-				 "LFMMFMPE": r["LFMMFMPE"],
-				 "LFMMFMPW": r["LFMMFMPW"],
-				 "LFMMAPP": r["LFMMAPP"]
+			 if (typeof r.regul !== 'undefined') {
+				reguls[date] = {
+					"reguls": r.regul,
+					"LFMMFMPE": r["LFMMFMPE"],
+					"LFMMFMPW": r["LFMMFMPW"],
+					"LFMMAPP": r["LFMMAPP"]
+				}
 			 }
         }
 		return reguls;
@@ -158,9 +173,11 @@ class period_regul {
 	get_total_period_delay() {
 		const delay = {"LFMMFMPE": 0, "LFMMFMPW": 0, "LFMMAPP": 0}
 		for (const date of this.dates_arr) {
-			delay["LFMMFMPE"] += this.reguls[date]["LFMMFMPE"]["tot_delay"];
-			delay["LFMMFMPW"] += this.reguls[date]["LFMMFMPW"]["tot_delay"];
-			delay["LFMMAPP"] += this.reguls[date]["LFMMAPP"]["tot_delay"];
+			if (typeof this.reguls[date] !== 'undefined') {
+				delay["LFMMFMPE"] += this.reguls[date]["LFMMFMPE"]["tot_delay"];
+				delay["LFMMFMPW"] += this.reguls[date]["LFMMFMPW"]["tot_delay"];
+				delay["LFMMAPP"] += this.reguls[date]["LFMMAPP"]["tot_delay"];
+			}
 		}
 		return delay;
 	}
@@ -179,9 +196,11 @@ class period_regul {
 		let tab_FMPW = [];
 		let tab_APP = [];
 		for (const date of this.dates_arr) {
-			tab_FMPE = [...tab, ...Object.keys(this.reguls[date]["LFMMFMPE"]["delay_by_cause"])];
-			tab_FMPW = [...tab, ...Object.keys(this.reguls[date]["LFMMFMPW"]["delay_by_cause"])];
-			tab_APP = [...tab, ...Object.keys(this.reguls[date]["LFMMAPP"]["delay_by_cause"])];
+			if (typeof this.reguls[date] !== 'undefined') {
+				tab_FMPE = [...tab, ...Object.keys(this.reguls[date]["LFMMFMPE"]["delay_by_cause"])];
+				tab_FMPW = [...tab, ...Object.keys(this.reguls[date]["LFMMFMPW"]["delay_by_cause"])];
+				tab_APP = [...tab, ...Object.keys(this.reguls[date]["LFMMAPP"]["delay_by_cause"])];
+			}
 		}
 		tab_FMPE.forEach(cause => {
 			delay["LFMMFMPE"][cause] = 0;
@@ -193,15 +212,17 @@ class period_regul {
 			delay["LFMMAPP"][cause] = 0;
 		})
 		for (const date of this.dates_arr) {
-			Object.keys(this.reguls[date]["LFMMFMPE"]["delay_by_cause"]).forEach(cause => {
-				delay["LFMMFMPE"][cause] += this.reguls[date]["LFMMFMPE"]["delay_by_cause"][cause];
-			})
-			Object.keys(this.reguls[date]["LFMMFMPE"]["delay_by_cause"]).forEach(cause => {
-				delay["LFMMFMPW"][cause] += this.reguls[date]["LFMMFMPW"]["delay_by_cause"][cause];
-			})
-			Object.keys(this.reguls[date]["LFMMAPP"]["delay_by_cause"]).forEach(cause => {
-				delay["LFMMAPP"][cause] += this.reguls[date]["LFMMAPP"]["delay_by_cause"][cause];
-			})
+			if (typeof this.reguls[date] !== 'undefined') {
+				Object.keys(this.reguls[date]["LFMMFMPE"]["delay_by_cause"]).forEach(cause => {
+					delay["LFMMFMPE"][cause] += this.reguls[date]["LFMMFMPE"]["delay_by_cause"][cause];
+				})
+				Object.keys(this.reguls[date]["LFMMFMPE"]["delay_by_cause"]).forEach(cause => {
+					delay["LFMMFMPW"][cause] += this.reguls[date]["LFMMFMPW"]["delay_by_cause"][cause];
+				})
+				Object.keys(this.reguls[date]["LFMMAPP"]["delay_by_cause"]).forEach(cause => {
+					delay["LFMMAPP"][cause] += this.reguls[date]["LFMMAPP"]["delay_by_cause"][cause];
+				})
+			}
 		}
 		return delay;
 	}
@@ -220,6 +241,7 @@ class period_regul {
 			<tbody>`;
 		
         for (const date of this.dates_arr) {
+			if (typeof this.reguls[date] !== 'undefined') {
             this.reguls[date]["reguls"]["LFMMFMPE"].forEach( value => {
 				let deb = extract_time(value.applicability.wef);
                 let fin = extract_time(value.applicability.unt);
@@ -233,6 +255,7 @@ class period_regul {
                 res +=`<td>${reverse_date(date)}</td><td id='${id}' class='hover_reg_id'>${value.regId}</td><td>${value.tv}</td><td>${deb} TU</td><td>${fin} TU</td><td>${value.delay}</td><td>${value.reason}</td><td>${value.impactedFlights}</td>`;
                 res += '</tr>';	
             });
+			}
         }
         res += '</tbody></table>';
 		res += `
@@ -241,6 +264,7 @@ class period_regul {
 			<thead><tr class="titre"><th class="space">Date</th><th>Regul Id</th><th>TV</th><th>Début</th><th>Fin</th><th>Délai</th><th>Raison</th><th>vols</th></tr></thead>
 			<tbody>`;
         for (const date of this.dates_arr) {
+			if (typeof this.reguls[date] !== 'undefined') {
             this.reguls[date]["reguls"]["LFMMFMPW"].forEach( value => {
                 let deb = extract_time(value.applicability.wef);
                 let fin = extract_time(value.applicability.unt);
@@ -254,6 +278,7 @@ class period_regul {
                 res +=`<td>${reverse_date(date)}</td><td id='${id}' class='hover_reg_id'>${id}</td><td>${value.tv}</td><td>${deb} TU</td><td>${fin} TU</td><td>${value.delay}</td><td>${value.reason}</td><td>${value.impactedFlights}</td>`;
                 res += '</tr>';	
             });
+			}	
         }
         res += '</tbody></table>';
 		res += `
@@ -262,6 +287,7 @@ class period_regul {
 			<thead><tr class="titre"><th class="space">Date</th><th>Regul Id</th><th>TV</th><th>Début</th><th>Fin</th><th>Délai</th><th>Raison</th><th>vols</th></tr></thead>
 			<tbody>`;
         for (const date of this.dates_arr) {
+			if (typeof this.reguls[date] !== 'undefined') {
             this.reguls[date]["reguls"]["LFMMAPP"].forEach( value => {
                 let deb = extract_time(value.applicability.wef);
                 let fin = extract_time(value.applicability.unt);
@@ -275,6 +301,7 @@ class period_regul {
                 res +=`<td>${reverse_date(date)}</td><td id='${id}' class='hover_reg_id'>${id}</td><td>${value.tv}</td><td>${deb} TU</td><td>${fin} TU</td><td>${value.delay}</td><td>${value.reason}</td><td>${value.impactedFlights}</td>`;
                 res += '</tr>';	
             });
+			}
         }
 		res += '</tbody></table>';
 		delays += `<span class="rect">LFMM CTA : ${this.tot_delays["LFMMFMPE"]+this.tot_delays["LFMMFMPW"]} mn</span><span class="rect">LFMM Est : ${this.tot_delays["LFMMFMPE"]} mn</span><span class="rect">LFMM West : ${this.tot_delays["LFMMFMPW"]} mn</span><span class="rect">LFMM App : ${this.tot_delays["LFMMAPP"]} mn</span>`;
