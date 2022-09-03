@@ -66,8 +66,10 @@ class overload {
         for (let day of days) {
             const sch = new schema_rea(day, this.zone);
             const s = await sch.read_schema_realise();
-            const temp = await get_h20_b2b(day, this.zone, s);	
-            Object.assign(this.result_h20, temp);
+            if (typeof s !== 'undefined') {
+                const temp = await get_h20_b2b(day, this.zone, s);	
+                Object.assign(this.result_h20, temp);
+            }
         }
         
         const z = this.zone === "AE" ? "EST" : "OUEST";
