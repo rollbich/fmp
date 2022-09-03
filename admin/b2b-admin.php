@@ -15,6 +15,7 @@
 	<script type="text/javascript" src="../js/list-component.js"></script>
 	<script type="text/javascript" src="../js/schema.js"></script>
 	<script type="text/javascript" src="../js/upload.js"></script>
+        <script type="text/javascript" src="nmir/reg/nmir_reg_to_json.js"></script>
 	<script src="../js/echarts.min.js"></script>
 	<link rel="stylesheet" href="../css/bulma.css">
 	<link rel="stylesheet" type="text/css" href="../css/font.css" />
@@ -51,8 +52,8 @@
 				$('start').value = addDays_toString($('start').value,1);
 			});
 
-			$('bouton_feuille').addEventListener('click', async e => {
-				
+			$('bouton_save_reg').addEventListener('click', async e => {
+				new nmir_reg();
 			});
 			
 		});		
@@ -65,15 +66,21 @@
 <?php include("../php/nav.inc.php"); ?>
 
 <h1>Admin B2B</h1>
+<h2 class="center">Pour les REG Nmir : serveur localhost uniquement </h2>
 <div id="help_frame" class="off">
 	<h2>Help</h2>
-	<p><span>B2B</span> :<br>Cliquez sur ce bouton pour chargermanuellement les données B2B</p>
+	<p><span>Save NMIR Reg</span> :<br>Sauvegarde les données Reguls B2B à partir d'un fichier NMIR (with_Applied_Rate) Regulations.csv placé dans admin/nmir/reg</p>
+	<p><span>H20/Occ D-1</span> :<br>Récupère en B2B les données H20/Occ de la veille</p>
+	<p><span>Confs D-1</span> :<br>Récupère en B2B les données Confs de la veille</p>
+	<p><span>H20/Occ D-1</span> :<br>Récupère en B2B les données LOAD, REG, REG_DEMAND de LFMMCTA, CTAE, CTAW et la liste des vols de RAE et RAW de la veille</p>
 	<button class="help_close_button pointer">Close</button>
 </div>
 <ul class="menu">
-	<li id="bouton_feuille" class="pointer"><span>AAA</span></li>
-	<li class="feuille"><a href="./b2b-admin.php">BBB</a></li>
-	<li class="feuille"><a href="./b2b-admin.php">CCC</a></li>
+	<li id="bouton_save_reg" class="pointer"><span>Save NMIR Reg</span></li>
+	<li id="bouton_get_counts"><a href="../b2b/counts-fmp-yesterday-est.php" target="_blank">H20/Occ D-1 Est</a></li>
+	<li id="bouton_get_counts"><a href="../b2b/counts-fmp-yesterday-west.php" target="_blank">H20/Occ D-1 West</a></li>
+	<li id="bouton_get_counts"><a href="../b2b/counts-fmp-yesterday-confs.php" target="_blank">Confs D-1</a></li>
+	<li id="bouton_get_counts"><a href="../b2b/counts-fmp-yesterday-flights.php" target="_blank">Flights D-1</a></li>
 	<li>
 		<button id="arrow_left"><</button>
 		<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="2021-09-14" max="2030-12-31">
