@@ -781,7 +781,9 @@ class feuille_capa extends capa {
 		for (const obj of values) {
 			for (const user in obj) {
 				if (obj[user].search(/reserve/) == -1 && obj[user].search(/detache/) == -1 && obj[user].search(/0ZE/) == -1 && obj[user].search(/0ZW/) == -1) {
-					if (obj[user].search(/RPL/) == -1) present.push([user, "PC"]);
+					if (obj[user].search(/RPL/) == -1 && obj[user].search(/<sup>CDS/) == -1 && obj[user].search(/CDS/) == -1) present.push([user, "PC"]);
+					if (obj[user].search(/CDS/) != -1 && obj[user].search(/<sup>CDS/) == -1) present.push([user, "PC-CDS"]);
+					if (obj[user].search(/<sup>CDS/) != -1) present.push([user, "CDS"]);
 				}
 				if (obj[user].search(/reserve/) != -1) present.push([user, "RO"]);
 				if (obj[user].search(/detache/) != -1) {
@@ -791,7 +793,8 @@ class feuille_capa extends capa {
 			}
 		}
 	}
-		
+	
+	// Gère les stages, CGE et RPL
 	add_stage_conge_autre(vac, present) {
 		const cles = Object.keys(this.pc_vac[vac]["teamData"]);
 		for (const k of cles) {
@@ -817,21 +820,30 @@ class feuille_capa extends capa {
 
 	add_pers (vac) {
 		let res = `<table><caption>${vac}<span data-vac='${vac}'></span></caption><thead><tr><th style="background: #444;">Nom</th><th style="background: #444;">Type</th></tr></thead><tbody>`;
-		const pres = [];
-		const present = [];
-		this.add_travailleurs_RO(vac, present);
-		this.add_stage_conge_autre(vac, present);
-		present.forEach(elem => {
-			pres.push(elem[0]);
-		})
-
-		for (const p of present) {
+		const eq = [];
+		this.add_travailleurs_RO(vac, eq);
+		this.add_stage_conge_autre(vac, eq);
+		const personnel = this.tri_equipe(eq);
+		for (const p of personnel) {
 			let cl = `type${p[1]}`, cl_previous;
 			if (this.update[this.zone][this.day]['update_name'][vac].includes(p[0])) { cl += ' barre'; cl_previous = 'surligne'; }
 			res += `<tr><td class='${cl_previous}'>${p[0]}</td><td class='${cl}' data-vac='${vac}' data-nom='${p[0]}'>${p[1]}</td><tr>`;
 		}
 		res += `</tbody></table>`;
 		return res;
+	}
+
+	// Tri dans l'ordre du tableau de valeurs
+	tri_equipe(arr_eq) {
+		const tab_valeurs = ["CDS", "PC-CDS", "PC", "PC-ACDS", "PC-DET", "PC-RPL", "stagiaire"];
+		let arr = [];
+        tab_valeurs.forEach(valeur => {
+			console.log(valeur);
+            arr_eq.forEach(t => {
+				if(t[1] == valeur) arr.push(t);
+			})
+        })
+        return arr;
 	}
 
 	/* ----------------------------------------------------------------------------

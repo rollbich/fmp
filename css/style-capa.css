@@ -489,10 +489,12 @@ input.date {
 
 .popup-box h2 {
 	color:#1a1a1a;
+	text-align: center;
 }
   
 .popup-box h3 {
    color:#888;
+   text-align: center;
 }
 
 .ok_button {
