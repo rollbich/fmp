@@ -12,14 +12,14 @@ $wef=gmdate("Y-m-d H:i", mktime(15, 0, 0, 5, 16, 2021));
 $unt=gmdate("Y-m-d H:i", mktime(17, 0, 0, 5, 16, 2021));
 */
 
-/*  ------------------------------------------
+/*  -------------------------------------------
 		Ecriture du fichier générique json
 		$arr : tableau contenant les données
 		$zone : est ou west
 		$type : H20, Occ, Reg
 		$wef : pour la date du jour
 		ex : 20210621-H20-est.csv
-	------------------------------------------ */
+	------------------------------------------- */
 function write_json($arr, $zone, $type, $wef) {
 	
 	$date = new DateTime($wef);
