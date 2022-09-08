@@ -85,6 +85,9 @@
           <a class="navbar-item" href="../stats-mensuelles">
             Stats mensuelles
           </a>
+          <a class="navbar-item" href="../stats">
+            Stats sur période
+          </a>
 				</div>
 			</div>
 			<a class="navbar-item" href="../overload">

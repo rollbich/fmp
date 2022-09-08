@@ -1,6 +1,6 @@
-/*  ---------------------
-	  tableau des TVset
-	--------------------- */
+/*  ----------------------------------------------------
+	  		tableau des TVset
+	---------------------------------------------------- */
 const lfmm_tvset = ["LFMMFMPE", "LFMMFMPW", "LFMMAPP"];
 const lfbb_tvset = ["LFBBFMP", "LFBBAPP"];
 const lfee_tvset = ["LFEEFMP", "LFEEAPP"];
@@ -8,18 +8,23 @@ const lfff_tvset = ["LFFFFMPE", "LFFFFMPW", "LFFFAD"];
 const lfrr_tvset = ["LFRRFMP", "LFRRAPP"];
 const dsna_tvset = ["LFDSNA"];
 
+/*  -----------------------------------------------------------------------------------------------------------------
+		Class regul
+			@param {string} day	- "yyyy-mm-dd"
+			@param {string} zone - "AE" ou "AW"
+			@param {boolean} details : true pour récupérer les données reg de la journéee (fichier reg0320.json ....)
+	----------------------------------------------------------------------------------------------------------------- */
 
 class regul {
-	constructor(day, zone) {
+	constructor(day, zone, details = true) {
 		this.day = day;
 		this.zone = zone;
+		this.details = details;
 	}
 
 	async init() {
 		this.regul = await this.get_regul();
-		await this.add_earlier_data();
-		console.log("UPDATE");
-		console.log(this.regul);
+		if (this.details === true) await this.add_earlier_data();
 	
 		lfmm_tvset.forEach(tvset => {
 			this[tvset] = {};
@@ -34,13 +39,63 @@ class regul {
 	/*  -------------------------------------------------------------
 		Lit le fichier json de regul
 			@param {string} type - "" ou "0320" ou "0420" ou "0620"
-            @returns {"LFMMFMPE":[],"LFMMFMPW":[],"LFMMAPP":[],...}
+            @returns {
+				"LFMMFMPE":[
+					{
+					"regId": "MAB3431",
+					"tv": "LFMAB34",
+					"lastUpdate": {
+						"eventTime": "2022-08-31 14:02:00",
+						"userUpdateEventTime": "2022-08-31 14:02:00",
+						"userUpdateType": "DELETION",
+						"userId": "F3BBT"
+					},
+					"applicability": { "wef": "2022-08-31 14:00", "unt": "2022-08-31 16:00" },
+					"constraints": [
+						{
+						"constraintPeriod": {
+							"wef": "2022-08-31 14:00",
+							"unt": "2022-08-31 14:16"
+						},
+						"normalRate": 38,
+						"pendingRate": 0,
+						"equipmentRate": 0
+						},
+						{
+						"constraintPeriod": {
+							"wef": "2022-08-31 14:16",
+							"unt": "2022-08-31 14:28"
+						},
+						"normalRate": 42,
+						"pendingRate": 0,
+						"equipmentRate": 0
+						},
+						{
+						"constraintPeriod": {
+							"wef": "2022-08-31 14:28",
+							"unt": "2022-08-31 16:00"
+						},
+						"normalRate": 46,
+						"pendingRate": 0,
+						"equipmentRate": 0
+						}
+					],
+					"reason": "WEATHER",
+					"delay": 78,
+					"impactedFlights": 55,
+					"TVSet": "LFMMFMPE"
+					},
+					{...}
+				],
+				"LFMMFMPW":[],
+				"LFMMAPP":[],...
+			}
 	----------------------------------------------------------------- */
-	async get_regul(heure = "") {
+	async get_regul() {
 		const date = this.day.replace(/-/g, ''); // yyyymmdd
 		const year = this.day.substr(0,4);
 		const month = date.substr(4,2);
-		const url = `../b2b/json/${year}/${month}/${date}-reg${heure}.json`;	
+		const url = `../b2b/json/${year}/${month}/${date}-reg.json`;	
 		const resp = await loadJson(url);
 		if (typeof resp !== 'undefined') {
 			return resp;
@@ -52,6 +107,15 @@ class regul {
 		}
 	}
 
+	async get_regul_update(heure = "") {
+		const date = this.day.replace(/-/g, ''); // yyyymmdd
+		const year = this.day.substr(0,4);
+		const month = date.substr(4,2);
+		const url = `../b2b/json/${year}/${month}/${date}-reg${heure}.json`;	
+		const resp = await loadJson(url);
+		return resp;
+	}
+
 	/*  -----------------------------------------------------------------------
 		Ajoute les propriétés "CREATION" et/ou "UPDATE" et/ou "DELETION"
 		pour chaque regulation
@@ -61,15 +125,20 @@ class regul {
 	async add_earlier_data() {
 		if (typeof this.regul !== 'undefined') {
 			lfmm_tvset.forEach(tvset => {
-				this.regul[tvset].forEach(obj => {
-					const type = obj["lastUpdate"]["userUpdateType"];
-					obj[type] = obj["lastUpdate"]["userUpdateEventTime"];
-				})
+				
+					this.regul[tvset].forEach(obj => {
+							// sur les anciens fichier, la clé "lastUpdate" n'existe pas
+							if (typeof obj["lastUpdate"] != 'undefined') {
+								const type = obj["lastUpdate"]["userUpdateType"];
+								obj[type] = obj["lastUpdate"]["userUpdateEventTime"];
+							}
+					})
+				
 			})
 			const time_array = ["0320","0420","0620","0820","1020","1220","1420","1620"];
 			const update = {};
 			for(const temps of time_array) {
-				update[temps] = await this.get_regul(temps);
+				update[temps] = await this.get_regul_update(temps);
 			}
 			for(const temps of time_array) {
 				if (typeof update[temps] !== 'undefined') {
@@ -131,12 +200,14 @@ class period_regul {
 			@param {string} start_day - "yyyy-mm-dd"
 			@param {string} end_day - "yyyy-mm-dd"
 			@param {string} zone - "AE" ou "AW"
+			@param {boolean} details : true pour fichiers reg journée
 		------------------------------------------------------------------ */
         
-	constructor(start_day, end_day, zone) {
+	constructor(start_day, end_day, zone, details = true) {
 		this.start_day = start_day;
 		this.end_day = end_day;
 		this.zone = zone;
+		this.details = details;
         this.dates_arr = get_dates_array(new Date(start_day), new Date(end_day));
 		this.rates = {};
 	}
@@ -156,7 +227,7 @@ class period_regul {
 	async get_reguls() {
         const reguls = {};
         for (const date of this.dates_arr) {
-             const r = new regul(date, this.zone);
+             const r = new regul(date, this.zone, this.details);
 			 await r.init();
 			 if (typeof r.regul !== 'undefined') {
 				reguls[date] = {
@@ -171,12 +242,13 @@ class period_regul {
 	}
 
 	get_total_period_delay() {
-		const delay = {"LFMMFMPE": 0, "LFMMFMPW": 0, "LFMMAPP": 0}
+		const delay = {"cta": 0, "est": 0, "west": 0, "app": 0}
 		for (const date of this.dates_arr) {
 			if (typeof this.reguls[date] !== 'undefined') {
-				delay["LFMMFMPE"] += this.reguls[date]["LFMMFMPE"]["tot_delay"];
-				delay["LFMMFMPW"] += this.reguls[date]["LFMMFMPW"]["tot_delay"];
-				delay["LFMMAPP"] += this.reguls[date]["LFMMAPP"]["tot_delay"];
+				delay["est"] += this.reguls[date]["LFMMFMPE"]["tot_delay"];
+				delay["west"] += this.reguls[date]["LFMMFMPW"]["tot_delay"];
+				delay["app"] += this.reguls[date]["LFMMAPP"]["tot_delay"];
+				delay["cta"] += this.reguls[date]["LFMMFMPE"]["tot_delay"] + this.reguls[date]["LFMMFMPW"]["tot_delay"];
 			}
 		}
 		return delay;
@@ -318,8 +390,8 @@ class period_regul {
 				el.setAttribute('id', 'popratereg');
 				let contenu = reg_id+"<br>";
 				let data = this.rates[reg_id];
-				console.log("data");
-				console.log(data);
+				//console.log("data");
+				//console.log(data);
 				if (data["CREATION"] !== null) {
 					contenu += "CREATION" + " on " + data["CREATION"] + "<br>";
 				}

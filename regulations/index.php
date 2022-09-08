@@ -59,7 +59,7 @@
 				let zone = document.getElementById('zone').value;
 				let start_day = document.getElementById('start').value; // yyyy-mm-dd
 				let end_day = document.getElementById('end').value; // yyyy-mm-dd
-				const r = new period_regul(start_day, end_day, zone);
+				const r = new period_regul(start_day, end_day, zone, true);
 				await r.init();
 				r.show_result_reg("result");
 				$('glob_container').classList.remove('off');
