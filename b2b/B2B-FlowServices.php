@@ -21,7 +21,7 @@ class FlowServices extends Service {
             'trafficWindow'=>array('wef'=>$wef,'unt'=>$unt),
             'countsInterval'=>array('duration'=>'2400','step'=>'2400'),
             'airspace'=>$airspace,
-            'subTotalComputeMode'=>'NO_SUB_TOTALS',
+            'subTotalComputeMode'=>'NO_SUB_TOTALS', // NM 26.0
             'calculationType'=>'ENTRY'
         );
         
