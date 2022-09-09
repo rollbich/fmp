@@ -21,6 +21,7 @@ require("../php/check_ok.inc.php");
     <script type="text/javascript" src="../js/graph.js"></script>
     <script type="text/javascript" src="../js/vols_class.js"></script>
     <script type="text/javascript" src="../js/regulations_class.js"></script>
+	<script type="text/javascript" src="../js/stats-period.js"></script>
     <script src="../js/echarts.min.js"></script>
     <script>
       	document.addEventListener('DOMContentLoaded', async event => {
@@ -38,22 +39,30 @@ require("../php/check_ok.inc.php");
 			});
 
 			<?php include("../php/upload.js.php"); ?>
-			document.getElementById('bouton_vols').addEventListener('click', async e => {
+			document.getElementById('bouton_stats').addEventListener('click', async e => {
 				//let start_day = document.getElementById('start').value; // yyyy-mm-dd
 				//let end_day = document.getElementById('end').value; // yyyy-mm-dd
 				//let start_day = "2022-06-13";
 				//let end_day = "2022-09-03";
 				let start_day = "2022-08-01";
-				let end_day = "2022-08-31";
+				let end_day = "2022-08-15";
 				let zone = document.getElementById('zone').value;
+				let d = new Date(end_day);
+				let month = d.getMonth();
+				let year = d.getFullYear();
+				const tabl = new monthly_briefing(year, month, "accueil_bilan");
+				await tabl.init();
 				const stats = new stats_period(start_day, end_day, zone);
+				await stats.init();
+				const listMonth = [];
+				for (let k=1;k<13;k++) { listMonth.push(k);}
+				show_traffic_graph_mois_cumule("accueil_vols", year, listMonth, tabl.get_monthly_cumules()['cta'], tabl.get_monthly_cumules("lastyear")['cta'], tabl.get_monthly_cumules("2019")['cta'], "LFMMCTA");
+				show_delay_graph_mois_cumule("accueil_reguls", year, listMonth, tabl.get_monthly_reg_cumules()['cta'], tabl.get_monthly_reg_cumules("lastyear")['cta'], tabl.get_monthly_reg_cumules("2019")['cta'], "LFMMCTA");
+				
 			});
 			
+			
 			/*
-			const listMonth = [];
-			for (let k=1;k<13;k++) { listMonth.push(k);}
-			show_traffic_graph_mois_cumule("accueil_vols", year, listMonth, tabl.get_monthly_cumules()['cta'], tabl.get_monthly_cumules("lastyear")['cta'], tabl.get_monthly_cumules("2019")['cta'], "LFMMCTA");
-			show_delay_graph_mois_cumule("accueil_reguls", year, listMonth, tabl.get_monthly_reg_cumules()['cta'], tabl.get_monthly_reg_cumules("lastyear")['cta'], tabl.get_monthly_reg_cumules("2019")['cta'], "LFMMCTA");
 			show_delay_graph_mois_par_causes("accueil_causes_cta", year, month, tabl.reguls.delay_par_cause['cta'][month-1], "LFMM CTA");
 			show_delay_graph_mois_par_causes("accueil_causes_app", year, month, tabl.reguls.delay_par_cause['app'][month-1], "Approches");
 			show_traffic_graph_mois("accueil_trafic_mois_cta", year, listMonth, tabl.flights.nbre_vols['cta'], tabl.flights_lastyear.nbre_vols['cta'], tabl.flights_2019.nbre_vols['cta'], "LFMMCTA");
@@ -83,8 +92,7 @@ require("../php/check_ok.inc.php");
 	<button class="help_close_button pointer">Close</button>
 </div>
 <ul class="menu">
-	<li id="bouton_vols" class="pointer"><span>Nombre de Vols</span></li>
-	<li id="bouton_year_vols" class="pointer"><span>Graph Année</span></li>
+	<li id="bouton_stats" class="pointer"><span>Stats</span></li>
 	<li><button class="help_button">Help</button></li>
 </ul>
 <div id="dates">
@@ -102,7 +110,10 @@ require("../php/check_ok.inc.php");
 </header>
 <div id="glob_container">
 <div id='accueil' class='accueil'>
-	<div id="accueil_bilan"></div>
+	<div id="accueil_bilan">
+		<div id="accueil_bilan1"></div>
+		<div id="accueil_bilan2"></div>
+	</div>
   	<div id="accueil_left">
 	  <div id="accueil_vols"></div>
 	  <div id="accueil_reguls"></div>
