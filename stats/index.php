@@ -44,8 +44,8 @@ require("../php/check_ok.inc.php");
 				//let end_day = document.getElementById('end').value; // yyyy-mm-dd
 				//let start_day = "2022-06-13";
 				//let end_day = "2022-09-03";
-				let start_day = "2022-08-01";
-				let end_day = "2022-08-15";
+				let start_day = "2022-06-13";
+				let end_day = "2022-08-31";
 				let zone = document.getElementById('zone').value;
 				let d = new Date(end_day);
 				let month = d.getMonth();
@@ -58,7 +58,22 @@ require("../php/check_ok.inc.php");
 				for (let k=1;k<13;k++) { listMonth.push(k);}
 				show_traffic_graph_mois_cumule("accueil_vols", year, listMonth, tabl.get_monthly_cumules()['cta'], tabl.get_monthly_cumules("lastyear")['cta'], tabl.get_monthly_cumules("2019")['cta'], "LFMMCTA");
 				show_delay_graph_mois_cumule("accueil_reguls", year, listMonth, tabl.get_monthly_reg_cumules()['cta'], tabl.get_monthly_reg_cumules("lastyear")['cta'], tabl.get_monthly_reg_cumules("2019")['cta'], "LFMMCTA");
-				
+				const data = [];
+				const dataLastyear = [];
+				const data2019 = [];
+				const dataAxis = stats.dates_arr;
+				for (const date of stats['stats']['year']['vols']['dates_arr']) {
+					data.push(stats['stats']['year']['vols']['vols'][date]["LFMMCTA"][2]);
+				}
+				for (const date of stats['stats']['lastyear']['vols']['dates_arr']) {
+					dataLastyear.push(stats['stats']['lastyear']['vols']['vols'][date]["LFMMCTA"][2]);
+				}
+				for (const date of stats['stats']['2019']['vols']['dates_arr']) {
+					data2019.push(stats['stats']['2019']['vols']['vols'][date]["LFMMCTA"][2]);
+				}
+				console.log(dataAxis);
+				console.log(data);
+				show_vols_period("accueil_trafic_journalier", dataAxis, data, dataLastyear, data2019, "LFMMCTA");
 			});
 			
 			
@@ -118,7 +133,7 @@ require("../php/check_ok.inc.php");
 	  <div id="accueil_vols"></div>
 	  <div id="accueil_reguls"></div>
 	</div>
-	<div id="accueil_trafic_mois_cta" class="l-30 mt3"></div>
+	<div id="accueil_trafic_journalier" class="l-30 mt3"></div>
 	<div id="accueil_reguls_mois_cta" class="l-30"></div>
 	<div id="accueil_reguls_mois_est" class="l-30"></div>
 	<div id="accueil_reguls_mois_west" class="l-30"></div>

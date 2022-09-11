@@ -21,15 +21,18 @@ class stats_period {
 			this.period = {
 				"year": {
 					"start_day" : this.start_day,
-					"end_day": this.end_day
+					"end_day": this.end_day,
+					"dates_arr": get_dates_array(new Date(this.start_day), new Date(this.end_day))
 				},
 				"lastyear": {
 					"start_day" : start_day_last_year,
-					"end_day": end_day_last_year
+					"end_day": end_day_last_year,
+					"dates_arr": get_dates_array(new Date(start_day_last_year), new Date(end_day_last_year))
 				},
 				"2019": {
 					"start_day" : start_day2019,
-					"end_day": end_day2019
+					"end_day": end_day2019,
+					"dates_arr": get_dates_array(new Date(start_day2019), new Date(end_day2019))
 				}
 			}
 			const vols_y = new period_vols(this.start_day, this.end_day, this.zone);
@@ -60,6 +63,7 @@ class stats_period {
 					"regs": regs_y2019
 				}
 			}
+			console.log("THIS.STATS");
 			console.log(this.stats);
 			this.get_total_vols();
 			this.get_total_regs();
@@ -88,6 +92,7 @@ class stats_period {
 			"lastyear": this.stats['lastyear']['regs'].get_total_period_delay(),
 			"2019": this.stats['2019']['regs'].get_total_period_delay()
 		}
+		console.log("TOTAL regs");
 		console.log(this.total_regs);
 	}
 
@@ -98,8 +103,8 @@ class stats_period {
 	async show_result_vols_par_annee(containerId) {
 		let res = `
 		<h2>Nombre de vols Year: ${reverse_date(this.period.year.start_day)} au ${reverse_date(this.period.year.end_day)}</h2>
-		<h2>Nombre de vols Lastyear: ${reverse_date(this.period.lastyear.start_day)} au ${reverse_date(this.period.lastyear.end_day)}</h2>
-		<h2>Nombre de vols 2019: ${reverse_date(this.period[2019].start_day)} au ${reverse_date(this.period[2019].end_day)}</h2><br>
+		<p>Dates équivalentes Year-1: ${reverse_date(this.period.lastyear.start_day)} au ${reverse_date(this.period.lastyear.end_day)} / 
+		Dates équivalentes 2019: ${reverse_date(this.period[2019].start_day)} au ${reverse_date(this.period[2019].end_day)}</p><br>
 		<div class='delay'>
 		<table class="regulation sortable">
 			<thead><tr class="titre"><th>Année</th><th>CTA</th><th>Est</th><th>West</th><th>App</th></tr></thead>
@@ -191,4 +196,122 @@ class stats_period {
 		
 	}
 
+}
+
+/*	--------------------------------------------------------------------------
+	 	Affiche le graph Stats-period journalier
+			@param {string} containerId - Id de l'HTML Element conteneur
+			@param {array} dataAxis - ["date",...]
+			@param {array} data - [nbre vols,...]
+	-------------------------------------------------------------------------- */
+function show_vols_period(containerId, dataAxis, data, data_lastyear, data2019, airspace) {
+	//let myChart = echarts.init(document.getElementById(containerId));
+	let chartDom = $(containerId);
+	chartDom.style.height = "400px";
+	chartDom.style.width = "870px";
+	let myChart = echarts.init(chartDom);
+
+	const year = new Date(dataAxis[0]).getFullYear();
+	let option;
+	
+	option = {
+		title: {
+			text: `Trafic journalier sur la période - ${airspace}`,
+			textStyle: {
+				color: '#FFF',
+				fontSize: '1.5rem'
+			},
+			x: 'center',
+			y: 'top'
+		},
+		tooltip: {
+			trigger: 'axis',
+			axisPointer: {
+				type: 'shadow',
+				label: {
+					show: true
+				}
+			}
+		},
+		/*
+		toolbox: {
+			feature: {
+				saveAsImage: {
+					name: `Trafic semaine sur l'année - ${zon}`,
+					title: 'PNG',
+					show: true
+				}
+			}
+		},
+		*/
+		grid: {
+			containLabel: true
+		},
+		legend: {
+			x: 'center', // 'center' | 'left' | {number},
+			y: 'top' | 30, // 'center' | 'bottom' | {number}
+			padding: -1,
+			textStyle: {
+				color: '#fff'
+			}
+		},
+		calculable: true,
+		xAxis: {
+			type: 'category',
+			name: 'Jours',
+			nameLocation: 'middle',
+			axisLabel: {
+				show: true,
+				interval: 'auto',    // {number}
+				margin: 8,
+				textStyle: {
+					color: '#fff'
+				}
+			},
+			nameGap: 30,
+			nameTextStyle: {
+				color: '#fff',
+				fontSize: '1.2rem'
+			},
+			data: dataAxis
+		},
+		yAxis: {
+			type: 'value',
+			axisLabel: {
+				formatter: '{value}'
+			},
+			name: 'Nombre de vols',
+			nameTextStyle: {
+				color: '#fff',
+				fontSize: '1.2rem'
+			},
+			nameRotate: 90,
+			nameGap: 60,
+			nameLocation: 'middle'
+		},
+		series: [
+			{
+				name: "2019",
+				type: 'line',
+				color : '#339dff',
+				areaStyle: {},
+				data: data2019,
+			},
+			{
+				name: year-1,
+				type: 'line',
+				color: 'yellow',
+				areaStyle: {},
+				data: data_lastyear,
+			},
+			{
+				name: year,
+				type: 'line',
+				color: '#4CC417',
+				areaStyle: {},
+				data: data,
+			}]
+	};
+	
+	myChart.setOption(option);
 }
