@@ -72,7 +72,7 @@
 	<p><span>Save NMIR Reg</span> :<br>Sauvegarde les données Reguls B2B à partir d'un fichier NMIR (with_Applied_Rate) Regulations.csv placé dans admin/nmir/reg</p>
 	<p><span>H20/Occ D-1</span> :<br>Récupère en B2B les données H20/Occ de la veille</p>
 	<p><span>Confs D-1</span> :<br>Récupère en B2B les données Confs de la veille</p>
-	<p><span>H20/Occ D-1</span> :<br>Récupère en B2B les données LOAD, REG, REG_DEMAND de LFMMCTA, CTAE, CTAW et la liste des vols de RAE et RAW de la veille</p>
+	<p><span>Flights D-1</span> :<br>Récupère en B2B les données LOAD, REG, REG_DEMAND de LFMMCTA, CTAE, CTAW et la liste des vols de RAE et RAW de la veille</p>
 	<button class="help_close_button pointer">Close</button>
 </div>
 <ul class="menu">
