@@ -906,6 +906,23 @@ class simu_capa extends capa {
 		this.pc_vac = this.pc["pc_vac"];
 		this.tab_vac_eq = this.get_vac_eq(this.day);
 		this.v = {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0, "J1BV":0, "J3BV":0, "S2BV":0, "J2BV":0, "S1BV":0, "NBV":0, "N-1BV":0};
+		
+		// Récupération des schémas réalisés
+		const day7 = addDays_toString(this.day, -7);
+		// récupère la date de 2019 : ex "2019-11-02"
+		let day2019 = get_sameday(this.day, 2019).toISOString().split('T')[0];
+		const sch = new schema_rea(this.day, this.zone_schema);
+		this.schema = await sch.read_schema_realise() || "vide";
+		const sch7 = new schema_rea(day7, this.zone_schema);
+		this.schema7 = await sch7.read_schema_realise() || "vide";
+		const sch2019 = new schema_rea(day2019, this.zone_schema);
+		this.schema2019 = await sch2019.read_schema_realise() || "vide";
+		console.log("Schema");
+		console.log(this.schema);
+		console.log("Schema7");
+		console.log(this.schema7);
+		console.log("Schema2019");
+		console.log(this.schema2019);
 	}
 
 	/*	------------------------------------------
@@ -922,7 +939,7 @@ class simu_capa extends capa {
 
 		this.build_tab();
 		this.modify_listener();
-		show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
+		show_capa_graph("right_part", this.day, this.zone_schema, this.pc, this.schema, this.schema7, this.schema2019);
 		$('feuille_capa_simu').scrollIntoView({ 
             behavior: 'smooth' 
         });
@@ -958,7 +975,7 @@ class simu_capa extends capa {
 		})
 		$('upd').addEventListener('click', async () => {
 			this.pc = await this.get_nbpc_dispo(this.v, this.noBV);
-			show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
+			show_capa_graph("right_part", this.day, this.zone_schema, this.pc, this.schema, this.schema7, this.schema2019);
 		})
 		let res = `<table class="simu">
 					<thead>
@@ -998,7 +1015,7 @@ class simu_capa extends capa {
 					BV_elem.classList.remove('bg_red');
 				}
 				this.pc = await this.get_nbpc_dispo(this.v, this.noBV);
-				show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
+				show_capa_graph("right_part", this.day, this.zone_schema, this.pc, this.schema, this.schema7, this.schema2019);
 			});
 		});
 
@@ -1017,7 +1034,7 @@ class simu_capa extends capa {
 					BV_elem.classList.remove('bg_red');
 				}
 				this.pc = await this.get_nbpc_dispo(this.v, this.noBV);
-				show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
+				show_capa_graph("right_part", this.day, this.zone_schema, this.pc, this.schema, this.schema7, this.schema2019);
 			});
 		});
 
@@ -1036,7 +1053,7 @@ class simu_capa extends capa {
 					PC_elem.classList.remove('bg_red');
 				}
 				this.pc = await this.get_nbpc_dispo(this.v, this.noBV);
-				show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
+				show_capa_graph("right_part", this.day, this.zone_schema, this.pc, this.schema, this.schema7, this.schema2019);
 			});
 		});
 
@@ -1055,27 +1072,40 @@ class simu_capa extends capa {
 					PC_elem.classList.remove('bg_red');
 				}
 				this.pc = await this.get_nbpc_dispo(this.v, this.noBV);
-				show_capa_graph("right_part", this.day, this.zone_schema, this.pc);
+				show_capa_graph("right_part", this.day, this.zone_schema, this.pc, this.schema, this.schema7, this.schema2019);
 			});
 		});
 
 	}
 }
 
-/* ---------------------------------------------------------------------------------
+/* ------------------------------------------------------------------------------------
 		Affiche les graphes :
 		- vert de la capa offerte le jour choisi
 		- orange : les ouvertures réalisées à J-7
 		- bleu	 : les ouvertures réalisées à J-728 (2019)
+
+		Les 3 derniers paramètres permettent de fournir un objet schema réalisé
+		afin d'éviter un rechargement des fichiers
 		
 		Paramètre :
 		 @param {string} containerId - id du container d'affichage
 		 @param {string} day - "yyyy-mm-jj"
 		 @param {string} zone - "AE" ou "AW"
 		 @param {array} pc - objet d'array des crénaux horaires associés aux pc dispo
-	-------------------------------------------------------------------------------- */
-async function show_capa_graph(containerId, day, zone, pc = 0) {
+		 @param {objet/string} schema - objet schema rea ou 'no' par défaut
+		 @param {objet/string} schema7 - objet schema rea J-7 ou 'no' par défaut
+		 @param {objet/string} schema2019 - objet schema rea 2019 ou 'no' par défaut
+	----------------------------------------------------------------------------------- */
+async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', schema7 = 'no', schema2019 = 'no') {
 	
+	console.log("-Schema");
+	console.log(schema);
+	console.log("-Schema7");
+	console.log(schema7);
+	console.log("-Schema2019");
+	console.log(schema2019);
+
 	const container = $(containerId);
 	container.innerHTML = '<div style="display: flex;"><div id="i1"></div><ul id="date_legend"><li class="bleu"></li><li class="orange"></li><li class="vert"></li></ul></div><div id="uceso"></div>';
 	let chartDom = $("uceso");
@@ -1111,16 +1141,40 @@ async function show_capa_graph(containerId, day, zone, pc = 0) {
 		}); 
 		data_series_uceso.push([new Date(d[0], d[1]-1, d[2], 23, 59), uceso[uceso.length-1][1]]);
 	}
-	const day7 = addDays_toString(day, -7);
-	// récupère la date de 2019 : ex "2019-11-02"
+
+	let sch;
+	let sch7;
+	let sch2019;
+	let day7 = addDays_toString(day, -7);
 	let day2019 = get_sameday(day, 2019).toISOString().split('T')[0];
-	const sch = new schema_rea(day, zone);
-    const schema = await sch.read_schema_realise();
-	const sch7 = new schema_rea(day7, zone);
-    const schema7 = await sch7.read_schema_realise();
-	const sch2019 = new schema_rea(day2019, zone);
-    const schema2019 = await sch2019.read_schema_realise();
+
+	// si les 3 derniers params n'existe pas, l'appel ne provient de simu_capa => on lit les schemas
+	if (schema === 'no') {
+		sch = new schema_rea(day, zone);
+    	schema = await sch.read_schema_realise();
+	}
+	if (schema7 === 'no') {
+		sch7 = new schema_rea(day7, zone);
+		schema7 = await sch7.read_schema_realise();
+	}
+	if (schema2019 === 'no') {
+		sch2019 = new schema_rea(day2019, zone);
+    	schema2019 = await sch2019.read_schema_realise();
+	}
 	
+	// Si on récupère 'vide', c'est que l'appel provient de simu_capa et que le schema n'existe pas
+	// dans ce cas, on le remet à undefined pour ne pas impacter les test qui suivent
+	if (schema === 'vide') schema = undefined;
+	if (schema7 === 'vide') schema7 = undefined;
+	if (schema2019 === 'vide') schema2019 = undefined;
+
+	console.log("*Schema");
+	console.log(schema);
+	console.log("*Schema7");
+	console.log(schema7);
+	console.log("*Schema2019");
+	console.log(schema2019);
+
 	data_series = [];
 	data_series7 = [];
 	data_series2019 = [];
@@ -1173,9 +1227,13 @@ async function show_capa_graph(containerId, day, zone, pc = 0) {
 	const jour2019 = tab_jour[new Date(day2019).getDay()];
 	const jour7 = tab_jour[new Date(day7).getDay()];
 	const jour = tab_jour[new Date(day).getDay()];
+	console.log("111");
 	$$(".bleu").innerHTML = '2019 : '+jour2019+' '+reverse_date(day2019);
+	console.log("222");
 	$$(".orange").innerHTML = 'J-7 : '+jour7+' '+reverse_date(day7);
+	console.log("333");
 	$$(".vert").innerHTML = 'J : '+jour+' '+reverse_date(day);
+	console.log("444");
 	
 	const couleur_bleu = getComputedStyle(document.documentElement).getPropertyValue('--color-2019');
 	const couleur_orange = getComputedStyle(document.documentElement).getPropertyValue('--color-j-7');
