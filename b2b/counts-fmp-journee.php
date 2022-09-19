@@ -8,7 +8,7 @@ require_once("B2B-AirspaceServices.php");
 require_once("B2B-FlightServices.php");
 require_once("B2B-FlowServices.php");
 include_once("config.inc.php");
-include_once("hour_config".$config."-matin.inc.php");
+include_once("hour_config".$config."-journee.inc.php");
 
 /*  ----------------------------------------------------
 		LFMM-FMP.FR : tâche CRON à 05h20, 6h20
@@ -238,49 +238,6 @@ foreach($occ_west1 as $key=>$val) {
     array_push($occ_west, $val);
 }
 */
-// ---------------------------------------
-// 		récupère les données Reg
-// ---------------------------------------
-// objet contenant les reguls de LF*
-$json_reg = new stdClass();
-$json_reg->LFMMFMPE = array();
-$json_reg->LFMMFMPW = array();
-$json_reg->LFMMAPP = array();
-$json_reg->LFBBFMP = array();
-$json_reg->LFBBAPP = array();
-$json_reg->LFEEFMP = array();
-$json_reg->LFEEAPP = array();
-$json_reg->LFFFFMPE = array();
-$json_reg->LFFFFMPW = array();
-$json_reg->LFFFAD = array();
-$json_reg->LFRRFMP = array();
-$json_reg->LFRRAPP = array();
-$json_reg->LFDSNA = array();
-
-$reg = [];
-$reg["LFMMFMPE"] = array();
-$reg["LFMMFMPW"] = array();
-$reg["LFMMAPP"] = array();
-$reg["LFBBFMP"] = array();
-$reg["LFBBAPP"] = array();
-$reg["LFEEFMP"] = array();
-$reg["LFEEAPP"] = array();
-$reg["LFFFFMPE"] = array();
-$reg["LFFFFMPW"] = array();
-$reg["LFFFAD"] = array();
-$reg["LFRRFMP"] = array();
-$reg["LFRRAPP"] = array();
-$reg["LFDSNA"] = array();
-
-// objet contenant les reguls Europe
-$json_atfcm_reg = $soapClient->flowServices()->get_ATFCM_situation();
-
-echo "get atfcm_situation OK<br>";
-
-// Remplit l'object $json_reg (et l'array $reg pour l'export xls)
-$soapClient->flowServices()->get_full_regulations("LF", $wef_regs, $unt_regs, $json_atfcm_reg, $json_reg, $reg);
-
-echo "get regulation OK<br>";
 
 // Sauvegarde des fichiers
 // Affichage d'un message suivant la réussite de la sauvegarde
@@ -297,8 +254,7 @@ try {
 	write_json($h20_est, "est", "-H20-", $wef_counts);
 	//write_json($h20_west, "west", "-H20-", $wef_counts);
 	
-	write_json($json_reg, "", "-reg", $wef_counts);
-	echo "<br>Recup OK<br>";
+	echo "<br>Recup Count OK<br>";
 	
 }
 catch (Exception $e) {
