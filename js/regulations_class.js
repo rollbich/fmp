@@ -212,12 +212,6 @@ class period_regul {
 		this.rates = {};
 	}
 	
-    /*  ----------------------------------------------------------------------
-		Lit le fichier json de regul
-			@param {string} day - "yyyy-mm-dd"
-			@param {string} zone - "AE" ou "AW"
-            @returns {date1:objet regul, date2:objet regul,...}
-	-------------------------------------------------------------------------- */
     async init() {
 		this.reguls = await this.get_reguls();
 		this.tot_delays = this.get_total_period_delay();
@@ -262,6 +256,7 @@ class period_regul {
 				}
 			 }
         }
+		console.log(reguls);
 		return reguls;
 	}
 
@@ -400,7 +395,7 @@ class period_regul {
 			}
         }
 		res += '</tbody></table>';
-		delays += `<span class="rect">LFMM CTA : ${this.tot_delays["LFMMFMPE"]+this.tot_delays["LFMMFMPW"]} mn</span><span class="rect">LFMM Est : ${this.tot_delays["LFMMFMPE"]} mn</span><span class="rect">LFMM West : ${this.tot_delays["LFMMFMPW"]} mn</span><span class="rect">LFMM App : ${this.tot_delays["LFMMAPP"]} mn</span>`;
+		delays += `<span class="rect">LFMM CTA : ${this.tot_delays["cta"]} mn</span><span class="rect">LFMM Est : ${this.tot_delays["est"]} mn</span><span class="rect">LFMM West : ${this.tot_delays["west"]} mn</span><span class="rect">LFMM App : ${this.tot_delays["app"]} mn</span>`;
 		delays += "</div>";
 		delays += res;
 		$(containerId).innerHTML = delays;
