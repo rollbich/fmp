@@ -224,6 +224,30 @@ class period_regul {
 		//console.log(this.reguls);
 	}
 
+	/* ----------------------------------------------------------------------
+		@return {
+			"date": {
+				"reguls": { 
+					"LFMMFMPE":[ {obj regul }, ... ],
+					"LFMMFMPW":[],
+					"LFMMAPP":[]
+				},
+				"LFMMFMPE": {
+					"tot_delay": integer, 
+					"delay_by_cause": {
+						"ATC_STAFFING": 318,
+						"WEATHER": 728
+					}
+				}, 
+				"LFMMFMPW": {...},
+				"LFMMAPP": {...}
+			},
+			...
+			"date": {
+				...
+			}
+		}
+	------------------------------------------------------------------------- */
 	async get_reguls() {
         const reguls = {};
         for (const date of this.dates_arr) {
@@ -736,7 +760,7 @@ class monthly_regs {
 
 	/* 	-----------------------------------------------------------------
 		@input "causes": {"ATC_STAFFING":1953,"SPECIAL_EVENT":311}
-		@returns : {
+		@return : {
 			"cta": [ [ array du mois janvier
 				{"ATC_STAFFING":1953},  
 				{"SPECIAL_EVENT":311},

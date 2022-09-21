@@ -40,12 +40,10 @@ require("../php/check_ok.inc.php");
 
 			<?php include("../php/upload.js.php"); ?>
 			document.getElementById('bouton_stats').addEventListener('click', async e => {
-				//let start_day = document.getElementById('start').value; // yyyy-mm-dd
-				//let end_day = document.getElementById('end').value; // yyyy-mm-dd
-				//let start_day = "2022-06-13";
-				//let end_day = "2022-09-03";
-				let start_day = "2022-06-13";
-				let end_day = "2022-08-31";
+				let start_day = document.getElementById('start').value; // yyyy-mm-dd
+				let end_day = document.getElementById('end').value; // yyyy-mm-dd
+				//let start_day = "2022-08-01";
+				//let end_day = "2022-08-31";
 				let zone = document.getElementById('zone').value;
 				let d = new Date(end_day);
 				let month = d.getMonth();
@@ -58,22 +56,51 @@ require("../php/check_ok.inc.php");
 				for (let k=1;k<13;k++) { listMonth.push(k);}
 				show_traffic_graph_mois_cumule("accueil_vols", year, listMonth, tabl.get_monthly_cumules()['cta'], tabl.get_monthly_cumules("lastyear")['cta'], tabl.get_monthly_cumules("2019")['cta'], "LFMMCTA");
 				show_delay_graph_mois_cumule("accueil_reguls", year, listMonth, tabl.get_monthly_reg_cumules()['cta'], tabl.get_monthly_reg_cumules("lastyear")['cta'], tabl.get_monthly_reg_cumules("2019")['cta'], "LFMMCTA");
-				const data = [];
-				const dataLastyear = [];
-				const data2019 = [];
+				const data_vols = [];
+				const dataLastyear_vols = [];
+				const data2019_vols = [];
+				const data_delay_cta = [];
+				const dataLastyear_delay_cta = [];
+				const data2019_delay_cta = [];
+				const data_delay_est = [];
+				const dataLastyear_delay_est = [];
+				const data2019_delay_est = [];
+				const data_delay_west = [];
+				const dataLastyear_delay_west = [];
+				const data2019_delay_west = [];
 				const dataAxis = stats.dates_arr;
 				for (const date of stats['stats']['year']['vols']['dates_arr']) {
-					data.push(stats['stats']['year']['vols']['vols'][date]["LFMMCTA"][2]);
+					data_vols.push(stats['stats']['year']['vols']['vols'][date]["LFMMCTA"][2]);
+					const delay_est = stats['stats']['year']['regs']['reguls'][date]["LFMMFMPE"]["tot_delay"];
+					const delay_west = stats['stats']['year']['regs']['reguls'][date]["LFMMFMPW"]["tot_delay"];
+					data_delay_est.push(delay_est);
+					data_delay_west.push(delay_west);
+					data_delay_cta.push(delay_est + delay_west);
 				}
 				for (const date of stats['stats']['lastyear']['vols']['dates_arr']) {
-					dataLastyear.push(stats['stats']['lastyear']['vols']['vols'][date]["LFMMCTA"][2]);
+					dataLastyear_vols.push(stats['stats']['lastyear']['vols']['vols'][date]["LFMMCTA"][2]);
+					const delay_est = stats['stats']['lastyear']['regs']['reguls'][date]["LFMMFMPE"]["tot_delay"];
+					const delay_west = stats['stats']['lastyear']['regs']['reguls'][date]["LFMMFMPW"]["tot_delay"];
+					dataLastyear_delay_est.push(delay_est);
+					dataLastyear_delay_west.push(delay_west);
+					dataLastyear_delay_cta.push(delay_est + delay_west);
 				}
 				for (const date of stats['stats']['2019']['vols']['dates_arr']) {
-					data2019.push(stats['stats']['2019']['vols']['vols'][date]["LFMMCTA"][2]);
+					data2019_vols.push(stats['stats']['2019']['vols']['vols'][date]["LFMMCTA"][2]);
+					const delay_est = stats['stats']['2019']['regs']['reguls'][date]["LFMMFMPE"]["tot_delay"];
+					const delay_west = stats['stats']['2019']['regs']['reguls'][date]["LFMMFMPW"]["tot_delay"];
+					data2019_delay_est.push(delay_est);
+					data2019_delay_west.push(delay_west);
+					data2019_delay_cta.push(delay_est + delay_west);
 				}
 				console.log(dataAxis);
-				console.log(data);
-				show_vols_period("accueil_trafic_journalier", dataAxis, data, dataLastyear, data2019, "LFMMCTA");
+				//console.log(data);
+				show_vols_period("accueil_trafic_journalier", dataAxis, data_vols, dataLastyear_vols, data2019_vols, "LFMMCTA");
+				
+				show_delay_period("accueil_reguls_mois_cta", dataAxis, data_delay_cta, dataLastyear_delay_cta, data2019_delay_cta, "LFMMCTA");
+				show_delay_period("accueil_reguls_mois_est", dataAxis, data_delay_est, dataLastyear_delay_est, data2019_delay_est, "Zone EST");
+				show_delay_period("accueil_reguls_mois_west", dataAxis, data_delay_west, dataLastyear_delay_west, data2019_delay_west, "Zone WEST");
+				
 			});
 			
 			
