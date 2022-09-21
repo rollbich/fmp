@@ -11,19 +11,27 @@ class visu {
         //this.container = $(containerId);
         this.h = {};
         this.o = {};
+        this.heures = {
+            "03:20" : true, "04:20" : true, "05:20" : true, "06:20" : true,
+            "07:20" : true, "08:20" : true, "09:20" : true, "10:20" : true,
+            "11:20" : true, "12:20" : true, "13:20" : true, "14:20" : true,
+            "15:20" : true, "16:20" : true, "17:20" : true, "18:20" : true,
+            "19:20" : true, "20:20" : true, "23:59" : true };
         this.init();
         //console.log(this.h);
     }
 
     async init() {
-        this.show_slider();
-        for (const label_h of this.heure_slider) {
-            await this.get_graph(label_h);
+        for (const [ key, value ] of Object.entries(this.heures)) {
+            await this.get_graph(key);
         }
+        await this.show_tvs();
+        this.show_slider();
+        this.add_slider_listener();
+        this.show_graphs();
     }
 
-    async get_graph(label_h) {
-        let t = label_h.dataset.heure;
+    async get_graph(t) {
         let tt = t.replace(/:/g, '');
         if (t === "23:59") {
             this.h[tt] = await get_visu_h20(this.day, this.zone, "");
@@ -32,6 +40,9 @@ class visu {
             this.h[tt] = await get_visu_h20(this.day, this.zone, tt);
             this.o[tt] = await get_visu_occ(this.day, this.zone, tt);
         }
+        if (this.h[tt] === 'undefined') this.heures[t] = false;
+        console.log(t);
+        console.log(this.h[tt]);
     }
 
     async show_tvs() {
@@ -47,18 +58,13 @@ class visu {
     }
 
     show_slider() {
-        let li = `<div class="range"></div>
-		<ul class="range-labels">
-		<li class="heure" data-heure="03:20">03:20</li>
-        <li class="heure" data-heure="04:20">04:20</li>
-        <li class="heure" data-heure="06:20">06:20</li>
-        <li class="heure" data-heure="08:20">08:20</li>
-        <li class="heure" data-heure="10:20">10:20</li>
-        <li class="heure" data-heure="12:20">12:20</li>
-        <li class="heure" data-heure="14:20">14:20</li>
-        <li class="heure" data-heure="16:20">16:20</li>
-        <li class="heure active selected" data-heure="23:59">23:59</li>
-        </ul>`;
+        let li = '<div class="range"></div><ul class="range-labels">';
+        for (const [ key, value ] of Object.entries(this.heures)) {
+            if (value === true && key !== "23:59") li += `<li class="heure" data-heure="${key}">${key}</li>`;   
+            if (value === false) li += `<li class="heure" data-heure="${key}">--:--</li>`; 
+            if (value === true && key === "23:59") li += `<li class="heure active selected" data-heure="23:59">23:59</li>`;
+        }
+        li += '</ul>';
         $('timeline').innerHTML = li;
         this.heure_slider = document.querySelectorAll('.heure');
     }

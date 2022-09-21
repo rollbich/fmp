@@ -836,20 +836,20 @@ body.aide .card div.content p {
 
 .range {
 	position: relative;
-	width: 644px;
+	width: 724px;
 	height: 5px;
 	background: #b2b2b2;
   }
   
   .range-labels {
-	margin: 18px -41px 0;
+	margin: 18px -21px 0;
 	padding: 0;
 	list-style: none;
   }
   .range-labels li {
 	position: relative;
 	float: left;
-	width: 80.25px;
+	width: 40px;
 	text-align: center;
 	color: #b2b2b2;
 	font-size: 14px;
