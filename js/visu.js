@@ -22,10 +22,12 @@ class visu {
     }
 
     async init() {
+        show_popup("Loading graphs", "");
         for (const [ key, value ] of Object.entries(this.heures)) {
             await this.get_graph(key);
         }
         await this.show_tvs();
+        document.querySelector('.popup-close').click();
         this.show_slider();
         this.add_slider_listener();
         this.show_graphs();

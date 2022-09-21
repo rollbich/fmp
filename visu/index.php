@@ -130,7 +130,6 @@
 				//const zone = $('zone').value;
 				const day = $('start').value;
 				const visu_day = new visu(day, "AE");
-				//visu_day.show_visu();
 			})
 
 			document.querySelector('.popup-close').addEventListener('click', e => {
