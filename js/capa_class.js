@@ -1366,6 +1366,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 			uce += (get_minutes(data_uceso[i+1][0]) - get_minutes(data_uceso[i][0]))*data_uceso[i][1];
 		}
 		const i1 = Math.round(rea*100/uce);
+		console.log("Minutes réalisées: "+rea);
 		return i1;
 
 	}
