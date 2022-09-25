@@ -12,7 +12,10 @@ class capa {
         this.day = day;
 		this.zone_schema = zone;
         this.zone_olaf = zone.substr(1,1); // 2è lettre de la zone (E ou W)
-		this.zone = this.zone_olaf === "E" ? "est" : "ouest"; 
+		this.zone = this.zone_olaf === "E" ? "est" : "ouest";
+		this.tabvac = ["J2","S1","N","","","","","J1","J3","S2","",""]; 
+		this.dep = new Date(2019, 0, 8);  // J2 le 8 janvier 2019 à 12heures pour eq11
+		this.eq_dep = 11;
     }
 
     /* ----------------------------------------------------------------------------------------------------------------
@@ -59,6 +62,7 @@ class capa {
 					pc[vac]["RO"] = parseInt(this.effectif[this.day][p]["teamReserve"]["roQuantity"]);
 					pc[vac]["userList"] = this.effectif[this.day][p]["userList"];
 					pc[vac]["teamData"] = this.effectif[this.day][p]["teamData"];
+					pc[vac]["aTeamComposition"] = this.effectif[this.day][p]["aTeamComposition"];
 					pc[vac]["html"] = this.effectif[this.day][p]["html"][this.day][p];
 					if (typeof pc[vac]["html"]["lesrenforts"] === 'undefined') {
 						pc[vac]["renfort"] = 0;
@@ -73,6 +77,7 @@ class capa {
 					pc[vac]["RO"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["roQuantity"]);
 					pc[vac]["userList"] = this.effectif[yesterday][p]["userList"];
 					pc[vac]["teamData"] = this.effectif[yesterday][p]["teamData"];
+					pc[vac]["aTeamComposition"] = this.effectif[yesterday][p]["aTeamComposition"];
 					pc[vac]["html"] = this.effectif[yesterday][p]["html"][yesterday][p];
 					if (typeof pc[vac]["html"]["lesrenforts"] === 'undefined') {
 						pc[vac]["renfort"] = 0;
@@ -278,15 +283,13 @@ class capa {
             @returns {object} { "J1": 5, "vac": n°eq ... }
     ---------------------------------------------------- */
     get_vac_eq () {
-        const tabvac = ["J2","S1","N","","","","","J1","J3","S2","",""];
-        const dep = new Date(2019, 0, 8);  // J2 le 8 janvier 2019 à 12heures pour eq11
-        const ecartj = dep.ecartJour(new Date(this.day));
+        const ecartj = this.dep.ecartJour(new Date(this.day));
         const tab = {};
         for (let eq=1;eq<13;eq++) {
-            let debvac = (ecartj - parseInt(eq) + 11) % 12;
-            if (tabvac[(debvac) % 12] !== "" && tabvac[(debvac) % 12] !== "N") tab[tabvac[(debvac) % 12]] = eq;
-            if (tabvac[(debvac) % 12] === "N") {
-                tab[tabvac[(debvac) % 12]] = eq;
+            let debvac = (ecartj - parseInt(eq) + this.eq_dep) % 12;
+            if (this.tabvac[(debvac) % 12] !== "" && this.tabvac[(debvac) % 12] !== "N") tab[this.tabvac[(debvac) % 12]] = eq;
+            if (this.tabvac[(debvac) % 12] === "N") {
+                tab[this.tabvac[(debvac) % 12]] = eq;
                 const eqN1 = eq == 1 ? 12 : eq - 1; // equipe de nuit de la veille
                 tab["N-1"] = eqN1; 
             }
@@ -493,9 +496,6 @@ class feuille_capa extends capa {
 		res += `<th class="top_2px bottom_2px right_2px" colspan="96">...</th></tr>
 				</thead>
 				<tbody>`;
-		//Object.keys(this.tour_supp_local[this.zone]).forEach(vac => {
-		//res += `${this.affiche_Jx(vac)}`;
-		//})
 		
 		res += `${this.affiche_vac("J1")}`;
 		res += `${this.affiche_vac("J3")}`;
@@ -775,7 +775,10 @@ class feuille_capa extends capa {
 		}
 		return res;
 	}
-		
+	
+	// @param {string} vac - "J1"
+	// @param {array} present - [] 
+	/*
 	add_travailleurs_RO(vac, present) {
 		const values = Object.values(this.pc_vac[vac]["html"]);
 		for (const obj of values) {
@@ -793,7 +796,58 @@ class feuille_capa extends capa {
 			}
 		}
 	}
-	
+	*/
+	add_travailleurs_RO(vac, present) {
+		const values = Object.values(this.pc_vac[vac]["aTeamComposition"]);
+		for (const obj of values) {
+			for (const user in obj) {
+				console.log("user: "+user);
+				const prenom = obj[user]["agent"]["prenom"];
+				const nom = obj[user]["agent"]["nom"];
+				const name = nom+" "+prenom;
+				if (typeof obj[user]["agent"]["role"] !== 'undefined') {
+					let role = obj[user]["agent"]["role"];
+					// bug si lesrenforts alors role est déjà un array [9,10,98], autrement un string "9,10,98"
+					if (typeof role === "string") role = role.split(","); // array des roles
+					role = role.map(elem => parseInt(elem)); // array d'integer
+					console.log(name + " Role :");
+					console.log(role);
+					let pushed = false;
+					if (role.includes(82)) {
+						console.log("CDS ?"+obj[user]["contextmenuType"]);
+						if (Array.isArray(obj[user]["contextmenuType"])) present.push([name, "PC-CDS"]); else present.push([name, "CDS"]);
+						pushed = true;
+					}
+					if (role.includes(80)) {
+						console.log("ACDS");
+						present.push([name, "PC-ACDS"]);
+						pushed = true;
+					} 	
+					if (role.includes(14)) {
+						console.log("DET");
+						present.push([name, "PC-DET"]);
+						pushed = true;
+					} 
+					if (role.includes(10)) {
+						present.push([name, "stagiaire"]);
+						pushed = true;
+					}
+					if (typeof obj[user]["contextmenuType"] === 'object' && obj[user]["contextmenuType"] !== null && !Array.isArray(obj[user]["contextmenuType"])) { // c'est un objet
+						const type = obj[user]["contextmenuType"]["type"];
+						const label = obj[user]["contextmenuType"]["label"];
+						if (type === "reserve_operationnelle") {
+							present.push([name, "RO"]);
+							pushed = true;
+						}
+					}
+					if (pushed === false) present.push([name, "PC"]);
+				} 
+			}
+		}
+		console.log("VAC :");
+		console.log(present);
+	}
+
 	// Gère les stages, CGE et RPL
 	add_stage_conge_autre(vac, present) {
 		const cles = Object.keys(this.pc_vac[vac]["teamData"]);
@@ -804,7 +858,7 @@ class feuille_capa extends capa {
 					if (k === "conge") {present.push([user, k]); }
 				}
 				else {
-					if (this.pc_vac[vac]["teamData"][k][user].search(/RPL/) != -1) {
+					if (this.pc_vac[vac]["teamData"][k][user].search(/RPL/) != -1 || this.pc_vac[vac]["teamData"][k][user].search(/PER avec/) != -1) {
 						for (const user2 in this.pc_vac[vac]["userList"]) {
 							const name = this.pc_vac[vac]["userList"][user2].screen_unique_name || this.pc_vac[vac]["userList"][user2].nom;
 							var re = new RegExp(name, 'g');
@@ -835,10 +889,9 @@ class feuille_capa extends capa {
 
 	// Tri dans l'ordre du tableau de valeurs
 	tri_equipe(arr_eq) {
-		const tab_valeurs = ["CDS", "PC-CDS", "PC", "PC-ACDS", "PC-DET", "PC-RPL", "stagiaire"];
+		const tab_valeurs = ["CDS", "PC-CDS", "PC", "PC-ACDS", "PC-DET", "PC-RPL", "stagiaire", "RO", "stage", "conge"];
 		let arr = [];
         tab_valeurs.forEach(valeur => {
-			console.log(valeur);
             arr_eq.forEach(t => {
 				if(t[1] == valeur) arr.push(t);
 			})
