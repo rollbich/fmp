@@ -412,8 +412,8 @@ class conf {
 	export_salto(zone) {
 		console.log("Export_salto: "+zone);
 		const obj = {};
-		const tvs_est = [...bloc_est['bloc1'],...bloc_est['bloc2'],...bloc_est['bloc3'],...bloc_est['bloc3']];
-		const tvs_west = [...bloc_west['bloc1'],...bloc_west['bloc2'],...bloc_west['bloc3'],...bloc_west['bloc3']];
+		const tvs_est = [...bloc_est['bloc1'],...bloc_est['bloc2'],...bloc_est['bloc3'],...bloc_est['bloc4']];
+		const tvs_west = [...bloc_west['bloc1'],...bloc_west['bloc2'],...bloc_west['bloc3'],...bloc_west['bloc4']];
 		obj["confs"] = this.b2b_sorted_confs;
 		obj["tvs_est"] = tvs_est;
 		obj["tvs_west"] = tvs_west;
