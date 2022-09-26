@@ -121,8 +121,12 @@ if (isset($_GET["zone"]) && isset($_GET["date"])) {
 						$res->$eq->workers->$name = "PC-DET";
 						$pushed = true;
 					}
-					if (in_array(10, $role) || in_array(21, $role) || in_array(154, $role)) { // 21 : retour salle PC, 10 : élève, 154 : élève ENAC
+					if (in_array(10, $role) || in_array(154, $role)) { // 10 : élève, 154 : élève ENAC
 						$res->$eq->workers->$name = "stagiaire";
+						$pushed = true;
+					}
+					if (in_array(21, $role)) { // 21 : retour salle PC
+						$res->$eq->workers->$name = "requalif";
 						$pushed = true;
 					}
 					if (array_key_exists("type", $context)) {
