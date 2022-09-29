@@ -5,7 +5,7 @@
 		@param {string} - type = "H20" ou "Occ"
 	    @param {string} - zone = "est" ou "west"
 	    @param {string} - date = 2022-01-24 
-		@param {string} - heure = 1320 (13h20)
+		@param {string} - heure = 1320 (13h20) - Optional
    ---------------------------------------------------------------------------------------------------------------------------------------- */
 function clean($data) {
     $data = trim($data);
