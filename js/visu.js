@@ -95,23 +95,73 @@ class visu {
     show_graphs() {
         const box_tv = document.querySelectorAll('.visu-liste-tvs');
         for (let box of box_tv) {
-            box.addEventListener('click', (event) => {
+            box.addEventListener('click', async (event) => {
                 let tv = box.dataset.tv;
                 let data = [];
                 let dataAxis = [];	
                 let data_occ = [];
                 let dataAxis_occ = [];
                 let full_time = document.querySelector(".selected").dataset.heure;
+
                 const time = full_time.replace(/:/g, '');
+                const reg = new regul(this.day, this.zone, false);
+                await reg.init();
+                const regbytv = reg.get_regbytv();
+
+                let data_reg_h20 = [];
+                let data_reg_occ = [];
+                let data_reg_h20_delay = []; 
+                let data_reg_h20_reason = []; 
+                let data_reg_occ_delay = [];
+                console.log("regreg");
+                console.log(regbytv);
                 try {
                     this.h[time][tv].forEach(value => {
                         dataAxis.push(value[0]);
                         data.push(value[1]);
+                        if (typeof regbytv[tv] !== 'undefined') { // tv qui ont eu des reguls
+                            let r;
+                            let cause;
+                            let delay;
+                            regbytv[tv].forEach(elem => {
+                                if (time_to_min(elem[0]) > time_to_min("04:00") && time_to_min(elem[1]) < time_to_min("23:59")) {
+                                    console.log(tv);
+                                    if (time_to_min(elem[1]) >= time_to_min(value[0]) && time_to_min(elem[0]) <= time_to_min(value[0])) {
+                                        r = elem[2]; 
+                                        cause=  elem[3];
+                                        delay = elem[4];  
+                                    } 
+                                } 
+                            });
+                            data_reg_h20.push(r);
+                            data_reg_h20_delay.push(delay);
+                            data_reg_h20_reason.push(cause);
+                        }
                     });
-                    
+
+                    console.log(dataAxis);
+                    console.log(data_reg_h20);
+
                     this.o[time][tv].forEach(value => {
                         dataAxis_occ.push(value[0]);
                         data_occ.push(value[1]);
+                        if (typeof regbytv[tv] !== 'undefined') { // tv qui ont eu des reguls
+                            let r;
+                            let cause;
+                            let delay;
+                            regbytv[tv].forEach(elem => {
+                                if (time_to_min(elem[0]) > time_to_min("04:00") && time_to_min(elem[1]) < time_to_min("23:59")) {
+                                    console.log(tv);
+                                    if (time_to_min(elem[1]) >= time_to_min(value[0]) && time_to_min(elem[0]) <= time_to_min(value[0])) {
+                                        r = elem[2];   
+                                        cause=  elem[3];
+                                        delay = elem[4];  
+                                    } 
+                                } 
+                            });
+                            data_reg_occ.push(r);
+                            data_reg_occ_delay.push(delay);
+                        }
                     });	
                     
                     let peak = this.o[time][tv][0][2];
@@ -120,13 +170,14 @@ class visu {
                     document.getElementById('graph-container-h20').classList.remove('off');
                     document.getElementById('graph-container-occ').classList.remove('off');
                     let mv = this.h[time][tv][0][2];
-                    show_h20_graph('graph_h20', dataAxis, data, mv, tv, full_time);
-                    show_occ_graph('graph_occ', dataAxis_occ, data_occ, peak, sustain, tv, full_time);
+                    show_h20_graph('graph_h20', dataAxis, data, mv, tv, full_time, data_reg_h20, data_reg_h20_delay, data_reg_h20_reason);
+                    show_occ_graph('graph_occ', dataAxis_occ, data_occ, peak, sustain, tv, full_time, data_reg_occ, data_reg_occ_delay);
                     
                 }
                 
                 catch (err) {
                     show_popup("Attention ! ", `Les données du TV: ${tv} vu à ${full_time} n'ont pas été récupérées en B2B.`);
+                    console.log(err);
                 }
             })
         }

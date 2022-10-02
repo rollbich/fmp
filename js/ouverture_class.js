@@ -273,11 +273,18 @@ class ouverture extends schema_rea {
         try {	
             const tds = document.querySelectorAll('.tv');
             
-            let reg;
             const h20 = await get_h20_b2b(this.day, this.zone, this.schema); //  {	date: { tv: [ ["heure:min": trafic], ... ] } }
             const occ = await get_occ_b2b(this.day, this.zone, this.schema);
             const h = h20[this.day];
             const o = occ[this.day];
+
+            const reg = new regul(this.day, this.zone, false);
+	        await reg.init();
+            const tvset = this.zone === "AE" ? "LFMMFMPE" : "LFMMFMPW";
+            const regbytv = reg.get_regbytv();
+
+            console.log("regreg");
+            console.log(regbytv);
 
             for (const td of tds) {
                 let deb = td.dataset.deb;
@@ -289,20 +296,61 @@ class ouverture extends schema_rea {
                     let dataAxis = [];	
                     let data_occ = [];
                     let dataAxis_occ = [];
+                    let data_reg_h20 = [];
+                    let data_reg_h20_delay = []; 
+                    let data_reg_h20_reason = []; 
+                    let data_reg_occ = [];
+                    let data_reg_occ_delay = [];
+                    
                     try {
                         h[tv].forEach(value => {
                             if (time_to_min(value[0]) > time_to_min(deb)-graph_margin && time_to_min(value[0]) < time_to_min(fin)+graph_margin) {
                                 dataAxis.push(value[0]);
                                 data.push(value[1]);
+                                if (typeof regbytv[tv] !== 'undefined') { // tv qui ont eu des reguls
+                                    let r;
+                                    let cause;
+                                    let delay;
+                                    regbytv[tv].forEach(elem => {
+                                        if (time_to_min(elem[0]) > time_to_min("04:00") && time_to_min(elem[1]) < time_to_min("23:59")) {
+                                            console.log(tv);
+                                            if (time_to_min(elem[1]) >= time_to_min(value[0]) && time_to_min(elem[0]) <= time_to_min(value[0])) {
+                                                r = elem[2]; 
+                                                cause=  elem[3];
+                                                delay = elem[4];  
+                                            } 
+                                        } 
+                                    });
+                                    data_reg_h20.push(r);
+                                    data_reg_h20_delay.push(delay);
+                                    data_reg_h20_reason.push(cause);
+                                }
                             }
                         });	
                         o[tv].forEach(value => {
                             if (time_to_min(value[0]) > time_to_min(deb)-graph_margin && time_to_min(value[0]) < time_to_min(fin)+graph_margin) {
                                 dataAxis_occ.push(value[0]);
                                 data_occ.push(value[1]);
+                                if (typeof regbytv[tv] !== 'undefined') { // tv qui ont eu des reguls
+                                    let r;
+                                    let cause;
+                                    let delay;
+                                    regbytv[tv].forEach(elem => {
+                                        if (time_to_min(elem[0]) > time_to_min("04:00") && time_to_min(elem[1]) < time_to_min("23:59")) {
+                                            console.log(tv);
+                                            if (time_to_min(elem[1]) >= time_to_min(value[0]) && time_to_min(elem[0]) <= time_to_min(value[0])) {
+                                                r = elem[2];   
+                                                cause=  elem[3];
+                                                delay = elem[4];  
+                                            } 
+                                        } 
+                                    });
+                                    data_reg_occ.push(r);
+                                    data_reg_occ_delay.push(delay);
+                                }
                             }
                         });	
-                        
+
                         let peak = o[tv][0][2];
                         let sustain = o[tv][0][3];			
                         if (data.length === 0) { 
@@ -313,20 +361,21 @@ class ouverture extends schema_rea {
                             } else {
                                 document.getElementById('graph-container-occ').classList.remove('off');
                                 show_popup("Le H20 n'est pas calculable","Le TV n'a ouvert assez longtemps et/ou n'est dans la plage horaire disponible ou n'est pas récupéré"); 
-                                show_occ_graph('graph_occ', dataAxis_occ, data_occ, peak, sustain, tv);
-                                show_h20_graph('graph_h20', dataAxis, data, 0, "NO DATA");
+                                show_occ_graph('graph_occ', dataAxis_occ, data_occ, peak, sustain, tv, "", data_reg_occ, data_reg_occ_delay);
+                                show_h20_graph('graph_h20', dataAxis, data, 0, "NO DATA", "", data_reg_h20, data_reg_h20_delay, data_reg_h20_reason);
                             }
                         } else {
                             document.getElementById('graph-container-h20').classList.remove('off');
                             document.getElementById('graph-container-occ').classList.remove('off');
                             let mv = h[tv][0][2];
-                            show_h20_graph('graph_h20', dataAxis, data, mv, tv);
-                            show_occ_graph('graph_occ', dataAxis_occ, data_occ, peak, sustain, tv);
+                            show_h20_graph('graph_h20', dataAxis, data, mv, tv, "", data_reg_h20, data_reg_h20_delay, data_reg_h20_reason);
+                            show_occ_graph('graph_occ', dataAxis_occ, data_occ, peak, sustain, tv, "", data_reg_occ, data_reg_occ_delay);
                         }
                     }
                     
                     catch (err) {
                         show_popup("Attention ! ", "Les données du TV: "+tv+" n'ont pas été récupérées en B2B.");
+                        console.log(err);
                     }
                     
                 })
@@ -340,6 +389,7 @@ class ouverture extends schema_rea {
             show_popup("Accès aux graphes impossible", `Les données du ${this.day} n'ont pas été récupérées en B2B.`);
             await wait(1250);
             document.querySelector('.popup-close').click();
+            console.log(err);
         }
     }
 
