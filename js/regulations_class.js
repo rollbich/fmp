@@ -157,6 +157,20 @@ class regul {
 		}
 	}
 
+	get_regbytv() {
+        const regbytv = {};
+		const tvset = this.zone === "AE" ? "LFMMFMPE" : "LFMMFMPW";
+		this.regul[tvset].forEach( value => {
+			let tv = value.tv.substring(3);
+			if (typeof regbytv[tv] === 'undefined') { regbytv[tv] = [] }
+			value["constraints"].forEach(obj => {
+				let rate = obj["normalRate"] + obj["equipmentRate"] + obj["pendingRate"];
+				regbytv[tv].push([extract_time(obj["constraintPeriod"]["wef"]), extract_time(obj["constraintPeriod"]["unt"]), rate, value["reason"], value["delay"]]);
+			});
+		});
+		return regbytv;
+	}
+	
 	get_total_delay(tvset) {
 		if (typeof this.regul !== 'undefined') {
 			let total_delay = 0;

@@ -21,6 +21,7 @@
 	<script type="text/javascript" src="../js/utils.js"></script>
 	<script type="text/javascript" src="../js/tri.js"></script>
 	<script type="text/javascript" src="../js/list-component.js"></script>
+	<script type="text/javascript" src="../js/regulations_class.js"></script>
 	<script type="text/javascript" src="../js/graph.js"></script>
 	<script type="text/javascript" src="../js/schema.js"></script>
 	<script type="text/javascript" src="../js/ouverture_class.js"></script>
@@ -123,13 +124,13 @@
 				$('result').innerHTML = "";
 				$('graph-container-h20').classList.add('off');
 				$('graph-container-occ').classList.add('off');
-				$('bouton_visu').click();
+				//$('bouton_visu').click();
 			});
 
 			$('bouton_visu').addEventListener('click', e => {
-				//const zone = $('zone').value;
+				const zone = $('zone').value;
 				const day = $('start').value;
-				const visu_day = new visu(day, "AE");
+				const visu_day = new visu(day, zone);
 			})
 
 			document.querySelector('.popup-close').addEventListener('click', e => {
@@ -156,7 +157,7 @@
 </div>
 <ul class="menu">
 	<li id="bouton_ouverture" class="pointer"><span>Ouverture</span></li>
-	<li id="bouton_visu" class="pointer"><span>Visu Est</span></li>
+	<li id="bouton_visu" class="pointer"><span>Visu</span></li>
 	<li><button class="help_button">Help</button></li>
 </ul>
 <div id="dates">

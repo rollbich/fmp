@@ -241,14 +241,13 @@ async function get_visu_occ(day, zone, time = "") {
 			@param {integer} mv - valeur de la MV
 			@param {string} tv - nom du TV
 	-------------------------------------------------------------------------- */
-function show_h20_graph(containerId, dataAxis, data, mv, tv, time_visu = "") {
+function show_h20_graph(containerId, dataAxis, data, mv, tv, time_visu = "", data_reg = [], data_delay = [], data_reason = []) {
+	let dataMaxh20 = Math.max(...data);
+	let dataMaxDelay = Math.max(...data_delay);
+	let yh20 = Math.max((Math.floor(dataMaxh20/10)+1)*10, (Math.floor(mv/10)+1)*10);
+	if (dataMaxDelay >120) yDelay = dataMaxDelay - 60; else yDelay = 0;
 	let myChart = echarts.init(document.getElementById(containerId));
 	let yMax = mv*1.6;
-	let dataShadow = [];
-
-	for (var i = 0; i < data.length; i++) {
-		dataShadow.push(yMax);
-	}
 	let option;
 	if (time_visu === "") time_visu = "Load vue à minuit UTC"; else time_visu = `Load vue à ${time_visu} UTC`;
 	option = {
@@ -257,6 +256,23 @@ function show_h20_graph(containerId, dataAxis, data, mv, tv, time_visu = "") {
 			subtext: 'Click or Scroll to Zoom',
 			textStyle: { color: '#FFF' },
 			left: 'center'
+		},
+		legend: {
+			data: ['H/20', 'Rate', 'Delay'],
+			bottom: 20,
+			orient: 'horizontal',
+			textStyle: {
+				color: '#ddd'
+			}
+		},
+		tooltip: {
+			trigger: 'axis',
+			axisPointer: {
+				type: 'shadow',
+				label: {
+					show: true
+				}
+			}
 		},
 		xAxis: {
 			data: dataAxis,
@@ -274,7 +290,15 @@ function show_h20_graph(containerId, dataAxis, data, mv, tv, time_visu = "") {
 			},
 			z: 10
 		},
-		yAxis: {
+		yAxis: [
+		{
+			type: 'value',
+			name: 'H20',
+			max: yh20,
+			interval: 10,
+			  axisLabel: {
+				formatter: '{value}'
+			},
 			axisLine: {
 				show: false
 			},
@@ -287,45 +311,37 @@ function show_h20_graph(containerId, dataAxis, data, mv, tv, time_visu = "") {
 				}
 			}
 		},
+		{
+			type: 'value',
+			show: false,
+			name: 'Delay',
+			min: 0,		// astuce
+			max: 0, 	// pour cacher le graph
+			axisLabel: {
+				show: false,
+				formatter: '{value}'
+			},
+			axisLine: {
+				show: false
+			},
+			axisTick: {
+				show: false
+			},
+			axisLabel: {
+				textStyle: {
+					color: '#999'
+				}
+			}
+		}
+		],
 		dataZoom: [
 			{
 				type: 'inside'
 			}
 		],
 		series: [
-			{ // For shadow
-				type: 'bar',
-				itemStyle: {
-					color: 'rgba(0,0,0,0.05)'
-				},
-				barGap: '-100%',
-				barCategoryGap: '40%',
-				data: dataShadow,
-				animation: false,
-				markLine: {                      
-                    symbol:"none", //Remove the arrow at the end of the cordon
-					lineStyle: {
-						type: 'dashed',
-                        color: '#C00',
-                        width: 1,
-                    },
-                    data: [
-                        { yAxis: mv, name: 'MV', 
-						  label: { 
-							formatter: `MV: ${mv}`,
-							color: '#fff',
-							textBorderColor: '#000',
-							textBorderWidth: 2,					
-							fontStyle: 'normal',
-							fontWeight: 'bold',
-							fontSize: 14,
-							fontFamily: 'Helvetica'
-						  } 
-						},
-                    ],
-                },
-			},
 			{
+				name: 'H20',
 				type: 'bar',
 				itemStyle: {
 					color: new echarts.graphic.LinearGradient(
@@ -349,7 +365,75 @@ function show_h20_graph(containerId, dataAxis, data, mv, tv, time_visu = "") {
 						)
 					}
 				},
+				tooltip: {
+					valueFormatter: function (value) {
+					  return value;
+					}
+				},
+				markLine: {                      
+                    symbol:"none", //Remove the arrow at the end of the cordon
+					lineStyle: {
+						type: 'dashed',
+                        color: '#C00',
+                        width: 1,
+                    },
+                    data: [
+                        { yAxis: mv, name: 'MV', 
+						  label: { 
+							formatter: `MV: ${mv}`,
+							color: '#fff',
+							textBorderColor: '#000',
+							textBorderWidth: 2,					
+							fontStyle: 'normal',
+							fontWeight: 'bold',
+							fontSize: 14,
+							fontFamily: 'Helvetica'
+						  } 
+						},
+                    ],
+                },
 				data: data
+			},
+			{
+				name: 'Rate',
+				tooltip: {
+					valueFormatter: function (value) {
+						return value;
+					}
+				},
+				type: 'line',
+				step: 'start',
+				color: '#0F0',
+				data: data_reg
+			},
+			{
+				name: 'Delay',
+				yAxisIndex: 1,
+				tooltip: {
+					valueFormatter: function (value) {
+						return value;
+					}
+				},
+				itemStyle: {
+					color: 'yellow'
+				},
+				symbolSize: 4,
+				type: 'scatter',
+				data: data_delay
+			},
+			{
+				name: 'Reason',
+				tooltip: {
+					valueFormatter: function (value) {
+						return value;
+					}
+				},
+				itemStyle: {
+					color: 'pink'
+				},
+				symbolSize: 4,
+				type: 'scatter',
+				data: data_reason
 			}
 		]
 	};
@@ -378,14 +462,13 @@ function show_h20_graph(containerId, dataAxis, data, mv, tv, time_visu = "") {
 			@param {integer} sustain - valeur du sustain
 			@param {string} tv - nom du TV
 	-------------------------------------------------------------------------- */
-function show_occ_graph(containerId, dataAxis, data, peak, sustain, tv, time_visu = "") {
+function show_occ_graph(containerId, dataAxis, data, peak, sustain, tv, time_visu = "", data_reg = [], data_delay = []) {
+	let dataMax = Math.max(...data);
+	if (dataMax < 61) yOccMax = 60;
+	if (dataMax < 31) yOccMax = 30;
+	
 	let myChart = echarts.init(document.getElementById(containerId));
-	let yMax = peak*1.5;
-	let dataShadow = [];
-
-	for (var i = 0; i < data.length; i++) {
-		dataShadow.push(yMax);
-	}
+	let yRate = Math.min(yOccMax*2,60);
 	if (time_visu === "") time_visu = "Load vue à minuit UTC"; else time_visu = `Load vue à ${time_visu} UTC`;
 	option = {
 		title: {
@@ -393,6 +476,9 @@ function show_occ_graph(containerId, dataAxis, data, peak, sustain, tv, time_vis
 			subtext: 'Click or Scroll to Zoom',
 			textStyle: { color: '#FFF' },
 			left: 'center'
+		},
+		tooltip: {
+			trigger: 'axis'
 		},
 		xAxis: {
 			data: dataAxis,
@@ -410,67 +496,42 @@ function show_occ_graph(containerId, dataAxis, data, peak, sustain, tv, time_vis
 			},
 			z: 10
 		},
-		yAxis: {
-			axisLine: {
-				show: false
+		yAxis: [
+			{
+			  type: 'value',
+			  name: 'Load',
+			  min: 0,
+			  max: yOccMax,
+			  interval: 10,
+			  axisLabel: {
+				formatter: '{value}'
+			  }
 			},
-			axisTick: {
-				show: false
-			},
-			axisLabel: {
+			{
+			  type: 'value',
+			  name: 'Rate',
+			  nameTextStyle: {
+				color: '#0F0'
+			  },
+			  min: 0,
+			  max: yRate,
+			  interval: 10,
+			  axisLabel: {
+				formatter: '{value}',
 				textStyle: {
-					color: '#999'
+					color: '#0f0'
 				}
+			  }
 			}
-		},
+		  ],
 		dataZoom: [
 			{
 				type: 'inside'
 			}
 		],
 		series: [
-			{ // For shadow
-				type: 'bar',
-				itemStyle: {
-					color: 'rgba(0,0,0,0.05)'
-				},
-				barGap: '-100%',
-				barCategoryGap: '40%',
-				data: dataShadow,
-				animation: false,
-				markLine: {                      
-                    symbol:"none", //Remove the arrow at the end of the cordon
-					lineStyle: {
-						type: 'dashed',
-                        color: '#C00',
-                        width: 1,
-                    },
-                    data: [
-                        { yAxis: peak, name: 'PEAK', 
-						  label: {  formatter: `Peak: ${peak}`,
-									color: '#fff',
-									textBorderColor: '#000',
-									textBorderWidth: 2,					
-									fontStyle: 'normal',
-									fontWeight: 'bold',
-									fontSize: 14,
-									fontFamily: 'Helvetica'
-								}
-  					    },
-						{ yAxis: sustain, name: 'SUSTAIN', label: { formatter: `Sustain: ${sustain}`,
-									color: '#fff',
-									textBorderColor: '#000',
-									textBorderWidth: 2,					
-									fontStyle: 'normal',
-									fontWeight: 'bold',
-									fontSize: 14,
-									fontFamily: 'Helvetica'
-								}
-  					    },
-                    ],
-                },
-			},
 			{
+				name: 'Load',
 				type: 'bar',
 				itemStyle: {
 					color: new echarts.graphic.LinearGradient(
@@ -494,7 +555,60 @@ function show_occ_graph(containerId, dataAxis, data, peak, sustain, tv, time_vis
 						)
 					}
 				},
+				markLine: {                      
+                    symbol:"none", //Remove the arrow at the end of the cordon
+					lineStyle: {
+						type: 'dashed',
+                        color: '#C00',
+                        width: 1,
+                    },
+                    data: [
+                        { 
+						yAxis: peak, 
+						name: 'PEAK', 
+						label: {  
+							formatter: `P: ${peak}`,
+							offset: [20, 0],
+							color: '#d00',
+							textBorderColor: '#000',
+							textBorderWidth: 0,					
+							fontStyle: 'normal',
+							fontWeight: 'normal',
+							fontSize: 13,
+							fontFamily: 'Helvetica'
+						}
+  					    },
+						{ 
+						yAxis: sustain, 
+						name: 'SUSTAIN', 
+						label: {  
+							formatter: `S: ${sustain}`,
+							offset: [20, 0],								
+							color: '#d00',
+							textBorderColor: '#000',
+							textBorderWidth: 0,					
+							fontStyle: 'normal',
+							fontWeight: 'normal',
+							fontSize: 13,
+							fontFamily: 'Helvetica'
+						}
+  					    },
+                    ],
+                },
 				data: data
+			},
+			{
+				name: 'Rate',
+				yAxisIndex: 1,
+				tooltip: {
+					valueFormatter: function (value) {
+						return value;
+					}
+				},
+				type: 'line',
+				step: 'start',
+				color: '#0F0',
+				data: data_reg
 			}
 		]
 		/*,
@@ -741,21 +855,21 @@ function show_traffic_graph_mois(containerId, year, listWeek, data, data_lastyea
 				type: 'line',
 				color : '#339dff',
 				areaStyle: {},
-				data: data2019,
+				data: data2019
 			},
 			{
 				name: year-1,
 				type: 'line',
 				color: 'yellow',
 				areaStyle: {},
-				data: data_lastyear,
+				data: data_lastyear
 			},
 			{
 				name: year,
 				type: 'line',
 				color: '#4CC417',
 				areaStyle: {},
-				data: data,
+				data: data
 			}]
 	};
 	
@@ -1152,7 +1266,6 @@ function show_delay_graph_mois_cumule(containerId, year, listMonth, data, data_l
 				}
 			}
 		},
-		/*
 		toolbox: {
 			feature: {
 				saveAsImage: {
@@ -1162,7 +1275,6 @@ function show_delay_graph_mois_cumule(containerId, year, listMonth, data, data_l
 				}
 			}
 		},
-		*/
 		grid: {
 			containLabel: true
 		},
