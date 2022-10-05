@@ -295,7 +295,7 @@ $json_atfcm_reg = $soapClient->flowServices()->get_ATFCM_situation();
 echo "get atfcm_situation OK<br>";
 
 // Remplit l'object $json_reg (et l'array $reg pour l'export xls)
-$soapClient->flowServices()->get_full_regulations("LF", $wef_regs, $unt_regs, $json_atfcm_reg, $json_reg, $reg);
+$soapClient->flowServices()->get_full_regulations("LF", $wef_regs, $unt_regs, $json_reg, $reg, $json_atfcm_reg);
 
 echo "get regulation OK<br>";
 
