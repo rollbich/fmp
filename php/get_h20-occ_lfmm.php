@@ -8,7 +8,7 @@
 		@param {string} - heure = 1320 (13h20) - Optional
    ---------------------------------------------------------------------------------------------------------------------------------------- */
 function clean($data) {
-    $data = trim($data);
+    $data = trim($data ?? '');
     $data = htmlspecialchars($data);
     return $data;
 }
@@ -59,7 +59,7 @@ try {
 		$ok_type = true;
 		$ok_zone = true;
 		$ok_date = true;
-		$type = clean($_GET["type"]);
+		$type = clean($_GET["type"]); // $type ne peut etre null avec clean => OK pour php 8.1
 		$zone = clean($_GET["zone"]);
 		$date = clean($_GET["date"]);
 		if (strtolower($type) !== "h20" && strtolower($type) != "occ") $ok_type = false;

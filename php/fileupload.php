@@ -17,7 +17,7 @@ function check($fichier) {
 	$ok = true;
 	
 	//check php (strpos retourne false si occurence non trouvée)
-	$lower = strtolower($fichier);
+	$lower = strtolower($fichier ?? '');
 	$pos = strpos($lower,'php');
 	if(!($pos === false)) {
 		$ok = false;

@@ -292,7 +292,8 @@ class FlowServices extends Service {
     }
 
     // PHP par défaut : objets sont passés par référence / array par copie
-    public function get_full_regulations($area, $wef_regs, $unt_regs, $situation_ATFCM = null, $json_reg, & $reg) {
+    // change for php 8.1 : les paramètres optionnels doivent être placés après les paramètres obligatoires
+    public function get_full_regulations($area, $wef_regs, $unt_regs, $json_reg, & $reg, $situation_ATFCM = null) {
         
         try {
             $regulations = $this->get_regulations($area, $wef_regs, $unt_regs);
