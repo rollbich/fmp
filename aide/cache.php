@@ -7,7 +7,7 @@ require("../php/check_ok.inc.php");
 <head>
 	<meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Aide et tutos</title>
+    <title>Le cache</title>
     <link rel="stylesheet" type="text/css" href="../css/font.css" />
 	<link rel="stylesheet" type="text/css" href="../css/list-component.css" />
 	<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
@@ -53,7 +53,7 @@ require("../php/check_ok.inc.php");
 <body class="aide">
 <?php include("../php/nav.inc.php"); ?>
 <h1>LFMM-FMP - Aide et Tutos</h1>
-<h2 class="center"><a href='' id='cache2'>Supprimer le cache</a> - <a href='' id='cache1'>Inhiber le cache</a></h2>
+<h2 class="center titre"><a href='' id='cache2'>Supprimer le cache</a> - <a href='' id='cache1'>Inhiber le cache</a></h2>
 <article class="center">
     <div>
         <h2 id="intro" class="center">Introduction</h2>

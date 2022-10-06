@@ -34,12 +34,20 @@ require("../php/check_ok.inc.php");
 <!--blog--><!--blog_options_json--><!--{"source":""}--><!--/blog_options_json-->
 <div class="card_container"><!--blog_post-->
     <div class="card">
-        <img src="photo-cache.jpg" alt="logo firefox">
+        <div class="im"><a href="cache.php"><img src="photo-cache.jpg" alt="logo firefox"></a></div>
         <div class="content">
             <h2><a href="cache.php">Vider le cache</a></h2>
             <p>A faire en cas de doute sur une page web qui ne semble pas à jour lors de l'affichage.<br>
             Sur le site lfmm-fmp.fr, le cache est désactivé et donc les pages sont à jour à l'instant où elles sont affichées.</p>
-            <p>Vendredi 17 juin 2022</p>
+            <footer>Vendredi 17 juin 2022</footer>
+        </div>
+    </div>
+    <div class="card">
+        <div class="im"><a href="regulsName.php"><img src="nommage.jpg" alt="logo nommage"></a></div>
+        <div class="content">
+            <h2><a href="regulsName.php">Nom des réguls</a></h2>
+            <p>Un petit rappel concernant les règles de nommage des réguls NM. Ceci dans le cadre de l'utilisation des fonctionnalités NMP FLow (simulation, création de réguls).</p>
+            <footer>Mercredi 05 octobre 2022</footer>
         </div>
     </div>
 </div>
