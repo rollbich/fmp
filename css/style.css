@@ -740,11 +740,28 @@ body.aide article h2 {
 	font-size: 2.5rem;
 	font-weight: bold;
 	text-decoration: underline;
-	padding: 3rem;
+	padding: 1.2rem;
+	color:#16a1c4;
+}
+
+body.aide h2.titre, body.aide h2.titre a{
+	color: orange;
+	font-size: 3rem;
+	font-weight: bold;
+	padding: 1.2rem;
+}
+
+body.aide h2.titre a:hover {
+	text-decoration: underline;
 }
 
 body.aide article p.intro {
-	margin-bottom: 1.6rem;
+	margin-bottom: 1rem;
+}
+
+body.aide article p.intro {
+	padding-bottom: 0.8rem;
+	padding-top: 0.8rem;
 }
 
 body.aide article p {
@@ -756,8 +773,15 @@ body.aide article p {
 	padding-right: 4rem;
 }
 
-body.aide article p span{
+body.aide article p span, body.aide article ul li span{
 	background: yellow;
+}
+
+body.aide article ul {
+	list-style-type: disc; 
+	text-align : left; 
+	margin-left: 8rem; 
+	font-size: 1.2rem; 
 }
 
 body.aide img {
@@ -783,7 +807,13 @@ body.aide .card h2 a:hover {
 	color: var(--color-2019);
 }
 
-body.aide .card img {
+body.aide .card .im {
+	height: 200px;
+	min-width: 320px;
+	margin: 0 auto 0 0;
+}
+
+body.aide .card a img {
 	height: 200px;
 	width: 320px;
 	margin: 0 auto 0 0;
@@ -807,6 +837,11 @@ body.aide .card div.content p {
 	font-size: 1.2rem;
 	margin-top: 1rem;
 	margin-bottom: 1rem;
+}
+
+body.aide .card div.content footer {
+	color: var(--select-bg-color);
+	font-size: 1.1rem;
 }
 
 /* ---- Visu ----- */
