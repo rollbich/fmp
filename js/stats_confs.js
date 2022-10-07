@@ -16,12 +16,14 @@ class stat_confs {
 	}
 	
     async init() { 
+        show_popup("Chargement en cours...", "Cela prend 15s pour 6 mois");
         const cf = new conf(new Date(), this.zon);
         await cf.init_b2b();
         this.sch_rea = await this.get_sch_rea();
         this.confs_exist = cf.b2b_sorted_confs;
 		this.confs_supp = await this.get_fichier_confs();
         this.confs = this.merge_conf();
+        document.querySelector('.popup-close').click();
         console.log("Confs existantes");
         console.log(this.confs_exist);
         console.log("Confs supp");
