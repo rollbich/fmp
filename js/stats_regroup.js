@@ -16,7 +16,9 @@ class stat_regroup {
 	}
 	
     async init() { 
+        show_popup("Chargement en cours...", "Cela prend 15s pour 6 mois");
         this.sch_rea = await this.get_sch_rea();
+        document.querySelector('.popup-close').click();
         this.regroupements = this.add_stat();
         this.show_result_stat();
 	}
