@@ -372,6 +372,7 @@ span.rect {
 	overflow: auto;
 	margin-right: 20px;
 	margin-left: 10px;
+	min-width:480px;
 }
 
 #result div.result {
@@ -450,6 +451,11 @@ table td.tv:hover {
 
 div.conf th {
 	width: 100px;
+}
+
+table.regroup th {
+	width: 140px;
+	text-align: center;
 }
 
 table.conf tr.one {
