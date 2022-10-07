@@ -14,6 +14,7 @@
 	<link rel="stylesheet" type="text/css" href="../css/list-component.css" />
 	<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
 	<link rel="stylesheet" type="text/css" href="../css/upload.css" />
+	<link rel="stylesheet" type="text/css" href="../css/sortable.css" />
 	<link rel="stylesheet" href="../css/bulma.css">
 	<link rel="stylesheet" type="text/css" href="../css/style.css" />
 	<script type="text/javascript" src="../js/base.js"></script>
@@ -22,6 +23,7 @@
 	<script type="text/javascript" src="../js/tri.js"></script>
 	<script type="text/javascript" src="../js/list-component.js"></script>
 	<script type="text/javascript" src="../js/regulations_class.js"></script>
+	<script src="../js/sortable.min.js"></script>
 	<script type="text/javascript" src="../js/graph.js"></script>
 	<script type="text/javascript" src="../js/schema.js"></script>
 	<script type="text/javascript" src="../js/ouverture_class.js"></script>
@@ -29,7 +31,7 @@
 	<script type="text/javascript" src="../js/olaf.js"></script>
 	<script type="text/javascript" src="../js/capa_class.js"></script>
 	<script type="text/javascript" src="../js/confs_class.js"></script>
-	<script type="text/javascript" src="../js/stats_confs.js"></script>
+	<script type="text/javascript" src="../js/stats_regroup.js"></script>
 	<script src="../js/dragger.js"></script>
 	<script src="../js/echarts.min.js"></script>
 	
@@ -118,6 +120,31 @@
 				?>
 			});
 			
+			$('bouton_stats_regr').addEventListener('click', async e => {
+				const el = $('dates_stats_confs');
+				el.classList.remove('content');
+				const pos = $('bouton_stats_regr').getBoundingClientRect();
+				el.style.position = 'absolute';
+				el.style.left = pos.left + 'px';
+				const click_ok = (ev) => {
+					let zone = $('zone').value;
+					let start = $('start_s').value;
+					let end = $('end_s').value;
+					new stat_regroup("result",start,end,zone);
+					el.classList.add('content');
+					document.querySelector('.ok').removeEventListener('click', click_ok);
+					document.querySelector('.no').removeEventListener('click', click_no);
+				}
+				const click_no = (ev) => {
+					el.classList.add('content');
+					document.querySelector('.ok').removeEventListener('click', click_ok);
+					document.querySelector('.no').removeEventListener('click', click_no);
+				}
+				document.querySelector('.ok').addEventListener('click', click_ok);
+				document.querySelector('.no').addEventListener('click', click_no);
+				//show_popup("Stat confs", "Cette fonctionnalité n'est pas encore disponible");
+			});
+
 			$('bouton_uceso').addEventListener('click', async e => {
 				let zone = $('zone').value;
 				let day = $('start').value;
@@ -151,8 +178,16 @@
 <ul class="menu">
 	<li id="bouton_ouverture" class="pointer"><span>Ouverture</span></li>
 	<li id="bouton_uceso" class="pointer"><span>UCESO</span></li>
+	<li id="bouton_stats_regr" class="pointer"><span>Stats Regr</span></li>
 	<li><button class="help_button">Help</button></li>
 </ul>
+<div id="dates_stats_confs" class="content">
+	<label for="start_s" class="dates one">D&eacute;but:</label>
+	<input type="date" id="start_s" class="two" value="<?php $t = new DateTime(); $year = $t->format('Y'); echo $year."-01-01"; ?>" min="2018-12-31"><div></div>
+	<label for="end_s" class="dates three">Fin:</label>
+	<input type="date" id="end_s" class="four" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2018-12-31"><div></div>
+	<div></div><button class="ok five">Ok</button><button class="no six">No</button>
+</div>
 <div id="dates">
 	<label for="start" class="dates">Date:</label>
 	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2019-01-01">

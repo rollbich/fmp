@@ -14,6 +14,7 @@
 	<link rel="stylesheet" type="text/css" href="../css/list-component.css" />
 	<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
 	<link rel="stylesheet" type="text/css" href="../css/upload.css" />
+	<link rel="stylesheet" type="text/css" href="../css/sortable.css" />
 	<link rel="stylesheet" href="../css/bulma.css">
 	<link rel="stylesheet" type="text/css" href="../css/style.css" />
 	<script type="text/javascript" src="../js/base.js"></script>
@@ -21,6 +22,7 @@
 	<script type="text/javascript" src="../js/utils.js"></script>
 	<script type="text/javascript" src="../js/tri.js"></script>
 	<script type="text/javascript" src="../js/list-component.js"></script>
+	<script src="../js/sortable.min.js"></script>
 	<script type="text/javascript" src="../js/graph.js"></script>
 	<script type="text/javascript" src="../js/schema.js"></script>
 	<script type="text/javascript" src="../js/ouverture_class.js"></script>
