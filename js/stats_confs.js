@@ -16,7 +16,7 @@ class stat_confs {
 	}
 	
     async init() { 
-        show_popup("Chargement en cours...", "Cela prend 15s pour 6 mois");
+        show_popup("Chargement en cours...", "Cela peut prendre plusieurs minutes");
         const cf = new conf(new Date(), this.zon);
         await cf.init_b2b();
         this.sch_rea = await this.get_sch_rea();
