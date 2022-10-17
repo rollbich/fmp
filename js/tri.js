@@ -49,9 +49,9 @@ const salto_est = {
     "bloc07": ["Y34"],
     "bloc08": ["GY2", "Y2"],
     "bloc09": ["GY1", "Y1"],
-    "bloc10": ["YY"],
+    "bloc10": ["YY", "YA"],
     "bloc11": ["Y12"],
-    "bloc12": ["AB", "AA", "AB34", "AB4", "A34"],
+    "bloc12": ["AB", "AA", "AB34", "AB4", "A34", "AB234"],
     "bloc13": ["B34", "B4"],
     "bloc14": ["AB3", "B3"],
     "bloc15": ["AB2", "B2"],
@@ -59,7 +59,7 @@ const salto_est = {
     "bloc17": ["A12", "AB12"],
     "bloc18": ["BB", "B12"],
     "bloc19": ["EK", "EE", "EK3", "E3"],
-    "bloc20": ["E12"],
+    "bloc20": ["RAEE12", "E12"],
     "bloc21": ["E23", "E2"],
     "bloc22": ["EK2", "EK23"],
     "bloc23": ["EK1"],
@@ -68,11 +68,12 @@ const salto_est = {
     "bloc26": ["K2"],
     "bloc27": ["K1"],
     "bloc28": ["KK"],
-    "bloc29": ["K12", "RAEE1"],
-    "bloc30": ["RAEE", "RAES", "SBAM", "ST"],
+    "bloc29": ["K12", "RAEE1", "RAE12"],
+    "bloc30": ["RAEE", "RAES", "SBAM", "BAM"],
     "bloc31": ["BAM", "MNST", "MN"],
     "bloc32": ["BTAJ", "SAB", "BT"],
-    "bloc33": ["AJ"]
+    "bloc33": ["SBM", "ST"],
+    "bloc34": ["AJ"]
 }
 
 const salto_west = {
