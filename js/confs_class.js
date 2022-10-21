@@ -408,15 +408,19 @@ class conf {
 
 /*  ------------------------------------------------------------------
 		Exporte les confs NM vers Salto	
+		@param (string) - "est" ou "ouest"
 	------------------------------------------------------------------ */
 	export_salto(zone) {
 		console.log("Export_salto: "+zone);
+		const bloc_zone = zone === "est" ? salto_est : salto_west;
 		const obj = {};
-		const tvs_est = [...bloc_est['bloc1'],...bloc_est['bloc2'],...bloc_est['bloc3'],...bloc_est['bloc4']];
-		const tvs_west = [...bloc_west['bloc1'],...bloc_west['bloc2'],...bloc_west['bloc3'],...bloc_west['bloc4']];
+		let arr = [];
+		for (const [bloc, value] of Object.entries(bloc_zone)) {
+			arr = [...arr, ...value];
+		}
 		obj["confs"] = this.b2b_sorted_confs;
-		obj["tvs_est"] = tvs_est;
-		obj["tvs_west"] = tvs_west;
+		obj["zone"] = zone;
+		obj["tvs"] = arr;
 		const url = zone === "est" ? "export_salto_est.php" : "export_salto_west.php";
 		const data = {
 			method: "post",
