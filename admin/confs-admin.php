@@ -12,6 +12,7 @@
 	<link rel="icon" href="../favicon.ico" />
 	<script type="text/javascript" src="../js/base.js"></script>
 	<script type="text/javascript" src="../js/utils.js"></script>
+	<script type="text/javascript" src="../js/tri-config.js"></script>
 	<script type="text/javascript" src="../js/tri.js"></script>
 	<script type="text/javascript" src="../js/list-component.js"></script>
 	<script type="text/javascript" src="../js/schema.js"></script>
@@ -59,7 +60,6 @@
 			});
 			
 			$('bouton_export_salto').addEventListener('click', async e => {
-				//show_popup("Export Salto","Cette fonctionnalité n'est pas encore disponible");
 				const zone = $('zone').value === "AE" ? "est" : "ouest";
 				const c = new conf(convertDate(new Date()), zone);
 				await c.init_b2b();

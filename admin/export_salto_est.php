@@ -50,7 +50,7 @@ function write_xml($json) {
 
 	$xmlroot->appendChild($xmlcluster);
 
-	foreach($json->tvs_est as $tv) {
+	foreach($json->tvs as $tv) {
 		$xmlcorresp = $domtree->createElement("CorrespondanceTrafficVolumeAirspaceCentre");
 		$xmlcorresp->setAttribute("nomTrafficVolume", "LFM$tv");
 		$xmlcorresp->setAttribute("nomAirspace", "LFMM$tv");
