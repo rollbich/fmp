@@ -99,7 +99,7 @@ class period_vols {
 		return plage_vols;
 	}
 
-	get_period_vols() {
+	get_period_vols() { 
 		const vols = {};
 		let total_vols_est = 0, total_vols_west = 0, total_vols_cta = 0, total_vols_app = 0; 
 		for (const date of this.dates_arr) {
@@ -139,7 +139,7 @@ class period_vols {
 				total_vols_est += parseInt(this.vols[date]['LFMMCTAE'][2]);
 				total_vols_west += parseInt(this.vols[date]['LFMMCTAW'][2]);
 				total_vols_cta += parseInt(this.vols[date]['LFMMCTA'][2]);
-				total_vols_app += parseInt(this.vols[date]['LFMMAPP'][2]);
+				total_vols_app += parseInt(this.vols[date]['LFMMAPP']['flights']);
 			}
         }
         res += '</tbody></table>';
