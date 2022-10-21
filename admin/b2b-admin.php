@@ -13,7 +13,6 @@
 	<script type="text/javascript" src="../js/base.js"></script>
 	<script type="text/javascript" src="../js/utils.js"></script>
 	<script type="text/javascript" src="../js/list-component.js"></script>
-	<script type="text/javascript" src="../js/schema.js"></script>
 	<script type="text/javascript" src="../js/upload.js"></script>
         <script type="text/javascript" src="nmir/reg/nmir_reg_to_json.js"></script>
 	<script src="../js/echarts.min.js"></script>
@@ -77,10 +76,10 @@
 </div>
 <ul class="menu">
 	<li id="bouton_save_reg" class="pointer"><span>Save NMIR Reg</span></li>
-	<li id="bouton_get_counts"><a href="../b2b/counts-fmp-yesterday-est.php" target="_blank">H20/Occ D-1 Est</a></li>
-	<li id="bouton_get_counts"><a href="../b2b/counts-fmp-yesterday-west.php" target="_blank">H20/Occ D-1 West</a></li>
-	<li id="bouton_get_counts"><a href="../b2b/counts-fmp-yesterday-confs.php" target="_blank">Confs D-1</a></li>
-	<li id="bouton_get_counts"><a href="../b2b/counts-fmp-yesterday-flights.php" target="_blank">Flights D-1</a></li>
+	<li id="bouton_get_counts_est"><a href="../b2b/counts-fmp-yesterday-est.php" target="_blank">H20/Occ D-1 Est</a></li>
+	<li id="bouton_get_counts_west"><a href="../b2b/counts-fmp-yesterday-west.php" target="_blank">H20/Occ D-1 West</a></li>
+	<li id="bouton_get_yesterdaycounts_est"><a href="../b2b/counts-fmp-yesterday-confs.php" target="_blank">Confs D-1</a></li>
+	<li id="bouton_get_yesterdaycounts_west"><a href="../b2b/counts-fmp-yesterday-flights.php" target="_blank">Flights D-1</a></li>
 	<li>
 		<button id="arrow_left"><</button>
 		<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="2021-09-14" max="2030-12-31">
