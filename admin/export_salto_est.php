@@ -57,7 +57,7 @@ function write_xml($json) {
 		$xmlroot->appendChild($xmlcorresp);
 	}
 
-	$rel = array(["LFMEST1","LFMMEKBTAJ"],["LFMEST2","LFMM12MNST"]);
+	$rel = array(["LFMEST1","LFMMEKBTAJ"],["LFMVAMTU","LFMMB34"]);
 	foreach($rel as $arr) {
 		$xmlcorresp = $domtree->createElement("CorrespondanceTrafficVolumeAirspaceCentre");
 		$xmlcorresp->setAttribute("nomTrafficVolume", $arr[0]);
