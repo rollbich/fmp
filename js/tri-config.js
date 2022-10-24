@@ -18,10 +18,8 @@ const bloc_west = {
 
 /*  ---------------------------------------------------------------------------------
         Utilisé pour :
-        - le tri dans schema.js => ouverture, overload, visu, capa (graph uceso)
-        - le tri dans confs-class.js 
-            => confs
-            => confs admin (show BDD locale, export fichier de paramétrage SALTO)
+        - le tri dans ouverture
+        - l'export fichier de paramétrage SALTO (export_salto dans confs-class.js)
     --------------------------------------------------------------------------------- */
 
 const salto_est = {
@@ -44,7 +42,7 @@ const salto_est = {
     "bloc17": ["A12", "AB12"],
     "bloc18": ["BB", "B12"],
     "bloc19": ["EK", "EE", "EK3", "E3"],
-    "bloc20": ["RAEE12", "E12"],
+    "bloc20": ["REE12", "E12"],
     "bloc21": ["E23", "E2"],
     "bloc22": ["EK2", "EK23"],
     "bloc23": ["EK1"],
