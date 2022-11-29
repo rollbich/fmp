@@ -54,10 +54,10 @@ require("../php/check_ok.inc.php");
 			await data_regs_year.init();
 			show_delay_graph("accueil_reguls", year, listWeek, data_regs_year.delay['cta'], data_regs_lastyear.delay['cta'], data_regs_2019.delay['cta'], "LFMMCTA");
 
-			const tabl = new weekly_briefing(year, week_number, "accueil_bilan");
+			const tabl = new weekly_briefing(year, week_number, "bilan_vols", "bilan_reguls");
 			await tabl.init();
 			tabl.show_data();
-			
+			tabl.change_week();
       	});
     </script>
 </head>
@@ -71,7 +71,10 @@ require("../php/check_ok.inc.php");
 	  <div id="accueil_vols"></div>
 	  <div id="accueil_reguls"></div>
 	</div>
-  <div id="accueil_bilan"></div>
+  <div id="accueil_bilan">
+  	  <div id="bilan_vols"></div>
+	  <div id="bilan_reguls"></div>
+  </div>
 </div>
 </div>
 <?php include("../php/upload.inc.php"); ?>

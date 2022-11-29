@@ -206,8 +206,9 @@ class weekly_vols {
 	-------------------------------------------------------------------------------------*/
 
 class weekly_briefing {
-	constructor(year, week, containerId) {
-		this.container = $(containerId);
+	constructor(year, week, containerId_vols, containerId_reguls) {
+		this.container_vols = $(containerId_vols);
+		this.container_reguls = $(containerId_reguls);
 		this.year = year;
 		this.week = week;
 		this.lastweek_year = this.get_last_week()[0];
@@ -241,10 +242,22 @@ class weekly_briefing {
 			{ sel += `<option value="${i}">Sem ${i}</option>`; }
 		}
 		sel += `</select><br><br>`;
+		const change_div = document.createElement('div');
+		change_div.setAttribute("id", "bilan_changeWeek");
+		this.container_vols.insertAdjacentElement('beforebegin', change_div);
+		$('bilan_changeWeek').innerHTML = sel;
+		this.show_data_vols();
+		this.show_data_reguls();
+	}
+
+	show_data_vols() {
 		let v = this.data_vols();
+		this.container_vols.innerHTML = v;
+	}
+
+	show_data_reguls() {
 		let r = this.data_reguls();
-		this.container.innerHTML = sel+v+r;
-		this.change_week();
+		this.container_reguls.innerHTML = r;
 	}
 
 	change_week() {
@@ -253,7 +266,8 @@ class weekly_briefing {
 			this.week = parseInt(val);
 			this.lastweek_week = this.get_last_week()[1];
 			this.lastweek_year = this.get_last_week()[0];
-			this.show_data();
+			this.show_data_vols();
+			this.show_data_reguls();
 		})
 	}
 
