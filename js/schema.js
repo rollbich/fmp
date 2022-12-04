@@ -1,8 +1,17 @@
 class schema_rea {
 
+/*  -----------------------------------------------
+        @param type (string) - "cautra" ou "4F"
+    ----------------------------------------------- */
+
     constructor(day, zone) {
         this.day = day;
         this.zone = zone;
+        let type = "cautra";
+		const d = new Date(this.day);
+		const date4f = new Date("2022-12-06");
+		if (d >= date4f || this.day === "2022-11-22")  { type = "4F"; }
+        this.type = type;
         this.ouv_tech = 4;
     }
 
@@ -18,13 +27,19 @@ class schema_rea {
  	  schema = {
 		date:  {day: ..., month: ..., year: ... },
 		max_secteurs: nbre secteurs max sur la journée,
-		ouverture: [ jj/mm/aaaa, heure_début, heure_fin, nbr_secteurs, [noms des TV, position] ]
+		ouverture: [ jj-mm-aaaa, heure_début, heure_fin, nbr_secteurs, [noms des TV, position] ]
 		tv: [ liste des tv]
         position: { position: [ [heure_deb, heure_fin, TV], ...}
 		tv_h: { tv: [ [heure_deb en min, heure_fin en min], [heure_deb, heure_fin] ...] }  = heure ouverture par tv
  	}
 	---------------------------------------------------------------------------------------------------------------- */
+    
     async read_schema_realise() {
+        if (this.type === "4F") return await this.read_schema_realise_4f();
+        if (this.type === "cautra") return await this.read_schema_realise_cautra();
+    }
+    
+    async read_schema_realise_cautra() {
         if (this.day === null) throw new Error("Le jour est indéfini");
         const fichier_courage = dir+"Realise/"+this.get_courage_filename(this.day, this.zone);
         const schema = {};
@@ -128,8 +143,7 @@ class schema_rea {
                     schema.ouverture.push(temp);
                 }
         })
-        //console.log("Schema ouverture");
-        //console.log(schema.ouverture);
+       
         // parfois on a le même TV 2 fois de suite => concaténer les 2 lignes en 1 en étendant l'heure de la 1ère ligne, à faire 2 fois car parfois il y a 3 fois le même TV
         // le faire uniquement si la position est inchangée
         this.doublon(schema);
@@ -139,11 +153,115 @@ class schema_rea {
         this.doublon(schema);
         // enlève les doublons du tableau des TV
         schema.tv = [...new Set(schema.tv)];
+        console.log("Schema");
+        console.log(schema);
         return schema;
         }
         
         catch (err) {
             //alert(err.message);
+        }
+        
+    }
+
+    async get_4f(day, zone) { 
+        try {
+            let response = await fetch("../php/get_rea_4f.php", {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ "zone": zone, "day": day})
+            })
+            return response;
+        }
+        
+        catch (err) {
+            alert('Get 4F Load json error: '+err.message);
+        }
+    }
+
+    async read_schema_realise_4f() {
+        if (this.day === null) throw new Error("Le jour est indéfini");
+        const schema = {};
+        schema.ouverture = [];
+        // tableau des TV ouverts
+        schema.tv = [];
+        schema.date = reverse_date(this.day);
+        schema.max_secteurs = 0;
+        schema.tv_h = {};
+        schema.position = {};
+        
+        try { 
+            const z = this.zone.substring(1,2);
+            const json_4f = await this.get_4f(this.day, z).then( async (response) => {
+                if (response.ok) { // entre 200 et 300
+                    return Promise.resolve(response.json())
+                } else {
+                    if (response.status == 404) { 
+                        show_popup(`Fichier courage ${z}`, `Le fichier du ${schema.date} n'existe pas`);
+                        await wait(1000);
+                        document.querySelector('.popup-close').click();
+                        console.log(`Fichier courage ${z} : Le fichier du ${schema.date} n'existe pas`);
+                    }
+                }
+            }); 
+            console.log("Contenu 4F");
+            // force le démarrage à minuit
+            json_4f["mapping"][0]['start_time'] = '00:00';
+            // ajout des heures de fin
+            for (var i = 1; i < json_4f["mapping"].length; i++) {
+                json_4f["mapping"][i-1]['end_time'] = json_4f["mapping"][i]['start_time'];
+            }
+            // termine le mapping à 23:59
+            json_4f["mapping"][json_4f["mapping"].length - 1]['end_time'] = '23:59';
+            console.log(json_4f);
+        
+            json_4f["mapping"].forEach(mapping_obj => { 
+                let tv_h_d = mapping_obj.start_time;
+                let tv_h_f = mapping_obj.end_time;
+                let temp = [schema.date, tv_h_d, tv_h_f];
+                // ajoute le nb de secteurs ouverts
+                temp.push(mapping_obj.pos.length);
+                // extrait les TVs ouverts
+                let ouv = [];
+                mapping_obj.pos.forEach( el => {
+                    let sub_tv = el.pos_regroup;
+                    let pos = el.pos_name;
+                    // remplit les heures ouverts pour chaque TV et chaque position
+                    if (!(schema["tv_h"].hasOwnProperty(sub_tv))) { 
+                        schema["tv_h"][sub_tv] = [];
+                    }
+                    if (!(schema["position"].hasOwnProperty(pos))) { 
+                        schema["position"][pos] = [];
+                    }
+                    schema["tv_h"][sub_tv].push([tv_h_d, tv_h_f]);
+                    schema["position"][pos].push([tv_h_d, tv_h_f,sub_tv]);
+                    ouv.push([sub_tv,el.pos_name]);
+                    schema.tv.push(sub_tv);
+                })
+                // calcul du nbre max de secteurs
+                schema.max_secteurs = Math.max(schema.max_secteurs, mapping_obj.pos.length);
+                // trier temp par ordre alphabétique
+                let arr_ouv = this.zone === "AE" ? tri_salto(ouv, "est") : tri_salto(ouv, "ouest");
+                temp.push(arr_ouv);
+                schema.ouverture.push(temp);
+            })
+               
+            // parfois on a le même TV 2 fois de suite => concaténer les 2 lignes en 1 en étendant l'heure de la 1ère ligne, à faire 2 fois car parfois il y a 3 fois le même TV
+            // le faire uniquement si la position est inchangée
+            this.doublon(schema);
+            this.doublon(schema);
+            this.doublon(schema);
+            this.doublon(schema);
+            this.doublon(schema);
+            this.doublon_position(schema);
+            // enlève les doublons du tableau des TV
+            schema.tv = [...new Set(schema.tv)];
+            console.log("Schema");
+            console.log(schema);
+            return schema;
+        }
+        catch (err) {
+            alert(err.message);
         }
         
     }
@@ -161,13 +279,21 @@ class schema_rea {
         return `${dd[0]}/${dd[1]}/COUR-${d}.${this.zone}.sch.rea`;
     }
 
+    get_4f_filename() {
+        const d = this.day.replace(/-/g, '');
+        const dd = this.day.split("-");
+        const z = this.zone.substring(1,2);
+        return `${dd[0]}/${dd[1]}/${d}_000000_LFMM-${z}.xml`;
+    }
+
 /*  ---------------------------------------------------
-	  teste si 2 ouvertures à la suite sont identiques
+      Fusionne 2 ouvertures à la suite identiques
 	 	@param {object} schema - array non trié
 		@returns {array} - array filtré
 	--------------------------------------------------- */
     doublon(schema) {
         for(let i=0;i<schema.ouverture.length-1;i++) {
+            //let i = 0;
             // si le nbr de secteurs est identique 2 fois de suite
             if (schema.ouverture[i][3] == schema.ouverture[i+1][3]) {
                 // on vérifie que ce sont les mêmes TV
@@ -184,6 +310,31 @@ class schema_rea {
                 }
             }
         }
+    }
+
+/*  ---------------------------------------------------
+      Fusionne 2 positions à la suite identiques
+        @param {object} schema - array non trié
+        @returns {array} - array filtré
+    --------------------------------------------------- */
+    // pas fini
+    doublon_position(schema) {
+        // tableau des positions utilisées
+        const positions = Object.keys(schema.position);
+        console.log("Positions");
+        console.log(positions);
+        positions.forEach(pos => {
+            console.log(schema.position[pos]);
+            for(let i=0;i<schema.position[pos].length-1;i++) {
+                // si le TV est identique 2 fois de suite
+                if (schema.position[pos][i][2] == schema.position[pos][i+1][2]) {
+                    const temp_array = [schema.position[pos][i][0], schema.position[pos][i+1][1], schema.position[pos][i+1][2]];
+                    // on remplace la ligne i dans le tableau et on supprime la ligne i+1 du tableau
+                    schema.position[pos].splice(i, 1, temp_array);
+                    schema.position[pos].splice(i+1, 1);
+                }
+            }
+    })
     }
 
 /*  -------------------------------------------------------------------------------
