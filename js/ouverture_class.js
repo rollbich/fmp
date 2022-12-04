@@ -15,7 +15,7 @@ class ouverture extends schema_rea {
     async show_ouverture(confs, bool) {
         this.schema = await this.read_schema_realise();
         if (typeof this.schema === 'undefined') {
-            show_popup("Fichier inexistant",`Le fichier du ${this.day} n'existe pas`);
+            show_popup("Problème de lecture",`Vérifier le fichier`);
             return;
         }
         this.confs = confs;	
@@ -214,10 +214,16 @@ class ouverture extends schema_rea {
         for (const [key, value] of Object.entries(this.schema.position)) {                        				
             value.forEach(arr => {
                 let tv = arr[2];
-                let deb = min_to_time(arr[0]);
-                let fin = min_to_time(arr[1]);
+                let deb;
+                let fin;
+                // si les heures contiennent ":", c'est que c'est 4f : les heures sont déjà au bon format 
+                // sinon c'est cautra les heures sont en minutes, il faut les convertir
+                if (arr[0].toString().indexOf(':') == -1) deb = min_to_time(arr[0]); else deb = arr[0];
+                if (arr[1].toString().indexOf(':') == -1) fin = min_to_time(arr[1]); else fin = arr[1];
                 let data = deb+"-"+fin;
                 tab_h.push(data);
+                console.log("TV: "+tv+"   data: "+data);
+                console.log(arr);
             });                           
         }   
         
@@ -235,8 +241,10 @@ class ouverture extends schema_rea {
             const index_arr = new Array(tab_h.length).fill("");					
             value.forEach( arr => {
                 let tv = arr[2];
-                let deb = min_to_time(arr[0]);
-                let fin = min_to_time(arr[1]);
+                let deb;
+                let fin;
+                if (arr[0].toString().indexOf(':') == -1) deb = min_to_time(arr[0]); else deb = arr[0];
+                if (arr[1].toString().indexOf(':') == -1) fin = min_to_time(arr[1]); else fin = arr[1];
                 let d = deb+"-"+fin;
                 let index = tab_h.indexOf(d);
                 index_arr[index] = [tv, deb, fin];
