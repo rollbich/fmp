@@ -27,7 +27,7 @@ function check($fichier) {
 	if ($ok === true) {
 		$info = pathinfo($fichier);
 		$extension = $info['extension'];
-		$extensionsAutorisees = array("rea");
+		$extensionsAutorisees = array("rea", "xml");
 		if (!(in_array($extension, $extensionsAutorisees))) {
 			$ok = false;
 		}	
@@ -35,7 +35,7 @@ function check($fichier) {
 		
 	//check COUR 
 	if ($ok === true) {
-		$pos = strpos($fichier,'COUR');
+		$pos = strpos($fichier,'COUR') || strpos($fichier,'000000');
 		if(($pos === false)) {
 			$ok = false;
 		}
