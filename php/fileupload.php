@@ -44,6 +44,12 @@ function check($fichier) {
 	return $ok;	
 }
 
+function check_type(string $nom_fichier) {
+	$type = "4F";
+	if (strpos($nom_fichier,'000000') === false) $type = "courage";
+	return $type;
+}
+
 if(!empty($fichiers)) {
 	header('Content-type: application/json');
 	$fic_desc = reArrayFiles($fichiers);
@@ -57,10 +63,17 @@ if(!empty($fichiers)) {
 			array_push($arr, $val);
 		} else { 
 			$nomDestination = $nomOrigine;
-			$n = explode("COUR-", $nomOrigine);
-			$year = substr($n[1],0,4);
-			$month = substr($n[1],4,2);
-			$day = substr($n[1],6,2);
+			$type = check_type($nomOrigine);
+			if ($type === "courage") {
+				$n = explode("COUR-", $nomOrigine);
+				$year = substr($n[1],0,4);
+				$month = substr($n[1],4,2);
+				$day = substr($n[1],6,2);
+			} else {
+				$year = substr($nomOrigine,0,4);
+				$month = substr($nomOrigine,4,2);
+				$day = substr($nomOrigine,6,2);
+			}
 			$uploadFolder = dirname(__FILE__)."/../Realise/".$year."/".$month."/";
 			
 			if (!file_exists($uploadFolder)) {
