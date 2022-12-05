@@ -1,4 +1,17 @@
 <?php
+/*  -------------------------------------------------------------------------------------
+	  Renvoie la liste des fichiers presents dans le dossier classée par année et mois
+		return json
+		{
+			"annee": { "mois": [], ...},
+			"2022": {
+				"01" : [ "COUR-20220101.AE.sch.rea", "COUR-20220101.AW.sch.rea", … ],
+				"02" : [],
+				...
+				"12" : []
+			}
+		}
+	------------------------------------------------------------------------------------- */
 $obj = new stdClass();			
 $liste_annees = scan_dossier("../Realise/");
 foreach($liste_annees as $dossier_annee) {
