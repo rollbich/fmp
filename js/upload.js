@@ -35,6 +35,7 @@ function init_upload(formId) {
 			 body: formData,
 		})
 		const data = await response.json();
+		console.log("Data file upload");
 		console.log(data);
 		const d = document.querySelectorAll(".done");
 
@@ -106,7 +107,9 @@ async function init_dir(containerId) {
 	try {
 		const response = await fetch("../php/read.php");
 		const data = await response.json();
+		console.log("Data Dossier");
 		console.log(data);
+		
 		let inner = '<h2>Fichiers Schémas Réalisés présents</h2>';
 		inner += "<p>Cliquez sur l'année et le mois pour voir les fichiers</p>";
 		inner += '<ul is="expanding-list">';
@@ -115,17 +118,31 @@ async function init_dir(containerId) {
 			inner += `<li>${annee}<ul>`;
 			tab.forEach(elem => {
 			for(const mois in data[annee]) {
+				
 				if (elem == mois) {
 				inner += `<li>${mois}<ul>`;
 					for(const jour in data[annee][mois]) {
 						const nom = data[annee][mois][jour];
-						const zone = nom.substr(14,2);
-						const day = get_date_from_courage_file(nom);
-						const z = zone === "AE" ? "EST" : "OUEST";
-						inner += `<li>${day} - ${z}</li>`;
+						let type, zone, day, z;
+
+						if (nom.indexOf('000000') != -1) {
+							type = "4F";
+							zone = nom.substring(21,22);
+							day = hyphen_date(nom.substring(0,8));
+							z = zone === "E" ? "EST" : "OUEST";
+						} else {
+							type = "Courage";
+							zone = nom.substr(14,2);
+							console.log("Zone Courage: "+zone);
+							day = get_date_from_courage_file(nom);
+							z = zone === "AE" ? "EST" : "OUEST";
+						}
+						
+						inner += `<li>${day} - ${z} - ${type}</li>`;
 					}
 				inner += '</ul></li>';
 				}
+				
 			}
 			});
 			inner += '</ul></li>';
