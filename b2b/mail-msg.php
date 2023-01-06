@@ -11,7 +11,7 @@ function send_mail() {
 	$header .= "MIME-Version: 1.0 \n";
 	$header .= "Content-Type: text/plain \n";
 	mail($to, $sujet, $message, $header);
-	//mail($to2, $sujet, $message, $header);
+	mail($to2, $sujet, $message, $header);
 	
 }
 
