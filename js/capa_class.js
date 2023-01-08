@@ -760,7 +760,6 @@ class feuille_capa extends capa {
 			let nb_occ = elem[1] - elem[0] + 1;
 			res3 += `<td class="bordure_uc" colspan="${nb_occ}">${elem[2]}</td>`;
 		});
-		
 		let res = `<tr class="bold"><td class='left_2px bottom_2px' colspan="3">UCESO</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res3}</tr>`;
 		return res;
 	}
@@ -801,7 +800,7 @@ class feuille_capa extends capa {
 		const values = Object.values(this.pc_vac[vac]["aTeamComposition"]);
 		for (const obj of values) {
 			for (const user in obj) {
-				console.log("user: "+user);
+				//console.log("user: "+user);
 				const prenom = obj[user]["agent"]["prenom"];
 				const nom = obj[user]["agent"]["nom"];
 				const name = nom+" "+prenom;
@@ -810,21 +809,21 @@ class feuille_capa extends capa {
 					// bug si lesrenforts alors role est déjà un array [9,10,98], autrement un string "9,10,98"
 					if (typeof role === "string") role = role.split(","); // array des roles
 					role = role.map(elem => parseInt(elem)); // array d'integer
-					console.log(name + " Role :");
-					console.log(role);
+					//console.log(name + " Role :");
+					//console.log(role);
 					let pushed = false;
 					if (role.includes(82)) {
-						console.log("CDS ?"+obj[user]["contextmenuType"]);
+						//console.log("CDS ?"+obj[user]["contextmenuType"]);
 						if (Array.isArray(obj[user]["contextmenuType"])) present.push([name, "PC-CDS"]); else present.push([name, "CDS"]);
 						pushed = true;
 					}
 					if (role.includes(80)) {
-						console.log("ACDS");
+						//console.log("ACDS");
 						present.push([name, "PC-ACDS"]);
 						pushed = true;
 					} 	
 					if (role.includes(14)) {
-						console.log("DET");
+						//console.log("DET");
 						present.push([name, "PC-DET"]);
 						pushed = true;
 					} 
@@ -844,8 +843,8 @@ class feuille_capa extends capa {
 				} 
 			}
 		}
-		console.log("VAC :");
-		console.log(present);
+		//console.log("VAC :");
+		//console.log(present);
 	}
 
 	// Gère les stages, CGE et RPL
@@ -1190,7 +1189,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 			let nb_sect = row[1];
 			let f = deb.split(":");
 			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]);
-			data_series_uceso.push([time,nb_sect]);
+			//data_series_uceso.push([time,nb_sect]);
 		}); 
 		data_series_uceso.push([new Date(d[0], d[1]-1, d[2], 23, 59), uceso[uceso.length-1][1]]);
 	}
@@ -1241,7 +1240,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 			let nb_sect = row[3];
 			let f = deb.split(":");
 			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]); // -1 pour le mois car l'index commence à 0
-			data_series.push([time,nb_sect]);
+			//data_series.push([time,nb_sect]);
 		}); 
 		data_series.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema.ouverture[schema.ouverture.length-1][3]]);
 	}
@@ -1255,7 +1254,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 			let nb_sect = row[3];
 			let f = deb.split(":");
 			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]); // -1 pour le mois car l'index commence à 0
-			data_series7.push([time,nb_sect]);
+			//data_series7.push([time,nb_sect]);
 		}); 
 		data_series7.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema7.ouverture[schema7.ouverture.length-1][3]]);
 	}
@@ -1269,7 +1268,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 			let nb_sect = row[3];
 			let f = deb.split(":");
 			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]);
-			data_series2019.push([time,nb_sect]);
+			//data_series2019.push([time,nb_sect]);
 		}); 
 		data_series2019.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema2019.ouverture[schema2019.ouverture.length-1][3]]);
 	}
