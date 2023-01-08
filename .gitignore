@@ -9,6 +9,7 @@ overload/xls/
 *.csv
 *.xlsx
 *.xls
+*.xml
 nmir/
 weekly_briefing.js
 .htaccess
