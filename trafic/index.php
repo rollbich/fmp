@@ -29,6 +29,7 @@
 	<script>
 		document.addEventListener('DOMContentLoaded', (event) => {
 			<?php include("../php/nav.js.inc.php"); ?>
+			
 			new dragger('graph-container-h20', 'drag-container');
 			new dragger('graph-container-occ', 'drag-container');
 
