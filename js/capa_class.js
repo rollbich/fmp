@@ -1182,7 +1182,6 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 		uceso = pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn[index][0] + pc_total_jx_15mn[index]) / 2) ]);
 		console.log("uceso");
 		console.log(uceso);
-		const uceso = pc_15mn.map( elem => [elem[0],Math.floor(elem[1]/2)]);
 		data_series_uceso = [];
 		uceso.forEach(row => {
 			let deb = row[0];
