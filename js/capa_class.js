@@ -1182,14 +1182,14 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 		uceso = pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn[index][0] + pc_total_jx_15mn[index]) / 2) ]);
 		console.log("uceso");
 		console.log(uceso);
-		//const uceso = pc_15mn.map( elem => [elem[0],Math.floor(elem[1]/2)]);
+		const uceso = pc_15mn.map( elem => [elem[0],Math.floor(elem[1]/2)]);
 		data_series_uceso = [];
 		uceso.forEach(row => {
 			let deb = row[0];
 			let nb_sect = row[1];
 			let f = deb.split(":");
 			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]);
-			//data_series_uceso.push([time,nb_sect]);
+			data_series_uceso.push([time,nb_sect]);
 		}); 
 		data_series_uceso.push([new Date(d[0], d[1]-1, d[2], 23, 59), uceso[uceso.length-1][1]]);
 	}
@@ -1240,7 +1240,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 			let nb_sect = row[3];
 			let f = deb.split(":");
 			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]); // -1 pour le mois car l'index commence à 0
-			//data_series.push([time,nb_sect]);
+			data_series.push([time,nb_sect]);
 		}); 
 		data_series.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema.ouverture[schema.ouverture.length-1][3]]);
 	}
@@ -1254,7 +1254,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 			let nb_sect = row[3];
 			let f = deb.split(":");
 			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]); // -1 pour le mois car l'index commence à 0
-			//data_series7.push([time,nb_sect]);
+			data_series7.push([time,nb_sect]);
 		}); 
 		data_series7.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema7.ouverture[schema7.ouverture.length-1][3]]);
 	}
@@ -1268,7 +1268,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 			let nb_sect = row[3];
 			let f = deb.split(":");
 			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]);
-			//data_series2019.push([time,nb_sect]);
+			data_series2019.push([time,nb_sect]);
 		}); 
 		data_series2019.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema2019.ouverture[schema2019.ouverture.length-1][3]]);
 	}
