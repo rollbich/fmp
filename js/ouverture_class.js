@@ -92,7 +92,8 @@ class ouverture extends schema_rea {
                     <tbody>`;
         const zon = this.zone === "AE" ? "est" : "ouest";                    
         this.schema.ouverture.forEach(row => {
-                                
+            //console.log("Row");
+            //console.log(row); 
             res += '<tr>'; 
             for(let j=1;j<4;j++) { res += `<td>${row[j]}</td>`; }	
             const regroupements = [];
@@ -123,6 +124,7 @@ class ouverture extends schema_rea {
             }
            		
             row[4].forEach(tv => {
+                console.log("R: "+row[1]+" "+row[2]);
                 let r = this.get_ouverture_totale(tv[0], time_to_min(row[1]), time_to_min(row[2]));
                 const color = get_group_color(tv[0], zon);
                 res += `<td title="${tv[1]}" class="tv" data-tv="${tv[0]}" data-deb="${r[0]}" data-fin="${r[1]}" style="background: ${color}">${tv[0]}</td>`;
@@ -405,21 +407,24 @@ class ouverture extends schema_rea {
 	  Récupère la plage maximale d'ouverture d'un TV
 	 	@param {object} schema - objet schéma
 		@param {string} tv - nom du TV
-		@param {string} deb - heure de début
-		@param {string} fin - heure de fin
+		@param {string} deb - heure de début en minutes depuis minuit
+		@param {string} fin - heure de fin en minutes depuis minuit
 		@returns {array} - [heure 1ère ouverture du TV, heure de fermeture du TV]
 	------------------------------------------------------------------------------ */
 // ex : le nbre de secteur vient de passer à 6 et AB était ouvert entre 10:14 (deb) et 10:35 (fin)
 // mais AB était déjà ouvert depuis 08:00 et restera ouvert jusqu'à 17:35 => on récupère ["08:00", "17:35"] 
     get_ouverture_totale(tv, deb, fin) {
+        //console.log("Ouv Tot: "+tv+" "+deb+" "+fin);
         let datad = "", dataf =  "";
         for(let j=0;j<this.schema["tv_h"][tv].length;j++) {
+            //console.log("deb: "+deb+"   Hd: "+(this.schema["tv_h"][tv][j][0]-this.ouv_tech)+"fin: "+fin+"   Hf: "+(this.schema["tv_h"][tv][j][1]+this.ouv_tech));
             if (deb >= this.schema["tv_h"][tv][j][0]-this.ouv_tech && fin <= this.schema["tv_h"][tv][j][1]+this.ouv_tech) {
                 datad = min_to_time(this.schema["tv_h"][tv][j][0]);
                 dataf = min_to_time(this.schema["tv_h"][tv][j][1]);
                 break;
             } 																		
         }
+        //console.log("Ouv Tot return: "+datad+" "+dataf);
         return [datad, dataf];
     }
 
