@@ -218,6 +218,8 @@ class schema_rea {
             json_4f["mapping"].forEach(mapping_obj => { 
                 let tv_h_d = mapping_obj.start_time;
                 let tv_h_f = mapping_obj.end_time;
+                let tv_h_d_minutes = time_to_min(tv_h_d);
+                let tv_h_f_minutes = time_to_min(tv_h_f);
                 let temp = [schema.date, tv_h_d, tv_h_f];
                 // ajoute le nb de secteurs ouverts
                 temp.push(mapping_obj.pos.length);
@@ -233,7 +235,7 @@ class schema_rea {
                     if (!(schema["position"].hasOwnProperty(pos))) { 
                         schema["position"][pos] = [];
                     }
-                    schema["tv_h"][sub_tv].push([tv_h_d, tv_h_f]);
+                    schema["tv_h"][sub_tv].push([tv_h_d_minutes, tv_h_f_minutes]);
                     schema["position"][pos].push([tv_h_d, tv_h_f,sub_tv]);
                     ouv.push([sub_tv,el.pos_name]);
                     schema.tv.push(sub_tv);
