@@ -1,7 +1,7 @@
 <?php
 ini_set('memory_limit', '1G');
-require_once("xlsxwriter.class.php");
-require_once("mail-msg.php");
+//require_once("xlsxwriter.class.php");
+//require_once("mail-msg.php");
 require_once("B2B.php");
 require_once("B2B-Service.php");
 require_once("B2B-AirspaceServices.php");

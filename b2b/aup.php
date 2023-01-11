@@ -1,7 +1,5 @@
 <?php
 ini_set('memory_limit', '1G');
-require_once("xlsxwriter.class.php");
-require_once("mail-msg.php");
 require_once("B2B.php");
 require_once("B2B-Service.php");
 require_once("B2B-AirspaceServices.php");
@@ -43,10 +41,10 @@ function write_json($arr, $zone, $type, $wef) {
 /*  ---------------------------------------------------------- */
 
 $soapClient = new B2B();
-$date = new DateTime("2022-08-25");
-//$aup = $soapClient->airspaceServices()->get_AUP_chain($date, array("LFFAZAMC","LIRRZAMC","LECMZAMC"));
-//$aup = $soapClient->airspaceServices()->get_AUP($date, array("LFFAZAMC","LIRRZAMC","LECMZAMC"));
-$aup_chain = $soapClient->airspaceServices()->get_EAUP_chain($date);
+$date = new DateTime("2022-10-12");
+//$aup1 = $soapClient->airspaceServices()->get_AUP_chain($date, array("LFFAZAMC","LIRRZAMC","LECMZAMC"));
+//$aup2 = $soapClient->airspaceServices()->get_AUP($date, array("LFFAZAMC","LIRRZAMC","LECMZAMC"));
+/*$aup_chain = $soapClient->airspaceServices()->get_EAUP_chain($date);
 if ($aup_chain->status == "OK") {
 	if (is_array($aup_chain->data->chain->eaups)) {
 		$seqNumber = count($aup_chain->data->chain->eaups);
@@ -54,9 +52,18 @@ if ($aup_chain->status == "OK") {
 		$seqNumber = 1;
 	}
 }
+*/
 $aup = $soapClient->airspaceServices()->get_EAUP_rsa($date, 1);
-echo "<br>Sequence Number : $seqNumber<br>";
-var_dump($aup_chain);
-echo "<br>";
-var_dump($aup);
+//echo "<br>Sequence Number : $seqNumber<br>";
+//echo "<br><br>";
+/*
+var_dump($aup1);
+echo "<br><br>";
+var_dump($aup2);
+echo "<br><br>";
+*/
+//json_encode($aup_chain);
+//echo "<br><br>";
+header("Content-type:application/json");
+echo(json_encode($aup));
 ?>

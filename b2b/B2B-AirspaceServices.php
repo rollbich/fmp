@@ -44,6 +44,7 @@ class AirspaceServices extends Service {
 				} else {
 					$aup_id = $chains->aups->id;
 				}
+                //echo "aupId : $aup_id<br><br>";
 				$params = array(
 					'sendTime' => $now->format('Y-m-d H:i:s'),
 					'aupId' => $aup_id
@@ -100,9 +101,11 @@ class AirspaceServices extends Service {
 
         $params = array(
             'sendTime' => $now->format('Y-m-d H:i:s'),
+            //'implicit' => true,
+            //'explicit' => true,
+            //'rsaDesignators' => array('LF*'),
             'eaupId' => array('chainDate' => $chainDate->format('Y-m-d'), 'sequenceNumber' => $seqNumber) 
         );
-        //$params['rsaDesignators'] = 'LF*';
                             
         try {
             $output = $this->getSoapClient()->__soapCall('retrieveEAUPRSAs', array('parameters'=>$params));

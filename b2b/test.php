@@ -1,13 +1,11 @@
 <?php
 ini_set('memory_limit', '1G');
-require_once("xlsxwriter.class.php");
-require_once("mail-msg.php");
 require_once("B2B.php");
 require_once("B2B-Service.php");
 require_once("B2B-FlightServices.php");
 require_once("B2B-FlowServices.php");
 include_once("config.inc.php");
-include_once("hour_config".$config.".inc.php");
+include_once("hour_config-vps.inc.php");
 /*
 $wef=gmdate("Y-m-d H:i", mktime(15, 0, 0, 5, 16, 2021));
 $unt=gmdate("Y-m-d H:i", mktime(17, 0, 0, 5, 16, 2021));
@@ -77,15 +75,13 @@ $soapClient->flightServices()->get_vols_App($flights, $tab_TVAPP, $tab_ADAPP, $w
 
 try {	
 	var_dump($flights);
-	//write_json($flights, "", "-vols", $wef_counts);
+	write_json($flights, "", "-vols", $wef_counts);
 	
 }
 catch (Exception $e) {
 	$err = "Erreur, verifier les sauvegardes\n"."Exception reçue : ".$e->getMessage()."\n";
 	echo "Erreur, verifier les sauvegardes\n<br>";
 	echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";
-	write_log("", "", $err);
-	//send_mail();
 }
 
 
