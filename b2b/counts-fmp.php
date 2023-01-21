@@ -18,6 +18,7 @@ $unt=gmdate("Y-m-d H:i", mktime(17, 0, 0, 5, 16, 2021));
 		Ecriture du fichier Excel XLS
 		4 onglets H20, Occ, Regul et flights
 	------------------------------------------ */
+
 function write_xls($zone, $wef, $occ_est, $occ_west, $h20_est, $h20_west, $regul, $flights) {
 		
 	$header_occ = array(
@@ -154,6 +155,7 @@ function write_xls($zone, $wef, $occ_est, $occ_west, $h20_est, $h20_west, $regul
 		$wef : pour la date du jour
 		ex : 20210621-H20-est.csv
 	------------------------------------------ */
+
 function write_json($arr, $zone, $type, $wef) {
 	
 	$date = new DateTime($wef);
@@ -291,7 +293,8 @@ $reg["LFDSNA"] = array();
 
 // objet contenant les reguls Europe
 $json_atfcm_reg = $soapClient->flowServices()->get_ATFCM_situation();
-
+// Comme seul data est sauvé, ajoute sendTime dedans
+$json_atfcm_reg->data->sendTime = $json_atfcm_reg->sendTime;
 echo "get atfcm_situation OK<br>";
 
 // Remplit l'object $json_reg (et l'array $reg pour l'export xls)
