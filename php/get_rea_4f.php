@@ -3,6 +3,21 @@ header('content-type:application/json');
 
 /* ----------------------------------------------------------------------------------------------------------------------------------------
 	    @param {string} - zone = "E" ou "W"
+        @return {
+            "date": dd-mm-yyyy,
+            "zone": "E" ou "W",
+            "mapping": [
+                { 
+                    "start_time": "hh:mm",
+                    "pos": [
+                        { "pos_name": "Pxx", "pos_resps": "A1 A2 ...", "pos_regroup": "AB"}, 
+                        { "pos_name2": "Pxx", "pos_resps": "G1 G2 ...", "pos_regroup": "GY"},
+                        ...
+                    ]
+                },
+                ...
+            ]
+        }
    ---------------------------------------------------------------------------------------------------------------------------------------- */
 
 function get_rea_4f($year, $month, $day, $zone) {
