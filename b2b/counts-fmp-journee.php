@@ -105,7 +105,7 @@ function write_xls($zone, $wef, $occ_est, $occ_west, $h20_est, $h20_west, $regul
 		mkdir($dir, 0777, true);
 	}
 	
-	$writer->writeToFile($dir.$d."-Occ-H20-".$zone.$h."20.xlsx");
+	$writer->writeToFile($dir.$d."-Occ-H20-".$zone."-".$h."00.xlsx");
 
 }
 
