@@ -745,7 +745,6 @@ class feuille_capa extends capa {
 			if (index%4 === 0) cl = "left_2px";
 			if (index === 95) cl += " right_2px";
 			const demi = ((elem[1]+this.pc_instr_15mn[index][0]+this.pc_total_jx_15mn[index])%2 === 0) ? "" : "\u00bd";
-			console.log("index: "+index+"  pc: "+elem[1]+"  instr: "+this.pc_instr_15mn[index][0]+this.pc_total_jx_15mn[index]);
 			res2 += `<td class='${cl} bottom_2px'>${demi}</td>`;
 		});
 		let res = `<tr><td class='left_2px bottom_2px' colspan="3">Demi UC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
