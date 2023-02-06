@@ -4,11 +4,7 @@ require_once("B2B.php");
 require_once("B2B-Service.php");
 require_once("B2B-AirspaceServices.php");
 include_once("config.inc.php");
-include_once("hour_config".$config.".inc.php");
-/*
-$wef=gmdate("Y-m-d H:i", mktime(15, 0, 0, 5, 16, 2021));
-$unt=gmdate("Y-m-d H:i", mktime(17, 0, 0, 5, 16, 2021));
-*/
+//include_once("hour_config".$config.".inc.php");
 
 /*  -------------------------------------------
 		Ecriture du fichier générique json
@@ -35,35 +31,72 @@ function write_json($arr, $zone, $type, $wef) {
 	fclose($fp);
 
 }
+?>
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="robots" content="noindex">
+	<title>AUP Test</title>
+</head>
+<body>
+<h1>B2B Soap AUP Test</h1>
+<span>
+<form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="get" style="display: inline">
+	<input type="date" name="day" id="day" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="2023-01-01" max="2030-12-31">
+    <select id="request" name="request" class="select">
+		<option selected value="get AUP chain">Get AUP chain</option>
+		<option value="get AUP">Get AUP</option>
+		<option value="get EAUP chain">get EAUP chain</option>
+		<option value="get EAUP rsa">get EAUP rsa</option>
+	</select> 
+	<input type="submit" value="Go" style="margin-left: 15px; font-size: 14px">
+</form>
+</span>
 
+<?php 
 /*  ---------------------------------------------------------- */
 /* 						début du programme
 /*  ---------------------------------------------------------- */
-
-$soapClient = new B2B();
-$date = new DateTime("2022-10-12");
-//$aup1 = $soapClient->airspaceServices()->get_AUP_chain($date, array("LFFAZAMC","LIRRZAMC","LECMZAMC"));
-//$aup2 = $soapClient->airspaceServices()->get_AUP($date, array("LFFAZAMC","LIRRZAMC","LECMZAMC"));
-/*$aup_chain = $soapClient->airspaceServices()->get_EAUP_chain($date);
-if ($aup_chain->status == "OK") {
-	if (is_array($aup_chain->data->chain->eaups)) {
-		$seqNumber = count($aup_chain->data->chain->eaups);
-	} else {
-		$seqNumber = 1;
+if (isset($_GET) && !empty($_GET['day'])) {
+	$day = $_GET['day'];
+	$request = $_GET['request'];
+	echo "<br><br>Requested date: ".$day."<br>";
+	$soapClient = new B2B();
+	$date = new DateTime($day);
+	if ($request == "get AUP chain") {
+		echo "Request: $request<br><br>";
+		$aup_chain = $soapClient->airspaceServices()->get_AUP_chain($date, array("LFFAZAMC","LIRRZAMC"));
+		echo(json_encode($aup_chain));
 	}
+	if ($request == "get AUP") {
+		echo "Request: $request<br><br>";
+		$aup = $soapClient->airspaceServices()->get_AUP($date, array("LFFAZAMC","LIRRZAMC"));
+		echo(json_encode($aup));
+	}
+	if ($request == "get EAUP chain") {
+		echo "Request: $request<br><br>";
+		$eaup_chain = $soapClient->airspaceServices()->get_EAUP_chain($date);
+		if ($eaup_chain->status == "OK") {
+			if (is_array($eaup_chain->data->chain->eaups)) {
+				$seqNumber = count($eaup_chain->data->chain->eaups);
+			} else {
+				$seqNumber = 1;
+			}
+		}
+		echo "Sequence number: ".$seqNumber."<br><br>";
+		echo(json_encode($eaup_chain));
+	}
+	if ($request == "get EAUP rsa") {
+		echo "Request: $request<br><br>";
+		$eaup_rsa = $soapClient->airspaceServices()->get_EAUP_rsa($date, 1);
+		echo(json_encode($eaup_rsa));
+	}
+	//header("Content-type:application/json");
+	//echo(json_encode($aup));
 }
-*/
-$aup = $soapClient->airspaceServices()->get_EAUP_rsa($date, 1);
-//echo "<br>Sequence Number : $seqNumber<br>";
-//echo "<br><br>";
-/*
-var_dump($aup1);
-echo "<br><br>";
-var_dump($aup2);
-echo "<br><br>";
-*/
-//json_encode($aup_chain);
-//echo "<br><br>";
-header("Content-type:application/json");
-echo(json_encode($aup));
 ?>
+
+</body>
+</html>
