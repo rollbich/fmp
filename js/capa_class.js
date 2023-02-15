@@ -43,6 +43,7 @@ class capa {
 			if (this.effectif == 0) return 0;
 			
 			const tour_local = await loadJson(tour_json);
+			const saison = this.get_date_tour(tour_local);
 			const tour_utc = await this.get_tour_utc(tour_local);
 			const tds_supp_local = await loadJson(tour_supp_json);
 			const tds_supp_utc = await this.get_tds_supp_utc(tds_supp_local);
@@ -54,10 +55,10 @@ class capa {
 				let p = tab_vac_eq[vac]+"-"+this.zone_olaf;
 				const upBV = vac+"BV";
 				if (vac !== "N-1") {
-					const cds = (vac == "J2" || vac == "S1") ? 0 : 1; // cds=0 en J2 et S1
 					// Le RO induit apparait si detachés > 1 et plus que 1 n'est pas Expert Ops, ACDS ou Assistant sub
 					pc[vac]["ROinduit"] = parseInt(this.effectif[this.day][p]["teamReserve"]["roInduction"]);
-					pc[vac]["nbpc"] = parseInt(this.effectif[this.day][p]["teamReserve"]["teamQuantity"]) - cds + update[vac]; 
+					pc[vac]["nbcds"] = parseInt(tour_local[this.zone][saison]["cds"][vac]);
+					pc[vac]["nbpc"] = parseInt(this.effectif[this.day][p]["teamReserve"]["teamQuantity"]) - pc[vac]["nbcds"] + update[vac]; 
 					pc[vac]["BV"] = parseInt(this.effectif[this.day][p]["teamReserve"]["BV"]) + update[upBV];
 					pc[vac]["RO"] = parseInt(this.effectif[this.day][p]["teamReserve"]["roQuantity"]);
 					pc[vac]["userList"] = this.effectif[this.day][p]["userList"];
@@ -72,7 +73,8 @@ class capa {
 					//pc[vac]["detache"] = parseInt(this.effectif[this.day][p]["teamReserve"]["detacheQuantity"]);
 				} else {
 					pc[vac]["ROinduit"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["roInduction"]);
-					pc[vac]["nbpc"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["teamQuantity"]) - 1 + update[vac]; // le cds ne compte pas dans le nb de pc => -1
+					pc[vac]["nbcds"] = parseInt(tour_local[this.zone][saison]["cds"]["N"]);
+					pc[vac]["nbpc"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["teamQuantity"]) - pc[vac]["nbcds"] + update[vac]; // le cds ne compte pas dans le nb de pc => -1
 					pc[vac]["BV"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["BV"]) + update[upBV];
 					pc[vac]["RO"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["roQuantity"]);
 					pc[vac]["userList"] = this.effectif[yesterday][p]["userList"];
@@ -101,6 +103,7 @@ class capa {
 				}
 				---------------------------------------  */
 			pc["J0"] = {};
+			/* à remettre pour le web service 
 			const Renfort = this.effectif[this.day]['Renfort'];
 			for (let renf1 in Renfort) {
 				for (let cle in Renfort[renf1]) {
@@ -116,6 +119,7 @@ class capa {
 			}
 			console.log("Renfort J0");
 			console.log(pc["J0"]);
+			*/
 
 			// array du nombre de pc dispo associé au créneau horaire du tour de service
 			// En 24h, il y a 96 créneaux de 15mn.
@@ -131,10 +135,10 @@ class capa {
 			const effectif_total_Jx_15mn = [];
 			const effectif_Jx_15mn = {};
 			const vacs = ["J1", "J3", "S2", "J2", "S1"];
-			const cds = 1;
+			
 			for(var i=0;i<96;i++) {
 				vacs.forEach(vacation => {
-					const cds = (vacation == "J2" || vacation == "S1") ? 0 : 1;
+					const cds = pc[vacation]["nbcds"];
 					if (tour_utc[vacation][i][1] === 1) nb_pc += cds; // cds qui bosse sur secteur
 					if (tour_utc[vacation][i][2] === 1) {
 						if (noBV === false) {
@@ -151,6 +155,7 @@ class capa {
 						}
 					}
 				})
+				const cds = pc["N"]["nbcds"];
 				if (tour_utc["N"][i][1] === 1 && i>48) nb_pc += cds; // cds qui bosse sur secteur
 				if (tour_utc["N"][i][2] === 1 && i>48) {
 					if (noBV === false) {
@@ -237,7 +242,7 @@ class capa {
 					});
 				}
 				
-				/* backup J0
+				// backup J0 à enlever quand le web service Jx marchera
 				if (typeof Jx_date[this.zone][this.day] !== 'undefined') {
 					Object.keys(Jx_date[this.zone][this.day]).forEach( (vac_jx, index) => {
 						const nb = Jx_date[this.zone][this.day][vac_jx];
@@ -267,7 +272,7 @@ class capa {
 						}
 					});
 				}
-				*/
+				
 			}
 			return {"pc_vac": pc, "pc_total_dispo_15mn": pcs, "pc_instr_15mn": in15mn, "pc_jx_15mn": effectif_Jx_15mn, "pc_total_jx_15mn": effectif_total_Jx_15mn};
 		//}
@@ -611,7 +616,8 @@ class feuille_capa extends capa {
 		let res1 = "", res2 = "", res3 = "";
 		// A = effectif/2
 		// B = effectif/2 (+1)
-		const cds = (vac == "J2" || vac == "S1") ? 0 : 1
+		//const cds = (vac == "J2" || vac == "S1") ? 0 : 1
+		const cds = this.pc_vac[vac]["nbcds"];
 		const dispoA = Math.min(Math.floor(this.pc_vac[vac]["nbpc"]/2), Math.floor((this.pc_vac[vac]["BV"]+this.pc_vac[vac]["renfort"]-cds-this.pc_vac[vac]["ROinduit"])/2));
 		const dispoB = Math.min(Math.floor(this.pc_vac[vac]["nbpc"]/2)+(this.pc_vac[vac]["nbpc"])%2, Math.floor((this.pc_vac[vac]["BV"]+this.pc_vac[vac]["renfort"]-cds-this.pc_vac[vac]["ROinduit"])/2)+(this.pc_vac[vac]["BV"]+this.pc_vac[vac]["renfort"]-cds-this.pc_vac[vac]["ROinduit"])%2);
 		

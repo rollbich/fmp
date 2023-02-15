@@ -141,7 +141,7 @@ class tds_editor {
         $('button_show_supp').addEventListener('click', (e) => {
             let res ="";
             for(let i=0;i<12;i++) {
-                res += this.build_month(2022, i);
+                res += this.build_month(2023, i);
             }
             this.show_popup_date("Date Supp <button id='save_date_suppl' class='button_tour'>Save</button>", res);
             this.add_listener_day();
