@@ -464,8 +464,14 @@ input.date {
 	opacity: 0;
 } 
 
+.popup-box h2 {
+	color:#1a1a1a;
+	text-align: center;
+}
+
 .popup-modif {
 	width: 1400px;
+	z-index: 99;
 }
 
 .popup-supp {
@@ -489,12 +495,10 @@ input.date {
 
 .popup-box h2 {
 	color:#1a1a1a;
-	text-align: center;
 }
   
 .popup-box h3 {
    color:#888;
-   text-align: center;
 }
 
 .ok_button {
@@ -733,4 +737,12 @@ ul.menu_tds_editor li {
 
 #poptds div {
 	margin : 3px;
+}
+
+.click_jx {
+	cursor: pointer;
+}
+
+.click_jx:hover {
+	background-color: #FFCC66;
 }

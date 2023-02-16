@@ -103,21 +103,38 @@ class capa {
 				}
 				---------------------------------------  */
 			pc["J0"] = {};
-			/* à remettre pour le web service 
+			
 			const Renfort = this.effectif[this.day]['Renfort'];
 			for (let renf1 in Renfort) {
 				for (let cle in Renfort[renf1]) {
 					const obj = Renfort[renf1][cle];
 					let label = obj["contextmenutype"]["label"];
+					let jx_type = label.substring(0,4).replace(' ', '');
 					let agent = obj["agent"]["nomComplet"];
-					let j0_type = label.substring(0,3);
 					let agent_type = label.includes("det") === true ? "detaché" : "salle";
-					if (pc["J0"].hasOwnProperty(j0_type) === false) { pc["J0"][j0_type] = {"nombre": 0}; pc["J0"][j0_type]["agent"] = {}}
-					pc["J0"][j0_type]["agent"][agent] = agent_type;
-					pc["J0"][j0_type]["nombre"]++;
+					if (pc["J0"].hasOwnProperty(jx_type) === false) { pc["J0"][jx_type] = {"nombre": 0}; pc["J0"][jx_type]["agent"] = {}}
+					pc["J0"][jx_type]["agent"][agent] = agent_type;
+					pc["J0"][jx_type]["nombre"]++;
 				}
 			}
 			console.log("Renfort J0");
+			console.log(pc["J0"]);
+			
+
+			/* cette clé est issue d'une demande de CDG pour compter la globalité
+			const Jx = this.effectif[this.day]['Jour supplémentaire XP Equipe'];
+			console.log("Jx");
+			console.log(Jx);
+			for (let renf1 in Jx) {
+					const obj = Jx[renf1];
+					let label = obj["label"];
+					let agent = obj["nom"]+' '+obj["prenom"];
+					let jx_type = label.replace(' ', '');
+					if (pc["J0"].hasOwnProperty(jx_type) === false) { pc["J0"][jx_type] = {"nombre": 0}; pc["J0"][jx_type]["agent"] = []}
+					pc["J0"][jx_type]["agent"].push(agent);
+					pc["J0"][jx_type]["nombre"]++;
+			}
+			console.log("Renfort Jx");
 			console.log(pc["J0"]);
 			*/
 
@@ -242,6 +259,7 @@ class capa {
 					});
 				}
 				
+				/*
 				// backup J0 à enlever quand le web service Jx marchera
 				if (typeof Jx_date[this.zone][this.day] !== 'undefined') {
 					Object.keys(Jx_date[this.zone][this.day]).forEach( (vac_jx, index) => {
@@ -272,7 +290,7 @@ class capa {
 						}
 					});
 				}
-				
+				*/
 			}
 			return {"pc_vac": pc, "pc_total_dispo_15mn": pcs, "pc_instr_15mn": in15mn, "pc_jx_15mn": effectif_Jx_15mn, "pc_total_jx_15mn": effectif_total_Jx_15mn};
 		//}
@@ -418,9 +436,9 @@ class capa {
         
         const index_deb = diff*4 - 1;
         const tour_utc = {};
-		// Jx = ["J0A","J0B",...]
-		const Jx = Object.keys(tour);
-        Jx.forEach(vac => {
+		// Jx_vac = ["J0A","J0B",...]
+		const Jx_vac = Object.keys(tour);
+        Jx_vac.forEach(vac => {
 			tour_utc[vac] = [];
 		})
             
@@ -443,7 +461,7 @@ class capa {
             tour_utc[vac].push(["23:45", tour[vac][7][1]]);
         }
         
-		Jx.forEach(vac => {
+		Jx_vac.forEach(vac => {
 			push_utc(vac);
 		})
 
@@ -548,6 +566,35 @@ class feuille_capa extends capa {
 			})
 		})
 
+		// ajoute le hover sur la case Jx
+		const td_jx = document.querySelectorAll(".click_jx");
+		td_jx.forEach(td_el => {
+			let jx_type = td_el.dataset.vac;
+			let detail = this.pc_vac["J0"][jx_type]["agent"];
+			td_el.addEventListener('mouseover', (event) => {
+				const el = document.createElement('div');
+				el.setAttribute('id', 'popinstr');
+				let det = '<div style="float:left;width:90%;">';
+				for (const agent in detail) {
+					det += `${agent}<br>`;
+				}
+				det += '</div>';
+				const pos = td_el.getBoundingClientRect();
+				el.style.position = 'absolute';
+				el.style.left = pos.left + 60 + 'px';
+				el.style.top = pos.top + 'px';
+				el.style.backgroundColor = '#fbb';
+				el.style.padding = '10px';
+				el.style.width = '200px';
+				let parentDiv = document.getElementById("glob_container");
+				parentDiv.insertBefore(el, $('feuille_capa_tour'));
+				el.innerHTML = det;
+			})
+			td_el.addEventListener('mouseleave', (event) => {
+				$('popinstr').remove();
+			})
+		})
+
 		// ajoute les clicks sur la case du nbre de pc de la vac
 		const td_pc = document.querySelectorAll('.pc');
 		$('popup-wrap').classList.add('popup-modif');
@@ -556,7 +603,6 @@ class feuille_capa extends capa {
 			let vac = td_el.dataset.vac;
 			if (this.update[this.zone][this.day]['update_count'][vac] !== 0) $$(`td[data-vac=${vac}].pc`).classList.add('bg_red');	
 			td_el.addEventListener('click', (event) => {
-
 				for (const user in this.pc_vac[vac]["userList"]) {
 					let ih = `
 					<div id="modif_eq">
@@ -724,7 +770,7 @@ class feuille_capa extends capa {
 			} else {
 				res2 += `<td class='bg bottom_2px'>${this.pc_jx_15mn[vac_jx][95]}</td>`;
 			}
-			res += `<tr><td class='left_2px bottom_2px' colspan="3">${vac_jx}</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
+			res += `<tr><td data-vac='${vac_jx}' class='left_2px bottom_2px click_jx' colspan="3">${vac_jx}</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
 		})
 		return res;
 	}
