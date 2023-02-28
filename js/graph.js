@@ -59,8 +59,8 @@ async function get_h20_b2b(day, zone, schema = undefined) {
 
 	if (typeof schema === 'undefined') schema = await read_schema_realise(day, zone);
 	const date = day.replace(/-/g, ''); // yyyymmdd
-	const year = day.substr(0,4);
-	const month = date.substr(4,2);
+	const year = day.substring(0,4);
+	const month = date.substring(4,6);
 	const area = zone === "AE" ? "est" : "west";
 	
 	const url = `../b2b/json/${year}/${month}/${date}-H20-${area}.json`;	
@@ -100,46 +100,6 @@ async function get_h20_b2b(day, zone, schema = undefined) {
 }
 
 /*	---------------------------------------------------------------------------------------------------
-	 get H20 depuis nos fichiers récupérés en B2B à partir de 06:00 local (05:00 ou 04:00 UTC) 
-		 on charge le tableau [ [TV, yyyy-mm-dd, hh:mm, mv, h20], ...] du json H20
-		@param {string} day - "yyyy-mm-dd"
-		@param {string} zone - "AE" ou "AW"
-		@returns {object} 
-		 result : {
-			tv: [ ["heure:min": trafic], ... ], ...
-		 }
-	//	ex	{ RAE: [ ["04:00": "4"], ["04:20": "15"] ... ], AB: [ ["00:00": "5"], ... }
-	-------------------------------------------------------------------------------------------------- */
-async function get_visu_h20(day, zone, time = "") {
-	const date = day.replace(/-/g, ''); // yyyymmdd
-	const year = day.substr(0,4);
-	const month = date.substr(4,2);
-	const area = zone === "AE" ? "est" : "west";
-	const url = `../b2b/json/${year}/${month}/${date}-H20-${area}${time}.json`;	
-	const resp = await loadJsonB2B(url, "H20", zone);
-	if (typeof resp === 'undefined') return 'undefined';	
-	result = {};
-		
-	resp.forEach( arr => {
-						
-		const tv = arr[0];
-		const time = arr[2];
-		const time_min = time_to_min(arr[2]);
-		const mv = arr[3];
-		const h20 = arr[4];
-							
-		if (!(result.hasOwnProperty(tv))) { 
-			result[tv] = [];
-		}
-		
-		result[tv].push([time, h20, mv]);
-						
-	});
-	
-	return result;
-}
-
-/*	---------------------------------------------------------------------------------------------------
 	 get Occ depuis nos fichiers récupérés en B2B à partir de 06:00 local (05:00 ou 04:00 UTC) 
 		 on charge le tableau [ [TV, yyyy-mm-dd, hh:mm, peak, sustain, occ], ...] du json Occ
 		@param {string} day - "yyyy-mm-dd"
@@ -153,8 +113,8 @@ async function get_visu_h20(day, zone, time = "") {
 async function get_occ_b2b(day, zone, schema = undefined) {
 	if (typeof schema === 'undefined') schema = await read_schema_realise(day, zone);
 	const date = day.replace(/-/g, ''); // yyyymmdd
-	const year = day.substr(0,4);
-	const month = date.substr(4,2);
+	const year = day.substring(0,4);
+	const month = date.substring(4,6);
 	const area = zone === "AE" ? "est" : "west";
 	
 	const url = `../b2b/json/${year}/${month}/${date}-Occ-${area}.json`;	
@@ -189,46 +149,6 @@ async function get_occ_b2b(day, zone, schema = undefined) {
 		}					
 	});
 	console.log("Get Occ via B2B : OK");			
-	return result;
-	
-}
-
-/*	---------------------------------------------------------------------------------------------------
-	 get Occ depuis nos fichiers récupérés en B2B à partir de 06:00 local (05:00 ou 04:00 UTC) 
-		 on charge le tableau [ [TV, yyyy-mm-dd, hh:mm, peak, sustain, occ], ...] du json Occ
-		@param {string} day - "yyyy-mm-dd"
-		@param {string} zone - "AE" ou "AW"
-		@returns {object} 
-		 result : {
-			tv: [ ["heure:min": trafic], ... ], ... }
-		 }
-	//	ex	{ RAE: [ ["04:00": "4"], ["04:01": "5"] ... ], AB: [ ["00:00": "5"], ... }
-	-------------------------------------------------------------------------------------------------- */
-async function get_visu_occ(day, zone, time = "") {
-	const date = day.replace(/-/g, ''); // yyyymmdd
-	const year = day.substr(0,4);
-	const month = date.substr(4,2);
-	const area = zone === "AE" ? "est" : "west";
-	const url = `../b2b/json/${year}/${month}/${date}-Occ-${area}${time}.json`;	
-	const resp = await loadJsonB2B(url, "OCC", zone);
-	if (typeof resp === 'undefined') return 'undefined';
-	const result = {};
-	
-	resp.forEach( arr => {			
-		const tv = arr[0];
-		const time = arr[2];
-		const time_min = time_to_min(arr[2]);
-		const peak = arr[3];
-		const sustain = arr[4];
-		const occ = arr[5];		
-						
-		if (!(result.hasOwnProperty(tv))) { 
-			result[tv] = [];
-		}
-		
-		result[tv].push([time, occ, peak, sustain]);
-									
-	});	
 	return result;
 	
 }
