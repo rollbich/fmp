@@ -144,12 +144,10 @@ class conf {
 				const s = this.get_conf_name(this.b2b_sorted_confs[zone][numero][conf], cf);
 				if (s !== "-") {
 					conf_supprime.push([s, conf]);
-					console.log(s+" = "+conf);
 					delete cf[numero][s];
 				}
 			})
 		})
-		console.log(cf);
 		return conf_supprime;
 	}
 
@@ -282,16 +280,17 @@ class conf {
 		
 	}
 
+/*  ------------------------------------------------------------------------------
+	  Retourne le nb de tvs correspondants à la conf (tv UIR + tv FIR)
+        @param {string} "conf" - "E3C"
+        @return {integer}
+	------------------------------------------------------------------------------ */
 	get_nb_tv(conf) {
 		const p = conf.substring(1,3);
 		let sup = null;
-		//console.log("3è digit");
-		//console.log(p[1]);
 		if (!isNaN(p[1])) sup = p; else	sup = p.substring(0,1);
 		let inf = null;
 		if (conf.length === 3) inf = 0; else inf = conf.slice(-2,-1);
-		console.log("nb_tv : "+conf);
-		console.log("sup : "+sup+"  inf: "+inf);
 		return parseInt(sup)+parseInt(inf);
 	}
 
@@ -368,14 +367,9 @@ class conf {
 		for (const [nbr_sect, confs_list] of Object.entries(zc)) { // on itère sur le nombre de regroupements 
 			// le fichier de conf supp contient une clé "zone" qu'il faut exclure
 			if (Object.keys(confs_list).length !== 0 && nbr_sect !== "zone") {
-				console.log(nbr_sect+" : ");
-				console.log(confs_list);
 				Object.keys(confs_list).forEach (conf => { // on itère sur les différentes confs
 					if (nbr_sect%2) {res += '<tr class="one">'; } else {res += '<tr class="two">'; }
 					let tvs = this.zone === "AE" ? tri_salto(confs_list[conf], "est") : tri_salto(confs_list[conf], "west");
-					//let tvs = confs_list[conf];
-					console.log("TVS");
-					console.log(tvs);
 					res +=`<td>${nbr_sect}</td><td>${conf}</td><td data-nbrsect="${nbr_sect}" data-conf="${conf}" data-zone="${zone}" class="supprime">x</td>`;
 					const l = max_secteur - tvs.length + 1;
 					tvs.forEach (tv => {
@@ -421,6 +415,8 @@ class conf {
 		obj["confs"] = this.b2b_sorted_confs;
 		obj["zone"] = zone;
 		obj["tvs"] = arr;
+		console.log("OBJ");
+		console.log(obj);
 		const url = zone === "est" ? "export_salto_est.php" : "export_salto_west.php";
 		const data = {
 			method: "post",
