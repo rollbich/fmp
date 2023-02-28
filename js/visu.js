@@ -12,11 +12,16 @@ class visu {
         this.h = {};
         this.o = {};
         this.heures = {
-            "03:20" : true, "04:20" : true, "05:20" : true, "06:20" : true,
-            "07:20" : true, "08:20" : true, "09:20" : true, "10:20" : true,
-            "11:20" : true, "12:20" : true, "13:20" : true, "14:20" : true,
-            "15:20" : true, "16:20" : true, "17:20" : true, "18:20" : true,
-            "19:20" : true, "20:20" : true, "23:59" : true };
+            "02:00": true, "02:20": true, "03:00": true, "03:20": true,
+            "04:00": true, "04:20": true, "05:00": true, "05:20": true,
+            "06:00": true, "06:20": true, "07:00": true, "07:20": true,
+            "08:00": true, "08:20": true, "09:00": true, "09:20": true, 
+            "10:00": true, "10:20": true, "11:00": true, "11:20": true, 
+            "12:00": true, "12:20": true, "13:00": true, "13:20": true,
+            "14:00": true, "14:20": true, "15:00": true, "15:20": true, 
+            "16:00": true, "16:20": true, "17:00": true, "17:20": true, 
+            "18:00": true, "18:20": true, "19:00": true, "19:20": true, 
+            "20:00": true, "20:20": true, "21:00": true, "21:20": true, "23:59": true };
         this.init();
         //console.log(this.h);
     }
@@ -45,6 +50,7 @@ class visu {
         if (this.h[tt] === 'undefined') this.heures[t] = false;
         console.log(t);
         console.log(this.h[tt]);
+        console.log(this.o[tt]);
     }
 
     async show_tvs() {
@@ -63,7 +69,7 @@ class visu {
         let li = '<div class="range"></div><ul class="range-labels">';
         for (const [ key, value ] of Object.entries(this.heures)) {
             if (value === true && key !== "23:59") li += `<li class="heure" data-heure="${key}">${key}</li>`;   
-            if (value === false) li += `<li class="heure" data-heure="${key}">--:--</li>`; 
+            //if (value === false) li += `<li class="heure" data-heure="${key}">--:--</li>`; 
             if (value === true && key === "23:59") li += `<li class="heure active selected" data-heure="23:59">23:59</li>`;
         }
         li += '</ul>';
@@ -104,6 +110,7 @@ class visu {
                 let full_time = document.querySelector(".selected").dataset.heure;
 
                 const time = full_time.replace(/:/g, '');
+                console.log("Time: "+time);
                 const reg = new regul(this.day, this.zone, false);
                 await reg.init();
                 const regbytv = reg.get_regbytv();
@@ -182,4 +189,99 @@ class visu {
             })
         }
     }
+}
+
+/*	---------------------------------------------------------------------------------------------------
+	 get H20 depuis nos fichiers récupérés en B2B à partir de 06:00 local (05:00 ou 04:00 UTC) 
+		 on charge le tableau [ [TV, yyyy-mm-dd, hh:mm, mv, h20], ...] du json H20
+		@param {string} day - "yyyy-mm-dd"
+		@param {string} zone - "AE" ou "AW"
+		@param {string} time - "12h20"
+		@returns {object} 
+		 result : {
+			tv: [ ["heure:min": trafic], ... ], ...
+		 }
+	//	ex	{ RAE: [ ["04:00": "4"], ["04:20": "15"] ... ], AB: [ ["00:00": "5"], ... }
+	-------------------------------------------------------------------------------------------------- */
+async function get_visu_h20(day, zone, time = "") {
+    const date = day.replace(/-/g, ''); // yyyymmdd
+    const year = day.substring(0,4);
+    const month = date.substring(4,6);
+    const area = zone === "AE" ? "est" : "west";
+    let url = "";
+    if (time == "") {
+        url = `../b2b/json/${year}/${month}/${date}-H20-${area}.json`; 
+    } else {
+        const h = time.substring(0,2);
+        const mn = time.substring(2,4);
+        url = `../b2b/json/${year}/${month}/${date}-H20-${area}-${h}h${mn}.json`;	
+    }
+    const resp = await loadJsonB2B(url, "H20", zone);
+    if (typeof resp === 'undefined') return 'undefined';	
+    result = {};
+        
+    resp.forEach( arr => {
+                        
+        const tv = arr[0];
+        const time = arr[2];
+        const time_min = time_to_min(arr[2]);
+        const mv = arr[3];
+        const h20 = arr[4];
+                            
+        if (!(result.hasOwnProperty(tv))) { 
+            result[tv] = [];
+        }
+        
+        result[tv].push([time, h20, mv]);
+                        
+    });
+    
+    return result;
+}
+
+/*	---------------------------------------------------------------------------------------------------
+	 get Occ depuis nos fichiers récupérés en B2B à partir de 06:00 local (05:00 ou 04:00 UTC) 
+		 on charge le tableau [ [TV, yyyy-mm-dd, hh:mm, peak, sustain, occ], ...] du json Occ
+		@param {string} day - "yyyy-mm-dd"
+		@param {string} zone - "AE" ou "AW"
+		@returns {object} 
+		 result : {
+			tv: [ ["heure:min": trafic], ... ], ... }
+		 }
+	//	ex	{ RAE: [ ["04:00": "4"], ["04:01": "5"] ... ], AB: [ ["00:00": "5"], ... }
+	-------------------------------------------------------------------------------------------------- */
+async function get_visu_occ(day, zone, time = "") {
+    const date = day.replace(/-/g, ''); // yyyymmdd
+    const year = day.substring(0,4);
+    const month = date.substring(4,6);
+    const area = zone === "AE" ? "est" : "west";
+    let url = "";
+    if (time == "") {
+        url = `../b2b/json/${year}/${month}/${date}-Occ-${area}.json`; 
+    } else {
+        const h = time.substring(0,2);
+        const mn = time.substring(2,4);
+        url = `../b2b/json/${year}/${month}/${date}-Occ-${area}-${h}h${mn}.json`;	
+    }
+    const resp = await loadJsonB2B(url, "OCC", zone);
+    if (typeof resp === 'undefined') return 'undefined';
+    const result = {};
+    
+    resp.forEach( arr => {			
+        const tv = arr[0];
+        const time = arr[2];
+        const time_min = time_to_min(arr[2]);
+        const peak = arr[3];
+        const sustain = arr[4];
+        const occ = arr[5];		
+                        
+        if (!(result.hasOwnProperty(tv))) { 
+            result[tv] = [];
+        }
+        
+        result[tv].push([time, occ, peak, sustain]);
+                                    
+    });	
+    return result;
+    
 }
