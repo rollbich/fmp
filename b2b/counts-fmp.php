@@ -138,6 +138,7 @@ function write_xls($zone, $wef, $occ_est, $occ_west, $h20_est, $h20_west, $regul
 	$y = $date->format('Y');
 	$m = $date->format('m');
 	$dir = dirname(__FILE__)."/xls/$y/$m/";
+	//pour alban DGAC $dir = "J:/Svc_Expl/SUB_CT/FMP/Utilisateurs Bureau FMP/Adonis/Récup B2B NM/xls/$y/$m/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);
@@ -163,6 +164,7 @@ function write_json($arr, $zone, $type, $wef) {
 	$y = $date->format('Y');
 	$m = $date->format('m');
 	$dir = dirname(__FILE__)."/json/$y/$m/";
+	// pour Alban DGAC $dir = "J:/Svc_Expl/SUB_CT/FMP/Utilisateurs Bureau FMP/Adonis/Récup B2B NM/json/$y/$m/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);
@@ -278,6 +280,8 @@ $json_reg->LFDSNA = array();
 
 $reg = [];
 $reg["LFMMFMPE"] = array();
+
+
 $reg["LFMMFMPW"] = array();
 $reg["LFMMAPP"] = array();
 $reg["LFBBFMP"] = array();
@@ -302,7 +306,7 @@ $soapClient->flowServices()->get_full_regulations("LF", $wef_regs, $unt_regs, $j
 
 echo "get regulation OK<br>";
 
-// ATC conf du jour
+// ATC conf du nb_vols
 $airspace1 = "LFMMCTAE";
 $airspace2 = "LFMMCTAW";
 // today = minuit locale soit la veille 22h00 UTC
