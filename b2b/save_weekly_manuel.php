@@ -1,43 +1,98 @@
 <?php
 
-/*  --------------------------------------------------------------
-		sauvegarde le fichier des vols weekly tous les lundis
-	--------------------------------------------------------------  */
+/*  ---------------------------------------------------------------
+		sauvegarde le fichier des vols weekly pour toute l'année
+	---------------------------------------------------------------  */
 
+function calcul_semaine($year, $week_number) {
+    // premier et dernier jour de la semaine à calculer
+    $first_day_of_week = getFirstMondayofWeekNumber($year, $week_number);
+    $last_day_of_week = getFirstMondayofWeekNumber($year, $week_number);
+    $one_week = new DateInterval('P7D');
+    $last_day_of_week->add($one_week);
+    $first_day_year = $first_day_of_week->format('Y');
+    $first_day_month = $first_day_of_week->format('m');
+
+    // faire avec le week number car le 1er jour pourrait être une année et le numéro de week celle d'après
+    if ((int) $week_number === 1 && (int) $first_day_month === 12) {
+        $year = (int) $first_day_year + 1;
+    } else {
+        $year = (int) $first_day_year;
+    }
+
+    echo "Year: $year<br>";
+    echo "Week number: $week_number<br>";
+    echo "First day of week: ".$first_day_of_week->format('Y-m-d')."<br>";
+    echo "Last day of week: (non inclus)".$last_day_of_week->format('Y-m-d')."<br>";
+
+    $arr_traffic = get_weekly_traffic($first_day_of_week, $last_day_of_week);
+    $file_traffic = "localhost/fmp/b2b/json/$year/$year-weekly-flights.json";
+    //$file_traffic = "https://dev.lfmm-fmp.fr/b2b/json/$year/$year-weekly-flights.json";
+    //$file_traffic = "https://lfmm-fmp.fr/b2b/json/$year/$year-weekly-flights.json";
+    process_file_traffic($file_traffic, $arr_traffic, $week_number, $year);
+
+    $arr_reguls = get_weekly_regs($first_day_of_week, $last_day_of_week);
+    $file_reg = "localhost/fmp/b2b/json/$year/$year-weekly-reg.json";
+    //$file_reg = "https://dev.lfmm-fmp.fr/b2b/json/$year/$year-weekly-reg.json";
+    //$file_reg = "https://lfmm-fmp.fr/b2b/json/$year/$year-weekly-reg.json";
+    process_file_reg($file_reg, $arr_reguls, $week_number, $year);
+
+}
+
+// recalcule toute l'année
+function calcul_year($year) {
+    $nb_weeks = getIsoWeeksInYear($year);
+    for ($i = 1 ; $i <= $nb_weeks; $i++) {
+        calcul_semaine($year, $i);
+    }
+}
+
+calcul_year(2023);
+
+/*
 $one_week = new DateInterval('P7D');
 $one_day = new DateInterval('P1D');
 
-$d = "2022-08-01";
-$monday_last_week = new DateTime($d);
-$monday_last_week->sub($one_week);
-$monday = new DateTime($d);
+// date du lundi de la semaine à calculer (1er jour)
+$y = 2022;
+$d = "2022-10-03";
+$first_day = new DateTime($d);
+$last_day = new DateTime($d);
+$last_day->add($one_week);
 
-for ($i = 1; $i <= 52; $i++) {
+function calcul(DateTime $first_day_of_week, DateTime $last_day_of_week) {
+    // numéro de la semaine à calculer
+    $week_number = getWeekNumber($first_day_of_week);
+    $first_day_year = $first_day_of_week->format('Y');
+    $first_day_month = $first_day_of_week->format('m');
 
-    $week_number = getWeekNumber($monday_last_week);
-    if ((int) $week_number === 1) {
-        $year = $monday->format('Y');
+    // faire avec le week number car le 1er jour pourrait être une année et le numéro de week celle d'après
+    if ((int) $week_number === 1 && (int) $first_day_month === 12) {
+        $year = (int) $first_day_year + 1;
     } else {
-        $year = $monday_last_week->format('Y');
+        $year = (int) $first_day_year;
     }
 
     echo "Year: ".$year."<br>";
     echo "Week number: ".$week_number."<br>";
 
-    $arr_traffic = get_weekly_traffic($monday_last_week, $monday);
+    $arr_traffic = get_weekly_traffic($first_day_of_week, $last_day_of_week);
     //$file_traffic = "localhost/fmp/b2b/json/$year/$year-weekly-flights.json";
-    $file_traffic = "https://dev.lfmm-fmp.fr/b2b/json/$year/$year-weekly-flights.json";
+    //$file_traffic = "https://dev.lfmm-fmp.fr/b2b/json/$year/$year-weekly-flights.json";
+    $file_traffic = "https://lfmm-fmp.fr/b2b/json/$year/$year-weekly-flights.json";
     process_file_traffic($file_traffic, $arr_traffic, $week_number, $year);
 
-    $arr_reguls = get_weekly_regs($monday_last_week, $monday);
+    $arr_reguls = get_weekly_regs($first_day_of_week, $last_day_of_week);
     //$file_reg = "localhost/fmp/b2b/json/$year/$year-weekly-reg.json";
-    $file_reg = "https://dev.lfmm-fmp.fr/b2b/json/$year/$year-weekly-reg.json";
+    //$file_reg = "https://dev.lfmm-fmp.fr/b2b/json/$year/$year-weekly-reg.json";
+    $file_reg = "https://lfmm-fmp.fr/b2b/json/$year/$year-weekly-reg.json";
     process_file_reg($file_reg, $arr_reguls, $week_number, $year);
 
-    $monday_last_week->add($one_week);
-    $monday->add($one_week);
-
 }
+
+//calcul($first_day, $last_day);
+*/
+
 
 /*  ----------------------------------------------------
                      Weekly Traffic
@@ -45,7 +100,7 @@ for ($i = 1; $i <= 52; $i++) {
 
 
 // get all json traffic files file Between 2 Dates non incluse la dernière date
-function get_weekly_traffic($dateTime1, $dateTime2) {
+function get_weekly_traffic(DateTime $dateTime1, DateTime $dateTime2) {
     //$array = array(); 
     $period = new DatePeriod(
         $dateTime1,
@@ -59,9 +114,11 @@ function get_weekly_traffic($dateTime1, $dateTime2) {
     foreach ($period as $key => $value) {
         //$file_name = $value->format('Ymd')."-vols.json";
         $year = $value->format('Y');
+        $month = $value->format('m');
         $d = $value->format('Ymd');
-        //$file_name = "localhost/fmp/b2b/json/$year/$d-vols.json";
-        $file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$d-vols.json";
+        $file_name = "localhost/fmp/b2b/json/$year/$month/$d-vols.json";
+        //$file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$d-vols.json";
+        //$file_name = "https://lfmm-fmp.fr/b2b/json/$year/$d-vols.json";
         //$data = file_get_contents("./json/".$file_name);
         $data = get_file($file_name);
         $donnees = json_decode($data[0]);
@@ -89,9 +146,11 @@ function get_weekly_regs($dateTime1, $dateTime2) {
     $donnees = [];
     foreach ($period as $key => $value) {
         $year = $value->format('Y');
+        $month = $value->format('m');
         $d = $value->format('Ymd');
-        //$file_name = "localhost/fmp/b2b/json/$year/$d-reg.json";
-        $file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$d-reg.json";
+        $file_name = "localhost/fmp/b2b/json/$year/$month/$d-reg.json";
+        //$file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$d-reg.json";
+        //$file_name = "https://lfmm-fmp.fr/b2b/json/$year/$d-reg.json";
         $data = get_file($file_name);
         array_push($donnees, json_decode($data[0]));
     }
@@ -132,17 +191,18 @@ function process_file_traffic($file, $arr, $week_number, $year) {
     $data = get_file($file);
     // existence du fichier
     if ($data[1] == 200) {
-        echo "Fichier ".$file." existant"."<br>";
+        echo "<br>Fichier ".$file." existant"."<br>";
         $json_year = json_decode($data[0]);
-        var_dump($json_year);
+        //var_dump($json_year);
         echo "<br>";
     } else {
-        echo "Fichier ".$file." inexistant"."<br>";
+        echo "<br>Fichier ".$file." inexistant"."<br>";
         $json_year = new stdClass();
         $json_year->year = intval($year);
         $json_year->est = new stdClass();
         $json_year->west = new stdClass();
         $json_year->cta = new stdClass();
+        $json_year->app = new stdClass();
     }
 
     $json_year->est->$week_number = $arr[1];
@@ -151,7 +211,7 @@ function process_file_traffic($file, $arr, $week_number, $year) {
     $json_year->app->$week_number = $arr[3];
 
     echo "Nouveau json traffic"."<br>";
-    var_dump($json_year);
+    //var_dump($json_year);
     write_json_traffic($json_year, $year);
 }
 
@@ -162,12 +222,12 @@ function process_file_reg($file, $arr, $week_number, $year) {
     $data = get_file($file);
     // existence du fichier
     if ($data[1] == 200) {
-        echo "Fichier ".$file." existant"."<br>";
+        echo "<br>Fichier ".$file." existant"."<br>";
         $json_year = json_decode($data[0]);
-        var_dump($json_year);
+        //var_dump($json_year);
         echo "<br>";
     } else {
-        echo "Fichier ".$file." inexistant"."<br>";
+        echo "<br>Fichier ".$file." inexistant"."<br>";
         $json_year = new stdClass();
         $json_year->year = intval($year);
     }
@@ -177,7 +237,7 @@ function process_file_reg($file, $arr, $week_number, $year) {
     }
     
     echo "Nouveau json reg"."<br>";
-    var_dump($json_year);
+    //var_dump($json_year);
     write_json_reg($json_year, $year);
     
 }
@@ -187,25 +247,25 @@ function process_file_reg($file, $arr, $week_number, $year) {
     ---------------------------------------------------- */
 
 // weeknumber of a date
-function getWeekNumber($datetime) {
+function getWeekNumber(DateTime $datetime) {
     return idate('W', $datetime->getTimestamp());
 }
 
 // Calcul du nombre de semaines ISO
 // the last week of the year always includes 28 December.
-function getIsoWeeksInYear($year) {
+function getIsoWeeksInYear(int $year) {
     return idate('W', mktime(0, 0, 0, 12, 28, $year));
 }
 
 // To get the start of the week (Monday at midnight) as a DateTime object
-function getFirstMondayofWeekNumber($year, $week) {
+function getFirstMondayofWeekNumber(int $year, int $week) {
     $date = new DateTime('midnight'); 
     $date->setISODate($year, $week);
     return $date;
 }
 
 // ajoute 6 jours
-function addDays($datetime) {
+function addDays(DateTime $datetime) {
     $datetime->modify('+6 day');
     return $datetime;
 }

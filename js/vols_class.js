@@ -232,12 +232,20 @@ class weekly_briefing {
 	}
 
 	get_last_week() {
+		console.log("Get las week: "+getPreviousWeekNumber(weekDateToDate(this.year, this.week, 1))[0]+" "+getPreviousWeekNumber(weekDateToDate(this.year, this.week, 1))[1])
 		return getPreviousWeekNumber(weekDateToDate(this.year, this.week, 1));
 	}
 
 	show_data() {
-		let sel =  `<select id="semaine" class="select">`;
-		for(let i=1;i<54;i++) {
+		let sel =  `<select id="year" class="select">`;
+		for(let i=2022;i<(this.year+1);i++) {
+			if (i === this.year) { sel += `<option selected value="${i}">Year ${i}</option>`; } else 
+			{ sel += `<option value="${i}">Year ${i}</option>`; }
+		}
+		sel += '</select>';
+		sel +=  `<select id="semaine" class="select">`;
+		const nbw = isoWeeksInYear(this.year);
+		for(let i=1;i<(nbw+1);i++) {
 			if (i === this.week) { sel += `<option selected value="${i}">Sem ${i}</option>`; } else 
 			{ sel += `<option value="${i}">Sem ${i}</option>`; }
 		}
@@ -251,6 +259,9 @@ class weekly_briefing {
 	}
 
 	show_data_vols() {
+		console.log("VVV");
+		console.log(this.year);
+		console.log(this.week);
 		let v = this.data_vols();
 		this.container_vols.innerHTML = v;
 	}
@@ -261,6 +272,15 @@ class weekly_briefing {
 	}
 
 	change_week() {
+		$('year').addEventListener('change', (e) => {
+			const val = $('year').value;
+			this.year = parseInt(val);
+			this.lastweek_week = this.get_last_week()[1];
+			this.lastweek_year = this.get_last_week()[0];
+			this.init();
+			this.show_data_vols();
+			this.show_data_reguls();
+		})
 		$('semaine').addEventListener('change', (e) => {
 			const val = $('semaine').value;
 			this.week = parseInt(val);
