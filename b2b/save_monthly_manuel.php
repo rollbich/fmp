@@ -1,33 +1,51 @@
 <?php
 
-/*  ------------------------------------------------------------------
-		sauvegarde le fichier des vols monthly tous les 1er du mois
-	------------------------------------------------------------------  */
+/*  ---------------------------------------------------------------
+		sauvegarde le fichier des vols monthly pour toute l'année
+	---------------------------------------------------------------  */
 
-$last_month = 7;
-$year_last_month = 2022;
-$first_day_last_month = new DateTime("2022-07-01");
-$last_day_last_month = new DateTime("2022-07-31");
-$today = new DateTime("2022-08-01");
+function calcul_mois($year, $month) {
+    // premier et dernier jour du mois
+    $first_day_of_month = new DateTime("$year-$month-01");
+    $last_day_month = get_last_day_month($year, $month);
+    $last_day_of_month = new DateTime("$last_day_month");
 
+    echo "Year: $year<br>";
+    echo "Mois: $month<br>";
+    echo "First day of month: ".$first_day_of_month->format('Y-m-d')."<br>";
+    echo "Last day of month: ".$last_day_of_month->format('Y-m-d')."<br>";
+
+    $arr_traffic = get_monthly_traffic($first_day_of_month, $last_day_of_month);
+    $file_traffic = "localhost/fmp/b2b/json/$year/$year-monthly-flights.json";
+    //$file_traffic = "https://dev.lfmm-fmp.fr/b2b/json/$year/$year-monthly-flights.json";
+    //$file_traffic = "https://lfmm-fmp.fr/b2b/json/$year/$year-monthly-flights.json";
+    process_file_traffic($file_traffic, $arr_traffic, $month, $year);
+
+    $arr_reguls = get_monthly_regs($first_day_of_month, $last_day_of_month);
+    $file_reg = "localhost/fmp/b2b/json/$year/$year-monthly-reg.json";
+    //$file_reg = "https://dev.lfmm-fmp.fr/b2b/json/$year/$year-monthly-reg.json";
+    //$file_reg = "https://lfmm-fmp.fr/b2b/json/$year/$year-monthly-reg.json";
+    process_file_reg($file_reg, $arr_reguls, $month, $year);
+
+}
+
+// recalcule toute l'année
+function calcul_year(int $year) {
+    for ($i = 1 ; $i <= 12; $i++) {
+        calcul_mois($year, $i);
+    }
+}
+
+calcul_year(2022);
 
 /*  ----------------------------------------------------
                 Monthly Traffic & Regs
     ---------------------------------------------------- */
 
-$arr_traffic = get_monthly_traffic($first_day_last_month, $today);
-//$file_traffic = "localhost/fmp/b2b/json/$year_last_month/$year_last_month-monthly-flights.json";
-$file_traffic = "https://dev.lfmm-fmp.fr/b2b/json/$year_last_month/$year_last_month-monthly-flights.json";
-process_file_traffic($file_traffic, $arr_traffic, $last_month, $year_last_month);
-
-$arr_reguls = get_monthly_regs($first_day_last_month, $today);
-//$file_reg = "localhost/fmp/b2b/json/$year_last_month/$year_last_month-monthly-reg.json";
-$file_reg = "https://dev.lfmm-fmp.fr/b2b/json/$year_last_month/$year_last_month-monthly-reg.json";
-process_file_reg($file_reg, $arr_reguls, $last_month, $year_last_month);
-
-
 // get all json traffic files file Between 2 Dates non incluse la dernière date
 function get_monthly_traffic($dateTime1, $dateTime2) {
+
+    $dateTime2 = $dateTime2->modify( '+1 day' );
     $period = new DatePeriod(
         $dateTime1,
         new DateInterval('P1D'),
@@ -40,9 +58,11 @@ function get_monthly_traffic($dateTime1, $dateTime2) {
     foreach ($period as $key => $value) {
         //$file_name = $value->format('Ymd')."-vols.json";
         $year = $value->format('Y');
+        $month = $value->format('m');
         $d = $value->format('Ymd');
-        //$file_name = "localhost/fmp/b2b/json/$year/$d-vols.json";
-        $file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$d-vols.json";
+        echo "day : $d<br>";
+        $file_name = "localhost/fmp/b2b/json/$year/$month/$d-vols.json";
+        //$file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$month/$d-vols.json";
         //$data = file_get_contents("./json/".$file_name);
         $data = get_file($file_name);
         $donnees = json_decode($data[0]);
@@ -80,6 +100,7 @@ function get_monthly_traffic($dateTime1, $dateTime2) {
     ------------------------------------------------------------------------------ */
 function get_monthly_regs($dateTime1, $dateTime2) {
 
+    $dateTime2 = $dateTime2->modify( '+1 day' );
     $period = new DatePeriod(
         $dateTime1,
         new DateInterval('P1D'),
@@ -91,9 +112,10 @@ function get_monthly_regs($dateTime1, $dateTime2) {
     $donnees = [];
     foreach ($period as $key => $value) {
         $year = $value->format('Y');
+        $month = $value->format('m');
         $d = $value->format('Ymd');
-        //$file_name = "localhost/fmp/b2b/json/$year/$d-reg.json";
-        $file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$d-reg.json";
+        $file_name = "localhost/fmp/b2b/json/$year/$month/$d-reg.json";
+        //$file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$month/$d-reg.json";
         $data = get_file($file_name);
         array_push($donnees, json_decode($data[0]));
     }
@@ -251,6 +273,10 @@ function get_file($url) {
 	echo curl_error($ch);
 	curl_close($ch);  
     return [$result, $status_code];
+}
+
+function get_last_day_month($year, $month) {
+    return date("Y-m-d", mktime(0, 0, 0, $month +1, 0, $year));
 }
 
 ?>

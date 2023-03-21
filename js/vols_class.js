@@ -211,6 +211,7 @@ class weekly_briefing {
 		this.container_reguls = $(containerId_reguls);
 		this.year = year;
 		this.week = week;
+		this.ini_week = week;
 		this.lastweek_year = this.get_last_week()[0];
 		this.lastweek_week = this.get_last_week()[1];
 		this.init();
@@ -272,18 +273,32 @@ class weekly_briefing {
 	}
 
 	change_week() {
-		$('year').addEventListener('change', (e) => {
+		$('year').addEventListener('change', async (e) => {
+			const current_year = new Date().getFullYear();
 			const val = $('year').value;
+			const val2 = $('semaine').value;
 			this.year = parseInt(val);
+			this.week = parseInt(val2);
+			if (this.week > this.ini_week && this.year === current_year) {
+				this.week = this.ini_week;
+				$('semaine').value = this.ini_week;
+			}
 			this.lastweek_week = this.get_last_week()[1];
 			this.lastweek_year = this.get_last_week()[0];
-			this.init();
+			await this.init();
 			this.show_data_vols();
 			this.show_data_reguls();
 		})
 		$('semaine').addEventListener('change', (e) => {
-			const val = $('semaine').value;
-			this.week = parseInt(val);
+			const current_year = new Date().getFullYear();
+			const val = $('year').value;
+			const val2 = $('semaine').value;
+			this.year = parseInt(val);
+			this.week = parseInt(val2);
+			if (this.week > this.ini_week && this.year === current_year) {
+				this.week = this.ini_week;
+				$('semaine').value = this.ini_week;
+			}
 			this.lastweek_week = this.get_last_week()[1];
 			this.lastweek_year = this.get_last_week()[0];
 			this.show_data_vols();
@@ -544,7 +559,14 @@ class monthly_briefing {
 	}
 
 	show_data() {
-		let sel =  `<select id="mois" class="select">`;
+		let sel =  `<select id="year" class="select">`;
+		const current_year = new Date().getFullYear();
+		for(let i=2022;i<(current_year+1);i++) {
+			if (i === this.year) { sel += `<option selected value="${i}">Year ${i}</option>`; } else 
+			{ sel += `<option value="${i}">Year ${i}</option>`; }
+		}
+		sel += '</select>';
+		sel +=  `<select id="mois" class="select">`;
 		for(let i=1;i<13;i++) {
 			if (i === this.month) { sel += `<option selected value="${i}">${this.nom_mois[i-1]}</option>`; } else 
 			{ sel += `<option value="${i}">${this.nom_mois[i-1]}</option>`; }
@@ -553,22 +575,40 @@ class monthly_briefing {
 		let v = this.data_vols();
 		let r = this.data_reguls();
 		this.container.innerHTML = sel+v+r;
+		this.show_data_graphs();
+		this.show_data_graphs_annee();
 		this.change_month();
 	}
 
 	change_month() {
+		$('year').addEventListener('change', async (e) => {
+			const current_year = new Date().getFullYear();
+			const current_month = new Date().getMonth(); // january = 0
+			const val = $('year').value;
+			const val2 = $('mois').value;
+			this.year = parseInt(val);
+			this.month = parseInt(val2); // de 1 à 12
+			if (this.month > current_month && this.year === current_year) {
+				this.month = current_month;
+			}
+			this.lastmonth_month = this.get_last_month()[1];
+			this.lastmonth_year = this.get_last_month()[0];
+			await this.init();
+			this.show_data();
+		})
 		$('mois').addEventListener('change', (e) => {
-			const val = $('mois').value;
-			this.month = parseInt(val);
+			const current_year = new Date().getFullYear();
+			const current_month = new Date().getMonth(); // january = 0
+			const val = $('year').value;
+			const val2 = $('mois').value;
+			this.year = parseInt(val);
+			this.month = parseInt(val2);
+			if (this.month > current_month && this.year === current_year) {
+				this.month = current_month;
+			}
 			this.lastmonth_month = this.get_last_month()[1];
 			this.lastmonth_year = this.get_last_month()[0];
 			this.show_data();
-			show_delay_graph_mois_par_causes("accueil_causes_cta", this.year, this.month, this.reguls.delay_par_cause['cta'][this.month-1], "LFMM CTA");
-			show_delay_graph_mois_par_causes("accueil_causes_app", this.year, this.month, this.reguls.delay_par_cause['app'][this.month-1], "Approches");
-			show_delay_graph_mois_par_tvs("accueil_tvs_cta", this.year, this.month, this.reguls.delay_par_tvs['cta'][this.month-1], "LFMMCTA");
-			show_delay_graph_mois_par_tvs("accueil_tvs_est", this.year, this.month, this.reguls.delay_par_tvs['est'][this.month-1], "Zone EST");
-			show_delay_graph_mois_par_tvs("accueil_tvs_west", this.year, this.month, this.reguls.delay_par_tvs['west'][this.month-1], "Zone WEST");
-			show_delay_graph_mois_par_tvs("accueil_tvs_app", this.year, this.month, this.reguls.delay_par_tvs['app'][this.month-1], "Approches");
 		})
 	}
 
@@ -664,6 +704,31 @@ class monthly_briefing {
 		result += "</div>";
 		result += res;
 		return result;
+	}
+
+	show_data_graphs_annee() {
+		const listMonth = [];
+		for (let k=1;k<13;k++) { listMonth.push(k);}
+		show_traffic_graph_mois_cumule("accueil_vols", this.year, listMonth, this.get_monthly_cumules()['cta'], this.get_monthly_cumules("lastyear")['cta'], this.get_monthly_cumules("2019")['cta'], "LFMMCTA");
+		show_delay_graph_mois_cumule("accueil_reguls", this.year, listMonth, this.get_monthly_reg_cumules()['cta'], this.get_monthly_reg_cumules("lastyear")['cta'], this.get_monthly_reg_cumules("2019")['cta'], "LFMMCTA");
+		show_delay_graph_mois_cumule("accueil_reguls_cumul_app", this.year, listMonth, this.get_monthly_reg_cumules()['app'], this.get_monthly_reg_cumules("lastyear")['app'], this.get_monthly_reg_cumules("2019")['app'], "Approches");
+		show_traffic_graph_mois_cumule("accueil_trafic_cumul_app", this.year, listMonth, this.get_monthly_cumules()['app'], this.get_monthly_cumules("lastyear")['app'], this.get_monthly_cumules("2019")['app'], "Approches");
+		show_traffic_graph_mois("accueil_trafic_mois_cta", this.year, listMonth, this.flights.nbre_vols['cta'], this.flights_lastyear.nbre_vols['cta'], this.flights_2019.nbre_vols['cta'], "LFMMCTA");
+		show_delay_graph_month("accueil_reguls_mois_cta", this.year, listMonth, this.reguls.delay['cta'], this.reguls_lastyear.delay['cta'], this.reguls_2019.delay['cta'], "LFMMCTA",800000);
+		show_delay_graph_month("accueil_reguls_mois_est", this.year, listMonth, this.reguls.delay['est'], this.reguls_lastyear.delay['est'], this.reguls_2019.delay['est'], "Zone EST",500000);
+		show_delay_graph_month("accueil_reguls_mois_west", this.year, listMonth, this.reguls.delay['west'], this.reguls_lastyear.delay['west'], this.reguls_2019.delay['west'], "Zone WEST",500000);
+	}
+
+	show_data_graphs() {
+		const listMonth = [];
+		for (let k=1;k<13;k++) { listMonth.push(k);}
+		show_delay_graph_mois_par_causes("accueil_causes_cta", this.year, this.month, this.reguls.delay_par_cause['cta'][this.month-1], "LFMM CTA");
+		show_delay_graph_mois_par_causes("accueil_causes_app", this.year, this.month, this.reguls.delay_par_cause['app'][this.month-1], "Approches");
+		show_traffic_graph_mois("accueil_trafic_mois_app", this.year, listMonth, this.flights.nbre_vols['app'], this.flights_lastyear.nbre_vols['app'], this.flights_2019.nbre_vols['app'], "Approches");
+		show_delay_graph_mois_par_tvs("accueil_tvs_cta", this.year, this.month, this.reguls.delay_par_tvs['cta'][this.month-1], "LFMMCTA");
+		show_delay_graph_mois_par_tvs("accueil_tvs_est", this.year, this.month, this.reguls.delay_par_tvs['est'][this.month-1], "Zone EST");
+		show_delay_graph_mois_par_tvs("accueil_tvs_west", this.year, this.month, this.reguls.delay_par_tvs['west'][this.month-1], "Zone WEST");
+		show_delay_graph_mois_par_tvs("accueil_tvs_app", this.year, this.month, this.reguls.delay_par_tvs['app'][this.month-1], "Approches");
 	}
 
 }
