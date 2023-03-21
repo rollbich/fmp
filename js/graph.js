@@ -696,7 +696,7 @@ function show_traffic_graph_mois(containerId, year, listWeek, data, data_lastyea
 	
 	option = {
 		title: {
-			text: `Trafic mois sur l'année - ${zon}`,
+			text: `Trafic mois sur l'année ${year} - ${zon}`,
 			textStyle: {
 				color: '#FFF',
 				fontSize: '1.5rem'
@@ -814,7 +814,7 @@ function show_traffic_graph_mois_cumule(containerId, year, listMonth, data, data
 	
 	option = {
 		title: {
-			text: `Trafic cumulé sur l'année - ${zon}`,
+			text: `Trafic cumulé sur l'année ${year} - ${zon}`,
 			textStyle: {
 				color: '#FFF',
 				fontSize: '1.5rem'
@@ -932,7 +932,7 @@ function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data
 	
 	option = {
 		title: {
-			text: `Delay semaine sur l'année - ${zon}`,
+			text: `Delay semaine sur l'année ${year} - ${zon}`,
 			textStyle: {
 				color: '#FFF',
 				fontSize: '1.5rem'
@@ -1050,7 +1050,7 @@ function show_delay_graph_month(containerId, year, listMonth, data, data_lastyea
 	
 	option = {
 		title: {
-			text: `Delay mois sur l'année - ${zon}`,
+			text: `Delay mois sur l'année ${year} - ${zon}`,
 			textStyle: {
 				color: '#FFF',
 				fontSize: '1.5rem'
@@ -1169,7 +1169,7 @@ function show_delay_graph_mois_cumule(containerId, year, listMonth, data, data_l
 	
 	option = {
 		title: {
-			text: `Délai cumulé sur l'année - ${zon}`,
+			text: `Délai cumulé sur l'année ${year} - ${zon}`,
 			textStyle: {
 				color: '#FFF',
 				fontSize: '1.5rem'
@@ -1309,7 +1309,7 @@ function show_delay_graph_mois_par_causes(containerId, year, month, data, titre)
 			'#c4ccd3'
 		  ],
 		title: {
-			text: `Délai par cause - ${nom_mois[month-1]} - ${titre}`,
+			text: `Délai par cause - ${nom_mois[month-1]} ${year} - ${titre}`,
 			textStyle: {
 				fontSize: '1.5rem',
 				color: '#FFF'
@@ -1421,7 +1421,7 @@ function show_delay_graph_mois_par_tvs(containerId, year, month, data, titre) {
 			'#c4ccd3'
 			],
 		title: {
-			text: `Délai par TVs - ${nom_mois[month-1]} - ${titre}`,
+			text: `Délai par TVs - ${nom_mois[month-1]} ${year} - ${titre}`,
 			textStyle: {
 				fontSize: '1.5rem',
 				color: '#FFF'

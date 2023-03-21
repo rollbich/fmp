@@ -117,8 +117,8 @@ function get_weekly_traffic(DateTime $dateTime1, DateTime $dateTime2) {
         $month = $value->format('m');
         $d = $value->format('Ymd');
         $file_name = "localhost/fmp/b2b/json/$year/$month/$d-vols.json";
-        //$file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$d-vols.json";
-        //$file_name = "https://lfmm-fmp.fr/b2b/json/$year/$d-vols.json";
+        //$file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$month/$d-vols.json";
+        //$file_name = "https://lfmm-fmp.fr/b2b/json/$year/$month/$d-vols.json";
         //$data = file_get_contents("./json/".$file_name);
         $data = get_file($file_name);
         $donnees = json_decode($data[0]);
@@ -149,8 +149,8 @@ function get_weekly_regs($dateTime1, $dateTime2) {
         $month = $value->format('m');
         $d = $value->format('Ymd');
         $file_name = "localhost/fmp/b2b/json/$year/$month/$d-reg.json";
-        //$file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$d-reg.json";
-        //$file_name = "https://lfmm-fmp.fr/b2b/json/$year/$d-reg.json";
+        //$file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$month/$d-reg.json";
+        //$file_name = "https://lfmm-fmp.fr/b2b/json/$year/$month/$d-reg.json";
         $data = get_file($file_name);
         array_push($donnees, json_decode($data[0]));
     }

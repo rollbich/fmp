@@ -19,7 +19,7 @@ $dat = new DateTime();
 //
 // en php pas scope dans if
 if ($dat <= $date_ete || $dat > $date_hiver) {
-	echo "Heure hiver<br/>";
+	//echo "Heure hiver<br/>";
 	// Plage horaire de récupération du H20 et Occ (6h loc à minuit loc)
 	$wef_counts = gmdate('Y-m-d H:i', strtotime("yesterday 06:00"));
 	$unt_counts = gmdate('Y-m-d H:i', strtotime("today 00:01"));
@@ -32,7 +32,7 @@ if ($dat <= $date_ete || $dat > $date_hiver) {
 	$wef_flights = gmdate('Y-m-d H:i', strtotime("yesterday 01:00"));
 	$unt_flights = gmdate('Y-m-d H:i', strtotime("today 00:59"));
 } else {
-	echo "Heure ete<br/>";
+	//echo "Heure ete<br/>";
 	// Plage horaire de récupération du H20 et Occ (6h loc à 2h loc)
 	$wef_counts = gmdate('Y-m-d H:i', strtotime("yesterday 06:00"));
 	$unt_counts = gmdate('Y-m-d H:i', strtotime("today 00:01"));
@@ -55,9 +55,9 @@ function get_hiver() {
 	$dayofweek = date('w', strtotime("$year-10-31")); //(0=sunday,1=monday...,6=sat)
 	$requete = "P".$dayofweek."D";
 	$inter = new DateInterval($requete);
-	echo "Dernier dimanche octobre : <br>";
-	echo $d->sub($inter)->format('Y-m-d');
-	echo "<br><br>";
+	//echo "Dernier dimanche octobre : <br>";
+	//echo $d->sub($inter)->format('Y-m-d');
+	//echo "<br><br>";
 	return $d;
 }
 
@@ -70,9 +70,9 @@ function get_ete() {
 	$dayofweek = date('w', strtotime("$year-03-31"));
 	$requete = "P".$dayofweek."D";
 	$inter = new DateInterval($requete);
-	echo "Dernier dimanche mars : <br>";
-	echo $d->sub($inter)->format('Y-m-d');
-	echo "<br><br>";
+	//echo "Dernier dimanche mars : <br>";
+	//echo $d->sub($inter)->format('Y-m-d');
+	//echo "<br><br>";
 	return $d;
 }
 ?>
