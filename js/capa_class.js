@@ -116,8 +116,7 @@ class capa {
 						type_renfort = "RD";
 						let l = label.length;
 						rd_type = label.substring(l-3,l).replace(' ', '');
-						jx_type = "RD"+rd_type;
-
+						jx_type = "RD"+rd_type;					
 					}
 					if (label.includes("JX")) {
 						type_renfort = "JX";
