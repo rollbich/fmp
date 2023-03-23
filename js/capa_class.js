@@ -112,10 +112,11 @@ class capa {
 					let type_renfort = "";
 					let jx_type = "";
 					let rd_type = "";
+					// "RD bleu S1b" - "RD bleu S1bms" - "RD bleu J3bms" - "RD bleu J3a" - "RD bleu J1" + pour west only "RD bleu J1ms"
 					if (label.includes("RD bleu")) {
 						type_renfort = "RD";
 						let l = label.length;
-						rd_type = label.substring(l-3,l).replace(' ', '');
+						rd_type = label.substring(8);
 						jx_type = "RD"+rd_type;					
 					}
 					if (label.includes("JX")) {
