@@ -92,7 +92,7 @@ class capa {
 			
 			/*  ---------------------------------------
 					pc["J0"] = {
-						"J0A": {
+						"JXA": {
 							nombre: 2,
 							agent: {
 								"Jean Coco": "détaché",
@@ -109,9 +109,22 @@ class capa {
 				for (let cle in Renfort[renf1]) {
 					const obj = Renfort[renf1][cle];
 					let label = obj["contextmenutype"]["label"];
-					let jx_type = label.substring(0,4).replace(' ', '');
+					let type_renfort = "";
+					let jx_type = "";
+					let rd_type = "";
+					if (label.includes("RD bleu")) {
+						type_renfort = "RD";
+						let l = label.length;
+						rd_type = label.substring(l-3,l).replace(' ', '');
+						jx_type = "RD"+rd_type;
+
+					}
+					if (label.includes("JX")) {
+						type_renfort = "JX";
+						jx_type = label.substring(0,4).replace(' ', '');
+					}
 					let agent = obj["agent"]["nomComplet"];
-					let agent_type = label.includes("det") === true ? "detaché" : "salle";
+					let agent_type = (label.includes("det") || label.includes("RD")) ? "detaché" : "salle";
 					if (pc["J0"].hasOwnProperty(jx_type) === false) { pc["J0"][jx_type] = {"nombre": 0}; pc["J0"][jx_type]["agent"] = {}}
 					pc["J0"][jx_type]["agent"][agent] = agent_type;
 					pc["J0"][jx_type]["nombre"]++;
