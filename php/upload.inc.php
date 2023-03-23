@@ -13,7 +13,7 @@
    <i class="fa fa-file-text-o pointer-none" aria-hidden="true"></i>
    <p class="pointer-none">
    <!--<b>Drag and drop</b> files here <br /> or -->
-    <a href="" id="triggerFile">Sélectionner</a> les fichiers Schémas Courage<br>Ctrl+click / Shift+Click pour choisir plusieurs fichiers</p>
+    <a href="" id="triggerFile">Sélectionner</a> les fichiers Schémas 4F<br>Ctrl+click / Shift+Click pour choisir plusieurs fichiers</p>
 	<form id="upform" enctype="multipart/form-data" action="" method="post">
 	<input name="fichier[]" type="file" value="Choisir" id="fichiers" multiple/>
 	</form>
