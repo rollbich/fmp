@@ -23,7 +23,7 @@ class tds_editor {
         <ul class="menu_tds_editor">
             <li>
                 <label for="cree_name">Nom vac:</label>
-                <input type="text" id="cree_name" name="cree_name" required minlength="1" maxlength="4" size="6" />
+                <input type="text" id="cree_name" name="cree_name" required minlength="2" maxlength="7" size="7" />
                 <button id="button_cree_supp" class="button_tour">Créer Vac</button>
                 <button id="button_show_supp" class="button_tour">Voir Vacations Suppl</button>
             </li>
@@ -472,7 +472,9 @@ class tds_editor {
                 // à faire
                 const cles = Object.keys(this.date_supp[zone]); // tableau des dates
                 cles.forEach((date, index) => {
-                    this.date_supp[zone][date] = this.date_supp[zone][date].filter(el => el != vac);
+                    if (typeof this.date_supp[zone][date] !== 'undefined' && this.date_supp[zone][date].length != 0) {
+                        this.date_supp[zone][date] = this.date_supp[zone][date].filter(el => el != vac);
+                    }
                 });
                 this.save_date_suppl();
             })
