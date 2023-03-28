@@ -54,7 +54,7 @@ class FlightServices extends Service {
             'trafficWindow'=>array('wef'=>$wef,'unt'=>$unt),
             'requestedFlightFields'=>array('timeAtReferenceLocationEntry','aircraftType','aircraftOperator','actualTakeOffTime','actualTimeOfArrival'),
             'aerodrome'=>$ad,
-            'aerodromeRole'=>'BOTH'
+            'aerodromeRole'=>'BOTH' // NM 27 : GLOBAL au lieu de BOTH 
         );
                             
         try {

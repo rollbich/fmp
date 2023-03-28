@@ -383,7 +383,9 @@ class FlowServices extends Service {
             $delay_mn = (int) substr($r->delay, -2);
             $delay = $delay_h*60 + $delay_mn;
             if (substr($r->trafficVolumeId, 0, 2) == $area) {
-                array_push($arr, array($r->regulationId, $delay, $r->nrImpactedFlights));
+                array_push($arr, array($r->regulationId, $delay, $r->nrImpactedFlights)); // NM 27 nrImpactedFlights remplacé par impactedFlightCount
+				// impactedFlightCount : Number of flights which are crossing the regulation location during the regulation activation period.
+				// delay : The cumulated delay of the flights having the regulation as most penalising regulation.
             }
         }
         return $arr;
