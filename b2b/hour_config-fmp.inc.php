@@ -57,7 +57,7 @@ function get_hiver() {
 	$inter = new DateInterval($requete);
 	$d->sub($inter)->format('Y-m-d');
 	//echo "Dernier dimanche octobre : <br>";
-	//echo $d->sub($inter)->format('Y-m-d');
+	//echo $d;
 	//echo "<br><br>";
 	return $d;
 }
@@ -73,7 +73,7 @@ function get_ete() {
 	$inter = new DateInterval($requete);
 	$d->sub($inter)->format('Y-m-d');
 	//echo "Dernier dimanche mars : <br>";
-	//echo $d->sub($inter)->format('Y-m-d');
+	//echo $d;
 	//echo "<br><br>";
 	return $d;
 }
