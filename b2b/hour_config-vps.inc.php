@@ -1,7 +1,7 @@
 <?php
 // dernier dimanche d'octobre => heure d'hiver
-$date_hiver = new DateTime('2021-10-31');
-$date_ete = new DateTime('2022-03-27');
+$date_hiver = get_hiver();
+$date_ete = get_ete();
 $dat = new DateTime();
 
 // On donne l'heure du serveur et on récupère $wef_counts, regs, flights et $unt_counts, regs, flights en UTC
@@ -32,5 +32,37 @@ if ($dat <= $date_ete || $dat > $date_hiver) {
 	// Plage horaire de récupération du nombre de vol par TV (minuit UTC à minuit UTC)
 	$wef_flights = gmdate('Y-m-d H:i', strtotime("yesterday 02:00"));
 	$unt_flights = gmdate('Y-m-d H:i', strtotime("today 01:59"));
+}
+
+// 	---------------------------------------------------------
+// 		@return (DateTime) jour de passage à l'heure hiver
+// 	---------------------------------------------------------
+function get_hiver() {
+	$year = date('Y');
+	$d = new DateTime("$year-10-31"); 
+	$dayofweek = date('w', strtotime("$year-10-31")); //(0=sunday,1=monday...,6=sat)
+	$requete = "P".$dayofweek."D";
+	$inter = new DateInterval($requete);
+	$d->sub($inter)->format('Y-m-d');
+	//echo "Dernier dimanche octobre : <br>";
+	//echo $d->sub($inter)->format('Y-m-d');
+	//echo "<br><br>";
+	return $d;
+}
+
+// 	---------------------------------------------------------
+// 		@return (DateTime) jour de passage à l'heure été
+// 	---------------------------------------------------------
+function get_ete() {
+	$year = date('Y');
+	$d = new DateTime("$year-03-31"); 
+	$dayofweek = date('w', strtotime("$year-03-31"));
+	$requete = "P".$dayofweek."D";
+	$inter = new DateInterval($requete);
+	$d->sub($inter)->format('Y-m-d');
+	//echo "Dernier dimanche mars : <br>";
+	//echo $d->sub($inter)->format('Y-m-d');
+	//echo "<br><br>";
+	return $d;
 }
 ?>
