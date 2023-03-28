@@ -94,16 +94,13 @@ function write_xls($zone, $wef, $occ_est, $occ_west, $h20_est, $h20_west, $regul
 	
 	// Reg
 	$writer->writeSheetHeader('Regul', $header_reg, $style_header );
-	if ($zone == "est") {
-		foreach($regul["LFMMFMPE"] as $row) {
-			$writer->writeSheetRow('Regul', $row, $style);
-		}
+	foreach($regul["LFMMFMPE"] as $row) {
+		$writer->writeSheetRow('Regul', $row, $style);
 	}
-	if ($zone == "west") {	
-		foreach($regul["LFMMFMPW"] as $row) {
-			$writer->writeSheetRow('Regul', $row, $style);
-		}
+	foreach($regul["LFMMFMPW"] as $row) {
+		$writer->writeSheetRow('Regul', $row, $style);
 	}
+	
 	$writer->writeSheetHeader('Regul-App', $header_reg, $style_header );
 	foreach($regul["LFMMAPP"] as $row) {
 		$writer->writeSheetRow('Regul-App', $row, $style);
