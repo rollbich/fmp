@@ -46,6 +46,10 @@ if ($dat <= $date_ete || $dat > $date_hiver) {
 	$unt_flights = gmdate('Y-m-d H:i', strtotime("today 01:59"));
 }
 
+echo "wef/unt counts: $wef_counts - $unt_counts<br>";
+echo "wef/unt regs: $wef_regs - $unt_regs<br>";
+echo "wef/unt flights: $wef_flights - $unt_flights<br>";
+
 // 	---------------------------------------------------------
 // 		@return (DateTime) jour de passage à l'heure hiver
 // 	---------------------------------------------------------
