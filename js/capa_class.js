@@ -121,7 +121,7 @@ class capa {
 					}
 					if (label.includes("JX")) {
 						type_renfort = "JX";
-						jx_type = label.substring(0,4).replace(' ', '');
+						jx_type = label;
 					}
 					let agent = obj["agent"]["nomComplet"];
 					let agent_type = (label.includes("det") || label.includes("RD")) ? "detaché" : "salle";
