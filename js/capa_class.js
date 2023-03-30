@@ -112,19 +112,24 @@ class capa {
 					let type_renfort = "";
 					let jx_type = "";
 					let rd_type = "";
-					// "RD bleu S1b" - "RD bleu S1bms" - "RD bleu J3bms" - "RD bleu J3a" - "RD bleu J1" + pour west only "RD bleu J1ms"
+					// "RD bleu JXa-ms" "RD bleu S1b" - "RD bleu S1bms" - "RD bleu J3bms" - "RD bleu J3a" - "RD bleu J1" + pour west only "RD bleu J1ms" + pour est only "RD bleu JXb-ete"
 					if (label.includes("RD bleu")) {
 						type_renfort = "RD";
-						let l = label.length;
 						rd_type = label.substring(8);
-						jx_type = "RD"+rd_type;					
+						jx_type = "RD"+rd_type;		
 					}
 					if (label.includes("JX")) {
-						type_renfort = "JX";
-						jx_type = label;
-					}
+						if (label.includes("RD bleu")) {
+							type_renfort = "RD";
+							rd_type = label.substring(8);
+							jx_type = rd_type;		
+						} else {
+							type_renfort = "JX";
+							jx_type = label;
+						}
+					} 
 					let agent = obj["agent"]["nomComplet"];
-					let agent_type = (label.includes("det") || label.includes("RD")) ? "detaché" : "salle";
+					let agent_type = (label.includes("det") || label.includes("RD")) ? "détaché" : "salle";
 					if (pc["J0"].hasOwnProperty(jx_type) === false) { pc["J0"][jx_type] = {"nombre": 0}; pc["J0"][jx_type]["agent"] = {}}
 					pc["J0"][jx_type]["agent"][agent] = agent_type;
 					pc["J0"][jx_type]["nombre"]++;
@@ -589,7 +594,9 @@ class feuille_capa extends capa {
 				el.setAttribute('id', 'popinstr');
 				let det = '<div style="float:left;width:90%;">';
 				for (const agent in detail) {
-					det += `${agent}<br>`;
+					let affich = agent+" ";
+					if (detail[agent] === "détaché") affich += "(RD)";
+					det += `${affich}<br>`;
 				}
 				det += '</div>';
 				const pos = td_el.getBoundingClientRect();
