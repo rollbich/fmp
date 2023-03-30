@@ -124,7 +124,7 @@ class ouverture extends schema_rea {
             }
            		
             row[4].forEach(tv => {
-                console.log("R: "+row[1]+" "+row[2]);
+                //console.log("R: "+row[1]+" "+row[2]+"  tv: "+tv[0]);
                 let r = this.get_ouverture_totale(tv[0], time_to_min(row[1]), time_to_min(row[2]));
                 const color = get_group_color(tv[0], zon);
                 res += `<td title="${tv[1]}" class="tv" data-tv="${tv[0]}" data-deb="${r[0]}" data-fin="${r[1]}" style="background: ${color}">${tv[0]}</td>`;
@@ -414,11 +414,13 @@ class ouverture extends schema_rea {
 // ex : le nbre de secteur vient de passer à 6 et AB était ouvert entre 10:14 (deb) et 10:35 (fin)
 // mais AB était déjà ouvert depuis 08:00 et restera ouvert jusqu'à 17:35 => on récupère ["08:00", "17:35"] 
     get_ouverture_totale(tv, deb, fin) {
-        //console.log("Ouv Tot: "+tv+" "+deb+" "+fin);
         let datad = "", dataf =  "";
         for(let j=0;j<this.schema["tv_h"][tv].length;j++) {
-            //console.log("deb: "+deb+"   Hd: "+(this.schema["tv_h"][tv][j][0]-this.ouv_tech)+"fin: "+fin+"   Hf: "+(this.schema["tv_h"][tv][j][1]+this.ouv_tech));
-            if (deb >= this.schema["tv_h"][tv][j][0]-this.ouv_tech && fin <= this.schema["tv_h"][tv][j][1]+this.ouv_tech) {
+            let Hd = this.schema["tv_h"][tv][j][0]-this.ouv_tech;
+            let Hf = this.schema["tv_h"][tv][j][1]+this.ouv_tech;
+            //console.log("deb: "+deb+"   Hd: "+Hd+" / fin: "+fin+"   Hf: "+Hf);
+            if (deb >= Hd && fin <= Hf) {
+                //console.log("Trouvé "+tv);
                 datad = min_to_time(this.schema["tv_h"][tv][j][0]);
                 dataf = min_to_time(this.schema["tv_h"][tv][j][1]);
                 break;
