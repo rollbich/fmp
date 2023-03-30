@@ -52,10 +52,12 @@ require("../php/check_ok.inc.php");
 				await tabl.init();
 				const stats = new stats_period(start_day, end_day, zone);
 				await stats.init();
+				/*
 				const listMonth = [];
 				for (let k=1;k<13;k++) { listMonth.push(k);}
 				show_traffic_graph_mois_cumule("accueil_vols", year, listMonth, tabl.get_monthly_cumules()['cta'], tabl.get_monthly_cumules("lastyear")['cta'], tabl.get_monthly_cumules("2019")['cta'], "LFMMCTA");
 				show_delay_graph_mois_cumule("accueil_reguls", year, listMonth, tabl.get_monthly_reg_cumules()['cta'], tabl.get_monthly_reg_cumules("lastyear")['cta'], tabl.get_monthly_reg_cumules("2019")['cta'], "LFMMCTA");
+				*/
 				const data_vols = [];
 				const dataLastyear_vols = [];
 				const data2019_vols = [];
