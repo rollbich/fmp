@@ -376,7 +376,38 @@ class weekly_briefing {
 			<td>${MyFormat.format((this.reguls.delay['app'][this.week-1]/this.reguls_2019.delay['app'][this.week-1] - 1)*100)} %</td>`;
             res += '</tr>';	
         res += '</tbody></table>';
-		
+		res += `<table class="table_bilan" style="margin-top: -20px;">
+			<tbody>`;
+		res += '<tr>';
+		console.log(this.reguls);
+		if (typeof this.reguls.cause['cta'][this.week-1]['ATC_INDUSTRIAL_ACTION'] != 'undefined') {
+			res += `<td>Delay grève week : ${this.week}</td><td>${this.reguls.cause['cta'][this.week-1]['ATC_INDUSTRIAL_ACTION']} min</td>`;
+		} else {
+			res += `<td>Delay grève week : ${this.week}</td><td>0 min</td>`;
+		}
+		let cumul_greve = 0;
+		for (let i=1;i<this.week;i++) {
+			if (typeof this.reguls.cause['cta'][i]['ATC_INDUSTRIAL_ACTION'] != 'undefined') {
+				cumul_greve += this.reguls.cause['cta'][i]['ATC_INDUSTRIAL_ACTION'];
+			}
+		}
+		res += `<td>Cumul Delay grève ${this.year}</td><td>${cumul_greve} min</td>`;
+		res += '</tr>';	
+		res += '<tr>';
+		if (typeof this.reguls.cause['cta'][this.week-1]['ATC_STAFFING'] != 'undefined') {
+			res += `<td>Delay Staff week : ${this.week}</td><td>${this.reguls.cause['cta'][this.week-1]['ATC_STAFFING']} min</td>`;
+		} else {
+			res += `<td>Delay Staff week : ${this.week}</td><td>0 min</td>`;
+		}
+		let cumul_staffing = 0;
+		for (let i=1;i<this.week;i++) {
+			if (typeof this.reguls.cause['cta'][i]['ATC_STAFFING'] != 'undefined') {
+				cumul_staffing += this.reguls.cause['cta'][i]['ATC_STAFFING'];
+			}
+		}
+		res += `<td>Cumul Delay Staff ${this.year}</td><td>${cumul_staffing} min</td>`;
+		res += '</tr>';	
+		res += '</tbody></table>';
 		result += "</div>";
 		result += res;
 		return result;
