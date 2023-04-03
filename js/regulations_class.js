@@ -467,6 +467,7 @@ class weekly_regs {
 	async init() {
 		this.weekly_regs = await this.get_data_weekly_regs();
 		this.delay = this.get_weekly_delay();
+		this.cause = this.get_weekly_reg_by_cause();
 	}
 
 	/*  ----------------------------------------------------------------------------------
@@ -512,6 +513,7 @@ class weekly_regs {
 			"cta": {
 				"ATC_STAFFING":1953,
 				"SPECIAL_EVENT":311,
+				"ATC_INDUSTRIAL_ACTION":2000,
 				"cause": delai
 				...
 			},
