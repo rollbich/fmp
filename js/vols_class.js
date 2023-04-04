@@ -206,9 +206,10 @@ class weekly_vols {
 	-------------------------------------------------------------------------------------*/
 
 class weekly_briefing {
-	constructor(year, week, containerId_vols, containerId_reguls) {
+	constructor(year, week, containerId_vols, containerId_reguls, containerId_causes) {
 		this.container_vols = $(containerId_vols);
 		this.container_reguls = $(containerId_reguls);
+		this.container_causes = $(containerId_causes);
 		this.year = year;
 		this.week = week;
 		this.ini_week = week;
@@ -260,16 +261,24 @@ class weekly_briefing {
 	}
 
 	show_data_vols() {
-		console.log("VVV");
-		console.log(this.year);
-		console.log(this.week);
 		let v = this.data_vols();
 		this.container_vols.innerHTML = v;
 	}
 
 	show_data_reguls() {
 		let r = this.data_reguls();
+		let c = this.bilan_causes_crna() + this.bilan_causes_app();
 		this.container_reguls.innerHTML = r;
+		this.container_causes.innerHTML = c;
+		console.log(this.reguls);
+		show_delay_graph_week_par_causes("accueil_causes_cta", this.year, this.week, this.reguls.cause['cta'][this.week-1], "LFMM CTA");
+		show_delay_graph_week_par_causes("accueil_causes_app", this.year, this.week, this.reguls.cause['app'][this.week-1], "LFMM APP");
+		show_delay_graph_week_par_causes("accueil_causes_est", this.year, this.week, this.reguls.cause['est'][this.week-1], "LFMM Est");
+		show_delay_graph_week_par_causes("accueil_causes_west", this.year, this.week, this.reguls.cause['west'][this.week-1], "LFMM West");
+		show_delay_graph_week_cumule("accueil_cumule_cta", this.year, this.get_weekly_reg_cumules()['cta'], this.get_weekly_reg_cumules("lastyear")['cta'], this.get_weekly_reg_cumules("2019")['cta'], "LFMM CTA");
+		show_delay_graph_week_cumule("accueil_cumule_app", this.year, this.get_weekly_reg_cumules()['app'], this.get_weekly_reg_cumules("lastyear")['app'], this.get_weekly_reg_cumules("2019")['app'], "LFMM APP");
+		show_delay_graph_week_cumule("accueil_cumule_est", this.year, this.get_weekly_reg_cumules()['est'], this.get_weekly_reg_cumules("lastyear")['est'], this.get_weekly_reg_cumules("2019")['est'], "LFMM Est");
+		show_delay_graph_week_cumule("accueil_cumule_west", this.year, this.get_weekly_reg_cumules()['west'], this.get_weekly_reg_cumules("lastyear")['west'], this.get_weekly_reg_cumules("2019")['west'], "LFMM West");
 	}
 
 	change_week() {
@@ -376,40 +385,90 @@ class weekly_briefing {
 			<td>${MyFormat.format((this.reguls.delay['app'][this.week-1]/this.reguls_2019.delay['app'][this.week-1] - 1)*100)} %</td>`;
             res += '</tr>';	
         res += '</tbody></table>';
-		res += `<table class="table_bilan" style="margin-top: -20px;">
-			<tbody>`;
-		res += '<tr>';
-		console.log(this.reguls);
-		if (typeof this.reguls.cause['cta'][this.week-1]['ATC_INDUSTRIAL_ACTION'] != 'undefined') {
-			res += `<td>Delay grève week : ${this.week}</td><td>${this.reguls.cause['cta'][this.week-1]['ATC_INDUSTRIAL_ACTION']} min</td>`;
-		} else {
-			res += `<td>Delay grève week : ${this.week}</td><td>0 min</td>`;
-		}
-		let cumul_greve = 0;
-		for (let i=1;i<this.week;i++) {
-			if (typeof this.reguls.cause['cta'][i]['ATC_INDUSTRIAL_ACTION'] != 'undefined') {
-				cumul_greve += this.reguls.cause['cta'][i]['ATC_INDUSTRIAL_ACTION'];
-			}
-		}
-		res += `<td>Cumul Delay grève ${this.year}</td><td>${cumul_greve} min</td>`;
-		res += '</tr>';	
-		res += '<tr>';
-		if (typeof this.reguls.cause['cta'][this.week-1]['ATC_STAFFING'] != 'undefined') {
-			res += `<td>Delay Staff week : ${this.week}</td><td>${this.reguls.cause['cta'][this.week-1]['ATC_STAFFING']} min</td>`;
-		} else {
-			res += `<td>Delay Staff week : ${this.week}</td><td>0 min</td>`;
-		}
-		let cumul_staffing = 0;
-		for (let i=1;i<this.week;i++) {
-			if (typeof this.reguls.cause['cta'][i]['ATC_STAFFING'] != 'undefined') {
-				cumul_staffing += this.reguls.cause['cta'][i]['ATC_STAFFING'];
-			}
-		}
-		res += `<td>Cumul Delay Staff ${this.year}</td><td>${cumul_staffing} min</td>`;
-		res += '</tr>';	
-		res += '</tbody></table>';
 		result += "</div>";
 		result += res;
+		return result;
+	}
+
+	get_cumul_cause(cause) {
+		let cumul_greve = {"cta":0, "est":0, "west":0, "app":0};
+		for (let i=1;i<this.week;i++) {
+			cumul_greve["cta"] += this.reguls.cause['cta'][i][cause] || 0;
+			cumul_greve["est"] += this.reguls.cause['est'][i][cause] || 0;
+			cumul_greve["west"] += this.reguls.cause['west'][i][cause] || 0;
+			cumul_greve["app"] += this.reguls.cause['app'][i][cause] || 0;
+		}
+		return cumul_greve;
+	}
+
+	bilan_causes_crna() {
+		let res = `<h2>Délais par causes CRNA: semaine ${this.week} - Année ${this.year}</h2>`;
+		res += "<div class='delay'>";
+		res += `<table class="table_bilan">
+			<thead><tr class="titre"><th>Causes</th><th>CTA</th><th>Est</th><th>West</th><th>Cumul CTA ${this.year}</th><th>Cumul Est ${this.year}</th><th>Cumul West ${this.year}</th></tr></thead>
+			<tbody>`;
+		Object.keys(this.reguls.cause['cta'][this.week-1]).forEach(key => {
+			res += '<tr>';
+			const cumul = this.get_cumul_cause(key);
+			res += `<td>${key}</td>`;
+			res += `<td>${this.reguls.cause['cta'][this.week-1][key]} min</td><td>${this.reguls.cause['est'][this.week-1][key] || 0} min</td><td>${this.reguls.cause['west'][this.week-1][key] || 0} min</td>`;
+			res += `<td>${cumul['cta']} min</td><td>${cumul['est']} min</td><td>${cumul['west']} min</td>`;
+			res += '</tr>';	
+		})
+		
+		res += '</tbody></table></div>';
+		return res;
+	}
+
+	bilan_causes_app() {
+		let res = `<h2>Délais par causes APP: semaine ${this.week} - Année ${this.year}</h2>`;
+		res += "<div class='delay'>";
+		res += `<table class="table_bilan">
+			<thead><tr class="titre"><th>Causes</th><th>App</th><th>Cumul App ${this.year}</th></tr></thead>
+			<tbody>`;
+		Object.keys(this.reguls.cause['app'][this.week-1]).forEach(key => {
+			res += '<tr>';
+			const cumul = this.get_cumul_cause(key);
+			res += `<td>${key}</td>`;
+			res += `<td>${this.reguls.cause['app'][this.week-1][key] || 0} min</td><td>${cumul['app']} min</td>`;
+			res += '</tr>';	
+		})
+		
+		res += '</tbody></table></div>';
+		return res;
+	}
+
+	get_weekly_reg_cumules(type) {
+		let obj = null;
+		const result = {};
+		switch (type) {
+			case 'lastyear':
+			  	obj = this.reguls_lastyear;
+				result['year'] = this.year - 1;
+				break;
+			case '2019':
+				obj = this.reguls_2019;
+				result['year'] = 2019;
+			  	break;
+			default:
+				obj = this.reguls;
+				result['year'] = this.year;
+		}
+		let cta = 0, est = 0, west = 0, app = 0;
+		result['cta'] = [];
+		result['est'] = [];
+		result['west'] = [];
+		result['app'] = [];
+		for(let i=0;i<this.week;i++) { 
+			cta += obj['delay']['cta'][i];
+			result['cta'].push(cta);
+			est += obj['delay']['est'][i];
+			result['est'].push(est);
+			west += obj['delay']['west'][i];
+			result['west'].push(west);
+			app += obj['delay']['app'][i];
+			result['app'].push(app);
+		}
 		return result;
 	}
 
@@ -754,6 +813,8 @@ class monthly_briefing {
 		const listMonth = [];
 		for (let k=1;k<13;k++) { listMonth.push(k);}
 		show_delay_graph_mois_par_causes("accueil_causes_cta", this.year, this.month, this.reguls.delay_par_cause['cta'][this.month-1], "LFMM CTA");
+		show_delay_graph_mois_par_causes("accueil_causes_est", this.year, this.month, this.reguls.delay_par_cause['est'][this.month-1], "LFMM Est");
+		show_delay_graph_mois_par_causes("accueil_causes_west", this.year, this.month, this.reguls.delay_par_cause['west'][this.month-1], "LFMM West");
 		show_delay_graph_mois_par_causes("accueil_causes_app", this.year, this.month, this.reguls.delay_par_cause['app'][this.month-1], "Approches");
 		show_traffic_graph_mois("accueil_trafic_mois_app", this.year, listMonth, this.flights.nbre_vols['app'], this.flights_lastyear.nbre_vols['app'], this.flights_2019.nbre_vols['app'], "Approches");
 		show_delay_graph_mois_par_tvs("accueil_tvs_cta", this.year, this.month, this.reguls.delay_par_tvs['cta'][this.month-1], "LFMMCTA");

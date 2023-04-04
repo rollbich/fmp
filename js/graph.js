@@ -688,7 +688,7 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 function show_traffic_graph_mois(containerId, year, listWeek, data, data_lastyear, data2019, zon) {
 
 	let chartDom = $(containerId);
-	chartDom.style.height = "350px";
+	chartDom.style.height = "400px";
 	chartDom.style.width = "870px";
 	let myChart = echarts.init(chartDom);
 	
@@ -1271,7 +1271,7 @@ function show_delay_graph_mois_cumule(containerId, year, listMonth, data, data_l
 /*	--------------------------------------------------------------------------
 	 	Affiche le graph Delay par causes du mois 
 			@param {string} containerId - Id de l'HTML Element conteneur
-			@param {array} dataAxis - [1, 2, 3, month...]
+			@param {array} month - numéro du mois
 			@param {array} data - [...]
 	-------------------------------------------------------------------------- */
 function show_delay_graph_mois_par_causes(containerId, year, month, data, titre) {
@@ -1383,7 +1383,7 @@ function show_delay_graph_mois_par_causes(containerId, year, month, data, titre)
 /*	--------------------------------------------------------------------------
 	 	Affiche le graph Delay par causes du mois 
 			@param {string} containerId - Id de l'HTML Element conteneur
-			@param {array} dataAxis - [1, 2, 3, month...]
+			@param {array} month - numéro du mois
 			@param {array} data - [...]
 	-------------------------------------------------------------------------- */
 function show_delay_graph_mois_par_tvs(containerId, year, month, data, titre) {
@@ -1486,6 +1486,237 @@ function show_delay_graph_mois_par_tvs(containerId, year, month, data, titre) {
 			data: result
 			}
 		]
+	};
+	
+	myChart.setOption(option);
+	
+}
+
+/*	--------------------------------------------------------------------------
+	 	Affiche le graph Delay par causes de la semaine 
+			@param {string} containerId - Id de l'HTML Element conteneur
+			@param {array} week - numéro de la semaine
+			@param {array} data - [{ value: 1048, name: 'Search Engine' }, ..., { value: 300, name: 'Video Ads' } ]
+      ]
+	-------------------------------------------------------------------------- */
+function show_delay_graph_week_par_causes(containerId, year, week, data, titre) {
+	console.log("DATA");
+	console.log(data);
+	let chartDom = $(containerId);
+	chartDom.style.height = "400px";
+	chartDom.style.width = "870px";
+	let myChart = echarts.init(chartDom);
+	let total = 0;
+	let option;
+	const result = [];
+	Object.keys(data).forEach(cause => {
+			let obj = {};
+			obj["value"] = data[cause];
+			total += data[cause];
+			obj["name"] = cause;
+			result.push(obj);
+	}) 
+	
+	option = {
+		// Global palette:
+		color: [
+			'#d66',
+			'#6b6',
+			'lightblue',
+			'orange',
+			'pink',
+			'yellow',
+			'white',
+			'#bda29a',
+			'#6e7074',
+			'#546570',
+			'#c4ccd3'
+			],
+		title: {
+			text: `Délai par cause - Sem ${week} ${year} - ${titre}`,
+			textStyle: {
+				fontSize: '1.5rem',
+				color: '#FFF'
+			},
+			x: 'center',
+			y: 'top',
+			padding: 10
+		},
+		tooltip: {
+			trigger: 'item'
+		},
+		legend: {
+			top: 'center',
+			left: 'left',
+			textStyle: {
+			fontSize: '1.2rem',
+			color: '#eee'
+			},
+			orient: 'vertical'
+		},
+		series: [
+			{
+			name: 'Reason',
+			type: 'pie',
+			radius: ['60%', '90%'],
+			avoidLabelOverlap: false,
+			itemStyle : {
+				borderRadius: 10,
+				borderColor: '#eee',
+					borderWidth: 2,
+				normal : {
+						label : {
+						show: true, position: 'inner',
+						formatter : function (params){
+							var val = ((parseInt(params.value)/parseInt(total))*100).toFixed(1);
+							return  val.toString() + '%\n'
+						},
+						textStyle : {
+							color: 'black'
+						}
+					},
+					labelLine : {
+						show : false
+					}
+				}
+			},
+			top: '20%',
+			label: {
+				show: false,
+				position: 'center'
+			},
+			emphasis: {
+				label: {
+				show: true,
+				fontSize: '20',
+				fontWeight: 'bold'
+				}
+			},
+			labelLine: {
+				show: false
+			},
+			data: result
+			}
+		]
+	};
+	
+	myChart.setOption(option);
+	
+}
+
+/*	--------------------------------------------------------------------------
+	 	Affiche le graph Delay Cumulé Year par mois
+			@param {string} containerId - Id de l'HTML Element conteneur
+			@param {array} data - [load,...]
+	-------------------------------------------------------------------------- */
+function show_delay_graph_week_cumule(containerId, year, data, data_lastyear, data2019, zon) {
+
+	let chartDom = $(containerId);
+	chartDom.style.height = "350px";
+	chartDom.style.width = "870px";
+	let myChart = echarts.init(chartDom);
+	
+	// dataAxis
+	const listWeek = [];
+	for(let i=1;i<54;i++) {listWeek.push(i)}
+
+	let option;
+	
+	option = {
+		title: {
+			text: `Délai cumulé sur l'année ${year} - ${zon}`,
+			textStyle: {
+				color: '#FFF',
+				fontSize: '1.5rem'
+			},
+			x: 'center',
+			y: 'top'
+		},
+		tooltip: {
+			trigger: 'axis',
+			axisPointer: {
+				type: 'shadow',
+				label: {
+					show: true
+				}
+			}
+		},
+		toolbox: {
+			feature: {
+				saveAsImage: {
+					name: `Trafic semaine sur l'année - ${zon}`,
+					title: 'PNG',
+					show: true
+				}
+			}
+		},
+		grid: {
+			containLabel: true
+		},
+		legend: {
+			x: 'center', // 'center' | 'left' | {number},
+			y: 'top' | 30, // 'center' | 'bottom' | {number}
+			padding: -1,
+			textStyle: {
+				color: '#fff'
+			}
+		},
+		calculable: true,
+		xAxis: {
+			type: 'category',
+			name: 'Semaine',
+			nameLocation: 'middle',
+			axisLabel: {
+				show: true,
+				interval: 'auto',    // {number}
+				margin: 8,
+				textStyle: {
+					color: '#fff'
+				}
+			},
+			nameGap: 30,
+			nameTextStyle: {
+				color: '#fff',
+				fontSize: '1.2rem'
+			},
+			data: listWeek
+		},
+		yAxis: {
+			type: 'value',
+			axisLabel: {
+				formatter: '{value}'
+			},
+			name: 'Cumul des délais',
+			nameTextStyle: {
+				color: '#fff',
+				fontSize: '1.2rem'
+			},
+			nameRotate: 90,
+			nameGap: 60,
+			nameLocation: 'middle'
+		},
+		series: [
+			{
+				name: "2019",
+				type: 'line',
+				color : '#339dff',
+				//areaStyle: {},
+				data: data2019,
+			},
+			{
+				name: year-1,
+				type: 'line',
+				color: 'yellow',
+				//areaStyle: {},
+				data: data_lastyear,
+			},
+			{
+				name: year,
+				type: 'line',
+				color: '#4CC417',
+				//areaStyle: {},
+				data: data,
+			}]
 	};
 	
 	myChart.setOption(option);
