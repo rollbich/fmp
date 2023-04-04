@@ -87,6 +87,12 @@ h2 {
 	color: rgb(240, 122, 122);
 }
 
+.mgt {
+	margin-top: 20px;
+	padding-top: 10px;
+	border-top:solid 2px #00caff;
+}
+
 /* Bandeau de navigation */
 
 nav.navbar{
@@ -124,7 +130,7 @@ nav.navbar{
 	margin-top: 3rem;
 }
 
-#accueil_bilan h2 {
+.accueil_bilan h2 {
 	font-size: 2em;
 	margin-top: 0;
 	color: var(--select-bg-color);
@@ -144,7 +150,7 @@ nav.navbar{
 	margin-top: 20px;
 	margin-bottom: 50px;
 	table-layout: fixed;
-	width: 816px;
+	min-width: 816px;
 	border: 2px solid white;
 }
 
@@ -156,6 +162,8 @@ table.table_bilan th {
 
 table.table_bilan th, table.table_bilan td {
 	text-align:center;
+	padding-left: 10px;
+	padding-right: 10px;
 }
 
 table.table_bilan tr:nth-child(odd) {

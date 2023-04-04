@@ -51,17 +51,19 @@ require("../php/check_ok.inc.php");
 	<div id="accueil_reguls_mois_cta" class="l-30"></div>
 	<div id="accueil_reguls_mois_est" class="l-30"></div>
 	<div id="accueil_reguls_mois_west" class="l-30"></div>
-	<div id="accueil_causes_cta"></div>
-	<div id="accueil_tvs_cta"></div>
-	<div id="accueil_tvs_est" class="mt3"></div>
-	<div id="accueil_tvs_west" class="mt3"></div>
+	<div id="accueil_causes_est" class="mgt"></div>
+	<div id="accueil_causes_west" class="mgt"></div>
+	<div id="accueil_causes_cta" class="mgt"></div>
+	<div id="accueil_tvs_cta" class="mgt"></div>
+	<div id="accueil_tvs_est" class="mt3 mgt"></div>
+	<div id="accueil_tvs_west" class="mt3 mgt"></div>
 </div>
 <div class='accueil'>
-	<div id="accueil_trafic_mois_app" class="l-30 mt3"></div>
-	<div id="accueil_causes_app"></div>
-	<div id="accueil_trafic_cumul_app" class="l-30 mt3"></div>
-	<div id="accueil_reguls_cumul_app" class="l-30 mt3"></div>
-	<div id="accueil_tvs_app"></div>
+	<div id="accueil_trafic_mois_app" class="l-30 mgt"></div>
+	<div id="accueil_causes_app" class="mgt"></div>
+	<div id="accueil_trafic_cumul_app" class="l-30 mt3 mgt"></div>
+	<div id="accueil_reguls_cumul_app" class="l-30 mt3 mgt"></div>
+	<div id="accueil_tvs_app" class="mgt"></div>
 </div>
 </div>
 <?php include("../php/upload.inc.php"); ?>
