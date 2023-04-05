@@ -1,5 +1,6 @@
 .sortable {
   border-spacing: 0;
+  min-width: 480px;
 }
 
 .sortable tbody tr:nth-child(odd) {
@@ -30,6 +31,7 @@
   text-transform: capitalize;
   vertical-align: baseline;
   white-space: nowrap;
+  text-align: center;
 }
 
 .sortable th:hover {

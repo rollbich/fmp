@@ -7,10 +7,10 @@ class FlowServices extends Service {
             récupère le nbre de vols d'une journée d'un airspace LFMMCTA, LFMMCTAE et LFMMCTAW
                 @param $airspace    (string) - airspace name
                 @param $trafficType (string) - "LOAD" / "DEMAND" / "REGULATED_DEMAND"
-                @param $wef / $unt           - gmdate('Y-m-d H:i')
+                @param $wef / $unt  (string) - "YYYY-MM-DD hh:mm"   (ex : gmdate('Y-m-d H:i'))
         ---------------------------------------------------------------------------------------- */
     // (marche aussi pour un TV en changeant la requete par queryTrafficCountsByTrafficVolume et en remplacant airspace par trafficVolume)
-    function query_entry_day_count($airspace, $trafficType, $wef, $unt) {
+    function query_entry_day_count(string $airspace, string $trafficType, string $wef, string $unt) {
         
         $params = array(
             'sendTime'=>gmdate("Y-m-d H:i:s"),
@@ -43,15 +43,15 @@ class FlowServices extends Service {
         }
     }
 
-    /*  --------------------------------------------------------------------------------
+    /*  ---------------------------------------------------------------------------------------
                         Appel b2b
             récupère le H20 (duration 60, step 20)
             dans la plage horaire $wef-$unt en heure UTC
                 @param $tv (string)          - "LFMAB"
                 @param $trafficType (string) - "LOAD" / "DEMAND" / "REGULATED_DEMAND"
-                @param $wef / $unt           - gmdate('Y-m-d H:i')
-        -------------------------------------------------------------------------------- */
-    function query_entry_count($tv, $wef, $unt, $trafficType) {
+                @param $wef / $unt  (string) - "YYYY-MM-DD hh:mm"   (ex : gmdate('Y-m-d H:i'))
+        --------------------------------------------------------------------------------------- */
+    function query_entry_count(string $tv, string $wef, string $unt, string $trafficType) {
         
         $params = array(
             'sendTime'=>gmdate("Y-m-d H:i:s"),
@@ -84,15 +84,16 @@ class FlowServices extends Service {
         }
     }
 
-    /*  --------------------------------------------------------------------------------
+    /*  -----------------------------------------------------------------------------------------------
                         Appel b2b
             récupère l'occ (duration en fonction du TV, step 1)
             dans la plage horaire $wef-$unt en heure UTC
                 @param $tv (string)          - "LFMAB"
+                @param $tv_duration (string) - "hhmm"
                 @param $trafficType (string) - "LOAD" / "DEMAND" / "REGULATED_DEMAND"
-                @param $wef / $unt           - gmdate('Y-m-d H:i')
-        ------------------------------------------------------------------------------- */
-    function query_occ_count($tv, $tv_duration, $wef, $unt, $trafficType) {
+                @param $wef / $unt  (string) - "YYYY-MM-DD hh:mm"   (ex : gmdate('Y-m-d H:i'))
+        ----------------------------------------------------------------------------------------------- */
+    function query_occ_count(string $tv, string $tv_duration, string $wef, string $unt, string $trafficType) {
         
         $params = array(
             'sendTime'=>gmdate("Y-m-d H:i:s"),
@@ -133,10 +134,10 @@ class FlowServices extends Service {
           @param $tv_group (array)     - array des TVs
           @param $tv_zone_mv (object)  - objet dont les clés sont les TVs contenant les MV, et OTMV
           @param $trafficType (string) - "LOAD" / "DEMAND" / "REGULATED_DEMAND"
-          @param $wef / $unt           - gmdate('Y-m-d H:i')
+          @param $wef / $unt  (string) - "YYYY-MM-DD hh:mm"   (ex : gmdate('Y-m-d H:i'))
 		    @return [ ["TV", "yyyy-mm-dd", "hh:mm", MV, H/20], [...], ... ]
 	------------------------------------------------------------------------------------------------ */
-    function get_entry($prefix, $tv_group, $tv_zone_mv, $wef, $unt, $trafficType) {
+    function get_entry(string $prefix, array $tv_group, $tv_zone_mv, string $wef, string $unt, string $trafficType) {
         
         $arr = array();
         
@@ -159,17 +160,17 @@ class FlowServices extends Service {
         return $arr;
     }
 
-    /*  --------------------------------------------------------------------------------------
+    /*  ----------------------------------------------------------------------------------------------
                 récupère l'occ de la zone "est" ou "west"
             dans la plage horaire $wef-$unt en heure UTC
             @param $prefix (string)      - "LFM"
             @param $tv_group (array)     - array des TVs
             @param $tv_mv (object)       - objet dont les clés sont les TVs contenant les MV, et OTMV
             @param $trafficType (string) - "LOAD" / "DEMAND" / "REGULATED_DEMAND"
-            @param $wef / $unt           - gmdate('Y-m-d H:i')
+            @param $wef / $unt  (string) - "YYYY-MM-DD hh:mm"   (ex : gmdate('Y-m-d H:i'))
                 @return [ ["TV", "yyyy-mm-dd", "hh:mm", peak, sustain, H/20], [...], ... ]
-        ------------------------------------------------------------------------------------- */
-    function get_occ($prefix, $tv_group, $tv_zone_mv, $wef, $unt, $trafficType) {
+        ---------------------------------------------------------------------------------------------- */
+    function get_occ(string $prefix, array $tv_group, $tv_zone_mv, string $wef, string $unt, string $trafficType) {
         
         $tv_duration = 0;
         
@@ -217,18 +218,18 @@ class FlowServices extends Service {
         return $arr;
     }
 
-    /*  ----------------------------------------------------------------------
+    /*  -----------------------------------------------------------------------------------
 		récupère les reguls d'une zone définie par un trigramme
-				$area : 3 premières lettres (ex : LFM)
-				$wef-$unt : plage en heure UTC
+			@param (string) $area : 3 premières lettres (ex : LFM)
+			@param (string) $wef / $unt - "YYYY-MM-DD hh:mm"   (ex : gmdate('Y-m-d H:i'))
 		Note :  queryRegulations ne récupère pas les delais des TV
 				c'est pourquoi, on effectue une requete atfcm_situation
-				
+
 		On récupère un tableau pour sauvegarde simple en xls et csv
 		On créé un objet global json plus complet $json_reg
 		pour la sauvegarde json
-	---------------------------------------------------------------------- */
-    public function get_regulations($area, $wef, $unt) {
+	--------------------------------------------------------------------------------------- */
+    public function get_regulations(string $area, string $wef, string $unt) {
         
         $params = array(
             'sendTime'=>gmdate("Y-m-d H:i:s"),
@@ -261,6 +262,7 @@ class FlowServices extends Service {
             récupère la situation ATFCM en europe
             - delai, nbre vols (landed, suspendus...), reason globaux europe
             - reguls europe avec delai de chaque TV (format string HHMM), vols impactés
+            $day : string "YYYY-MM-DD"
         ----------------------------------------------------------------------------------- */
 
     public function get_ATFCM_situation() {
@@ -293,7 +295,7 @@ class FlowServices extends Service {
 
     // PHP par défaut : objets sont passés par référence / array par copie
     // change for php 8.1 : les paramètres optionnels doivent être placés après les paramètres obligatoires
-    public function get_full_regulations($area, $wef_regs, $unt_regs, $json_reg, & $reg, $situation_ATFCM = null) {
+    public function get_full_regulations(string $area, string $wef_regs, string $unt_regs, $json_reg, & $reg, $situation_ATFCM = null) {
         
         try {
             $regulations = $this->get_regulations($area, $wef_regs, $unt_regs);
@@ -370,10 +372,10 @@ class FlowServices extends Service {
             Extrait de la situation ATFCM europe une zone précise d'europe
             -> reguls de la zone avec delai de chaque TV, vols impactés
                 @param (objet ATFCM_situation) 
-                @param (string) - bigramme de l'area (ex : "LF" pour la France)
+                @param (string) $area - bigramme de l'area (ex : "LF" pour la France)
                 @return [ [regId, delay, impactedflights], ... [...] ]
         ------------------------------------------------------------------------- */
-    public function get_area_situation($atfcm_situation, $area) {
+    public function get_area_situation($atfcm_situation, string $area) {
         $arr = array();
         
         for ($i=0; $i<count($atfcm_situation->data->regulations->item); $i++) {
@@ -391,14 +393,15 @@ class FlowServices extends Service {
         return $arr;
     }
 
-    /* ----------------------------------------------------------------------------
-        Récupère les confs déclarés
+    /* -------------------------------------------------------------------------------------------------------
+        Récupère les confs déclarés (ainsi que les confs existantes : data->plan->knownConfigurations->item)
         @param {string} $airspace - "LFMMCTAE"
-        @param {gmdate} $day - gmdate('Y-m-d', strtotime("today"));
+        @param {string} $day - "YYYY-MM-DD"  (ex : gmdate('Y-m-d', strtotime("today"));)
             possible : yesterday, today, tomorrow 
             "today" = minuit local = 22h00 UTC la veille(=> données de la veille)
-    -------------------------------------------------------------------------------*/
-    public function get_atc_conf($airspace, $day) {
+        
+    ----------------------------------------------------------------------------------------------------------*/
+    public function get_atc_conf(string $airspace, string $day) {
         
         $params = array(
             'sendTime'=>gmdate("Y-m-d H:i:s"),
@@ -420,6 +423,181 @@ class FlowServices extends Service {
         catch (Exception $e) {
             echo 'Exception reçue get_atc_conf: ',  $e->getMessage(), "<br>\n";
             $erreur = $this->getFullErrorMessage("Erreur get_atc_conf");
+            echo $erreur."<br>\n";
+            $this->send_mail($erreur);
+        }
+    }
+
+    /* -------------------------------------------------------------------------------------------------------
+        Récupère les MV d'un array de TVs
+        @param {array} $tvs - [tv1, tv2, ...]
+        @param {string} $day - "YYYY-MM-DD"   (ex : gmdate('Y-m-d', strtotime("today"));)
+            "today" = minuit local = 22h00 UTC la veille(=> données de la veille)
+        
+    ----------------------------------------------------------------------------------------------------------*/
+    public function get_capacity_plan(array $tvs, string $day) {
+        
+        $params = array(
+            'sendTime'=>gmdate("Y-m-d H:i:s"),
+            'dataset'=>array('type'=>'OPERATIONAL'),
+            'day'=> $day,
+            'trafficVolumes' => $tvs
+        );
+                            
+        try {
+            $output = $this->getSoapClient()->__soapCall('retrieveCapacityPlan', array('parameters'=>$params));
+            if ($output->status !== "OK") {
+                $erreur = $this->getFullErrorMessage("Erreur get_capacity_plan $tvs, $day : ".$output->reason);
+                echo $erreur."<br>\n";
+                $this->send_mail($erreur);
+            }
+            return $output;
+            }
+
+        catch (Exception $e) {
+            echo 'Exception reçue get_capacity_plan: ',  $e->getMessage(), "<br>\n";
+            $erreur = $this->getFullErrorMessage("Erreur get_capacity_plan");
+            echo $erreur."<br>\n";
+            $this->send_mail($erreur);
+        }
+    }
+
+    /* -------------------------------------------------------------------------------------------------------
+        Récupère les MV d'un array de TVs dans un objet simple
+        @param {array} $tvs - [tv1, tv2, ...]
+        @param {string} $day - "YYYY-MM-DD"    (ex : gmdate('Y-m-d', strtotime("today"));)
+            "today" = minuit local = 22h00 UTC la veille(=> données de la veille)
+        @return {
+            "LFMEE":[{"applicabilityPeriod":{"wef":"2023-04-04 00:00","unt":"2023-04-05 00:00"},"dataSource":"AIRSPACE","capacity":30}],
+            "LFMGY":[
+                {
+                    "applicabilityPeriod":{"wef":"2023-04-04 00:00","unt":"2023-04-04 04:30"},
+                    "dataSource":"AIRSPACE",
+                    "capacity":43
+                },{
+                    "applicabilityPeriod":{"wef":"2023-04-04 04:30","unt":"2023-04-04 14:47"},
+                    "dataSource":"MEASURE",
+                    "capacity":39
+                },{
+                    "applicabilityPeriod":{"wef":"2023-04-04 14:47","unt":"2023-04-05    00:00"},
+                    "dataSource":"AIRSPACE",
+                    "capacity":43
+                }
+            ]
+        }
+        
+    ----------------------------------------------------------------------------------------------------------*/
+    public function get_easy_capacity_plan(array $tvs, string $day) {
+                
+        $result = new stdClass();
+
+        try {
+            $output = $this->get_capacity_plan($tvs, $day);
+            $r = $output->data->plans->tvCapacities->item;
+            if (is_array($r)) {
+                foreach($r as $item) {
+                    $tv_seul = $item->key;
+                    if (is_array($item->value->nmSchedule->item)) {
+                        $result->$tv_seul = $item->value->nmSchedule->item;
+                    } else {
+                        $result->$tv_seul = [$item->value->nmSchedule->item];
+                    }
+                }
+            } else {
+                $tv_seul = $r->key;
+                if (is_array($r->value->nmSchedule->item)) {
+                    $result->$tv_seul = $r->value->nmSchedule->item;
+                } else {
+                    $result->$tv_seul = [$r->value->nmSchedule->item];
+                }
+            }
+            return $result;
+        }
+
+        catch (Exception $e) {
+            echo 'Exception reçue get_easy_capacity_plan: ',  $e->getMessage(), "<br>\n";
+            $erreur = $this->getFullErrorMessage("Erreur get_easy_capacity_plan");
+            echo $erreur."<br>\n";
+            $this->send_mail($erreur);
+        }
+    }
+
+    /* -------------------------------------------------------------------------------------------------------
+        Récupère les OTMV d'un seul TV
+        @param {string} $tv 
+        @param {string} $day - "YYYY-MM-DD"    (ex : gmdate('Y-m-d', strtotime("today"));)
+            "today" = minuit local = 22h00 UTC la veille(=> données de la veille)
+        
+    ----------------------------------------------------------------------------------------------------------*/
+    public function get_otmv_tv(string $tv, string $day) {
+        
+        $params = array(
+            'sendTime'=>gmdate("Y-m-d H:i:s"),
+            'dataset'=>array('type'=>'OPERATIONAL'),
+            'day'=> $day,
+            'otmvsWithDuration' => array('item'=>array('trafficVolume'=>$tv))
+        );
+                            
+        try {
+            $output = $this->getSoapClient()->__soapCall('retrieveOTMVPlan', array('parameters'=>$params));
+            if ($output->status !== "OK") {
+                $erreur = $this->getFullErrorMessage("Erreur get_otmv_tv $tv, $day : ".$output->reason);
+                echo $erreur."<br>\n";
+                $this->send_mail($erreur);
+            }
+            return $output;
+            }
+
+        catch (Exception $e) {
+            echo 'Exception reçue get_otmv_tv: ',  $e->getMessage(), "<br>\n";
+            $erreur = $this->getFullErrorMessage("Erreur get_otmv_plantv");
+            echo $erreur."<br>\n";
+            $this->send_mail($erreur);
+        }
+    }
+
+    /* -------------------------------------------------------------------------------------------------------
+        Récupère les OTMV d'un array de TV
+        @param {array} $tvs 
+        @param {string} $day - "YYYY-MM-DD"    (ex : gmdate('Y-m-d', strtotime("today"));)
+            "today" = minuit local = 22h00 UTC la veille(=> données de la veille)
+        @return {
+            "tv": [ {période 1}, ..., {période n}],
+            "LFMGY": [{
+                "applicabilityPeriod":{"wef":"2023-04-05 00:00","unt":"2023-04-06 00:00"},
+                "dataSource":"AIRSPACE",
+                "otmv":{
+                    "trafficVolume":"LFMGY",
+                    "otmvDuration":"0009",     /// attention string
+                    "peak":{"threshold":17},
+                    "sustained":{"threshold":13,"crossingOccurrences":99,"elapsed":"0139"}
+                }
+            }]
+        }
+    ----------------------------------------------------------------------------------------------------------*/
+    public function get_otmv_plan(array $tvs, string $day) {
+           
+        $result = new stdClass();
+
+        try {
+            foreach ($tvs as $tv) {
+                $output = $this->get_otmv_tv($tv, $day);
+                $result->$tv = new stdClass();
+                $r = $output->data->plans->tvsOTMVs->item->value->item;
+                if (is_array($r)) { $r = $r[0]; } // on prend la première duration s'il y en a plusieurs
+                $rr = $r->value->nmSchedule->item;
+                if (is_array($rr)) {
+                    $result->$tv = $rr;
+                } else {
+                    $result->$tv = [$rr];
+                }
+            }
+            return $result;
+        }
+
+        catch (Exception $e) {
+            echo 'Exception reçue get_otmv_plan: ',  $e->getMessage(), "<br>\n";
+            $erreur = $this->getFullErrorMessage("Erreur get_otmv_plan");
             echo $erreur."<br>\n";
             $this->send_mail($erreur);
         }
