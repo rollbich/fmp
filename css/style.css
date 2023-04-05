@@ -459,6 +459,7 @@ table td.tv:hover {
 
 div.conf th {
 	width: 100px;
+	text-align: center;
 }
 
 table.regroup th {
@@ -476,8 +477,8 @@ table.conf tr.two {
 
 table.conf th, table.conf td {
 	/*border: solid 1px #ddd;*/
-	padding-left: 5px;
-	padding-right: 5px;
+	padding-left: 10px;
+	padding-right: 10px;
 }
 
 /* ------- Graphes ------- */

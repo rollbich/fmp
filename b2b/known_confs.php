@@ -6,7 +6,7 @@ require_once("B2B-Service.php");
 require_once("B2B-FlowServices.php");
 
 /* -----------------------------------------------------------------
-	Récupère les confs déclarés
+	Récupère les confs existantes (ainsi que les confs déclarés)
 	@param {string} $airspace - "LFMMCTAE"
 	@param {gmdate} $day - gmdate('Y-m-d', strtotime("tomorrow"));
 		possible : yesterday, today, tomorrow 

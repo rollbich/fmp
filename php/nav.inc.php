@@ -63,6 +63,9 @@
           <a class="navbar-item" href="../confs">
             Confs
           </a>
+          <a class="navbar-item" href="../mv">
+            MVs-OTMVs
+          </a>
           <a class="navbar-item" href="../visu">
             Visu
           </a>
