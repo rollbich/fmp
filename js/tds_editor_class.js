@@ -201,6 +201,7 @@ class tds_editor {
             </tr>
         </thead>
         <tbody>`;
+        res += `${this.affiche_vac("JX", saison, zone)}`;
         res += `${this.affiche_vac("J1", saison, zone)}`;
         res += `${this.affiche_vac("J3", saison, zone)}`;
         res += `${this.affiche_vac("S2", saison, zone)}`;
@@ -220,9 +221,9 @@ class tds_editor {
     ------------------------------------------------------------------------------------------ */
     affiche_vac(vac, saison, zone) {
         const res = this.affiche_td_vac(vac, saison, zone);
-        const cds = (vac == "J2" || vac == "S1") ? "-" : "cds";
+		const cds = this.tour_local[zone][saison]["cds"][vac];
         return `
-        <tr><td class='left_2px right_1px'></td><td class='pc right_1px'>${cds}</td>${res[0]}</tr>
+        <tr><td class='left_2px right_1px'></td><td class='pc right_1px'>cds: ${cds}</td>${res[0]}</tr>
         <tr><td class='left_2px right_1px'>${vac}</td><td class='right_1px'>A</td>${res[1]}</tr>
         <tr><td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'>B</td>${res[2]}</tr>`;
     }
@@ -231,20 +232,31 @@ class tds_editor {
     // returns {array} [ligne1, ligne2, ligne 3] - elements <td> formant le tds
     affiche_td_vac(vac, saison, zone) {
         let res1 = "", res2 = "", res3 = "";
-        this.tour_local[zone][saison][vac].forEach( (elem, index) => {
-            let r1 = elem[1];
-            let r2 = elem[2];
-            let r3 = elem[3];
-            let cl1 = "case", cl2 = "case", cl3="case";
-            if (r1 != 0) cl1 = "case bg";
-            if (r2 != 0) cl2 = "case bg"; 
-            if (r3 != 0) cl3 = "case bg";
-            if (index === 95) { cl1 += " right_2px"; cl2 += " right_2px"; cl3+= " right_2px"; }
-            if (index%4 === 0) { cl1 += " left_2px"; cl2 += " left_2px"; cl3+= " left_2px"; }
-            res1 += `<td class='${cl1} standard' data-vac='${vac}' data-ligne='1' data-col='${index}' data-saison='${saison+"-"+zone}'>${r1 || ''}</td>`; // CDS sur position ?
-            res2 += `<td class='${cl2} standard' data-vac='${vac}' data-ligne='2' data-col='${index}' data-saison='${saison+"-"+zone}'>${r2 || ''}</td>`; // partie A
-            res3 += `<td class='${cl3} bottom_2px standard' data-vac='${vac}' data-ligne='3' data-col='${index}' data-saison='${saison+"-"+zone}'>${r3 || ''}</td>`; // partie B
-        });
+        if (typeof this.tour_local[zone][saison][vac] != 'undefined') {
+            this.tour_local[zone][saison][vac].forEach( (elem, index) => {
+                let r1 = elem[1];
+                let r2 = elem[2];
+                let r3 = elem[3];
+                let cl1 = "case", cl2 = "case", cl3="case";
+                if (r1 != 0) cl1 = "case bg";
+                if (r2 != 0) cl2 = "case bg"; 
+                if (r3 != 0) cl3 = "case bg";
+                if (index === 95) { cl1 += " right_2px"; cl2 += " right_2px"; cl3+= " right_2px"; }
+                if (index%4 === 0) { cl1 += " left_2px"; cl2 += " left_2px"; cl3+= " left_2px"; }
+                res1 += `<td class='${cl1} standard' data-vac='${vac}' data-ligne='1' data-col='${index}' data-saison='${saison+"-"+zone}'>${r1 || ''}</td>`; // CDS sur position ?
+                res2 += `<td class='${cl2} standard' data-vac='${vac}' data-ligne='2' data-col='${index}' data-saison='${saison+"-"+zone}'>${r2 || ''}</td>`; // partie A
+                res3 += `<td class='${cl3} bottom_2px standard' data-vac='${vac}' data-ligne='3' data-col='${index}' data-saison='${saison+"-"+zone}'>${r3 || ''}</td>`; // partie B
+            });
+        } else {
+            for(let index=0;index<96;index++) {
+                let cl1 = "case", cl2 = "case", cl3="case";
+                if (index === 95) { cl1 += " right_2px"; cl2 += " right_2px"; cl3+= " right_2px"; }
+                if (index%4 === 0) { cl1 += " left_2px"; cl2 += " left_2px"; cl3+= " left_2px"; }
+                res1 += `<td class='${cl1} standard' data-vac='${vac}' data-ligne='1' data-col='${index}'></td>`; 
+                res2 += `<td class='${cl2} standard' data-vac='${vac}' data-ligne='2' data-col='${index}'></td>`; 
+                res3 += `<td class='${cl3} bottom_2px standard' data-vac='${vac}' data-ligne='3' data-col='${index}'></td>`;
+            }
+        }
         return [res1, res2, res3];
     }
 

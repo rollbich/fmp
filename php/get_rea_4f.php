@@ -23,6 +23,7 @@ header('content-type:application/json');
 function get_rea_4f($year, $month, $day, $zone) {
 	$fichier = "../Realise/$year/$month/$year$month$day"."_000000_LFMM-$zone.xml";
     $contenu = simplexml_load_file($fichier);
+    if ($contenu === false) return false;
       
     $res = new stdClass();
     $res->date = "$day-$month-$year";
