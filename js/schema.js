@@ -10,7 +10,7 @@ class schema_rea {
         let type = "cautra";
 		const d = new Date(this.day);
 		const date4f = new Date("2022-12-06");
-		if (d >= date4f || this.day === "2022-11-22")  { type = "4F"; }
+		if (d >= date4f)  { type = "4F"; }
         this.type = type;
         this.ouv_tech = 4;
     }
@@ -171,6 +171,8 @@ class schema_rea {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ "zone": zone, "day": day})
             })
+            console.log("Response");
+            console.log(response);
             return response;
         }
         
@@ -205,6 +207,29 @@ class schema_rea {
                 }
             }); 
             console.log("Contenu 4F");
+
+            //filtrage des mapping auto
+            const filtr = function() {
+                for(let i=0;i<json_4f["mapping"].length-2;i++) {
+                    let m1 = json_4f["mapping"][i].pos;
+                    let m2 = json_4f["mapping"][i+1].pos;
+                    // si même nombre de positions ouvertes
+                    if (m1.length === m2.length) {
+                        let ok = true;
+                        for(let j=0;j<m1.length-1;j++) {
+                            if (m1['pos_regroup'] != m2['pos_regroup']) {
+                                ok = false;
+                                break;
+                            }
+                        }
+                        if (ok === true) {
+                            json_4f["mapping"].splice(i+1, 1);
+                        }
+                    }
+                }
+            }  
+            for(var k=1;k<6;k++) { filtr(); }      
+            
             // force le démarrage à minuit
             json_4f["mapping"][0]['start_time'] = '00:00';
             // ajout des heures de fin
@@ -213,14 +238,16 @@ class schema_rea {
             }
             // termine le mapping à 23:59
             json_4f["mapping"][json_4f["mapping"].length - 1]['end_time'] = '23:59';
+            console.log("Json_4f");
             console.log(json_4f);
-        
+            
             json_4f["mapping"].forEach(mapping_obj => { 
                 let tv_h_d = mapping_obj.start_time;
                 let tv_h_f = mapping_obj.end_time;
                 let tv_h_d_minutes = time_to_min(tv_h_d);
                 let tv_h_f_minutes = time_to_min(tv_h_f);
                 let temp = [schema.date, tv_h_d, tv_h_f];
+                //console.log(tv_h_d+" "+tv_h_f);
                 // ajoute le nb de secteurs ouverts
                 temp.push(mapping_obj.pos.length);
                 // extrait les TVs ouverts
@@ -235,7 +262,20 @@ class schema_rea {
                     if (!(schema["position"].hasOwnProperty(pos))) { 
                         schema["position"][pos] = [];
                     }
-                    schema["tv_h"][sub_tv].push([tv_h_d_minutes, tv_h_f_minutes]);
+                    // concatène les ouvertures de TV identiques à la suite pour déterminer la plage horaire totale
+                    let long = schema["tv_h"][sub_tv].length;
+                    // si le tableau du sub_tv n'est pas vide on teste pour concaténer sinon on le push
+                    if (long > 0) {
+                        // s'il faut concaténer, on le fait en remplaçant 
+                        if (schema["tv_h"][sub_tv][long-1][1] === tv_h_d_minutes) {
+                            schema["tv_h"][sub_tv].splice(long-1, 1, [schema["tv_h"][sub_tv][long-1][0], tv_h_f_minutes]);
+                        } else {
+                            schema["tv_h"][sub_tv].push([tv_h_d_minutes, tv_h_f_minutes]);
+                        }
+                    } else {
+                        schema["tv_h"][sub_tv].push([tv_h_d_minutes, tv_h_f_minutes]);
+                    }
+                    //console.log(sub_tv+"  "+schema["tv_h"][sub_tv]);
                     schema["position"][pos].push([tv_h_d, tv_h_f,sub_tv]);
                     ouv.push([sub_tv,el.pos_name]);
                     schema.tv.push(sub_tv);
@@ -247,15 +287,75 @@ class schema_rea {
                 temp.push(arr_ouv);
                 schema.ouverture.push(temp);
             })
-               
-            // parfois on a le même TV 2 fois de suite => concaténer les 2 lignes en 1 en étendant l'heure de la 1ère ligne, à faire 2 fois car parfois il y a 3 fois le même TV
-            // le faire uniquement si la position est inchangée
-            this.doublon(schema);
-            this.doublon(schema);
-            this.doublon(schema);
-            this.doublon(schema);
-            this.doublon(schema);
-            this.doublon_position(schema);
+
+            // joint les ouvertures des tv dans tv_h
+            // option 1 avec la boucle for 6 fois
+            /*
+            const fus = function() {
+                Object.keys(schema["tv_h"]).forEach( key => {
+                let arr = schema["tv_h"][key];
+                for(let s=0;s<arr.length-1;s++) {
+                    let hd0 = schema["tv_h"][key][s][0];
+                    let hf0 = schema["tv_h"][key][s][1];
+                    let hd1 = schema["tv_h"][key][s+1][0];
+                    let hf1 = schema["tv_h"][key][s+1][1];
+                    // si heure fin = heure début du suivant
+                    if (hf0 === hd1) {
+                        // on remplace la ligne i dans le tableau et on supprime la ligne i+1 du tableau
+                        // attention splice change la lngth du tableau
+                        arr.splice(s, 1, [hd0, hf1]);
+                        arr.splice(s+1, 1);
+                    }
+                }
+                console.log("TV:  "+key+"  "+arr);
+                })
+            }
+            //for(var y=0;y<6;y++) {fus();}
+            */
+            /*
+            // option 2 sans boucle for
+            Object.keys(schema["tv_h"]).forEach( key => {
+                console.log("TV filtr : "+key);
+                let temp = [];
+                let arr = schema["tv_h"][key];
+                let s = 0;
+                // 1ère plage ouverture
+                let hd0 = schema["tv_h"][key][s][0];
+                let hf0 = schema["tv_h"][key][s][1];
+                console.log(key+" length : "+arr.length);
+                console.log(hd0+"  "+hf0);
+                // pas besoin de traiter si l'array ne contient que 1 élément
+                if (arr.length > 1) {
+                    while (s<arr.length-1) {
+                        // 2è plage ouverture
+                        let hd1 = schema["tv_h"][key][s+1][0];
+                        let hf1 = schema["tv_h"][key][s+1][1];
+                        console.log(hd1+"  "+hf1);
+                        // si heure fin 1ère plage = heure début 2è plage, on met l'heure de fin 1ère plage = heure de fin 2è plage
+                        // on continue jusqu'à ce qu'il n'y ait plus de jointure
+                        if (hf0 === hd1) {
+                            console.log("concat");
+                            hf0 = hf1;
+                            s++;
+                        } else {
+                            // alors la plage est complète, on la sauve et on initialise heure 1ère plage avec la suite
+                            temp.push([hd0, schema["tv_h"][key][s][1]]); 
+                            hd0 = hd1;
+                            hf0 = hf1;
+                            s++;
+                            console.log("fin concat "+temp);
+                        }
+                    }
+                    // on push le dernier 
+                    temp.push([hd0, schema["tv_h"][key][s][1]]); 
+                    // on remplace avec le tableau joint
+                    schema["tv_h"][key] = temp;
+                }
+                console.log('fin '+schema["tv_h"][key]);
+                console.log("TV:  "+key+"  "+temp);
+            })
+            */
+
             // enlève les doublons du tableau des TV
             schema.tv = [...new Set(schema.tv)];
             console.log("Schema");
@@ -263,7 +363,7 @@ class schema_rea {
             return schema;
         }
         catch (err) {
-            alert(err.message);
+            //alert(err.message);
         }
         
     }
@@ -290,6 +390,7 @@ class schema_rea {
 
 /*  ---------------------------------------------------
       Fusionne 2 ouvertures à la suite identiques
+        pour fichier courage réa
 	 	@param {object} schema - array non trié
 		@returns {array} - array filtré
 	--------------------------------------------------- */
@@ -312,31 +413,6 @@ class schema_rea {
                 }
             }
         }
-    }
-
-/*  ---------------------------------------------------
-      Fusionne 2 positions à la suite identiques
-        @param {object} schema - array non trié
-        @returns {array} - array filtré
-    --------------------------------------------------- */
-    // pas fini
-    doublon_position(schema) {
-        // tableau des positions utilisées
-        const positions = Object.keys(schema.position);
-        console.log("Positions");
-        console.log(positions);
-        positions.forEach(pos => {
-            console.log(schema.position[pos]);
-            for(let i=0;i<schema.position[pos].length-1;i++) {
-                // si le TV est identique 2 fois de suite
-                if (schema.position[pos][i][2] == schema.position[pos][i+1][2]) {
-                    const temp_array = [schema.position[pos][i][0], schema.position[pos][i+1][1], schema.position[pos][i+1][2]];
-                    // on remplace la ligne i dans le tableau et on supprime la ligne i+1 du tableau
-                    schema.position[pos].splice(i, 1, temp_array);
-                    schema.position[pos].splice(i+1, 1);
-                }
-            }
-    })
     }
 
 /*  -------------------------------------------------------------------------------
