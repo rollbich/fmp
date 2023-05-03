@@ -493,6 +493,10 @@ input.date {
 	background-color: var(--table-titre-color);
 }
 
+#modif_eq table td {
+	font-size: 0.9rem;
+}
+
 .popup-box h2 {
 	color:#1a1a1a;
 }

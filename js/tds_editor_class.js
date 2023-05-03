@@ -23,7 +23,7 @@ class tds_editor {
         <ul class="menu_tds_editor">
             <li>
                 <label for="cree_name">Nom vac:</label>
-                <input type="text" id="cree_name" name="cree_name" required minlength="2" maxlength="7" size="7" />
+                <input type="text" id="cree_name" name="cree_name" required minlength="2" maxlength="9" size="9" />
                 <button id="button_cree_supp" class="button_tour">Créer Vac</button>
                 <button id="button_show_supp" class="button_tour">Voir Vacations Suppl</button>
             </li>

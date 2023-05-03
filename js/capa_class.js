@@ -18,15 +18,6 @@ class capa {
 		this.eq_dep = 11;
     }
 
-	get_nb_jx() {
-		const Renfort = this.effectif[this.day]['Renfort'];
-		let nb = 0;
-		for (let renf1 in Renfort) {
-			nb += Object.keys(Renfort[renf1]).length;
-		}
-		return nb;
-	}
-
     /* ----------------------------------------------------------------------------------------------------------------
         *Calcul du nbre de PC total par vac
         *Calcul du nbre de PC total dispo par pas de 15mn à la date choisie
@@ -59,6 +50,65 @@ class capa {
 			// Calcul du nombre de pc à afficher 
 			// On récupère l'effectif total, donc on doit enlever le cds sur les vacations qui en ont 1	
 			const pc = {"JX":{},"J1":{}, "J3":{}, "S2":{}, "J2":{}, "S1":{}, "N":{}, "N-1":{}};
+
+			/*  ---------------------------------------
+				pc["JX"] = {
+					"JXA": {
+						nombre: 2,
+						agent: {
+							"Jean Coco": "détaché",
+							"Moustache": "salle"
+						}
+					},
+					"RDJ3b-ms": {
+						...
+					}
+					...
+			}
+			---------------------------------------  */
+
+			const Renfort = this.effectif[this.day]['Renfort'];
+			// Renfort hors JX
+			const RD_names_horsJX = [];
+			let nb_jx = 0;
+			for (let renf1 in Renfort) {
+				for (let cle in Renfort[renf1]) {
+					const obj = Renfort[renf1][cle];
+					let label = obj["contextmenutype"]["label"];
+					let type_renfort = "";
+					let jx_type = "";
+					let rd_type = "";
+					// JXA & JXB salle
+					// "RD bleu JXa-ms" - "RD bleu J1-ms" - "RD bleu J3b-ms" + Est only "RD bleu S1b-ms" + West only "RD bleu S1a-ms"
+					// "RD bleu J3a-ete" - "RD bleu S1b-ete" - "RD bleu J1-ete" + Est only "RD bleu JXb-ete" + West only "RD bleu J3b-ete"
+					if (label.includes("JX")) {
+						if (label.includes("RD bleu")) { // RD
+							type_renfort = "RD";
+							rd_type = label.substring(8);
+							jx_type = rd_type;		
+						} else { // JX salle
+							type_renfort = "JX";
+							jx_type = label;
+						}
+						nb_jx++;
+					} else { // RD non JX
+						type_renfort = "RD";
+						rd_type = label.substring(8);
+						jx_type = "RD"+rd_type;
+						RD_names_horsJX.push(jx_type);
+					}		
+					
+					let agent = obj["agent"]["nomComplet"];
+					let agent_type = (label.includes("det") || label.includes("RD")) ? "détaché" : "salle";
+					if (pc["JX"].hasOwnProperty(jx_type) === false) { pc["JX"][jx_type] = {"nombre": 0}; pc["JX"][jx_type]["agent"] = {}}
+					pc["JX"][jx_type]["agent"][agent] = agent_type;
+					pc["JX"][jx_type]["nombre"]++;
+				}
+			}
+			console.log("Renfort JX");
+			console.log(pc["JX"]);
+
+
 			for(const vac in tab_vac_eq) {
 				let p = tab_vac_eq[vac]+"-"+this.zone_olaf;
 				const upBV = vac+"BV";
@@ -84,7 +134,7 @@ class capa {
 						console.log("VAC: "+vac);
 						pc[vac]["ROinduit"] = 0;
 						pc[vac]["nbcds"] = 0;
-						pc[vac]["nbpc"] = this.get_nb_jx() + update[vac]; 
+						pc[vac]["nbpc"] = nb_jx + update[vac]; 
 						pc[vac]["BV"] = 10;
 						pc[vac]["RO"] = 0;
 						pc[vac]["renfort"] = 0;
@@ -107,54 +157,7 @@ class capa {
 					//pc[vac]["detache"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["detacheQuantity"]);
 				}
 			} 
-			
-			/*  ---------------------------------------
-					pc["JX"] = {
-						"JXA": {
-							nombre: 2,
-							agent: {
-								"Jean Coco": "détaché",
-								"Moustache": "salle"
-							}
-						},
-						...
-				}
-				---------------------------------------  */
-			
 
-			const Renfort = this.effectif[this.day]['Renfort'];
-			for (let renf1 in Renfort) {
-				for (let cle in Renfort[renf1]) {
-					const obj = Renfort[renf1][cle];
-					let label = obj["contextmenutype"]["label"];
-					let type_renfort = "";
-					let jx_type = "";
-					let rd_type = "";
-					// "RD bleu JXa-ms" "RD bleu S1b" - "RD bleu S1bms" - "RD bleu J3bms" - "RD bleu J3a" - "RD bleu J1" + pour west only "RD bleu J1ms" + pour est only "RD bleu JXb-ete"
-					if (label.includes("RD bleu")) {
-						type_renfort = "RD";
-						rd_type = label.substring(8);
-						jx_type = "RD"+rd_type;		
-					}
-					if (label.includes("JX")) {
-						if (label.includes("RD bleu")) {
-							type_renfort = "RD";
-							rd_type = label.substring(8);
-							jx_type = rd_type;		
-						} else {
-							type_renfort = "JX";
-							jx_type = label;
-						}
-					} 
-					let agent = obj["agent"]["nomComplet"];
-					let agent_type = (label.includes("det") || label.includes("RD")) ? "détaché" : "salle";
-					if (pc["JX"].hasOwnProperty(jx_type) === false) { pc["JX"][jx_type] = {"nombre": 0}; pc["JX"][jx_type]["agent"] = {}}
-					pc["JX"][jx_type]["agent"][agent] = agent_type;
-					pc["JX"][jx_type]["nombre"]++;
-				}
-			}
-			console.log("Renfort JX");
-			console.log(pc["JX"]);
 
 			// array du nombre de pc dispo associé au créneau horaire du tour de service
 			// En 24h, il y a 96 créneaux de 15mn.
@@ -250,37 +253,31 @@ class capa {
 				}
 				
 				effectif_total_Jx_15mn[i] = 0;
-				/*
-				if (Object.keys(pc["JX"]).length !== 0) {
-					Object.keys(pc["JX"]).forEach( vac_jx => {
-						if (vac_jx != "nbcds") {
-							const nb = pc["JX"][vac_jx]["nombre"];
-							if (tds_supp_utc[vac_jx][i][1] === 1) {
-								effectif_total_Jx_15mn[i] += nb;
-							}
-						}
-					})
-				}
+				
+				RD_names_horsJX.forEach( vac_RD => {
+					const nb = pc["JX"][vac_RD]["nombre"];
+					if (tds_supp_utc[vac_RD][i][1] === 1) {
+						effectif_total_Jx_15mn[i] += nb;
+					}
+				})
 				
 				// s'il y a un Jx ce jour là
-				if (Object.keys(pc["JX"]).length !== 0) {
-					const vac_jx_tab = Object.keys(pc["JX"]);
-					// on ne créé que les vac_jx existantes ce jour là
-					vac_jx_tab.forEach( (vac_jx, index) => {
-						if (typeof effectif_Jx_15mn[vac_jx] === 'undefined') effectif_Jx_15mn[vac_jx] = [];
-						effectif_Jx_15mn[vac_jx][i] = 0;
-					})
-					
-					vac_jx_tab.forEach( (vac_jx, index) => {
-						if (vac_jx != "nbcds") {
-							const nb = pc["JX"][vac_jx]["nombre"];
-							if (tds_supp_utc[vac_jx][i][1] === 1) {
-								effectif_Jx_15mn[vac_jx][i] = nb;
-							}
+				// on ne créé que les vac_jx existantes ce jour là
+				RD_names_horsJX.forEach( (vac_jx, index) => {
+					if (typeof effectif_Jx_15mn[vac_jx] === 'undefined') effectif_Jx_15mn[vac_jx] = [];
+					effectif_Jx_15mn[vac_jx][i] = 0;
+				})
+				
+				RD_names_horsJX.forEach( (vac_jx, index) => {
+					if (vac_jx != "nbcds") {
+						const nb = pc["JX"][vac_jx]["nombre"];
+						if (tds_supp_utc[vac_jx][i][1] === 1) {
+							effectif_Jx_15mn[vac_jx][i] = nb;
 						}
-					});
-				}
-				*/
+					}
+				});
+
+				
 			}
 			return {"pc_vac": pc, "pc_total_dispo_15mn": pcs, "pc_instr_15mn": in15mn, "pc_jx_15mn": effectif_Jx_15mn, "pc_total_jx_15mn": effectif_total_Jx_15mn};
 		//}
@@ -520,7 +517,7 @@ class feuille_capa extends capa {
 		res += `${this.affiche_vac("S1")}`;
 		res += `${this.affiche_vac("N")}`;
 		res += `${this.affiche_vac("N-1")}`;
-		res += `${this.affiche_Jx()}`;
+		res += `${this.affiche_RD()}`;
 		res += `${this.affiche_inst()}`;
 		res += `<tr class="titre"><td class='bottom_2px left_2px' colspan="3">Heures UTC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${this.heure()}`;
 		res += `${this.affiche_nbpc()}`;
@@ -573,7 +570,6 @@ class feuille_capa extends capa {
 				names.push(aff);
 			})
 		})
-		
 		td_jx.addEventListener('mouseover', (event) => {
 			const el = document.createElement('div');
 			el.setAttribute('id', 'popinstr');
@@ -585,7 +581,7 @@ class feuille_capa extends capa {
 			const pos = td_jx.getBoundingClientRect();
 			el.style.position = 'absolute';
 			el.style.left = pos.left + 60 + 'px';
-			el.style.top = pos.top + 'px';
+			el.style.top = pos.top + window.scrollY + 'px';
 			el.style.backgroundColor = '#fbb';
 			el.style.padding = '10px';
 			el.style.width = '200px';
@@ -595,6 +591,37 @@ class feuille_capa extends capa {
 		})
 		td_jx.addEventListener('mouseleave', (event) => {
 			$('popinstr').remove();
+		})
+
+		// ajoute le hover sur la case RD hors JX
+		const td_RD = document.querySelectorAll(".click_RD");
+		td_RD.forEach(td_el => {
+			let RD_type = td_el.dataset.vac;
+			let detail = this.pc_vac["JX"][RD_type]["agent"];
+			td_el.addEventListener('mouseover', (event) => {
+				const el = document.createElement('div');
+				el.setAttribute('id', 'popinstr');
+				let det = '<div style="float:left;width:90%;">';
+				for (const agent in detail) {
+					let affich = agent+" ";
+					if (detail[agent] === "détaché") affich += "(RD)";
+					det += `${affich}<br>`;
+				}
+				det += '</div>';
+				const pos = td_el.getBoundingClientRect();
+				el.style.position = 'absolute';
+				el.style.left = pos.left + 76 + 'px';
+				el.style.top = pos.top + +window.scrollY + 'px';
+				el.style.backgroundColor = '#fbb';
+				el.style.padding = '10px';
+				el.style.width = '200px';
+				let parentDiv = document.getElementById("glob_container");
+				parentDiv.insertBefore(el, $('feuille_capa_tour'));
+				el.innerHTML = det;
+			})
+			td_el.addEventListener('mouseleave', (event) => {
+				$('popinstr').remove();
+			})
 		})
 
 		// ajoute les clicks sur la case du nbre de pc de la vac
@@ -719,30 +746,30 @@ class feuille_capa extends capa {
 		return res;
 	}
 
-	// fabrique la ligne du supplément Jx
-	affiche_Jx() {
-		const vac_jx_tab = Object.keys(this.pc_jx_15mn);
+	// fabrique la ligne du supplément RD hors JX
+	affiche_RD() {
+		const vac_RD_tab = Object.keys(this.pc_jx_15mn);
 		let res = "";
-		vac_jx_tab.forEach( vac_jx => {
+		vac_RD_tab.forEach( vac_RD => {
 			let res2 = "";
-			if (this.pc_jx_15mn[vac_jx][0] === 0) {
+			if (this.pc_jx_15mn[vac_RD][0] === 0) {
 				res2 += `<td class='left_2px bottom_2px'></td>`; // border left à 2px pour la case 0
 			} else {
-				res2 += `<td class='bg bottom_2px'>${this.pc_jx_15mn[vac_jx][0]}</td>`;
+				res2 += `<td class='bg bottom_2px'>${this.pc_jx_15mn[vac_RD][0]}</td>`;
 			}
 			for(let i=1;i<95;i++) {	
-				if (this.pc_jx_15mn[vac_jx][i] === 0) {
+				if (this.pc_jx_15mn[vac_RD][i] === 0) {
 					res2 += `<td class='bottom_2px'></td>`;
 				} else {
-					res2 += `<td class='bg bottom_2px'>${this.pc_jx_15mn[vac_jx][i]}</td>`;
+					res2 += `<td class='bg bottom_2px'>${this.pc_jx_15mn[vac_RD][i]}</td>`;
 				}
 			} 
-			if (this.pc_jx_15mn[vac_jx][95] === 0) {
+			if (this.pc_jx_15mn[vac_RD][95] === 0) {
 				res2 += `<td class='bottom_2px right_2px'></td>`;
 			} else {
-				res2 += `<td class='bg bottom_2px'>${this.pc_jx_15mn[vac_jx][95]}</td>`;
+				res2 += `<td class='bg bottom_2px'>${this.pc_jx_15mn[vac_RD][95]}</td>`;
 			}
-			res += `<tr><td data-vac='${vac_jx}' class='left_2px bottom_2px click_jx' colspan="3">${vac_jx}</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
+			res += `<tr><td data-vac='${vac_RD}' class='left_2px bottom_2px click_RD' colspan="3">${vac_RD}</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
 		})
 		return res;
 	}
