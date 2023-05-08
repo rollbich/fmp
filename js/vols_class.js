@@ -233,10 +233,14 @@ class weekly_briefing {
 		await this.reguls.init();
 		await this.reguls_lastyear.init();
 		await this.reguls_2019.init();
+	}
+
+	async init_jour() {
 		this.data_vols_par_jour = new period_vols(this.start_date, this.end_date, "AE");
 		await this.data_vols_par_jour.init();
 		this.data_reguls_par_jour = new period_regul(this.start_date, this.end_date, "AE", false);
 		await this.data_reguls_par_jour.init();
+		this.show_data_vols_jour();
 	}
 
 	get_last_week() {
@@ -269,6 +273,9 @@ class weekly_briefing {
 	show_data_vols() {
 		let v = this.data_vols();
 		this.container_vols.innerHTML = v;
+	}
+
+	show_data_vols_jour() {
 		let w = this.data_vols_jour();
 		$('bilan_jour').innerHTML = w;
 	}
@@ -305,8 +312,12 @@ class weekly_briefing {
 			await this.init();
 			this.show_data_vols();
 			this.show_data_reguls();
+			this.start_date = convertDate(weekDateToDate(this.year, this.week, 1)); // jour du lundi "yyyy-mm-dd"
+			this.end_date = convertDate(weekDateToDate(this.year, this.week, 1).addDays(6));
+			await this.init_jour();
+			this.show_data_vols_jour();
 		})
-		$('semaine').addEventListener('change', (e) => {
+		$('semaine').addEventListener('change', async (e) => {
 			const current_year = new Date().getFullYear();
 			const val = $('year').value;
 			const val2 = $('semaine').value;
@@ -320,6 +331,10 @@ class weekly_briefing {
 			this.lastweek_year = this.get_last_week()[0];
 			this.show_data_vols();
 			this.show_data_reguls();
+			this.start_date = convertDate(weekDateToDate(this.year, this.week, 1)); // jour du lundi "yyyy-mm-dd"
+			this.end_date = convertDate(weekDateToDate(this.year, this.week, 1).addDays(6));
+			await this.init_jour();
+			this.show_data_vols_jour();
 		})
 	}
 
