@@ -58,6 +58,7 @@ require("../php/check_ok.inc.php");
 			await tabl.init();
 			tabl.show_data();
 			tabl.change_week();
+			await tabl.init_jour();
       	});
     </script>
 </head>
