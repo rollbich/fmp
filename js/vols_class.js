@@ -215,6 +215,8 @@ class weekly_briefing {
 		this.ini_week = week;
 		this.lastweek_year = this.get_last_week()[0];
 		this.lastweek_week = this.get_last_week()[1];
+		this.start_date = convertDate(weekDateToDate(year, week, 1)); // jour du lundi "yyyy-mm-dd"
+		this.end_date = convertDate(weekDateToDate(year, week, 1).addDays(6));
 		this.init();
 	}
 
@@ -231,6 +233,10 @@ class weekly_briefing {
 		await this.reguls.init();
 		await this.reguls_lastyear.init();
 		await this.reguls_2019.init();
+		this.data_vols_par_jour = new period_vols(this.start_date, this.end_date, "AE");
+		await this.data_vols_par_jour.init();
+		this.data_reguls_par_jour = new period_regul(this.start_date, this.end_date, "AE", false);
+		await this.data_reguls_par_jour.init();
 	}
 
 	get_last_week() {
@@ -263,6 +269,8 @@ class weekly_briefing {
 	show_data_vols() {
 		let v = this.data_vols();
 		this.container_vols.innerHTML = v;
+		let w = this.data_vols_jour();
+		$('bilan_jour').innerHTML = w;
 	}
 
 	show_data_reguls() {
@@ -384,6 +392,28 @@ class weekly_briefing {
 			<td>${MyFormat.format((this.reguls.delay['app'][this.week-1]/this.reguls_lastyear.delay['app'][this.week-1] - 1)*100)} %</td>
 			<td>${MyFormat.format((this.reguls.delay['app'][this.week-1]/this.reguls_2019.delay['app'][this.week-1] - 1)*100)} %</td>`;
             res += '</tr>';	
+        res += '</tbody></table>';
+		result += "</div>";
+		result += res;
+		return result;
+	}
+	
+	data_vols_jour() {
+		let result = `<h2 class='h2_bilan'>Nombre de vols : semaine ${this.week} - Année ${this.year}</h2><br>`;
+		let res = `
+		<table class="table_bilan regulation sortable">
+			<thead><tr class="titre"><th class="space">Date</th><th>Jour</th><th>Flights CTA</th><th>Flights Est</th><th>Flights West</th><th>Flights App</th><th>Delay CTA</th><th>Delay Est</th><th>Delay West</th><th>Delay App</th></tr></thead>
+			<tbody>`;
+        for (const date of this.data_vols_par_jour.dates_arr) {
+			if (typeof this.data_vols_par_jour.vols[date] !== 'undefined') {
+                res += '<tr>'; 
+				const cl = (jour_sem(date) === "Vendredi" || jour_sem(date) === "Samedi" || jour_sem(date) === "Dimanche") ? "red" : "";
+                res += `<td>${reverse_date(date)}</td><td class='${cl}'>${jour_sem(date)}</td><td>${this.data_vols_par_jour.vols[date]['LFMMCTA'][2]}</td><td>${this.data_vols_par_jour.vols[date]['LFMMCTAE'][2]}</td><td>${this.data_vols_par_jour.vols[date]['LFMMCTAW'][2]}</td><td>${this.data_vols_par_jour.vols[date]['LFMMAPP']['flights']}</td>`;
+				const cta = this.data_reguls_par_jour.reguls[date]['LFMMFMPE']['tot_delay'] + this.data_reguls_par_jour.reguls[date]['LFMMFMPW']['tot_delay'];
+				res += `<td>${cta}</td><td>${this.data_reguls_par_jour.reguls[date]['LFMMFMPE']['tot_delay']}</td><td>${this.data_reguls_par_jour.reguls[date]['LFMMFMPW']['tot_delay']}</td><td>${this.data_reguls_par_jour.reguls[date]['LFMMAPP']['tot_delay']}</td>`;
+                res += '</tr>';	
+			}
+        }
         res += '</tbody></table>';
 		result += "</div>";
 		result += res;

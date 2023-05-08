@@ -11,7 +11,8 @@ const dsna_tvset = ["LFDSNA"];
 /*  -----------------------------------------------------------------------------------------------------------------
 		Class regul
 			@param {string} day	- "yyyy-mm-dd"
-			@param {string} zone - "AE" ou "AW"
+			@param {string} zone - "AE" ou "AW" : ne sert que pour savoir dans quelle zone on travaille
+				car toutes les zones sont récupérées
 			@param {boolean} details : true pour récupérer les données reg de la journéee (fichier reg0320.json ....)
 	----------------------------------------------------------------------------------------------------------------- */
 
@@ -210,12 +211,13 @@ class regul {
 }
 
 class period_regul {
-	/*  ------------------------------------------------------------------	
+	/*  -------------------------------------------------------------------------------------------------	
 			@param {string} start_day - "yyyy-mm-dd"
 			@param {string} end_day - "yyyy-mm-dd"
-			@param {string} zone - "AE" ou "AW"
+			@param {string} zone - "AE" ou "AW" : ne sert que pour savoir dans quelle zone on travaille
+				car toutes les zones sont récupérées
 			@param {boolean} details : true pour fichiers reg journée
-		------------------------------------------------------------------ */
+		------------------------------------------------------------------------------------------------- */
         
 	constructor(start_day, end_day, zone, details = true) {
 		this.start_day = start_day;

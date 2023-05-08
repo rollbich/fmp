@@ -76,8 +76,8 @@ require("../php/check_ok.inc.php");
 	  <div id="bilan_reguls"></div>
 	</div>
 </div>
-<div id="bilan_causes" class="accueil_bilan">
-</div>
+<div id="bilan_causes" class="accueil_bilan"></div>
+<div id="bilan_jour" class="accueil_bilan"></div>
 <div id="accueil_causes_cta" class="mgt"></div>
 <div id="accueil_causes_app" class="mgt"></div>
 <div id="accueil_causes_est" class="mgt"></div>
