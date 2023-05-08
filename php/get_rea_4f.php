@@ -23,7 +23,6 @@ header('content-type:application/json');
 function get_rea_4f($year, $month, $day, $zone) {
 	$fichier = "../Realise/$year/$month/$year$month$day"."_000000_LFMM-$zone.xml";
     $contenu = simplexml_load_file($fichier);
-    if ($contenu === false) return false;
       
     $res = new stdClass();
     $res->date = "$day-$month-$year";
@@ -42,14 +41,18 @@ function get_rea_4f($year, $month, $day, $zone) {
         $objet->pos_name = substr($mapping->pos[0]->attributes()['name'], 0, 3);
         $objet->pos_resps = (string) $mapping->pos[0]->attributes()['resps'];
         $objet->pos_regroup = (string) $mapping->pos[0]->attributes()['regroup'];
+        // S'il n'y a pas d'espace dans la chaine resps alors le secteur est élémentaire
+        // On remplace regroup qui est vide par resps qui contient le secteur élémentaire
+        if (strpos($objet->pos_resps, " ") === FALSE) $objet->pos_regroup = $objet->pos_resps; 
         array_push($obj->pos, $objet);
         
-        for($i=1;$i<$nbr_pos-1;$i++) {
+        for($i=0;$i<$nbr_pos-1;$i++) {
             $objet = new StdClass();
             $objet->pos_name = substr($mapping->pos[$i+1]->attributes()['name'], 0, 3);
             $objet->pos_resps = (string) $mapping->pos[$i+1]->attributes()['resps'];
             $objet->pos_regroup = (string) $mapping->pos[$i+1]->attributes()['regroup'];
             if (strcmp($objet->pos_regroup, $mapping->pos[$i]->attributes()['regroup']) != 0) {
+                if (strpos($objet->pos_resps, " ") === FALSE) $objet->pos_regroup = $objet->pos_resps; 
                 array_push($obj->pos, $objet);
             }
         }
