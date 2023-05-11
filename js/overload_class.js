@@ -170,13 +170,14 @@ class overload {
                             document.getElementById('graph-container-occ').classList.remove('off');
                             show_popup("Le H20 n'est pas calculable","En effet, le TV n'a ouvert assez longtemps et/ou n'est dans la plage disponible 4h-20h40 UTC"); 
                             show_occ_graph('graph_occ', dataAxis_occ, data_occ, peak, sustain, tv);
-                            show_h20_graph('graph_h20', dataAxis, data, 0, "NO DATA");
+                            show_h20_graph('graph_h20', dataAxis, data, 0, 0, "NO DATA");
                         }
                     } else {
                         document.getElementById('graph-container-h20').classList.remove('off');
                         document.getElementById('graph-container-occ').classList.remove('off');
                         let mv = h[dat][dat][tv][0][2];
-                        show_h20_graph('graph_h20', dataAxis, data, mv, tv);
+                        let mv_ods = h[dat][dat][tv][0][2];
+                        show_h20_graph('graph_h20', dataAxis, data, mv, mv_ods, tv);
                         show_occ_graph('graph_occ', dataAxis_occ, data_occ, peak, sustain, tv);
                     }
                 }
