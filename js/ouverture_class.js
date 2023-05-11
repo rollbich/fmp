@@ -283,9 +283,11 @@ class ouverture extends schema_rea {
         try {	
             const tds = document.querySelectorAll('.tv');
             
-            const h20 = await get_h20_b2b(this.day, this.zone, this.schema); //  {	date: { tv: [ ["heure:min": trafic], ... ] } }
+            const h20 = await get_h20_b2b(this.day, this.zone, this.schema); //  {	date: { tv: [ ["heure:min", load, mv_ods], ... ] } }
             const occ = await get_occ_b2b(this.day, this.zone, this.schema);
             const h = h20[this.day];
+            console.log("H TV");
+            console.log(h);
             const o = occ[this.day];
 
             const reg = new regul(this.day, this.zone, false);
@@ -295,7 +297,15 @@ class ouverture extends schema_rea {
 
             console.log("regreg");
             console.log(regbytv);
-
+            
+            const z = this.zone === "AE" ? "est" : "ouest";
+            const d = convertDate(new Date);
+            console.log(d);
+            const mv_b2b = new mv(d, z);
+            let mv_4f = await mv_b2b.get_b2b_mvs();
+            console.log("MV 4F");
+            console.log(mv_4f);
+    
             for (const td of tds) {
                 let deb = td.dataset.deb;
                 let fin = td.dataset.fin;
@@ -372,13 +382,15 @@ class ouverture extends schema_rea {
                                 document.getElementById('graph-container-occ').classList.remove('off');
                                 show_popup("Le H20 n'est pas calculable","Le TV n'a ouvert assez longtemps et/ou n'est dans la plage horaire disponible ou n'est pas récupéré"); 
                                 show_occ_graph('graph_occ', dataAxis_occ, data_occ, peak, sustain, tv, "", data_reg_occ, data_reg_occ_delay);
-                                show_h20_graph('graph_h20', dataAxis, data, 0, "NO DATA", "", data_reg_h20, data_reg_h20_delay, data_reg_h20_reason);
+                                show_h20_graph('graph_h20', dataAxis, data, 0, 0, "NO DATA", "", data_reg_h20, data_reg_h20_delay, data_reg_h20_reason);
                             }
                         } else {
                             document.getElementById('graph-container-h20').classList.remove('off');
                             document.getElementById('graph-container-occ').classList.remove('off');
-                            let mv = h[tv][0][2];
-                            show_h20_graph('graph_h20', dataAxis, data, mv, tv, "", data_reg_h20, data_reg_h20_delay, data_reg_h20_reason);
+                            const full_tv = "LFM"+tv;
+                            let mv_now = mv_4f[full_tv][0]["capacity"];
+                            let mv_ods = h[tv][0][2];
+                            show_h20_graph('graph_h20', dataAxis, data, mv_now, mv_ods, tv, "", data_reg_h20, data_reg_h20_delay, data_reg_h20_reason);
                             show_occ_graph('graph_occ', dataAxis_occ, data_occ, peak, sustain, tv, "", data_reg_occ, data_reg_occ_delay);
                         }
                     }

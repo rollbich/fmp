@@ -177,7 +177,8 @@ class visu {
                     document.getElementById('graph-container-h20').classList.remove('off');
                     document.getElementById('graph-container-occ').classList.remove('off');
                     let mv = this.h[time][tv][0][2];
-                    show_h20_graph('graph_h20', dataAxis, data, mv, tv, full_time, data_reg_h20, data_reg_h20_delay, data_reg_h20_reason);
+                    let mv_ods = this.h[time][tv][0][2];
+                    show_h20_graph('graph_h20', dataAxis, data, mv, mv_ods, tv, full_time, data_reg_h20, data_reg_h20_delay, data_reg_h20_reason);
                     show_occ_graph('graph_occ', dataAxis_occ, data_occ, peak, sustain, tv, full_time, data_reg_occ, data_reg_occ_delay);
                     
                 }

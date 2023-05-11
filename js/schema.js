@@ -1,6 +1,8 @@
 class schema_rea {
 
 /*  -----------------------------------------------
+        @param {string} day - "yyyy-mm-dd"
+	    @param {string} zone - "AE" ou "AW"
         @param type (string) - "cautra" ou "4F"
     ----------------------------------------------- */
 
@@ -20,9 +22,6 @@ class schema_rea {
  	ouverture en heure UTC, 1440 min = 24h
  	COUR-20210513.AW.sch.rea
 
-	@param {string} day - "yyyy-mm-dd"
-
-	@param {string} zone - "AE" ou "AW"
  	@returns {object} schema
  	  schema = {
 		date:  {day: ..., month: ..., year: ... },

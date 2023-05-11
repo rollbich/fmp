@@ -97,7 +97,6 @@ class mv {
         
         Object.keys(this.result).forEach( tv => {
             const obj = this.result[tv]; // array de 1 ou +
-            console.log("TV: "+tv+"  array"+obj);
             const l = obj.length;
             const hor = [];
             const mv = [];
