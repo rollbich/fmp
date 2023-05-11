@@ -51,7 +51,8 @@ class capa {
 			// On récupère l'effectif total, donc on doit enlever le cds sur les vacations qui en ont 1	
 			const pc = {"JX":{},"J1":{}, "J3":{}, "S2":{}, "J2":{}, "S1":{}, "N":{}, "N-1":{}};
 
-			/*  ---------------------------------------
+			/*  -------------------------------------------------
+				pc["JX"] contient les JX mais aussi les RD bleus
 				pc["JX"] = {
 					"JXA": {
 						nombre: 2,
@@ -65,12 +66,13 @@ class capa {
 					}
 					...
 			}
-			---------------------------------------  */
+			-----------------------------------------------------  */
 
 			const Renfort = this.effectif[this.day]['Renfort'];
 			// Renfort hors JX
 			const RD_names_horsJX = [];
 			let nb_jx = 0;
+			let nb_jx_det = 0;
 			for (let renf1 in Renfort) {
 				for (let cle in Renfort[renf1]) {
 					const obj = Renfort[renf1][cle];
@@ -80,12 +82,15 @@ class capa {
 					let rd_type = "";
 					// JXA & JXB salle
 					// "RD bleu JXa-ms" - "RD bleu J1-ms" - "RD bleu J3b-ms" + Est only "RD bleu S1b-ms" + West only "RD bleu S1a-ms"
-					// "RD bleu J3a-ete" - "RD bleu S1b-ete" - "RD bleu J1-ete" + Est only "RD bleu JXb-ete" + West only "RD bleu J3b-ete"
+					// "RD bleu J3a-ete" - "RD bleu S1b-ete" - "RD bleu J1-ete" + Est only "RD bleu JXb-ete" + West only "RD bleu J3b-ete" 
+					let nb_det = 0;
 					if (label.includes("JX")) {
 						if (label.includes("RD bleu")) { // RD
 							type_renfort = "RD";
 							rd_type = label.substring(8);
-							jx_type = rd_type;		
+							jx_type = rd_type;
+							nb_det++;
+							nb_jx_det++;
 						} else { // JX salle
 							type_renfort = "JX";
 							jx_type = label;
@@ -96,13 +101,15 @@ class capa {
 						rd_type = label.substring(8);
 						jx_type = "RD"+rd_type;
 						RD_names_horsJX.push(jx_type);
+						nb_det++;
 					}		
 					
 					let agent = obj["agent"]["nomComplet"];
 					let agent_type = (label.includes("det") || label.includes("RD")) ? "détaché" : "salle";
-					if (pc["JX"].hasOwnProperty(jx_type) === false) { pc["JX"][jx_type] = {"nombre": 0}; pc["JX"][jx_type]["agent"] = {}}
+					if (pc["JX"].hasOwnProperty(jx_type) === false) { pc["JX"][jx_type] = {"nombre": 0, "nombre_det": 0}; pc["JX"][jx_type]["agent"] = {}}
 					pc["JX"][jx_type]["agent"][agent] = agent_type;
 					pc["JX"][jx_type]["nombre"]++;
+					pc["JX"][jx_type]["nombre_det"] += nb_det;
 				}
 			}
 			console.log("Renfort JX");
@@ -137,12 +144,13 @@ class capa {
 						pc[vac]["nbpc"] = nb_jx + update[vac]; 
 						pc[vac]["BV"] = 10;
 						pc[vac]["RO"] = 0;
-						pc[vac]["renfort"] = 0;
+						let det = 0; 
+						pc[vac]["renfort"] = nb_jx_det;
 					}
 				} else {
 					pc[vac]["ROinduit"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["roInduction"]);
 					pc[vac]["nbcds"] = parseInt(tour_local[this.zone][saison]["cds"]["N"]);
-					pc[vac]["nbpc"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["teamQuantity"]) - pc[vac]["nbcds"] + update[vac]; // le cds ne compte pas dans le nb de pc => -1
+					pc[vac]["nbpc"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["teamQuantity"]) - pc[vac]["nbcds"] + update[vac]; // le cds ne compte pas dans le nb de pc
 					pc[vac]["BV"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["BV"]) + update[upBV];
 					pc[vac]["RO"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["roQuantity"]);
 					pc[vac]["userList"] = this.effectif[yesterday][p]["userList"];
@@ -751,6 +759,9 @@ class feuille_capa extends capa {
 		const vac_RD_tab = Object.keys(this.pc_jx_15mn);
 		let res = "";
 		vac_RD_tab.forEach( vac_RD => {
+			let vac_RD_affiche = vac_RD.substring(2);
+			vac_RD_affiche = vac_RD_affiche.split("-")[0] + " RD bleu";
+			let sous_vac_RD = vac_RD_affiche.substring(2).toUpperCase();
 			let res2 = "";
 			if (this.pc_jx_15mn[vac_RD][0] === 0) {
 				res2 += `<td class='left_2px bottom_2px'></td>`; // border left à 2px pour la case 0
@@ -769,7 +780,7 @@ class feuille_capa extends capa {
 			} else {
 				res2 += `<td class='bg bottom_2px'>${this.pc_jx_15mn[vac_RD][95]}</td>`;
 			}
-			res += `<tr><td data-vac='${vac_RD}' class='left_2px bottom_2px click_RD' colspan="3">${vac_RD}</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
+			res += `<tr><td data-vac='${vac_RD}' class='left_2px bottom_2px click_RD' colspan="3">${vac_RD_affiche}</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
 		})
 		return res;
 	}
@@ -1041,11 +1052,29 @@ class simu_capa extends capa {
 	// Fabrique la partie gauche
 	affiche_vac(vac) {
 		const cds = this.cds[vac];
+		// ajoute les RD bleus détachés à ceux de l'équipe
+		let nbpc_vac = this.pc_vac[vac]["nbpc"];
+		let nbpcdet_vac = this.pc_vac[vac]["renfort"];
+		const vac_RD_tab = Object.keys(this.pc["pc_jx_15mn"]);
+		if (vac_RD_tab.length != 0) {
+			vac_RD_tab.forEach( vac_RD => {
+				let vac_RD_extraite = vac_RD.substring(2);
+				vac_RD_extraite = vac_RD_extraite.split("-")[0];
+				let sous_vac_RD = vac_RD_extraite.substring(2).toUpperCase();
+				vac_RD_extraite = vac_RD_extraite.substring(0,2);
+				if (vac_RD_extraite === vac) {
+					console.log(vac_RD+" en plus : "+this.pc_vac["JX"][vac_RD]["nombre"]);
+					nbpc_vac += this.pc_vac["JX"][vac_RD]["nombre"];
+					nbpcdet_vac += this.pc_vac["JX"][vac_RD]["nombre"];
+				}
+			})
+		}
+		
 		return `
 		<tr data-vac='${vac}'>
 		<td class='eq left_2px right_1px bottom_2px' data-vac='${vac}'>${this.tab_vac_eq[vac]}</td><td class='right_1px bottom_2px'>${vac}</td><td class='bottom_2px'>${cds}</td>
-			<td class='nbpc bottom_2px' data-vacPC='${vac}'>${this.pc_vac[vac]["nbpc"]}</td>
-			<td class='nbpc right_1px bottom_2px' data-vacDET='${vac}'>${this.pc_vac[vac]["renfort"]}</td>
+			<td class='nbpc bottom_2px' data-vacPC='${vac}'>${nbpc_vac}</td>
+			<td class='nbpc right_1px bottom_2px' data-vacDET='${vac}'>${nbpcdet_vac}</td>
 			<td class='bv right_1px bottom_2px' data-vacBV='${vac}'>${this.pc_vac[vac]["BV"]}</td>
 			<td class='bvini right_1px bottom_2px' data-vacBV='${vac}'>${this.pc_vac[vac]["BV"]}</td>
 			<td class='right_1px bottom_2px'><div class="modify"><button class="minusBV minus" data-vac='${vac}'>-</button><span class="numberPlace" data-vacBV='${vac}'>0</span><button class="plusBV plus" data-vac='${vac}'>+</button></div></td>
