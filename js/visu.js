@@ -115,6 +115,11 @@ class visu {
                 await reg.init();
                 const regbytv = reg.get_regbytv();
 
+                const z = this.zone === "AE" ? "est" : "ouest";
+                const d = convertDate(new Date);
+                const mv_b2b = new mv(d, z);
+                let mv_4f = await mv_b2b.get_b2b_mvs();
+
                 let data_reg_h20 = [];
                 let data_reg_occ = [];
                 let data_reg_h20_delay = []; 
@@ -176,7 +181,8 @@ class visu {
 
                     document.getElementById('graph-container-h20').classList.remove('off');
                     document.getElementById('graph-container-occ').classList.remove('off');
-                    let mv = this.h[time][tv][0][2];
+                    const full_tv = "LFM"+tv;
+                    let mv = mv_4f[full_tv][0]["capacity"];
                     let mv_ods = this.h[time][tv][0][2];
                     show_h20_graph('graph_h20', dataAxis, data, mv, mv_ods, tv, full_time, data_reg_h20, data_reg_h20_delay, data_reg_h20_reason);
                     show_occ_graph('graph_occ', dataAxis_occ, data_occ, peak, sustain, tv, full_time, data_reg_occ, data_reg_occ_delay);
