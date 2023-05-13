@@ -31,6 +31,7 @@
 	<script type="text/javascript" src="../js/capa_class.js"></script>
 	<script type="text/javascript" src="../js/confs_class.js"></script>
 	<script type="text/javascript" src="../js/stats_confs.js"></script>
+	<script type="text/javascript" src="../js/mvs_class.js"></script>
 	<script type="text/javascript" src="../js/visu.js"></script>
 	<script src="../js/dragger.js"></script>
 	<script src="../js/echarts.min.js"></script>
