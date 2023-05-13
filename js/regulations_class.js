@@ -182,12 +182,14 @@ class regul {
 		}
 	}
 
-	/*  --------------------------
+	/*  -------------------------------------------------------------------------
 		  {
 			  "ATC_STAFFING": 318,
 			  "WEATHER": 728
 		  }
-		-------------------------- */
+		  CRSTMP causes : ATC capacity (C), Routeing (R), Staffing (S), 
+		  Equipment (T), Airspace management (M) and Special events (P)
+		------------------------------------------------------------------------- */
 	get_reg_by_causes(tvset) {
 		if (typeof this.regul !== 'undefined') {
 			const reg = {};

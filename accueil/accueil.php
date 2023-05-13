@@ -20,6 +20,7 @@ require("../php/check_ok.inc.php");
     <script type="text/javascript" src="../js/graph.js"></script>
     <script type="text/javascript" src="../js/vols_class.js"></script>
     <script type="text/javascript" src="../js/regulations_class.js"></script>
+	<script type="text/javascript" src="../js/bilans_class.js"></script>
     <script src="../js/echarts.min.js"></script>
     <script>
       	document.addEventListener('DOMContentLoaded', async event => {
