@@ -5,7 +5,7 @@ class visu {
             @param {string} day - "yyyy-mm-dd"
             @param {string} zone - "AE ou "AW"
     ----------------------------------------------------------------- */
-    constructor(day, zone) {
+    constructor(day, zone, count_regul = true) {
         this.day = day;
         this.zone = zone;
         //this.container = $(containerId);
@@ -68,13 +68,13 @@ class visu {
     show_slider() {
         let li = '<div class="range"></div><ul class="range-labels">';
         for (const [ key, value ] of Object.entries(this.heures)) {
-            if (value === true && key !== "23:59") li += `<li class="heure" data-heure="${key}">${key}</li>`;   
-            //if (value === false) li += `<li class="heure" data-heure="${key}">--:--</li>`; 
-            if (value === true && key === "23:59") li += `<li class="heure active selected" data-heure="23:59">23:59</li>`;
+            if (value === true) li += `<li class="heure" data-heure="${key}">${key}</li>`;   
         }
         li += '</ul>';
-        $('timeline').innerHTML = li;
+        $('timeline').innerHTML = li; 
         this.heure_slider = document.querySelectorAll('.heure');
+        this.heure_slider[this.heure_slider.length-1].classList.add("active");
+        this.heure_slider[this.heure_slider.length-1].classList.add("selected"); // ajoute "active selected" à la class du dernier <li>
     }
 
     add_slider_listener() {
