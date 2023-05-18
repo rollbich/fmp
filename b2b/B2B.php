@@ -24,6 +24,7 @@ class B2B {
 	private $airspaceServices;
 	private $flowServices;
 	private $flightServices;
+	private $infoServices;
 
 	public function __construct() {
 		$this->Location_MM = "https://www.b2b.nm.eurocontrol.int/B2B_OPS/gateway/spec/".$this->version;
@@ -35,7 +36,7 @@ class B2B {
 			'local_cert' => $this->local_cert_MM,
 			'passphrase'=> $this->passphrase_MM,
 			'stream_context' => stream_context_create($this->context_param),
-			'trace'=>1,
+			'trace'=>1, // pour pouvoir utiliser SoapClient::__getLastResponse
 			//'proxy_host' => '100.78.176.201', 	// proxy
 			//'proxy_port' => 8001,				// 
 			'exceptions'=>1,
@@ -43,7 +44,7 @@ class B2B {
 		);
     }
 
-	// @param {string} $service - "flow" ou "airspace" ou "flight"
+	// @param {string} $service - "flow" ou "airspace" ou "flight" ou "info"
 	private function get_wsdl_file($service) {
 		switch ($service) {
 			case "flow":
@@ -52,6 +53,8 @@ class B2B {
 				return __DIR__."/B2B/FlightServices_OPS_".$this->version.".wsdl";
 			case "airspace":
 				return __DIR__."/B2B/AirspaceServices_OPS_".$this->version.".wsdl";
+			case "info":
+				return __DIR__."/B2B/GeneralinformationServices_OPS_".$this->version.".wsdl";
 			default:
 				return null;
 		}
@@ -107,6 +110,23 @@ class B2B {
           
         }
         return $this->flowServices;
+    }
+
+	//	@return InfoServices
+    public function infoServices() : InfoServices
+    {
+        if($this->infoServices == null) {
+
+			$wsdl_file = $this->get_wsdl_file("info");
+           
+			if(file_exists($wsdl_file)) {
+				$this->infoServices = new InfoServices($wsdl_file, $this->params);
+			} else {
+				throw new Exception('Fichier InfoServices WSDL introuvable.');
+			}
+          
+        }
+        return $this->infoServices;
     }
 
 }
