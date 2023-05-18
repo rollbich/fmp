@@ -603,6 +603,81 @@ class FlowServices extends Service {
         }
     }
 
+    /* -------------------------------------------------------------------------------------------------------
+        Récupère la piste en service d'un AD
+        @param {string} $ad - "EBBR" 
+        @param {string} $day - "YYYY-MM-DD"    (ex : gmdate('Y-m-d', strtotime("today"));)
+            "today" = minuit local = 22h00 UTC la veille(=> données de la veille)
+        
+    ----------------------------------------------------------------------------------------------------------*/
+    public function get_runway_config(string $ad, string $day) {
+        
+        $params = array(
+            'sendTime'=>gmdate("Y-m-d H:i:s"),
+            'dataset'=>array('type'=>'OPERATIONAL'),
+            'day'=> $day,
+            'aerodrome' => $ad
+        );
+                            
+        try {
+            $output = $this->getSoapClient()->__soapCall('retrieveRunwayConfigurationPlan', array('parameters'=>$params));
+            if ($output->status !== "OK") {
+                $erreur = $this->getFullErrorMessage("Erreur get_runway_config $ad, $day : ".$output->reason);
+                echo $erreur."<br>\n";
+                $this->send_mail($erreur);
+            }
+            return $output;
+            }
+
+        catch (Exception $e) {
+            echo 'Exception reçue get_runway_config: ',  $e->getMessage(), "<br>\n";
+            $erreur = $this->getFullErrorMessage("Erreur get_runway_config");
+            echo $erreur."<br>\n";
+            $this->send_mail($erreur);
+        }
+    }
+
+    /*  ----------------------------------------------------------------------------------------
+                        Appel b2b
+            récupère le nbre de vols d'un AD
+                @param $ad    (string) - aerodrome
+                @param $trafficType (string) - "LOAD" / "DEMAND" / "REGULATED_DEMAND"
+                @param $trafficType (string) - "DEPARTURE" / "GLOBAL" / "ARRIVAL" 
+                @param $wef / $unt  (string) - "YYYY-MM-DD hh:mm"   (ex : gmdate('Y-m-d H:i'))
+        ---------------------------------------------------------------------------------------- */
+    function query_counts_by_ad(string $ad, string $trafficType, string $adRole, string $wef, string $unt) {
+        
+        $params = array(
+            'sendTime'=>gmdate("Y-m-d H:i:s"),
+            'dataset'=>array('type'=>'OPERATIONAL'),
+            'trafficTypes'=>array('item'=>$trafficType),
+            'includeProposalFlights'=>false,
+            'includeForecastFlights'=>false,
+            'trafficWindow'=>array('wef'=>$wef,'unt'=>$unt),
+            'countsInterval'=>array('duration'=>'2400','step'=>'2400'),
+            'aerodrome'=>$ad,
+            'subTotalComputeMode'=>'NO_SUB_TOTALS', // NM 26.0
+            'aerodromeRole'=>$adRole
+        );
+        
+        try {
+            $output = $this->getSoapClient()->__soapCall('queryTrafficCountsByAerodrome', array('parameters'=>$params));
+            if ($output->status !== "OK") {
+                $erreur = $this->getFullErrorMessage("Erreur query_counts_by_ad $ad : ".$output->reason);
+                echo $erreur."<br>\n";
+                $this->send_mail($erreur);
+            }
+            return $output;
+        }
+
+        catch (Exception $e) {
+            echo 'Exception reçue query_counts_by_ad: ',  $e->getMessage(), "<br>\n";
+            $erreur = $this->getFullErrorMessage("Erreur query_counts_by_ad");
+            echo $erreur."<br>\n";
+            $this->send_mail($erreur);
+        }
+    }
+
 }
 
 ?>

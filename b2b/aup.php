@@ -3,6 +3,7 @@ ini_set('memory_limit', '1G');
 require_once("B2B.php");
 require_once("B2B-Service.php");
 require_once("B2B-AirspaceServices.php");
+require_once("B2B-InfoServices.php");
 include_once("config.inc.php");
 //include_once("hour_config".$config.".inc.php");
 
@@ -50,6 +51,7 @@ function write_json($arr, $zone, $type, $wef) {
 		<option value="get AUP">Get AUP</option>
 		<option value="get EAUP chain">get EAUP chain</option>
 		<option value="get EAUP rsa">get EAUP rsa</option>
+		<option value="get EAUP cdr">get EAUP cdr</option>
 	</select> 
 	<input type="submit" value="Go" style="margin-left: 15px; font-size: 14px">
 </form>
@@ -67,13 +69,15 @@ if (isset($_GET) && !empty($_GET['day'])) {
 	$date = new DateTime($day);
 	if ($request == "get AUP chain") {
 		echo "Request: $request<br><br>";
-		$aup_chain = $soapClient->airspaceServices()->get_AUP_chain($date, array("LFFAZAMC","LIRRZAMC"));
-		echo(json_encode($aup_chain));
+		//$aup_chain = $soapClient->airspaceServices()->get_AUP_chain($date, array("LFFAZAMC","LIRRZAMC"));
+		$aup_chain = $soapClient->airspaceServices()->get_AUP_chain($date, array("LFFAZAMC"));
+		var_dump($aup_chain);
 	}
 	if ($request == "get AUP") {
 		echo "Request: $request<br><br>";
-		$aup = $soapClient->airspaceServices()->get_AUP($date, array("LFFAZAMC","LIRRZAMC"));
-		echo(json_encode($aup));
+		//$aup = $soapClient->airspaceServices()->get_AUP($date, array("LFFAZAMC","LIRRZAMC"));
+		$aup = $soapClient->airspaceServices()->get_AUP($date, array("LFFAZAMC"));
+		var_dump($aup);
 	}
 	if ($request == "get EAUP chain") {
 		echo "Request: $request<br><br>";
@@ -91,11 +95,20 @@ if (isset($_GET) && !empty($_GET['day'])) {
 	if ($request == "get EAUP rsa") {
 		echo "Request: $request<br><br>";
 		$eaup_rsa = $soapClient->airspaceServices()->get_EAUP_rsa($date, 1);
-		echo(json_encode($eaup_rsa));
+		$xml = new \SimpleXMLElement($eaup_rsa);
+		echo $xml->asXML();
+		echo "<br><br>XML<br><br>";
+		var_dump($xml->children('http://schemas.xmlsoap.org/soap/envelope/')->Body->children('eurocontrol/cfmu/b2b/AirspaceServices')->EAUPRSAReply->status);
+	}
+	if ($request == "get EAUP cdr") {
+		echo "Request: $request<br><br>";
+		$eaup_cdr = $soapClient->airspaceServices()->get_EAUP_CDRs($date, 1);
+		var_dump($eaup_cdr);
 	}
 	//header("Content-type:application/json");
 	//echo(json_encode($aup));
 }
+
 ?>
 
 </body>
