@@ -199,8 +199,15 @@ class AirspaceServices extends Service {
     }
 
     public function get_RSA(DateTime $chainDate, Array $rsaDesignator) {
-                            
+               
         $eaup_rsa = $this->get_EAUP_rsa($chainDate, $rsaDesignator);
+
+        /* sauve le fichier xml pour le voir
+        $document = new DOMDocument();    
+        $document->loadXML($eaup_rsa); 
+        $document->save("coucou.xml");
+        */
+
 		$xml = new \SimpleXMLElement($eaup_rsa);
 		$aixmNS = "http://www.aixm.aero/schema/5.1.1";
 		$xml->registerXPathNamespace('adrmsg', "http://www.eurocontrol.int/cfmu/b2b/ADRMessage");
