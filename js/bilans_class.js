@@ -82,9 +82,10 @@ class weekly_briefing {
     show_data_reguls() {
         let r = this.data_reguls();
         let c = this.bilan_causes_crna() + this.bilan_causes_app();
+        let t = this.data_reguls_CRSTMP();
         this.container_reguls.innerHTML = r;
         this.container_causes.innerHTML = c;
-        console.log(this.reguls);
+        $("bilan_causes_CRSTMP").innerHTML = t;
         show_delay_graph_week_par_causes("accueil_causes_cta", this.year, this.week, this.reguls.cause['cta'][this.week-1], "LFMM CTA");
         show_delay_graph_week_par_causes("accueil_causes_app", this.year, this.week, this.reguls.cause['app'][this.week-1], "LFMM APP");
         show_delay_graph_week_par_causes("accueil_causes_est", this.year, this.week, this.reguls.cause['est'][this.week-1], "LFMM Est");
@@ -93,6 +94,10 @@ class weekly_briefing {
         show_delay_graph_week_cumule("accueil_cumule_app", this.year, this.get_weekly_reg_cumules()['app'], this.get_weekly_reg_cumules("lastyear")['app'], this.get_weekly_reg_cumules("2019")['app'], "LFMM APP");
         show_delay_graph_week_cumule("accueil_cumule_est", this.year, this.get_weekly_reg_cumules()['est'], this.get_weekly_reg_cumules("lastyear")['est'], this.get_weekly_reg_cumules("2019")['est'], "LFMM Est");
         show_delay_graph_week_cumule("accueil_cumule_west", this.year, this.get_weekly_reg_cumules()['west'], this.get_weekly_reg_cumules("lastyear")['west'], this.get_weekly_reg_cumules("2019")['west'], "LFMM West");
+        show_delay_graph_week_cumule("accueil_cumule_CRSTMP_cta", this.year, this.get_weekly_CRSTMP_reg_cumules()['cta'], this.get_weekly_CRSTMP_reg_cumules("lastyear")['cta'], this.get_weekly_CRSTMP_reg_cumules("2019")['cta'], "LFMM CTA", "CRSTMP");
+        show_delay_graph_week_cumule("accueil_cumule_CRSTMP_app", this.year, this.get_weekly_CRSTMP_reg_cumules()['app'], this.get_weekly_CRSTMP_reg_cumules("lastyear")['app'], this.get_weekly_CRSTMP_reg_cumules("2019")['app'], "LFMM APP", "CRSTMP");
+        show_delay_graph_week_cumule("accueil_cumule_CRSTMP_est", this.year, this.get_weekly_CRSTMP_reg_cumules()['est'], this.get_weekly_CRSTMP_reg_cumules("lastyear")['est'], this.get_weekly_CRSTMP_reg_cumules("2019")['est'], "LFMM Est", "CRSTMP");
+        show_delay_graph_week_cumule("accueil_cumule_CRSTMP_west", this.year, this.get_weekly_CRSTMP_reg_cumules()['west'], this.get_weekly_CRSTMP_reg_cumules("lastyear")['west'], this.get_weekly_CRSTMP_reg_cumules("2019")['west'], "LFMM West", "CRSTMP");
     }
 
     change_week() {
@@ -212,6 +217,47 @@ class weekly_briefing {
         return result;
     }
     
+    /*  ---------------------------------------------------------------------
+            CRSTMP causes : 
+            ATC_CAPACITY (C), ATC_ROUTINGS (R), ATC_STAFFING (S), 
+		    ATC_EQUIPMENT (T), AIRSPACE_MANAGEMENT (M) and SPECIAL_EVENTS (P)
+
+            Grève : ATC_INDUSTRIAL_ACTION
+        --------------------------------------------------------------------- */
+    data_reguls_CRSTMP() {
+        let result = `<h2>Régulations CRSTMP: semaine ${this.week} - Année ${this.year}</h2><br>`;
+        result += `<span class="rect">LFMM CTA : ${this.reguls.CRSTMP['cta'][this.week-1]} min</span><span class="rect">Est : ${this.reguls.CRSTMP['est'][this.week-1]} min</span><span class="rect">West : ${this.reguls.CRSTMP['west'][this.week-1]} min</span><span class="rect">App : ${this.reguls.CRSTMP['app'][this.week-1]} min</span>`;
+        result += "<div class='delay'>";
+        const lastweek_reguls = this.year === this.lastweek_year ? this.reguls : this.reguls_lastyear; 
+        const MyFormat = new SignedFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits:1} )
+        let res = `
+        <table class="table_bilan sortable">
+            <thead><tr class="titre"><th>Zone</th><th>Delay</th><th>Last Week</th><th>${this.year-1}</th><th>2019</th></tr></thead>
+            <tbody>`;
+            res += '<tr>'; 
+            res +=`<td>CTA</td><td>${this.reguls.CRSTMP['cta'][this.week-1]} min</td>
+            <td>${MyFormat.format((this.reguls.CRSTMP['cta'][this.week-1]/lastweek_reguls.CRSTMP['cta'][this.lastweek_week-1] - 1)*100)} %</td>
+            <td>${MyFormat.format((this.reguls.CRSTMP['cta'][this.week-1]/this.reguls_lastyear.CRSTMP['cta'][this.week-1] - 1)*100)} %</td>
+            <td>${MyFormat.format((this.reguls.CRSTMP['cta'][this.week-1]/this.reguls_2019.CRSTMP['cta'][this.week-1] - 1)*100)} %</td></tr><tr>
+            <td>Est</td><td>${this.reguls.CRSTMP['est'][this.week-1]} min</td>
+            <td>${MyFormat.format((this.reguls.CRSTMP['est'][this.week-1]/lastweek_reguls.CRSTMP['est'][this.lastweek_week-1] - 1)*100)} %</td>
+            <td>${MyFormat.format((this.reguls.CRSTMP['est'][this.week-1]/this.reguls_lastyear.CRSTMP['est'][this.week-1] - 1)*100)} %</td>
+            <td>${MyFormat.format((this.reguls.CRSTMP['est'][this.week-1]/this.reguls_2019.CRSTMP['est'][this.week-1] - 1)*100)} %</td></tr><tr>
+            <td>West</td><td>${this.reguls.CRSTMP['west'][this.week-1]} min</td>
+            <td>${MyFormat.format((this.reguls.CRSTMP['west'][this.week-1]/lastweek_reguls.CRSTMP['west'][this.lastweek_week-1] - 1)*100)} %</td>
+            <td>${MyFormat.format((this.reguls.CRSTMP['west'][this.week-1]/this.reguls_lastyear.CRSTMP['west'][this.week-1] - 1)*100)} %</td>
+            <td>${MyFormat.format((this.reguls.CRSTMP['west'][this.week-1]/this.reguls_2019.CRSTMP['west'][this.week-1] - 1)*100)} %</td></tr><tr>
+            <td>App</td><td>${this.reguls.CRSTMP['app'][this.week-1]} min</td>
+            <td>${MyFormat.format((this.reguls.CRSTMP['app'][this.week-1]/lastweek_reguls.CRSTMP['app'][this.lastweek_week-1] - 1)*100)} %</td>
+            <td>${MyFormat.format((this.reguls.CRSTMP['app'][this.week-1]/this.reguls_lastyear.CRSTMP['app'][this.week-1] - 1)*100)} %</td>
+            <td>${MyFormat.format((this.reguls.CRSTMP['app'][this.week-1]/this.reguls_2019.delay['app'][this.week-1] - 1)*100)} %</td>`;
+            res += '</tr>';	
+        res += '</tbody></table>';
+        result += "</div>";
+        result += res;
+        return result;
+    }
+
     data_vols_jour() {
         let result = `<h2 class='h2_bilan'>Nombre de vols : semaine ${this.week} - Année ${this.year}</h2><br>`;
         let res = `
@@ -311,6 +357,40 @@ class weekly_briefing {
             west += obj['delay']['west'][i];
             result['west'].push(west);
             app += obj['delay']['app'][i];
+            result['app'].push(app);
+        }
+        return result;
+    }
+
+    get_weekly_CRSTMP_reg_cumules(type) {
+        let obj = null;
+        const result = {};
+        switch (type) {
+            case 'lastyear':
+                    obj = this.reguls_lastyear;
+                result['year'] = this.year - 1;
+                break;
+            case '2019':
+                obj = this.reguls_2019;
+                result['year'] = 2019;
+                    break;
+            default:
+                obj = this.reguls;
+                result['year'] = this.year;
+        }
+        let cta = 0, est = 0, west = 0, app = 0;
+        result['cta'] = [];
+        result['est'] = [];
+        result['west'] = [];
+        result['app'] = [];
+        for(let i=0;i<this.week;i++) { 
+            cta += obj['CRSTMP']['cta'][i];
+            result['cta'].push(cta);
+            est += obj['CRSTMP']['est'][i];
+            result['est'].push(est);
+            west += obj['CRSTMP']['west'][i];
+            result['west'].push(west);
+            app += obj['CRSTMP']['app'][i];
             result['app'].push(app);
         }
         return result;

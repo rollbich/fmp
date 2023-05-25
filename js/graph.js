@@ -1623,7 +1623,7 @@ function show_delay_graph_week_par_causes(containerId, year, week, data, titre) 
 			@param {string} containerId - Id de l'HTML Element conteneur
 			@param {array} data - [load,...]
 	-------------------------------------------------------------------------- */
-function show_delay_graph_week_cumule(containerId, year, data, data_lastyear, data2019, zon) {
+function show_delay_graph_week_cumule(containerId, year, data, data_lastyear, data2019, zon, title = "") {
 
 	let chartDom = $(containerId);
 	chartDom.style.height = "350px";
@@ -1638,7 +1638,7 @@ function show_delay_graph_week_cumule(containerId, year, data, data_lastyear, da
 	
 	option = {
 		title: {
-			text: `Délai cumulé sur l'année ${year} - ${zon}`,
+			text: `Délai ${title} cumulé sur l'année ${year} - ${zon}`,
 			textStyle: {
 				color: '#FFF',
 				fontSize: '1.5rem'
@@ -1658,7 +1658,7 @@ function show_delay_graph_week_cumule(containerId, year, data, data_lastyear, da
 		toolbox: {
 			feature: {
 				saveAsImage: {
-					name: `Trafic semaine sur l'année - ${zon}`,
+					name: `Trafic ${title} semaine sur l'année - ${zon}`,
 					title: 'PNG',
 					show: true
 				}
