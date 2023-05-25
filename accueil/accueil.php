@@ -68,26 +68,39 @@ require("../php/check_ok.inc.php");
 <h1>LFMM-FMP - Briefing semaine dernière</h1>
 <p class="center">Source trafic : données FPL (B2B)</p>
 <div id="glob_container">
-<div id='accueil' style="display: flex; flex-wrap: wrap">
-  	<div id="accueil_left">
-	  <div id="accueil_vols"></div>
-	  <div id="accueil_reguls"></div>
+	<div id='accueil' style="display: flex; flex-wrap: wrap">
+		<div id="accueil_left">
+		<div id="accueil_vols"></div>
+		<div id="accueil_reguls"></div>
+		</div>
+		<div id="accueil_bilan" class="accueil_bilan">
+		<div id="bilan_vols"></div>
+		<div id="bilan_reguls"></div>
+		</div>
 	</div>
- 	<div id="accueil_bilan" class="accueil_bilan">
-  	  <div id="bilan_vols"></div>
-	  <div id="bilan_reguls"></div>
+	<h2 class="delimiter">Données par causes</h2>
+	<div id="bilan_causes" class="accueil_bilan"></div>
+	<h2 class="delimiter">Données journalières</h2>
+	<div id="bilan_jour" class="accueil_bilan"></div>
+	<h2 class="delimiter">Graphiques par causes et cumulés</h2>
+	<div id="accueil_causes_cta" class="mgt"></div>
+	<div id="accueil_causes_app" class="mgt"></div>
+	<div id="accueil_causes_est" class="mgt"></div>
+	<div id="accueil_causes_west" class="mgt"></div>
+	<div id="accueil_cumule_cta" class="mgt"></div>
+	<div id="accueil_cumule_app" class="mgt"></div>
+	<div id="accueil_cumule_est" class="mgt"></div>
+	<div id="accueil_cumule_west" class="mgt"></div>
+	<div style="display: block">
+	<h2 class="delimiter">Données et graphiques CRSTMP</h2>
+		<div id="bilan_causes_CRSTMP" class="accueil_bilan"></div>
+		<div style="display: flex; flex-wrap: wrap;">
+			<div id="accueil_cumule_CRSTMP_cta" class="mgt"></div>
+			<div id="accueil_cumule_CRSTMP_app" class="mgt"></div>
+			<div id="accueil_cumule_CRSTMP_est" class="mgt"></div>
+			<div id="accueil_cumule_CRSTMP_west" class="mgt"></div>
+		</div>
 	</div>
-</div>
-<div id="bilan_causes" class="accueil_bilan"></div>
-<div id="bilan_jour" class="accueil_bilan"></div>
-<div id="accueil_causes_cta" class="mgt"></div>
-<div id="accueil_causes_app" class="mgt"></div>
-<div id="accueil_causes_est" class="mgt"></div>
-<div id="accueil_causes_west" class="mgt"></div>
-<div id="accueil_cumule_cta" class="mgt"></div>
-<div id="accueil_cumule_app" class="mgt"></div>
-<div id="accueil_cumule_est" class="mgt"></div>
-<div id="accueil_cumule_west" class="mgt"></div>
 </div>
 <?php include("../php/upload.inc.php"); ?>
 </body>

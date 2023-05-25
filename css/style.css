@@ -136,6 +136,12 @@ nav.navbar{
 	color: var(--select-bg-color);
 }
 
+h2.delimiter {
+	width: 100%; 
+	background-color: var(--rect-bg-color); 
+	text-align:center
+}
+
 #accueil_bilan span.rect {
 	font-family: 'Sansation';
 	font-size: 1.8rem;
@@ -465,6 +471,11 @@ div.conf th {
 table.regroup th {
 	width: 140px;
 	text-align: center;
+}
+
+table.conf {
+	margin-left:auto;
+	margin-right: auto;
 }
 
 table.conf tr.one {

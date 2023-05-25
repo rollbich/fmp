@@ -472,6 +472,7 @@ class weekly_regs {
 		this.weekly_regs = await this.get_data_weekly_regs();
 		this.delay = this.get_weekly_delay();
 		this.cause = this.get_weekly_reg_by_cause();
+		this.CRSTMP = this.get_weekly_CRSTMP_reg();
 	}
 
 	/*  ----------------------------------------------------------------------------------
@@ -489,6 +490,15 @@ class weekly_regs {
 		const resp = await loadJson(url);
 		return resp;
 	}
+
+	/* 	----------------------------------------------------
+		@returns : {
+			"cta": [delay semaine 1, delay semaine i, ...],
+			"est" : [delay semaine 1, delay semaine i, ...],
+			"west" : [delay semaine 1, delay semaine i, ...],
+			"app": [delay semaine 1, delay semaine i, ...],
+		}
+	---------------------------------------------------- */
 
 	get_weekly_delay() {
 		const regs = {};
@@ -514,16 +524,17 @@ class weekly_regs {
 
 	/* 	----------------------------------------------------
 		@returns : {
-			"cta": {
+			"cta": [{
 				"ATC_STAFFING":1953,
 				"SPECIAL_EVENT":311,
 				"ATC_INDUSTRIAL_ACTION":2000,
 				"cause": delai
-				...
+				}, 
+				{idem semaine i}, ...]
 			},
-			"est" : {...},
-			"west" : {...},
-			"app": { ...} 
+			"est" : [{...}, {semaine i}, ...],
+			"west" : [{...}, {semaine i}, ...],
+			"app": [{ ...}, {semaine i}, ...] 
 		}
 	---------------------------------------------------- */
 
@@ -549,6 +560,59 @@ class weekly_regs {
 						reg_cta[elem] = reg_west[elem];
 					} else {
 						reg_cta[elem] += reg_west[elem];
+					}
+				})
+				regs['cta'].push(reg_cta);
+				regs['est'].push(reg_est);
+				regs['west'].push(reg_west);
+				regs['app'].push(reg_app);
+			} 
+		}
+		return regs;
+	}
+
+	/* 	-------------------------------------------------------------------------
+			CRSTMP causes : 
+            ATC_CAPACITY (C), Routeing (R), ATC_STAFFING (S), 
+		    ATC_EQUIPMENT (T), AIRSPACE_MANAGEMENT (M) and SPECIAL_EVENTS (P)
+            Grève : ATC_INDUSTRIAL_ACTION
+
+			@returns : {
+				"cta": [delay semaine 1, delay semaine i, ...],
+				"est" : [delay semaine 1, delay semaine i, ...],
+				"west" : [delay semaine 1, delay semaine i, ...],
+				"app": [delay semaine 1, delay semaine i, ...],
+		}
+	---------------------------------------------------------------------------- */
+
+	get_weekly_CRSTMP_reg() {
+		const regs = {};
+		regs['year'] = parseInt(this.weekly_regs['year']);
+		regs['cta'] = [];
+		regs['est'] = [];
+		regs['west'] = [];
+		regs['app'] = [];
+		for(let i=1;i<54;i++) { 
+			if (typeof this.weekly_regs[i] !== 'undefined') {
+				const tab_causes = ["ATC_CAPACITY", "ATC_ROUTINGS", "ATC_STAFFING", "ATC_EQUIPMENT", "AIRSPACE_MANAGEMENT", "SPECIAL_EVENT"];
+				const tab_causes_2019 = ["ATC Capacity", "ATC Routings", "ATC Staffing", "ATC Equipment", "Airspace Management", "Special Event"];
+				const tab = [...tab_causes, ...tab_causes_2019];
+				let reg_cta = 0;
+				let reg_est = 0;
+				let reg_west = 0;
+				let reg_app = 0;
+				tab.forEach(cause => {
+					if (typeof this.cause["cta"][i-1][cause] != 'undefined') {
+						reg_cta += this.cause["cta"][i-1][cause];
+					}
+					if (typeof this.cause["est"][i-1][cause] != 'undefined') {
+						reg_est += this.cause["est"][i-1][cause];
+					}
+					if (typeof this.cause["west"][i-1][cause] != 'undefined') {
+						reg_west += this.cause["west"][i-1][cause];
+					}
+					if (typeof this.cause["app"][i-1][cause] != 'undefined') {
+						reg_app += this.cause["app"][i-1][cause];
 					}
 				})
 				regs['cta'].push(reg_cta);
