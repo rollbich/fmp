@@ -14,7 +14,9 @@ class aup {
     }
 
     // get aup (LITSA72 + LIR64 + LFMM RSA)
-    async get_aup() { 
+    // récupère l'AUP à partir de l'heure de la demande
+    // les données précédant l'heure la requête ne sont fournies
+    async get_direct_aup() { 
         try {
             let response = await fetch("../b2b/get_aup.php", {
                 method: 'POST',
@@ -24,6 +26,22 @@ class aup {
             const json = await response.json(); 
             console.log(json);
             return json;
+        }
+        
+        catch (err) {
+            show_popup("Erreur", `L'AUP de la date ${reverse_date(this.day)} n'existe pas`);
+            console.log('Get AUP json error: '+err.message);
+        }
+    }
+
+    // lit le fichier json de la date indiquée
+    // ex : 20230525-05h-aup.json
+    async get_aup() { 
+        const d = this.day.split("-");
+        try {
+            let aup = await loadJson(`../b2b/json/${d[0]}/${d[1]}/${d[0]}${d[1]}${d[2]}-05h-aup.json`);
+            console.log(aup);
+            return aup;
         }
         
         catch (err) {
