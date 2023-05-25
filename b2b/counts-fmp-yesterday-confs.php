@@ -45,7 +45,6 @@ function write_json($arr, $zone, $type, $wef) {
 /*  ---------------------------------------------------------- */
 
 $soapClient = new B2B();
-$today = gmdate('Y-m-d', strtotime("today"));
 
 // ATC conf du jour
 $airspace1 = "LFMMCTAE";
@@ -55,7 +54,7 @@ $today = gmdate('Y-m-d', strtotime("today"));
 $plan_e = $soapClient->flowServices()->get_atc_conf($airspace1, $today);
 $plan_w = $soapClient->flowServices()->get_atc_conf($airspace2, $today);
 
-echo "get conf jour OK<br>";
+echo "get conf jour $today OK<br><br>";
 
 $atc_confs = new stdClass();
 $atc_confs->est = $plan_e->data->plan->nmSchedule->item;
@@ -68,6 +67,7 @@ $atc_confs->ouest = $plan_w->data->plan->nmSchedule->item;
 try {	
 
 	write_json($atc_confs, "", "-confs", $wef_counts);
+	//var_dump($atc_confs);
 	
 }
 
