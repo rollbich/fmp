@@ -62,7 +62,7 @@
 <h1>LFMM AUP</h1>
 <div id="help_frame" class="off">
 	<h2>Help</h2>
-    <p><span>Le bouton "AUP"</span> :<br>Il permet d'afficher l'AUP du jour ou du lendemain'. Les données affichées sont à jour puisqu'une requête B2B a lieu en temps réel.</p>
+    <p><span>Le bouton "AUP"</span> :<br>Il permet d'afficher l'AUP du jour ou du lendemain'. Les données affichées sont celles récupérées à 05h30.</p>
 	<button class="help_close_button pointer">Close</button>
 </div>
 <ul class="menu">
