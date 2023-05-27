@@ -95,8 +95,7 @@ if (isset($_GET) && !empty($_GET['day'])) {
 	if ($request == "get EAUP rsa") {
 		echo "Request: $request<br><br>";
 		$eaup_rsa = $soapClient->airspaceServices()->get_RSA($date, array('LF*','LI*'));
-		//echo json_encode($eaup_rsa);
-		echo $eaup_rsa;
+		echo json_encode($eaup_rsa);
 	}
 	
 	//header("Content-type:application/json");
