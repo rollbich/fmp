@@ -129,6 +129,10 @@ class B2B {
         return $this->infoServices;
     }
 
+	public function getCurrentVersion()
+    {
+		return $this->version;
+	}
 }
 
 ?>
