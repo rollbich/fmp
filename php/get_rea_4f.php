@@ -51,7 +51,8 @@ function get_rea_4f($year, $month, $day, $zone) {
             $objet->pos_name = substr($mapping->pos[$i+1]->attributes()['name'], 0, 3);
             $objet->pos_resps = (string) $mapping->pos[$i+1]->attributes()['resps'];
             $objet->pos_regroup = (string) $mapping->pos[$i+1]->attributes()['regroup'];
-            if (strcmp($objet->pos_regroup, $mapping->pos[$i]->attributes()['regroup']) != 0) {
+            // on push que si c'est une nouvelle position
+            if (strcmp($objet->pos_name, substr($mapping->pos[$i]->attributes()['name'],0,3)) != 0) {
                 if (strpos($objet->pos_resps, " ") === FALSE) $objet->pos_regroup = $objet->pos_resps; 
                 array_push($obj->pos, $objet);
             }
