@@ -447,7 +447,7 @@ class FlowServices extends Service {
         try {
             $output = $this->getSoapClient()->__soapCall('retrieveCapacityPlan', array('parameters'=>$params));
             if ($output->status !== "OK") {
-                $erreur = $this->getFullErrorMessage("Erreur get_capacity_plan $tvs, $day : ".$output->reason);
+                $erreur = $this->getFullErrorMessage("Erreur get_capacity_plan, $day : ".$output->reason);
                 echo $erreur."<br>\n";
                 $this->send_mail($erreur);
             }
