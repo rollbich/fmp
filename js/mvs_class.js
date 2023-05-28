@@ -58,7 +58,7 @@ class mv {
 		}
 		
 		catch (err) {
-			show_popup("Erreur", "Chargement des MVs impossible<br>Vérifiez la connexion internet");
+			show_popup("Erreur", "Chargement des MVs en B2B impossible<br>Vérifiez la connexion internet");
 			console.log('Get MVs existantes Load json error: '+err.message);
 		}
 	}
