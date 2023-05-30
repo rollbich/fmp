@@ -17,6 +17,7 @@
 	<script type="text/javascript" src="../js/list-component.js"></script>
 	<script type="text/javascript" src="../js/mixin.js"></script>
 	<script type="text/javascript" src="../js/schema.js"></script>
+	<script type="text/javascript" src="../js/mvs_class.js"></script>
 	<script type="text/javascript" src="../js/graph.js"></script>
 	<script type="text/javascript" src="../js/overload_class.js"></script>
 	<script type="text/javascript" src="../js/upload.js"></script>
@@ -33,7 +34,7 @@
 			
 			<?php include("../php/nav.js.inc.php"); ?>
 			let depassement = undefined;
-
+			
 			new dragger('graph-container-h20', 'drag-container');
 			new dragger('graph-container-occ', 'drag-container');
 
@@ -60,16 +61,17 @@
 				$("help_frame").classList.remove('off');
 			});
 			
-			$('bouton_capa').addEventListener('click', e => {
+			$('bouton_capa').addEventListener('click', async e => {
 				$('graph-container-h20').classList.add('off');
 				$('graph-container-occ').classList.add('off');
-				//result_h20 = {};
+				result_h20 = {};
 				let zone = $('zone').value;
 				let start_day = $('start').value; // yyyy-mm-dd
 				let end_day = $('end').value; // yyyy-mm-dd
 				let sel_percent = parseInt($('selection').value);
 				depassement = new overload('result', "H20", start_day, end_day, zone, sel_percent);
-				//show_result_capa('result', "H20", start_day, end_day, zone, sel_percent);
+				await depassement.init();
+				depassement.show_capa_H20();
 			});
 			
 			$('bouton_export').addEventListener('click', e => {
@@ -139,7 +141,6 @@
 </div>
 
 </header>
-
 <div id="glob_container">
 	<div id='result' class='tv'>
 	</div>

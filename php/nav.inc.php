@@ -34,6 +34,7 @@
                 <div class="dropdown-content">
                   <a class="navbar-item" href="../admin/b2b-admin.php">Admin B2B</a>
                   <a class="navbar-item" href="../admin/confs-admin.php">Admin Confs</a>
+                  <a class="navbar-item" href="../info/">Info B2B</a>
                 </div>
               </div>
             </div>';
@@ -60,15 +61,18 @@
           <a class="navbar-item" href="../ouverture">
             Ouverture
           </a>
+          <a class="navbar-item" href="../visu">
+            Visu
+          </a>
           <a class="navbar-item" href="../confs">
             Confs
           </a>
           <a class="navbar-item" href="../mv">
             MVs-OTMVs
           </a>
-          <a class="navbar-item" href="../visu">
-            Visu
-          </a>
+          <!--<a class="navbar-item" href="../aup">
+            AUP
+          </a>-->
         </div>
       </div>
 			<a class="navbar-item" href="../capa">
