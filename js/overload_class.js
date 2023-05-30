@@ -9,7 +9,14 @@ class overload {
         this.zone = zone;
         this.selected_percent = selected_percent;
         this.containerId = containerId;
-        this.show_capa_H20();
+    }
+
+    async init() {
+        const nom_fichier = "../b2b/MV.json";
+        this.mv_json = await loadJson(nom_fichier);
+        this.z = this.zone === "AE" ? "est" : "ouest";
+        const mv_b2b = new mv(convertDate(new Date()), this.z);
+        this.mv_b2b_4f = await mv_b2b.get_b2b_mvs();
     }
 
     /*  ----------------------------------------------------------------------------------
@@ -24,6 +31,17 @@ class overload {
         await this.calc_capa_H20();
         console.log("Calc_capa_ok");
         let res = `<table class="depassement">
+                     <caption>Nombre d'occurence<br>du ${reverse_date(this.start_day)} au ${reverse_date(this.end_day)}</caption>
+                     <thead>
+                        <tr class="titre"><th class="space">130%</th><th>140%</th><th>150%</th><th>160%</th><th>170%</th><th>180%</th></tr>
+                    </thead>
+                    <tbody><tr>`;
+        Object.keys(this.result_capa["nombre"]).forEach( key => {
+            res += `<td>${this.result_capa["nombre"][key]}</td>`; 
+        }) 
+            
+        res += '</tr></tbody></table>';          
+        res += `<table class="depassement">
                      <caption>Journées du ${reverse_date(this.start_day)} au ${reverse_date(this.end_day)}</caption>
                      <thead>
                         <tr class="titre"><th class="space">Date</th><th>TV</th><th>Heure</th><th>H/20</th><th>MV</th><th>% de la MV</th></tr>
@@ -55,12 +73,12 @@ class overload {
 		@param {integer} selected_pourcent - pourcentage de dépassement de MV
 		@results {object} - {
 			"filtre": % du filtre (= selected_pourcent),
-			"data" : [ [date, tv, heure, count, mv, pourcentage_mv], ... ]
+			"data" : [ [date, tv, heure, count, mv, pourcentage_mv], ... ],
+            "nombre" : {"130":nb occurence, "140":nb occurence, ..., "180":nb}
 		}
 	---------------------------------------------------------------------------------- */
     async calc_capa_H20() {
-        const nom_fichier = "../b2b/MV.json";
-        const mv_json = await loadJson(nom_fichier);
+
         const days = get_dates_array(new Date(this.start_day), new Date(this.end_day));
         
         for (let day of days) {
@@ -69,33 +87,42 @@ class overload {
             if (typeof s !== 'undefined') {
                 const temp = await get_h20_b2b(day, this.zone, s);	
                 Object.assign(this.result_h20, temp);
+            } else {
+                show_popup(`Attention<br>le ${reverse_date(day)}`, `Fichier réalisé manquant`);
             }
         }
         
-        const z = this.zone === "AE" ? "EST" : "OUEST";
+        let z = this.z.toUpperCase();
         
         this.result_capa["data"] = [];
         this.result_capa["filtre"] = this.selected_percent;
         this.result_capa["zone"] = z;
         this.result_capa["range"] = [this.start_day, this.end_day];
+        this.result_capa["nombre"] = {"130":0, "140":0, "150":0, "160":0, "170":0, "180":0};
         
         for (let day in this.result_h20) {
             for (var tv in this.result_h20[day]) {
+                    let mv_ods = parseInt(this.mv_json[`TV-${z}`][tv]["MV"]);
+                    const full_tv = "LFM"+tv;
+                    let mv_4f = this.mv_b2b_4f[full_tv][0]["capacity"];
                     try {
-                        let mv = parseInt(mv_json[`TV-${z}`][tv]["MV"]);
                         this.result_h20[day][tv].forEach(value => {
                             let count = value[1];
-                            let pourcentage_mv = Math.round((100 * count) / mv);
-                            
-                            if (pourcentage_mv >= this.selected_percent) {
-                                let dd = reverse_date(day);	
-                                this.result_capa["data"].push([dd, tv, value[0], count, mv, pourcentage_mv]);
+                            let pourcentage_mv_4f = Math.round((100 * count) / mv_4f);
+                            let dd = reverse_date(day);	
+                            if (pourcentage_mv_4f >= this.selected_percent) {
+                                this.result_capa["data"].push([dd, tv, value[0], count, mv_4f, pourcentage_mv_4f]);
                             }
+                            Object.keys(this.result_capa["nombre"]).forEach( key => {
+                                if (pourcentage_mv_4f >= parseInt(key)) {
+                                    this.result_capa["nombre"][key]++;
+                                }
+                            })
                         });	
                     }
       
                     catch (err) {
-                        show_popup("Erreur ! ", "Les données du TV: "+tv+" ne sont pas récupérées en B2B ou alors le TV n'est pas défini dans le fichier MV.json");
+                        show_popup("Erreur ! ", "Les données du TV: "+tv+" du "+day+" ne sont pas récupérées en B2B ou alors le TV n'est pas défini dans le fichier MV.json<br>MV 4f : "+mv_4f);
                     }
             }
             
@@ -140,7 +167,7 @@ class overload {
             let fin = td.dataset.fin;
             let tv = td.dataset.tv;
                               
-            td.addEventListener('click', function(event) {
+            td.addEventListener('click', event => {
                 let data = [];
                 let dataAxis = [];	
                 let data_occ = [];
@@ -175,15 +202,18 @@ class overload {
                     } else {
                         document.getElementById('graph-container-h20').classList.remove('off');
                         document.getElementById('graph-container-occ').classList.remove('off');
-                        let mv = h[dat][dat][tv][0][2];
-                        let mv_ods = h[dat][dat][tv][0][2];
-                        show_h20_graph('graph_h20', dataAxis, data, mv, mv_ods, tv);
+                        let z = this.zone === "AE" ? "EST" : "OUEST";
+                        let mv_ods = parseInt(this.mv_json[`TV-${z}`][tv]["MV"]);
+                        const full_tv = "LFM"+tv;
+                        let mv_4f = this.mv_b2b_4f[full_tv][0][ "capacity"];
+                        show_h20_graph('graph_h20', dataAxis, data, mv_4f, mv_ods, tv);
                         show_occ_graph('graph_occ', dataAxis_occ, data_occ, peak, sustain, tv);
                     }
                 }
       
                 catch (err) {
                     show_popup("Attention ! ", "Les données du TV: "+tv+" n'ont pas été récupérées en B2B.");
+                    console.log(err);
                 }
             })
         }
