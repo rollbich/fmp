@@ -62,12 +62,12 @@
 <h1>LFMM AUP</h1>
 <div id="help_frame" class="off">
 	<h2>Help</h2>
-    <p><span>Le bouton "AUP"</span> :<br>Il permet d'afficher l'AUP du jour ou du lendemain'. Les données affichées sont celles récupérées à 05h30.</p>
+    <p><span>Le bouton "AUP"</span> :<br>Il permet d'afficher un AUP passé ou du lendemain. Les données affichées sont celles récupérées à 16h24 pour le lendemain.</p>
 	<button class="help_close_button pointer">Close</button>
 </div>
 <ul class="menu">
     <li id="bouton_aup" class="pointer"><span>AUP</span></li>
-	<li class="pointer"><span id="bouton_conf">Date :</span><input type="date" id="day" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="<?php echo date("Y-m-d", strtotime("-6 day"));?>" max="<?php echo date("Y-m-d", strtotime("+1 day"));?>"></li>
+	<li class="pointer"><span id="bouton_conf">Date :</span><input type="date" id="day" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="<?php echo date("Y-m-d", strtotime("2023-06-01"));?>" max="<?php echo date("Y-m-d", strtotime("+1 day"));?>"></li>
 	<li><button class="help_button">Help</button></li>
 </ul>
 </header>
