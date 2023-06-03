@@ -215,12 +215,12 @@ class AirspaceServices extends Service {
         $xml->registerXPathNamespace('aixm', $aixmNS);
 		
         $airspaces_asXML = [];
-        $LI_designators = ["LITSA72", "LIR64"];
-        foreach ($LI_designators as $design) {
+        $other_designators = ["LFT24", "LITSA72", "LIR64", "LID5"];
+        foreach ($other_designators as $design) {
             array_push($airspaces_asXML, $xml->xpath('//aixm:Airspace//aixm:AirspaceTimeSlice[starts-with(aixm:designator,"' . $design . '")]/../..'));
         }
-        $LF_designators = ["LFR138", "LFR108", "LFT42", "LFT43", "LFT44", "LFD54", "LFT24", "LFR22"];
-        foreach ($LF_designators as $design) {
+        $LFMM_designators = ["LFR108", "LFT41", "LFT42", "LFT46", "LFD54", "LFT43", "LFT44", "LFR138", "LFR221", "LFR222"];
+        foreach ($LFMM_designators as $design) {
             array_push($airspaces_asXML, $xml->xpath('//aixm:Airspace//aixm:AirspaceTimeSlice[starts-with(aixm:designator,"' . $design . '")]/../..'));
         }
        

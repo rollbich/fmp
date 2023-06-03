@@ -35,19 +35,14 @@ class aup {
     }
 
     // lit le fichier json de la date indiquée
-    // ex : 20230525-05h-aup.json
+    // ex : 20230525-aup.json
     async get_aup() { 
         const d = this.day.split("-");
-        try {
-            let aup = await loadJson(`../b2b/json/${d[0]}/${d[1]}/${d[0]}${d[1]}${d[2]}-05h-aup.json`);
-            console.log(aup);
-            return aup;
-        }
-        
-        catch (err) {
+        let aup = await loadJson(`../b2b/json/${d[0]}/${d[1]}/${d[0]}${d[1]}${d[2]}-aup.json`);
+        if (typeof aup === 'undefined') {
             show_popup("Erreur", `L'AUP de la date ${reverse_date(this.day)} n'existe pas`);
-            console.log('Get AUP json error: '+err.message);
         }
+        return aup;
     }
 
     show_aup(containerId) {
@@ -55,7 +50,7 @@ class aup {
             let res = "<div>";
             res += `
             <table class="sortable conf">
-                <caption>AUP LFMM France du ${reverse_date(this.day)} <br><span style="font-size:1rem">06:00 UTC au lendemain 06:00 UTC</span></caption>
+                <caption>AUP LFMM du ${reverse_date(this.day)} <br><span style="font-size:1rem">06:00 UTC au lendemain 06:00 UTC</span></caption>
                 <thead><tr class="titre"><th class="space">RSA</th><th>Début</th><th>Fin</th><th>Lower Limit</th><th>Upper Limit</th></tr></thead>
                 <tbody>`.trimStart();
             
@@ -67,7 +62,7 @@ class aup {
                 const fin = rsa["end"];
                 const lower_limit = rsa["lowerLimit"];
                 const upper_limit = rsa["upperLimit"];
-                if (name.substr(0,2) === "LF") {
+                if (name.substr(0,2) === "LF" && name.substr(0,5) !== "LFT24") {
                     res += `<tr>`;
                     res += `<td>${name}</td><td><span style="font-size:1.2rem; font-weight:bold">${debut}</span>  (${date_debut})</td><td><span style="font-size:1.2rem; font-weight:bold">${fin}</span>  (${date_fin})</td><td>${lower_limit}</td><td>${upper_limit}</td>`
                     res += `</tr>`;
@@ -77,7 +72,7 @@ class aup {
 
             res += `
             <table class="sortable conf">
-                <caption>AUP LFMM Italie du ${reverse_date(this.day)} <br><span style="font-size:1rem">06:00 UTC au lendemain 06:00 UTC</span></caption>
+                <caption>AUP extérieur LFMM du ${reverse_date(this.day)} <br><span style="font-size:1rem">06:00 UTC au lendemain 06:00 UTC</span></caption>
                 <thead><tr class="titre"><th class="space">RSA</th><th>Début</th><th>Fin</th><th>Lower Limit</th><th>Upper Limit</th></tr></thead>
                 <tbody>`.trimStart();
             this.result.forEach( rsa => {
@@ -88,7 +83,7 @@ class aup {
                 const fin = rsa["end"];
                 const lower_limit = rsa["lowerLimit"];
                 const upper_limit = rsa["upperLimit"];
-                if (name.substr(0,2) === "LI") {
+                if (name.substr(0,2) === "LI" || name.substr(0,5) === "LFT24") {
                     res += `<tr>`;
                     res += `<td>${name}</td><td><span style="font-size:1.2rem; font-weight:bold">${debut}</span>  (${date_debut})</td><td><span style="font-size:1.2rem; font-weight:bold">${fin}</span>  (${date_fin})</td><td>${lower_limit}</td><td>${upper_limit}</td>`
                     res += `</tr>`;
