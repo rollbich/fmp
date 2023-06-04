@@ -140,7 +140,7 @@ async function get_occ_b2b(day, zone, schema = undefined) {
 			let open = schema["tv_h"][tv].some( elem => {
 				const deb = elem[0];
 				const fin = elem[1];
-				if (time_min>= deb-graph_margin && time_min < fin+graph_margin) return true;
+				if (time_min>= deb && time_min < fin) return true;
 				return false;
 			});
 			

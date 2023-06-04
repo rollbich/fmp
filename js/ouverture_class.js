@@ -303,6 +303,9 @@ class ouverture extends schema_rea {
             console.log(d);
             const mv_b2b = new mv(d, z);
             let mv_4f = await mv_b2b.get_b2b_mvs();
+            let otmv_4f = await mv_b2b.get_b2b_otmvs();
+            console.log("otmv 4f");
+            console.log(otmv_4f);
             console.log("MV 4F");
             console.log(mv_4f);
     
@@ -371,8 +374,11 @@ class ouverture extends schema_rea {
                             }
                         });	
 
-                        let peak = o[tv][0][2];
-                        let sustain = o[tv][0][3];			
+                        //let peak = o[tv][0][2];
+                        //let sustain = o[tv][0][3];
+                        let full_tv = "LFM"+tv;
+                        let peak = otmv_4f[full_tv][0]["otmv"]["peak"]["threshold"];	
+                        let sustain = otmv_4f[full_tv][0]["otmv"]["sustained"]["threshold"];				
                         if (data.length === 0) { 
                             if (data_occ.length === 0) {
                                 document.getElementById('graph-container-h20').classList.add('off');
