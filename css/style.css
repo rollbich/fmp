@@ -420,7 +420,7 @@ caption {
 }
 
 table thead > tr.titre {
-  background-color: var(--table-titre-color);
+  background-color: var(--color-2019);
 }
 
 table tr:nth-child(odd) {
