@@ -62,7 +62,7 @@
 <h1>LFMM AUP</h1>
 <div id="help_frame" class="off">
 	<h2>Help</h2>
-    <p><span>Le bouton "AUP"</span> :<br>Il permet d'afficher un AUP passé ou du lendemain. Les données affichées sont celles récupérées à 16h24 pour le lendemain.</p>
+    <p><span>Le bouton "AUP"</span> :<br>Il permet d'afficher un AUP passé ou du lendemain. Les données affichées sont celles récupérées à 16h40 pour le lendemain.</p>
 	<button class="help_close_button pointer">Close</button>
 </div>
 <ul class="menu">

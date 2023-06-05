@@ -47,10 +47,9 @@ class aup {
 
     show_aup(containerId) {
         if (typeof this.result !== 'undefined') {
-            let res = "<div>";
+            let res = `<div><h2>AUP LFMM du ${reverse_date(this.day)} <br><span style='font-size:1rem'>06:00 UTC au lendemain 06:00 UTC</span></h2>`;
             res += `
-            <table class="sortable conf">
-                <caption>AUP LFMM du ${reverse_date(this.day)} <br><span style="font-size:1rem">06:00 UTC au lendemain 06:00 UTC</span></caption>
+            <table class="sortable">
                 <thead><tr class="titre"><th class="space">RSA</th><th>Début</th><th>Fin</th><th>Lower Limit</th><th>Upper Limit</th></tr></thead>
                 <tbody>`.trimStart();
             
@@ -71,8 +70,7 @@ class aup {
             res += '</tbody></table>';
 
             res += `
-            <table class="sortable conf">
-                <caption>AUP extérieur LFMM du ${reverse_date(this.day)} <br><span style="font-size:1rem">06:00 UTC au lendemain 06:00 UTC</span></caption>
+            <table class="sortable">
                 <thead><tr class="titre"><th class="space">RSA</th><th>Début</th><th>Fin</th><th>Lower Limit</th><th>Upper Limit</th></tr></thead>
                 <tbody>`.trimStart();
             this.result.forEach( rsa => {
@@ -97,3 +95,58 @@ class aup {
     }
 
 }
+
+const template = document.createElement('template');
+template.innerHTML = `
+  <style>
+    * {
+      font-size: 200%;
+    }
+
+    span {
+      width: 4rem;
+      display: inline-block;
+      text-align: center;
+    }
+
+    button {
+      width: 4rem;
+      height: 4rem;
+      border: none;
+      border-radius: 10px;
+      background-color: seagreen;
+      color: white;
+    }
+  </style>
+  <button id="dec">-</button>
+  <span id="count"></span>
+  <button id="inc">+</button>`;
+
+class myArea extends HTMLElement {
+  constructor() {
+    super();
+    this.count = 0;
+    this.attachShadow({ mode: 'open' });
+  }
+
+  connectedCallback() {
+    this.shadowRoot.appendChild(template.content.cloneNode(true));
+    this.shadowRoot.getElementById('inc').onclick = () => this.inc();
+    this.shadowRoot.getElementById('dec').onclick = () => this.dec();
+    this.update(this.count);
+  }
+
+  inc() {
+    this.update(++this.count);
+  }
+
+  dec() {
+    this.update(--this.count);
+  }
+
+  update(count) {
+    this.shadowRoot.getElementById('count').innerHTML = count;
+  }
+}
+
+customElements.define('area', myArea);
