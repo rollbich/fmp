@@ -70,8 +70,9 @@
 				let end_day = $('end').value; // yyyy-mm-dd
 				let sel_percent = parseInt($('selection').value);
 				depassement = new overload('result', "H20", start_day, end_day, zone, sel_percent);
+				show_popup('Patientez 5s','Chargement en cours');
 				await depassement.init();
-				await depassement.init_MV();
+				document.querySelector('.popup-close').click();
 				depassement.show_depassement_capa();
 			});
 
@@ -84,9 +85,8 @@
 				let end_day = $('end').value; // yyyy-mm-dd
 				let sel_percent = parseInt($('selection').value);
 				depassement = new overload('result', "peak", start_day, end_day, zone, sel_percent);
-				show_popup('Patientez','Chargement en cours');
+				show_popup('Patientez 5s','Chargement en cours');
 				await depassement.init();
-				await depassement.init_otmv();
 				document.querySelector('.popup-close').click();
 				depassement.show_depassement_capa();
 			});

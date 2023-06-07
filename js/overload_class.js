@@ -28,21 +28,11 @@ class overload {
     async init() {
         const nom_fichier = "../b2b/MV.json";
         this.mv_json = await loadJson(nom_fichier);
-    }
-
-    async init_MV() {
-        const mv_b2b = new mv(convertDate(new Date()), this.z);
-        this.mv_b2b_4f = await mv_b2b.get_b2b_mvs();
-        if (this.otmv_b2b_4f === null) show_popup('Erreur connexion B2B', "MVs non récupérées");
-    }
-
-    async init_otmv() {
-        await this.init_MV();
-        const mv_b2b = new mv(convertDate(new Date()), this.z);
-        this.otmv_b2b_4f = await mv_b2b.get_b2b_otmvs();
+        this.mv_b2b = new mv(convertDate(new Date()), this.z);
+        this.mv_b2b_4f = await this.mv_b2b.get_b2b_mvs();
+        if (this.mv_b2b_4f === null) show_popup('Erreur connexion B2B', "MVs non récupérées");
+        this.otmv_b2b_4f = await this.mv_b2b.get_b2b_otmvs();
         if (this.otmv_b2b_4f === null) show_popup('Erreur connexion B2B', "OTMVs non récupérées");
-        console.log("otmv_b2b_4f");
-        console.log(this.otmv_b2b_4f);
     }
 
     /*  ----------------------------------------------------------------------------------
