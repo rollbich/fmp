@@ -71,7 +71,24 @@
 				let sel_percent = parseInt($('selection').value);
 				depassement = new overload('result', "H20", start_day, end_day, zone, sel_percent);
 				await depassement.init();
-				depassement.show_capa_H20();
+				await depassement.init_MV();
+				depassement.show_depassement_capa();
+			});
+
+			$('bouton_peak').addEventListener('click', async e => {
+				$('graph-container-h20').classList.add('off');
+				$('graph-container-occ').classList.add('off');
+				result_peak = {};
+				let zone = $('zone').value;
+				let start_day = $('start').value; // yyyy-mm-dd
+				let end_day = $('end').value; // yyyy-mm-dd
+				let sel_percent = parseInt($('selection').value);
+				depassement = new overload('result', "peak", start_day, end_day, zone, sel_percent);
+				show_popup('Patientez','Chargement en cours');
+				await depassement.init();
+				await depassement.init_otmv();
+				document.querySelector('.popup-close').click();
+				depassement.show_depassement_capa();
 			});
 			
 			$('bouton_export').addEventListener('click', e => {
@@ -106,7 +123,8 @@
 	<button class="help_close_button pointer">Close</button>
 </div>
 <ul class="menu">
-	<li id="bouton_capa" class="pointer"><span>Overload</span></li>
+	<li id="bouton_capa" class="pointer"><span>Overload MV</span></li>
+	<li id="bouton_peak" class="pointer"><span>Overload Peak</span></li>
 	<li id="bouton_export" class="pointer"><span>XLS Export</span></li>
 	<li><button class="help_button">Help</button></li>
 	<div class="animation start-home"></div>
