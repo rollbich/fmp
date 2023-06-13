@@ -301,13 +301,26 @@ class ouverture extends schema_rea {
             const z = this.zone === "AE" ? "est" : "ouest";
             const d = convertDate(new Date);
             console.log(d);
+            /*
             const mv_b2b = new mv(d, z);
             let mv_4f = await mv_b2b.get_b2b_mvs();
             let otmv_4f = await mv_b2b.get_b2b_otmvs();
+            */
+            const dd = this.day.split("-");
+            const rd = remove_hyphen_date(this.day);
+            let year = dd[0];
+            let month = dd[1];
+            let file_name;
+            file_name = `../b2b/json/${year}/${month}/${rd}-mv_otmv-${z}.json`;
+            let mv_otmv = await loadJson(file_name);
+            if (typeof mv_otmv === 'undefined') {
+                file_name = `../b2b/json/2023/06/20230601-mv_otmv-${z}.json`;
+                mv_otmv = await loadJson(file_name);
+            }
             console.log("otmv 4f");
-            console.log(otmv_4f);
+            console.log(mv_otmv["OTMV"]);
             console.log("MV 4F");
-            console.log(mv_4f);
+            console.log(mv_otmv["MV"]);
     
             for (const td of tds) {
                 let deb = td.dataset.deb;
@@ -377,8 +390,8 @@ class ouverture extends schema_rea {
                         //let peak = o[tv][0][2];
                         //let sustain = o[tv][0][3];
                         let full_tv = "LFM"+tv;
-                        let peak = otmv_4f[full_tv][0]["otmv"]["peak"]["threshold"];	
-                        let sustain = otmv_4f[full_tv][0]["otmv"]["sustained"]["threshold"];				
+                        let peak = mv_otmv["OTMV"][full_tv][0]["otmv"]["peak"]["threshold"];	
+                        let sustain = mv_otmv["OTMV"][full_tv][0]["otmv"]["sustained"]["threshold"];				
                         if (data.length === 0) { 
                             if (data_occ.length === 0) {
                                 document.getElementById('graph-container-h20').classList.add('off');
@@ -394,7 +407,7 @@ class ouverture extends schema_rea {
                             document.getElementById('graph-container-h20').classList.remove('off');
                             document.getElementById('graph-container-occ').classList.remove('off');
                             const full_tv = "LFM"+tv;
-                            let mv_now = mv_4f[full_tv][0]["capacity"];
+                            let mv_now = mv_otmv["MV"][full_tv][0]["capacity"];
                             let mv_ods = h[tv][0][2];
                             show_h20_graph('graph_h20', dataAxis, data, mv_now, mv_ods, tv, "", data_reg_h20, data_reg_h20_delay, data_reg_h20_reason);
                             show_occ_graph('graph_occ', dataAxis_occ, data_occ, peak, sustain, tv, "", data_reg_occ, data_reg_occ_delay);

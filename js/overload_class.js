@@ -28,11 +28,26 @@ class overload {
     async init() {
         const nom_fichier = "../b2b/MV.json";
         this.mv_json = await loadJson(nom_fichier);
+        /*
         this.mv_b2b = new mv(convertDate(new Date()), this.z);
         this.mv_b2b_4f = await this.mv_b2b.get_b2b_mvs();
         if (this.mv_b2b_4f === null) show_popup('Erreur connexion B2B', "MVs non récupérées");
         this.otmv_b2b_4f = await this.mv_b2b.get_b2b_otmvs();
         if (this.otmv_b2b_4f === null) show_popup('Erreur connexion B2B', "OTMVs non récupérées");
+        */
+        const dd = this.start_day.split("-");
+        const rd = remove_hyphen_date(this.start_day);
+        let year = dd[0];
+        let month = dd[1];
+        let file_name;
+        file_name = `../b2b/json/${year}/${month}/${rd}-mv_otmv-${this.z}.json`;
+        let mv_otmv = await loadJson(file_name);
+        if (typeof mv_otmv === 'undefined') {
+            file_name = `../b2b/json/2023/06/20230601-mv_otmv-${z}.json`;
+            mv_otmv = await loadJson(file_name);
+        }
+        this.mv_b2b_4f = mv_otmv["MV"];
+        this.otmv_b2b_4f = mv_otmv["OTMV"];
     }
 
     /*  ----------------------------------------------------------------------------------
