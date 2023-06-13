@@ -68,8 +68,6 @@
 					let zone = $('zone').value;
 					let day = $('start').value;
 					const simu = new simu_capa("feuille_capa_simu", day, zone);
-					await simu.init();
-					simu.show_simu_capa();
 				});
 			}
 

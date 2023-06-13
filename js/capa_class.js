@@ -184,28 +184,123 @@ class capa {
 		const effectif_total_Jx_15mn = [];
 		const effectif_Jx_15mn = {};
 		const vacs = ["JX","J1", "J3", "S2", "J2", "S1"];
+
+
 		
 		for(var i=0;i<96;i++) {
 			vacs.forEach(vacation => {
 				const cds = pc[vacation]["nbcds"];
+				let dispoA = Math.min(Math.floor(pc[vacation]["nbpc"]/2), Math.floor((pc[vacation]["BV"]+pc[vacation]["renfort"]-cds-pc[vacation]["ROinduit"])/2));
+				let dispoB = Math.min(Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2, Math.floor((pc[vacation]["BV"]+pc[vacation]["renfort"]-cds-pc[vacation]["ROinduit"])/2)+(pc[vacation]["BV"]+pc[vacation]["renfort"]-cds-pc[vacation]["ROinduit"])%2);
+
+				if (vacation === "S1" && this.zone === "est" && this.saison === "ete") {
+					switch (pc["S1"]["nbpc"]) {
+						case 6:
+							dispoA = 3;
+							dispoB = 3;
+								break;
+						case 7:
+							dispoA = 3;
+							dispoB = 4;
+							break;
+						case 8:
+							dispoA = 3;
+							dispoB = 5;
+							break;
+						case 9:
+							dispoA = 3;
+							dispoB = 6;
+							break;
+						case 10:
+							dispoA = 3;
+							dispoB = 7;
+							break;
+						case 11:
+							dispoA = 4;
+							dispoB = 7;
+							break;
+						case 12:
+							dispoA = 4;
+							dispoB = 8;
+							break;
+						case 13:
+							dispoA = 4;
+							dispoB = 9;
+							break;
+					}
+				}
+		
+				if (vacation === "S1" && this.zone === "ouest" && this.saison === "ete") {
+					let d = new Date(this.day);
+					let jour_sem = d.getDay();
+					if (jour_sem === 2 || jour_sem === 3 || jour_sem === 4) {
+						dispoA = 0;
+						dispoB = pc["S1"]["nbpc"];
+					} else {
+						switch (pc["S1"]["nbpc"]) {
+							case 6:
+								dispoA = 3;
+								dispoB = 3;
+								break;
+							case 7:
+								dispoA = 3;
+								dispoB = 4;
+								break;
+							case 8:
+								dispoA = 3;
+								dispoB = 5;
+								break;
+							case 9:
+								dispoA = 3;
+								dispoB = 6;
+								break;
+							case 10:
+								dispoA = 3;
+								dispoB = 7;
+								break;
+							case 11:
+								dispoA = 4;
+								dispoB = 7;
+								break;
+							case 12:
+								dispoA = 4;
+								dispoB = 8;
+								break;
+							case 13:
+								dispoA = 4;
+								dispoB = 9;
+								break;
+						}
+					}
+				}
+
 				// Ajout du CDS qui bosse sur secteur
 				if (this.tour_utc[vacation][i][1] === 1) nb_pc += cds;
 				// Ajout de la sous-vacation A
 				if (this.tour_utc[vacation][i][2] === 1) {
 					if (noBV === false) {
-						nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2), (Math.floor((pc[vacation]["BV"]+pc[vacation]["renfort"]-cds-pc[vacation]["ROinduit"])/2)));	
+						nb_pc += dispoA;
 					} else {
-						nb_pc += Math.floor(pc[vacation]["nbpc"]/2);
+						if (this.saison === "ete") {
+							nb_pc += dispoA;
+						} else {
+							nb_pc += Math.floor(pc[vacation]["nbpc"]/2);
+						}
 					}
 				}
 				// Ajout de la sous-vacation B
 				if (this.tour_utc[vacation][i][3] === 1) {
 					if (noBV === false) {
-						nb_pc += Math.min(Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2, Math.floor((pc[vacation]["BV"]+pc[vacation]["renfort"]-cds-pc[vacation]["ROinduit"])/2)+(pc[vacation]["BV"]+pc[vacation]["renfort"]-cds-pc[vacation]["ROinduit"])%2);
+						nb_pc += dispoB;
 					} else {
-						nb_pc += Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2;
+						if (this.saison === "ete") {
+							nb_pc += dispoB;
+						} else {
+							nb_pc += Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2;
+						}
 					}
 				}
+				console.log("Vac: "+vacation+"   heure: "+get_time(i)+"  nbpc: "+nb_pc);
 			})
 			const cds = pc["N"]["nbcds"];
 			if (this.tour_utc["N"][i][1] === 1 && i>48) nb_pc += cds; // cds qui bosse sur secteur
@@ -653,7 +748,93 @@ class feuille_capa extends capa {
 			});
 		});
 	}
-		
+	
+	check_S1() {
+		let dispoA = null;
+		let dispoB = null;
+		if (this.zone === "est" && this.saison === "ete") {
+			switch (this.pc_vac["S1"]["nbpc"]) {
+				case 6:
+					dispoA = 3;
+					dispoB = 3;
+				  	break;
+				case 7:
+					dispoA = 3;
+					dispoB = 4;
+					break;
+				case 8:
+					dispoA = 3;
+					dispoB = 5;
+					break;
+				case 9:
+					dispoA = 3;
+					dispoB = 6;
+					break;
+				case 10:
+					dispoA = 3;
+					dispoB = 7;
+					break;
+				case 11:
+					dispoA = 4;
+					dispoB = 7;
+					break;
+				case 12:
+					dispoA = 4;
+					dispoB = 8;
+					break;
+				case 13:
+					dispoA = 4;
+					dispoB = 9;
+					break;
+			}
+		}
+
+		if (this.zone === "ouest" && this.saison === "ete") {
+			let d = new Date(this.day);
+			let jour_sem = d.getDay();
+			if (jour_sem === 2 || jour_sem === 3 || jour_sem === 4) {
+				dispoA = 0;
+				dispoB = this.pc_vac["S1"]["nbpc"];
+			} else {
+				switch (this.pc_vac["S1"]["nbpc"]) {
+					case 6:
+						dispoA = 3;
+						dispoB = 3;
+						break;
+					case 7:
+						dispoA = 3;
+						dispoB = 4;
+						break;
+					case 8:
+						dispoA = 3;
+						dispoB = 5;
+						break;
+					case 9:
+						dispoA = 3;
+						dispoB = 6;
+						break;
+					case 10:
+						dispoA = 3;
+						dispoB = 7;
+						break;
+					case 11:
+						dispoA = 4;
+						dispoB = 7;
+						break;
+					case 12:
+						dispoA = 4;
+						dispoB = 8;
+						break;
+					case 13:
+						dispoA = 4;
+						dispoB = 9;
+						break;
+				}
+			}
+		}
+		return {"S1A": dispoA, "S1B": dispoB}
+	}
+
 	// Fabrique la ligne du tour de service
 	affiche_vac(vac) {
 		let res1 = "", res2 = "", res3 = "";
@@ -663,13 +844,14 @@ class feuille_capa extends capa {
 		let dispoA = Math.min(Math.floor(this.pc_vac[vac]["nbpc"]/2), Math.floor((this.pc_vac[vac]["BV"]+this.pc_vac[vac]["renfort"]-cds-this.pc_vac[vac]["ROinduit"])/2));
 		let dispoB = Math.min(Math.floor(this.pc_vac[vac]["nbpc"]/2)+(this.pc_vac[vac]["nbpc"])%2, Math.floor((this.pc_vac[vac]["BV"]+this.pc_vac[vac]["renfort"]-cds-this.pc_vac[vac]["ROinduit"])/2)+(this.pc_vac[vac]["BV"]+this.pc_vac[vac]["renfort"]-cds-this.pc_vac[vac]["ROinduit"])%2);
 		
-		/*
-		if (vac === "JX") {
-			let temp = dispoA;
-			dispoA = dispoB;
-			dispoB = temp;
+		let S1; 
+		if (vac === "S1") {
+			S1 = this.check_S1();
+			if (S1.S1A !== null && S1.S1B !== null) {
+				dispoA = S1.S1A;
+				dispoB = S1.S1B;
+			}
 		}
-		*/
 
 		// comp : { [ ["00:00", 0, 3, 4], ["hh:mm", cds, A, B], ... ] }
 		const vacation = (vac === "N-1") ? "N" : vac;
