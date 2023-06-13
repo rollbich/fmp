@@ -43,7 +43,7 @@ class overload {
         file_name = `../b2b/json/${year}/${month}/${rd}-mv_otmv-${this.z}.json`;
         let mv_otmv = await loadJson(file_name);
         if (typeof mv_otmv === 'undefined') {
-            file_name = `../b2b/json/2023/06/20230601-mv_otmv-${z}.json`;
+            file_name = `../b2b/json/2023/06/20230601-mv_otmv-${this.z}.json`;
             mv_otmv = await loadJson(file_name);
         }
         this.mv_b2b_4f = mv_otmv["MV"];
