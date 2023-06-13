@@ -55,6 +55,6 @@ function get_mv_otmv($plan) {
 $res_est = get_mv_otmv($tv_est);
 write_json($res_est, "est");
 $res_west = get_mv_otmv($tv_west);
-write_json($res_west, "west");
+write_json($res_west, "ouest");
 
 ?>
