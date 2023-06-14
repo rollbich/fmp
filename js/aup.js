@@ -61,7 +61,28 @@ class aup {
                 const fin = rsa["end"];
                 const lower_limit = rsa["lowerLimit"];
                 const upper_limit = rsa["upperLimit"];
-                if (name.substr(0,2) === "LF" && name.substr(0,5) !== "LFT24") {
+                if (name.substr(0,5) === "LFD54") {
+                    res += `<tr>`;
+                    res += `<td>${name}</td><td><span style="font-size:1.2rem; font-weight:bold">${debut}</span>  (${date_debut})</td><td><span style="font-size:1.2rem; font-weight:bold">${fin}</span>  (${date_fin})</td><td>${lower_limit}</td><td>${upper_limit}</td>`
+                    res += `</tr>`;
+                }
+            })
+            res += '</tbody></table>';
+            
+            res += `
+            <table class="sortable">
+                <thead><tr class="titre"><th class="space">RSA</th><th>Début</th><th>Fin</th><th>Lower Limit</th><th>Upper Limit</th></tr></thead>
+                <tbody>`.trimStart();
+            
+            this.result.forEach( rsa => {
+                const name = rsa["designator"]; 
+                const date_debut = rsa["beginDate"];
+                const debut = rsa["begin"];
+                const date_fin = rsa["endDate"];
+                const fin = rsa["end"];
+                const lower_limit = rsa["lowerLimit"];
+                const upper_limit = rsa["upperLimit"];
+                if (name.substr(0,2) === "LF" && name.substr(0,5) !== "LFT24" && name.substr(0,5) !== "LFD54") {
                     res += `<tr>`;
                     res += `<td>${name}</td><td><span style="font-size:1.2rem; font-weight:bold">${debut}</span>  (${date_debut})</td><td><span style="font-size:1.2rem; font-weight:bold">${fin}</span>  (${date_fin})</td><td>${lower_limit}</td><td>${upper_limit}</td>`
                     res += `</tr>`;
@@ -95,58 +116,3 @@ class aup {
     }
 
 }
-
-const template = document.createElement('template');
-template.innerHTML = `
-  <style>
-    * {
-      font-size: 200%;
-    }
-
-    span {
-      width: 4rem;
-      display: inline-block;
-      text-align: center;
-    }
-
-    button {
-      width: 4rem;
-      height: 4rem;
-      border: none;
-      border-radius: 10px;
-      background-color: seagreen;
-      color: white;
-    }
-  </style>
-  <button id="dec">-</button>
-  <span id="count"></span>
-  <button id="inc">+</button>`;
-
-class myArea extends HTMLElement {
-  constructor() {
-    super();
-    this.count = 0;
-    this.attachShadow({ mode: 'open' });
-  }
-
-  connectedCallback() {
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
-    this.shadowRoot.getElementById('inc').onclick = () => this.inc();
-    this.shadowRoot.getElementById('dec').onclick = () => this.dec();
-    this.update(this.count);
-  }
-
-  inc() {
-    this.update(++this.count);
-  }
-
-  dec() {
-    this.update(--this.count);
-  }
-
-  update(count) {
-    this.shadowRoot.getElementById('count').innerHTML = count;
-  }
-}
-
-customElements.define('area', myArea);
