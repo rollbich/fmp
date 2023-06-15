@@ -5,9 +5,10 @@ class visu {
             @param {string} day - "yyyy-mm-dd"
             @param {string} zone - "AE ou "AW"
     ----------------------------------------------------------------- */
-    constructor(day, zone, count_regul = true) {
+    constructor(day, zone, show_regul = true) {
         this.day = day;
         this.zone = zone;
+        this.show_regul = show_regul;
         //this.container = $(containerId);
         this.h = {};
         this.o = {};
@@ -114,11 +115,26 @@ class visu {
                 const reg = new regul(this.day, this.zone, false);
                 await reg.init();
                 const regbytv = reg.get_regbytv();
-
+                /*
                 const z = this.zone === "AE" ? "est" : "ouest";
                 const d = convertDate(new Date);
                 const mv_b2b = new mv(d, z);
                 let mv_4f = await mv_b2b.get_b2b_mvs();
+                */
+                const z = this.zone === "AE" ? "est" : "ouest";
+                const dd = this.day.split("-");
+                const rd = remove_hyphen_date(this.day);
+                let year = dd[0];
+                let month = dd[1];
+                let file_name;
+                file_name = `../b2b/json/${year}/${month}/${rd}-mv_otmv-${z}.json`;
+                let mv_otmv = await loadJson(file_name);
+                if (typeof mv_otmv === 'undefined') {
+                    file_name = `../b2b/json/2023/06/20230601-mv_otmv-${z}.json`;
+                    mv_otmv = await loadJson(file_name);
+                }
+                this.mv_b2b_4f = mv_otmv["MV"];
+                this.otmv_b2b_4f = mv_otmv["OTMV"];
 
                 let data_reg_h20 = [];
                 let data_reg_occ = [];
@@ -176,13 +192,16 @@ class visu {
                         }
                     });	
                     
-                    let peak = this.o[time][tv][0][2];
-                    let sustain = this.o[time][tv][0][3];			
+                    //let peak = this.o[time][tv][0][2];
+                    //let sustain = this.o[time][tv][0][3];			
+                    let full_tv = "LFM"+tv;
+                    let peak = this.otmv_b2b_4f[full_tv][0]["otmv"]["peak"]["threshold"];	
+                    let sustain = this.otmv_b2b_4f[full_tv][0]["otmv"]["sustained"]["threshold"];	
 
                     document.getElementById('graph-container-h20').classList.remove('off');
                     document.getElementById('graph-container-occ').classList.remove('off');
-                    const full_tv = "LFM"+tv;
-                    let mv = mv_4f[full_tv][0]["capacity"];
+
+                    let mv = this.mv_b2b_4f[full_tv][0]["capacity"];
                     let mv_ods = this.h[time][tv][0][2];
                     show_h20_graph('graph_h20', dataAxis, data, mv, mv_ods, tv, full_time, data_reg_h20, data_reg_h20_delay, data_reg_h20_reason);
                     show_occ_graph('graph_occ', dataAxis_occ, data_occ, peak, sustain, tv, full_time, data_reg_occ, data_reg_occ_delay);
