@@ -69,7 +69,7 @@
 <div id="help_frame" class="off">
 	<h2>Help</h2>
 	<p><span>Save NMIR Reg</span> :<br>Sauvegarde les données Reguls B2B à partir d'un fichier NMIR (with_Applied_Rate) Regulations.csv placé dans admin/nmir/reg</p>
-	<p><span>H20/Occ D-1</span> :<br>Récupère en B2B les données H20/Occ de la veille</p>
+	<p><span>H20/Occ D-1</span> :<br>Récupère en B2B les données H20/Occ de la veille de la date sélectée</p>
 	<p><span>Confs D-1</span> :<br>Récupère en B2B les données Confs de la veille</p>
 	<p><span>Flights D-1</span> :<br>Récupère en B2B les données LOAD, REG, REG_DEMAND de LFMMCTA, CTAE, CTAW et la liste des vols de RAE et RAW de la veille</p>
 	<button class="help_close_button pointer">Close</button>
@@ -84,12 +84,6 @@
 		<button id="arrow_left"><</button>
 		<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="2021-09-14" max="2030-12-31">
 		<button id="arrow_right">></button>
-	</li>
-	<li class="feuille">
-	  <select id="zone" class="select">
-		<option selected value="AE">Zone EST</option>
-		<option value="AW">Zone WEST</option>
-	  </select>
 	</li>
 	<li class="feuille"><button class="help_button">Help</button></li>
 </ul>
