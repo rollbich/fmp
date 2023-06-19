@@ -43,8 +43,12 @@ class overload {
         file_name = `../b2b/json/${year}/${month}/${rd}-mv_otmv-${this.z}.json`;
         let mv_otmv = await loadJson(file_name);
         if (typeof mv_otmv === 'undefined') {
-            file_name = `../b2b/json/2023/06/20230601-mv_otmv-${this.z}.json`;
+            const default_date_MV_json = await loadJson("../default_date_MV_OTMV.json");
+            const ddmv = remove_hyphen_date(default_date_MV_json['date']);
+            const default_date_MV = reverse_date(default_date_MV_json['date']);
+            file_name = `../b2b/json/2023/06/${ddmv}-mv_otmv-${this.z}.json`;
             mv_otmv = await loadJson(file_name);
+            show_popup(`MV/OTMV du jour indisponibles`, `Date des MV/OTMV : ${default_date_MV}`);
         }
         this.mv_b2b_4f = mv_otmv["MV"];
         this.otmv_b2b_4f = mv_otmv["OTMV"];
