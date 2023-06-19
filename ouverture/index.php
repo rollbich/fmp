@@ -88,17 +88,6 @@
 				Object.keys(confs_supp_ouest).forEach( elem => {
 					conf_tot["ouest"][elem] = {...conf_tot["ouest"][elem], ...confs_supp_ouest[elem]}
 				})
-
-				console.log("Confs existantes");
-				console.log(confs_exist);
-				console.log("Confs supp est");
-				console.log(confs_supp_est);
-				console.log("Confs supp west");
-				console.log(confs_supp_ouest);
-				console.log("Confs totale mergée est");
-				console.log(conf_tot["est"]);
-				console.log("Confs totale mergée ouest");
-				console.log(conf_tot["ouest"]);
 				return conf_tot;
 			}
 
