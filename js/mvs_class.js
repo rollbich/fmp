@@ -15,9 +15,9 @@ class mv {
     }
 
     async init_otmv() {
-        show_popup("Chargement","Patientez 5s...")
+        //show_popup("Chargement","Patientez 5s...")
         this.result = await this.get_b2b_otmvs();
-		document.querySelector('.popup-close').click();
+		//document.querySelector('.popup-close').click();
         console.log(this.result);
         this.show_existing_otmvs("result");
     }
