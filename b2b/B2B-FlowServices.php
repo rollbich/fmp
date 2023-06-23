@@ -556,13 +556,74 @@ class FlowServices extends Service {
         }
     }
 
+    /* -----------------------------------------------------------------------------------------------------------------------------------------------
+        Récupère les OTMVs de plusieurs TVs
+        @param {array} $tvs - ex : ['LFMAB',LFMGY] 
+        @param {string} $day - "YYYY-MM-DD"    (ex : gmdate('Y-m-d', strtotime("today"));)
+            "today" = minuit local = 22h00 UTC la veille(=> données de la veille)
+
+            __doRequest(string $request , string $location , string $action , int $version [, int $one_way = 0 ] );
+
+            $request = The XML Soap enveloppe
+            $location = The url to the access point.
+            $action = the soap action to be performed. This is defined in the wsdl file and can be in the form of a single form or an url.
+            $version = 1 : SOAP_1_1 =  content headers (Content-Type: text/xml; charset=utf-8␍)
+            $version = 2 : SOAP_1_2 = content headers (Content-Type: application/soap+xml; charset=utf-8; action="somesoapaction defined in $action")
+                    
+    --------------------------------------------------------------------------------------------------------------------------------------------------*/
+    public function get_otmv_tvs(array $tvs, string $day, string $version) {
+        
+        $heure = gmdate("Y-m-d H:i:s");
+        
+        $xml_payload = '<?xml version="1.0" encoding="UTF-8"?>
+        <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="eurocontrol/cfmu/b2b/FlowServices">
+        <SOAP-ENV:Body>
+        <ns1:OTMVPlanRetrievalRequest>
+            <sendTime>'.$heure.'</sendTime>
+            <dataset><type>OPERATIONAL</type></dataset>
+            <day>'.$day.'</day>
+            <otmvsWithDuration>';
+            foreach($tvs as $tv) {
+                $xml_payload = $xml_payload.'<item><trafficVolume>'.$tv.'</trafficVolume></item>';        
+            }
+            $xml_payload = $xml_payload.'</otmvsWithDuration>
+        </ns1:OTMVPlanRetrievalRequest>
+        </SOAP-ENV:Body>
+        </SOAP-ENV:Envelope>';
+                      
+        try {
+            $location = "https://www.b2b.nm.eurocontrol.int/B2B_OPS/gateway/spec/".$version;
+            $xml_string = $this->getSoapClient()->__doRequest($xml_payload, $location, 'retrieveOTMVPlan', 2);
+            $xml = new \SimpleXMLElement($xml_string);
+            $status = $xml->xpath('//status')[0];
+            
+            if ($status !== "OK") {
+                if (isset($xml->reason)) {
+                    $reason = $xml->xpath('//reason')[0];
+                    $erreur = $this->getFullErrorMessage("Erreur get_otmv_tvs : ".$reason);
+                    echo $erreur."<br>\n";
+                    $this->send_mail($erreur);
+                }
+            }
+            
+            return $xml_string;
+            }
+
+        catch (Exception $e) {
+            echo 'Exception reçue get_otmv_tv: ',  $e->getMessage(), "<br>\n";
+            $erreur = $this->getFullErrorMessage("Erreur get_otmv_plan_tvs");
+            echo $erreur."<br>\n";
+            $this->send_mail($erreur);
+        }
+    }
+
     /* -------------------------------------------------------------------------------------------------------
         Récupère les OTMV d'un array de TV
         @param {array} $tvs 
         @param {string} $day - "YYYY-MM-DD"    (ex : gmdate('Y-m-d', strtotime("today"));)
             "today" = minuit local = 22h00 UTC la veille(=> données de la veille)
+        @param {string} $version : "26.0.0" (transmis par $soapClient->getVersion())
         @return {
-            "tv": [ {période 1}, ..., {période n}],
             "LFMGY": [{
                 "applicabilityPeriod":{"wef":"2023-04-05 00:00","unt":"2023-04-06 00:00"},
                 "dataSource":"AIRSPACE",
@@ -572,26 +633,64 @@ class FlowServices extends Service {
                     "peak":{"threshold":17},
                     "sustained":{"threshold":13,"crossingOccurrences":99,"elapsed":"0139"}
                 }
+            }],
+            "tv": [ {période 1}, ..., {période n}],
+            "LFMAB":[{
+                "applicabilityPeriod":{
+                    "wef":"2023-06-21 00:00",
+                    "unt":"2023-06-22 00:00"
+                },
+                "dataSource":"AIRSPACE",
+                "otmv":{
+                    "trafficVolume":"LFMAB",
+                    "otmvDuration":"0011",
+                    "peak":{"threshold":"17"},
+                    "sustained":{"threshold":"13","crossingOccurrences":"99","elapsed":"0139"}
+                }
             }]
         }
     ----------------------------------------------------------------------------------------------------------*/
-    public function get_otmv_plan(array $tvs, string $day) {
-           
+    public function get_otmv_plan(array $tvs, string $day, $version) {
+         
         $result = new stdClass();
-
+        
         try {
-            foreach ($tvs as $tv) {
-                $output = $this->get_otmv_tv($tv, $day);
+            $xml_string = $this->get_otmv_tvs($tvs, $day, $version);
+            $response = preg_replace("/(<\/?)(\w+):([^>]*>)/", "$1$2$3", $xml_string);
+            $xml = new SimpleXMLElement($response);
+            $body = $xml->xpath('//fwOTMVPlanRetrievalReply')[0];
+            // Transformation en std Object
+            $res = json_decode(json_encode((array)$body));
+            $arr = $res->data->plans->tvsOTMVs->item;
+            // si plusieurs tvs alors item est un array, sinon un objet
+            if (is_array($arr)) {
+                foreach ($arr as $item) {
+                    $tv = $item->key;
+                    $result->$tv = new stdClass();
+                    $r = $item->value->item;
+                    if (is_array($r)) { $r = $r[0]; } // on prend la première duration s'il y en a plusieurs
+                    $rr = $r->value->nmSchedule->item;
+                    // Si plusieurs tranches horaires alors c'est déjà un array sinon on le place dans un array
+                    if (is_array($rr)) {
+                        $result->$tv = $rr;
+                    } else {
+                    $result->$tv = [$rr];
+                    }
+                }
+            } else {
+                $tv = $arr->key;
                 $result->$tv = new stdClass();
-                $r = $output->data->plans->tvsOTMVs->item->value->item;
+                $r = $arr->value->item;
                 if (is_array($r)) { $r = $r[0]; } // on prend la première duration s'il y en a plusieurs
                 $rr = $r->value->nmSchedule->item;
+                // Si plusieurs tranches horaires alors c'est déjà un array sinon on le place dans un array
                 if (is_array($rr)) {
                     $result->$tv = $rr;
                 } else {
                     $result->$tv = [$rr];
                 }
             }
+            echo "<br><br>";
             return $result;
         }
 
