@@ -690,7 +690,6 @@ class FlowServices extends Service {
                     $result->$tv = [$rr];
                 }
             }
-            echo "<br><br>";
             return $result;
         }
 
