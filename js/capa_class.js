@@ -36,9 +36,37 @@ class capa {
             @param {object} update	- {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0, "J1BV":0, "J3BV":0,...}
                                     - Nombre de pc à retrancher à l'effectif OLAF ou au BV
 			@param {boolean} noBV	- false pour ne pas prendre en compte les BV
-            @returns {object} 
-                { "pc_vac": {"vac": {"nbpc": nbre_pc, "BV", "RO"}, ...}, 
-                "pc_total_dispo_15mn":[ ["hh:mm", nb_pc_dispo], [...], ... ] }
+            @returns {object} : 
+			  { "pc_vac": {
+					"JX" : {
+						"JXA-ete": {"nombre": nb, "nombre_det": nb, "agent": { "nom1" : "détaché", "nom2": "salle"}}, 
+						"JXB-ete": {...}, 
+						"RDxxx": {...},
+						"nbpc": nbre_pc,
+						"nbcds": nbre_cds,
+						"renfort": nbre_renfort,
+						"BV": BV,
+						"RO": nbre_RO,
+						"RO induit": nbre_induit,
+					},
+					"vac": { // inclu "N-1"
+						"nbpc": nbre_pc,
+						"nbcds": nbre_cds,
+						"renfort": nbre_renfort,
+						"BV": BV,
+						"RO": nbre_RO,
+						"RO induit": nbre_induit,
+						"teamData": {...},
+						"userList": {...},
+						"aTeamComposition": {...},
+						"html": {...}
+					}, 
+					...
+				}, 
+                "pc_total_dispo_15mn": [ ["hh:mm", nb_pc_dispo], [...], ... ],
+				"pc_total_RD_15mn": [ ["hh:mm", nb_pc_dispo], [...], ... ],
+				"pc_instru_15mn": [ ["hh:mm", nb_pc_dispo], [...], ... ]
+			  }
     ------------------------------------------------------------------------------------------------------------------- */
     async get_nbpc_dispo(update = {"JX":0,"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0, "JXBV":0,"J1BV":0, "J3BV":0, "S2BV":0, "J2BV":0, "S1BV":0, "NBV":0, "N-1BV":0}, noBV = false) {
         if (this.day === null) throw new Error("Le jour est indéfini");
@@ -59,8 +87,8 @@ class capa {
 			pc["JX"] contient les JX mais aussi les RD bleus
 			pc["JX"] = {
 				"JXA": {
-					nombre: 2,
-					agent: {
+					"nombre": 2,
+					"agent": {
 						"Jean Coco": "détaché",
 						"Moustache": "salle"
 					}
@@ -81,9 +109,9 @@ class capa {
 			for (let cle in Renfort[renf1]) {
 				const obj = Renfort[renf1][cle];
 				let label = obj["contextmenutype"]["label"];
-				let type_renfort = "";
 				let jx_type = "";
 				let rd_type = "";
+				let type_renfort = "";
 				// JXA & JXB salle
 				// "RD bleu JXa-ms" - "RD bleu J1-ms" - "RD bleu J3b-ms" + Est only "RD bleu S1b-ms" + West only "RD bleu S1a-ms"
 				// "RD bleu J3a-ete" - "RD bleu S1b-ete" - "RD bleu J1-ete" + Est only "RD bleu JXb-ete" + West only "RD bleu J3b-ete" 
@@ -176,17 +204,15 @@ class capa {
 		let nb_pc = 0;
 		let pcs = [];
 		const in15mn = []; // nbre de pc instruction par 15 mn
-		// effectif_Jx_15mn = {
-		//	"JXA": [],
-		//	"JXB": []
-		//	...
+		// effectif_RD_15mn = {
+		//	  "RD...": [],
+		//	  "RD...": []
+		//	  ...
 		//  }
-		const effectif_total_Jx_15mn = [];
-		const effectif_Jx_15mn = {};
+		const effectif_total_RD_15mn = [];
+		const effectif_RD_15mn = {};
 		const vacs = ["JX","J1", "J3", "S2", "J2", "S1"];
 
-
-		
 		for(var i=0;i<96;i++) {
 			vacs.forEach(vacation => {
 				const cds = pc[vacation]["nbcds"];
@@ -300,39 +326,66 @@ class capa {
 						}
 					}
 				}
-				console.log("Vac: "+vacation+"   heure: "+get_time(i)+"  nbpc: "+nb_pc);
+				//console.log("Vac: "+vacation+"   heure: "+get_time(i)+"  nbpc: "+nb_pc);
 			})
-			const cds = pc["N"]["nbcds"];
+
+			// Nuit de 19h30 à 00h00
+			let cds = pc["N"]["nbcds"];
+			// CDS
 			if (this.tour_utc["N"][i][1] === 1 && i>48) nb_pc += cds; // cds qui bosse sur secteur
+			// Sous-vacation A
 			if (this.tour_utc["N"][i][2] === 1 && i>48) {
-				if (noBV === false) {
-					nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2), Math.floor((pc["N"]["BV"]+pc["N"]["renfort"]-cds-pc["N"]["ROinduit"])/2));
+				if (this.saison === "ete" && pc["N"]["nbpc"] === 6) {
+					nb_pc += 2;
 				} else {
-					nb_pc += Math.floor(pc["N"]["nbpc"]/2);
+					if (noBV === false) {
+						nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2), Math.floor((pc["N"]["BV"]+pc["N"]["renfort"]-cds-pc["N"]["ROinduit"])/2));
+					} else {
+						nb_pc += Math.floor(pc["N"]["nbpc"]/2);
+					}
 				}
 			}
+			// Sous-vacation B
 			if (this.tour_utc["N"][i][3] === 1 && i>48) {
-				if (noBV === false) {
-					nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2, Math.floor((pc["N"]["BV"]+pc["N"]["renfort"]-cds-pc["N"]["ROinduit"])/2)+(pc["N"]["BV"]+pc["N"]["renfort"]-cds-pc["N"]["ROinduit"])%2);
+				if (this.saison === "ete" && pc["N"]["nbpc"] === 6) {
+					nb_pc += 4;
 				} else {
-					nb_pc += Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2;
+					if (noBV === false) {
+						nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2, Math.floor((pc["N"]["BV"]+pc["N"]["renfort"]-cds-pc["N"]["ROinduit"])/2)+(pc["N"]["BV"]+pc["N"]["renfort"]-cds-pc["N"]["ROinduit"])%2);
+					} else {
+						nb_pc += Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2;
+					}
 				}
 			}
+
+			// Nuit de 00h00 à 06h30
+			cds = pc["N-1"]["nbcds"];
 			if (this.tour_utc["N"][i][1] === 1 && i<48) nb_pc += cds; // cds qui bosse sur secteur
+			// Sous-vacation A
 			if (this.tour_utc["N"][i][2] === 1 && i<48) {
-				if (noBV === false) {
-					nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2), Math.floor((pc["N-1"]["BV"]+pc["N-1"]["renfort"]-cds-pc["N-1"]["ROinduit"])/2));
+				if (this.saison === "ete" && pc["N-1"]["nbpc"] === 6) {
+					nb_pc += 2;
 				} else {
-					nb_pc += Math.floor(pc["N-1"]["nbpc"]/2);
+					if (noBV === false) {
+						nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2), Math.floor((pc["N-1"]["BV"]+pc["N-1"]["renfort"]-cds-pc["N-1"]["ROinduit"])/2));
+					} else {
+						nb_pc += Math.floor(pc["N-1"]["nbpc"]/2);
+					}
 				}
 			}
+			// Sous-vacation B
 			if (this.tour_utc["N"][i][3] === 1 && i<48) {
-				if (noBV === false) {
-					nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2, Math.floor((pc["N-1"]["BV"]+pc["N-1"]["renfort"]-cds-pc["N-1"]["ROinduit"])/2)+(pc["N-1"]["BV"]+pc["N-1"]["renfort"]-cds-pc["N-1"]["ROinduit"])%2);
+				if (this.saison === "ete" && pc["N-1"]["nbpc"] === 6) {
+					nb_pc += 4;
 				} else {
-					nb_pc += Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2;
+					if (noBV === false) {
+						nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2, Math.floor((pc["N-1"]["BV"]+pc["N-1"]["renfort"]-cds-pc["N-1"]["ROinduit"])/2)+(pc["N-1"]["BV"]+pc["N-1"]["renfort"]-cds-pc["N-1"]["ROinduit"])%2);
+					} else {
+						nb_pc += Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2;
+					}
 				}
 			}
+			// this.tour_utc["J1"][i][0] = heure (ex : "01:45"), on aurait pu prendre n'importe quelle vac à la place de J1
 			pcs.push([this.tour_utc["J1"][i][0], nb_pc]);
 			nb_pc = 0;
 			
@@ -361,34 +414,34 @@ class capa {
 				});
 			}
 			
-			effectif_total_Jx_15mn[i] = 0;
+			effectif_total_RD_15mn[i] = 0;
 			
 			RD_names_horsJX.forEach( vac_RD => {
 				const nb = pc["JX"][vac_RD]["nombre"];
 				if (this.tds_supp_utc[vac_RD][i][1] === 1) {
-					effectif_total_Jx_15mn[i] += nb;
+					effectif_total_RD_15mn[i] += nb;
 				}
 			})
 			
 			// s'il y a un Jx ce jour là
 			// on ne créé que les vac_jx existantes ce jour là
 			RD_names_horsJX.forEach( (vac_jx, index) => {
-				if (typeof effectif_Jx_15mn[vac_jx] === 'undefined') effectif_Jx_15mn[vac_jx] = [];
-				effectif_Jx_15mn[vac_jx][i] = 0;
+				if (typeof effectif_RD_15mn[vac_jx] === 'undefined') effectif_RD_15mn[vac_jx] = [];
+				effectif_RD_15mn[vac_jx][i] = 0;
 			})
 			
 			RD_names_horsJX.forEach( (vac_jx, index) => {
 				if (vac_jx != "nbcds") {
 					const nb = pc["JX"][vac_jx]["nombre"];
 					if (this.tds_supp_utc[vac_jx][i][1] === 1) {
-						effectif_Jx_15mn[vac_jx][i] = nb;
+						effectif_RD_15mn[vac_jx][i] = nb;
 					}
 				}
 			});
 
 			
 		}
-		return {"pc_vac": pc, "pc_total_dispo_15mn": pcs, "pc_instr_15mn": in15mn, "pc_jx_15mn": effectif_Jx_15mn, "pc_total_jx_15mn": effectif_total_Jx_15mn};
+		return {"pc_vac": pc, "pc_total_dispo_15mn": pcs, "pc_instr_15mn": in15mn, "pc_RD_15mn": effectif_RD_15mn, "pc_total_RD_15mn": effectif_total_RD_15mn};
     }
 
     /* ---------------------------------------------------
@@ -503,20 +556,22 @@ class capa {
         push_utc("J2");
         push_utc("S1");
         push_utc("N");
+		console.log("Tour_utc");
+		console.log(tour_utc);
         return tour_utc;
     }
 	/* -----------------------------------------------------------------------------------------
         Transformation du tour de service (défini en heure locale) en heure UTC
         @param {object} tour_local 	- le json du tour de service
 			{"est":{
-				"JXA":[["00:00",0],["00:15",0],...],
-				"JXB":[["00:00",0],["00:15",0],...]
+				"RD...":[["00:00",0],["00:15",0],...],
+				"RD...":[["00:00",0],["00:15",0],...]
 				...
 			}}
         @returns {object}  - tour_utc (sans la zone) 
 			{ 
-				"JXA": [ ["00:00", 0], ["hh:mm", nb], ... ],
-				"JXB": [ ["00:00", 0], ["hh:mm", nb], ... ]
+				"RD...": [ ["00:00", 0], ["hh:mm", nb], ... ],
+				"RD...": [ ["00:00", 0], ["hh:mm", nb], ... ]
 				...
 			}
     ----------------------------------------------------------------------------------------- */
@@ -529,9 +584,11 @@ class capa {
         
         const index_deb = diff*4 - 1;
         const tour_utc = {};
-		// Jx_vac = ["JXA","JXB",...]
-		const Jx_vac = Object.keys(tour);
-        Jx_vac.forEach(vac => {
+		// RD_vac_hors_Jx = ["RD...","RD...",...]
+		const RD_vac_hors_Jx = Object.keys(tour);
+		console.log("RD_vac_hors_Jx");
+		console.log(RD_vac_hors_Jx);
+        RD_vac_hors_Jx.forEach(vac => {
 			tour_utc[vac] = [];
 		})
             
@@ -554,7 +611,7 @@ class capa {
             tour_utc[vac].push(["23:45", tour[vac][7][1]]);
         }
         
-		Jx_vac.forEach(vac => {
+		RD_vac_hors_Jx.forEach(vac => {
 			push_utc(vac);
 		})
 
@@ -586,8 +643,8 @@ class feuille_capa extends capa {
 		document.querySelector('.popup-close').click();
 		this.pc_15mn = this.pc["pc_total_dispo_15mn"];
 		this.pc_instr_15mn = this.pc["pc_instr_15mn"];
-		this.pc_jx_15mn = this.pc["pc_jx_15mn"];
-		this.pc_total_jx_15mn = this.pc["pc_total_jx_15mn"];
+		this.pc_RD_15mn = this.pc["pc_RD_15mn"];
+		this.pc_total_RD_15mn = this.pc["pc_total_RD_15mn"];
 		this.pc_vac = this.pc["pc_vac"];
 		this.show_feuille_capa();
 	}
@@ -853,6 +910,16 @@ class feuille_capa extends capa {
 			}
 		}
 
+		if (vac === "N" && this.pc_vac[vac]["nbpc"] === 6) {
+				dispoA = 2;
+				dispoB = 4;
+		}
+
+		if (vac === "N-1" && this.pc_vac[vac]["nbpc"] === 6) {
+			dispoA = 2;
+			dispoB = 4;
+		}
+
 		// comp : { [ ["00:00", 0, 3, 4], ["hh:mm", cds, A, B], ... ] }
 		const vacation = (vac === "N-1") ? "N" : vac;
 		const comp = this.tour_utc[vacation].map( elem => [elem[0], parseInt(elem[1]), parseInt(elem[2])*dispoA, parseInt(elem[3])*dispoB]);
@@ -936,29 +1003,29 @@ class feuille_capa extends capa {
 
 	// fabrique la ligne du supplément RD hors JX
 	affiche_RD() {
-		const vac_RD_tab = Object.keys(this.pc_jx_15mn);
+		const vac_RD_tab = Object.keys(this.pc_RD_15mn);
 		let res = "";
 		vac_RD_tab.forEach( vac_RD => {
 			let vac_RD_affiche = vac_RD.substring(2);
 			vac_RD_affiche = vac_RD_affiche.split("-")[0] + " RD bleu";
 			let sous_vac_RD = vac_RD_affiche.substring(2).toUpperCase();
 			let res2 = "";
-			if (this.pc_jx_15mn[vac_RD][0] === 0) {
+			if (this.pc_RD_15mn[vac_RD][0] === 0) {
 				res2 += `<td class='left_2px bottom_2px'></td>`; // border left à 2px pour la case 0
 			} else {
-				res2 += `<td class='bg bottom_2px'>${this.pc_jx_15mn[vac_RD][0]}</td>`;
+				res2 += `<td class='bg bottom_2px'>${this.pc_RD_15mn[vac_RD][0]}</td>`;
 			}
 			for(let i=1;i<95;i++) {	
-				if (this.pc_jx_15mn[vac_RD][i] === 0) {
+				if (this.pc_RD_15mn[vac_RD][i] === 0) {
 					res2 += `<td class='bottom_2px'></td>`;
 				} else {
-					res2 += `<td class='bg bottom_2px'>${this.pc_jx_15mn[vac_RD][i]}</td>`;
+					res2 += `<td class='bg bottom_2px'>${this.pc_RD_15mn[vac_RD][i]}</td>`;
 				}
 			} 
-			if (this.pc_jx_15mn[vac_RD][95] === 0) {
+			if (this.pc_RD_15mn[vac_RD][95] === 0) {
 				res2 += `<td class='bottom_2px right_2px'></td>`;
 			} else {
-				res2 += `<td class='bg bottom_2px'>${this.pc_jx_15mn[vac_RD][95]}</td>`;
+				res2 += `<td class='bg bottom_2px'>${this.pc_RD_15mn[vac_RD][95]}</td>`;
 			}
 			res += `<tr><td data-vac='${vac_RD}' class='left_2px bottom_2px click_RD' colspan="3">${vac_RD_affiche}</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
 		})
@@ -972,8 +1039,7 @@ class feuille_capa extends capa {
 			let cl = "left_1px";
 			if (index%4 === 0) cl = "left_2px";
 			if (index === 95) cl += " right_2px";
-			let total_jx = 0;
-			res2 += `<td class='${cl} bottom_2px'>${elem[1]+this.pc_instr_15mn[index][0]+this.pc_total_jx_15mn[index]}</td>`;
+			res2 += `<td class='${cl} bottom_2px'>${elem[1]+this.pc_instr_15mn[index][0]+this.pc_total_RD_15mn[index]}</td>`;
 		});
 		let res = `<tr><td class='left_2px bottom_2px' colspan="3">Nb PC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
 		return res;
@@ -986,7 +1052,7 @@ class feuille_capa extends capa {
 			let cl = "left_1px";
 			if (index%4 === 0) cl = "left_2px";
 			if (index === 95) cl += " right_2px";
-			const demi = ((elem[1]+this.pc_instr_15mn[index][0]+this.pc_total_jx_15mn[index])%2 === 0) ? "" : "\u00bd";
+			const demi = ((elem[1]+this.pc_instr_15mn[index][0]+this.pc_total_RD_15mn[index])%2 === 0) ? "" : "\u00bd";
 			res2 += `<td class='${cl} bottom_2px'>${demi}</td>`;
 		});
 		let res = `<tr><td class='left_2px bottom_2px' colspan="3">Demi UC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
@@ -996,7 +1062,7 @@ class feuille_capa extends capa {
 	// fabrique la ligne du nbre d'uceso dispo
 	//	uceso = partie entière nbr_pc/2
 	affiche_uceso() {
-		const uc = this.pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + this.pc_instr_15mn[index][0] + this.pc_total_jx_15mn[index]) / 2) ]);
+		const uc = this.pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + this.pc_instr_15mn[index][0] + this.pc_total_RD_15mn[index]) / 2) ]);
 		let res3 = "";
 		this.compact(uc).forEach( elem => {
 			let nb_occ = elem[1] - elem[0] + 1;
@@ -1230,7 +1296,7 @@ class simu_capa extends capa {
 		// ajoute les RD bleus détachés à ceux de l'équipe
 		let nbpc_vac = this.pc_vac[vac]["nbpc"];
 		let nbpcdet_vac = this.pc_vac[vac]["renfort"];
-		const vac_RD_tab = Object.keys(this.pc["pc_jx_15mn"]);
+		const vac_RD_tab = Object.keys(this.pc["pc_RD_15mn"]);
 		if (vac_RD_tab.length != 0) {
 			vac_RD_tab.forEach( vac_RD => {
 				let vac_RD_extraite = vac_RD.substring(2);
@@ -1421,8 +1487,8 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 	} else {
 		pc_15mn = pc["pc_total_dispo_15mn"];
 		pc_instr_15mn = pc["pc_instr_15mn"];
-		pc_total_jx_15mn = pc["pc_total_jx_15mn"];
-		uceso = pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn[index][0] + pc_total_jx_15mn[index]) / 2) ]);
+		pc_total_RD_15mn = pc["pc_total_RD_15mn"];
+		uceso = pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn[index][0] + pc_total_RD_15mn[index]) / 2) ]);
 		console.log("uceso");
 		console.log(uceso);
 		data_series_uceso = [];
@@ -1438,8 +1504,8 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 		if (pc_simu !=0 ) {
 			pc_15mn_simu = pc_simu["pc_total_dispo_15mn"];
 			pc_instr_15mn_simu = pc_simu["pc_instr_15mn"];
-			pc_total_jx_15mn_simu = pc_simu["pc_total_jx_15mn"];
-			uceso_simu = pc_15mn_simu.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn_simu[index][0] + pc_total_jx_15mn_simu[index]) / 2) ]);
+			pc_total_RD_15mn_simu = pc_simu["pc_total_RD_15mn"];
+			uceso_simu = pc_15mn_simu.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn_simu[index][0] + pc_total_RD_15mn_simu[index]) / 2) ]);
 			data_series_uceso_simu = [];
 			uceso_simu.forEach(row => {
 				let deb = row[0];
