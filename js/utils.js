@@ -21,6 +21,16 @@ function capitalizeFirstLetter(string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+// moyenne de nombre dans un array
+function numAverage(arr) {
+	let b = arr.length,
+		c = 0, i;
+	for (i = 0; i < b; i++){
+	  c += Number(a[i]);
+	}
+	return c/b;
+}
+
 // arrondi à 2 chiffres après la virgule
 const round = value => {
 	return Math.round(value*100)/100;
