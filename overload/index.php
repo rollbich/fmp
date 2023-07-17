@@ -68,8 +68,9 @@
 				let zone = $('zone').value;
 				let start_day = $('start').value; // yyyy-mm-dd
 				let end_day = $('end').value; // yyyy-mm-dd
-				let sel_percent = parseInt($('selection').value);
-				depassement = new overload('result', "H20", start_day, end_day, zone, sel_percent);
+				let sel_percent_MV = parseInt($('selection_MV').value);
+				let sel_percent_peak = parseInt($('selection_peak').value);
+				depassement = new overload('result', "H20", start_day, end_day, zone, sel_percent_MV, sel_percent_peak);
 				show_popup('Patientez 5s','Chargement en cours');
 				await depassement.init();
 				document.querySelector('.popup-close').click();
@@ -83,8 +84,9 @@
 				let zone = $('zone').value;
 				let start_day = $('start').value; // yyyy-mm-dd
 				let end_day = $('end').value; // yyyy-mm-dd
-				let sel_percent = parseInt($('selection').value);
-				depassement = new overload('result', "peak", start_day, end_day, zone, sel_percent);
+				let sel_percent_MV = parseInt($('selection_MV').value);
+				let sel_percent_peak = parseInt($('selection_peak').value);
+				depassement = new overload('result', "peak", start_day, end_day, zone, sel_percent_MV, sel_percent_peak);
 				show_popup('Patientez 5s','Chargement en cours');
 				await depassement.init();
 				document.querySelector('.popup-close').click();
@@ -119,6 +121,7 @@
 	<h2>Help</h2>
 	<p><span>Origine des données H20 et Occ</span> :<br>Elles sont récupérées quotidiennement en B2B sur le serveur du NM et stockées sous forme de fichiers. <br>La période de récupération des données se situe entre 4h UTC et 22h00 UTC. Par conséquent, il n'est pas possible de visualiser les graphes en dehors de cette plage horaire.<br>D'autre part, comme tous les TV ne sont pas récupérés, certains graphiques (principalement les TV très peu ouverts) ne peuvent pas être affichés.</p>
 	<p><span>Le bouton "Overload"</span> :<br>Il permet d'afficher dans un tableau les dépassements de capacité sur la plage de dates choisie. On peut ensuite cliquer sur un TV pour afficher la courbe de H20 et l'Occupancy.</p>
+	<p><span>Note DO</span> :<br>Conformément à la note DO, les valeurs par défaut sont de 140% pour la MV et 100% pour le peak.</p></span>
 	<p><span>Le bouton "XLS Export"</span> :<br>Il permet d'exporter au format Excel le tableau des dépassements de capa.</p>
 	<button class="help_close_button pointer">Close</button>
 </div>
@@ -136,17 +139,25 @@
 	<label for="end" class="dates">Fin:</label>
 	<input type="date" id="end" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2021-06-21" max="2030-12-31">
 	<span>
-		<select id="selection" class="select">
-		  <option value="180">180%</option>
-		  <option value="170">170%</option>
-		  <option value="160">160%</option>
-		  <option value="150">150%</option>
-		  <option selected value="140">140%</option>
-		  <option value="130">130%</option>
-		  <option value="120">120%</option>
-		  <option value="110">110%</option>
-		  <option value="100">100%</option>
-		  <option value="90">90%</option>
+		<select id="selection_MV" class="select">
+		  <option value="180">180% MV</option>
+		  <option value="170">170% MV</option>
+		  <option value="160">160% MV</option>
+		  <option value="150">150% MV</option>
+		  <option selected value="140">140% MV</option>
+		  <option value="130">130% MV </option>
+		  <option value="120">120% MV</option>
+		  <option value="110">110% MV</option>
+		  <option value="100">100% MV</option>
+		  <option value="0">Tous</option>
+		</select>
+	</span>
+	<span>
+		<select id="selection_peak" class="select">
+		  <option value="130">130% peak</option>
+		  <option value="120">120% peak</option>
+		  <option value="110">110% peak</option>
+		  <option selected value="100">100% peak</option>
 		  <option value="0">Tous</option>
 		</select>
 	</span>
