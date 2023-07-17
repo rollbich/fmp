@@ -23,6 +23,8 @@ class overload {
         this.mv_json = null;
         this.mv_b2b_4f = null;
         this.otmv_b2b_4f = null;
+        // dépassement de 5mn mini
+        this.peak_threshold_time = 5;
     }
 
     async init() {
@@ -59,21 +61,26 @@ class overload {
 	    ---------------------------------------------------------------------------------- */
     async show_depassement_capa() {
         if (this.type === "H20") await this.calc_capa_H20(); else await this.calc_capa_peak();
-        console.log("Calc_capa_ok");
+        console.log("Calc_depassement_ok");
         let res = `<table class="depassement">`;
         if (this.type === "H20") {
             res += `<caption>Nombre d'occurences<br>du ${reverse_date(this.start_day)} au ${reverse_date(this.end_day)}</caption>`;
-        } else {
-            res += `<caption>Nombre d'occurences (=minutes)<br>du ${reverse_date(this.start_day)} au ${reverse_date(this.end_day)}</caption>`;
-        }
-        res += `<thead>
+            res += `<thead>
                     <tr class="titre"><th class="space">130%</th><th>140%</th><th>150%</th><th>160%</th><th>170%</th><th>180%</th></tr>
                 </thead>
                 <tbody><tr>`;
-        Object.keys(this.result_capa["nombre"]).forEach( key => {
-            res += `<td>${this.result_capa["nombre"][key]}</td>`; 
-        }) 
-            
+            Object.keys(this.result_capa["nombre"]).forEach( key => {
+                res += `<td>${this.result_capa["nombre"][key]}</td>`; 
+            }) 
+        } else {
+            res += `<caption>Nombre d'occurences (durée > ${this.peak_threshold_time}min)<br>du ${reverse_date(this.start_day)} au ${reverse_date(this.end_day)}</caption>`;
+            res += `<thead>
+                    <tr class="titre"><th class="space">Dépassement du peak</th></tr>
+                </thead>
+                <tbody><tr>`;
+            res += `<td>${this.result_capa["nombre"]}</td>`;
+        }
+        
         res += '</tr></tbody></table>'; 
         res += `<table class="depassement">
                      <caption>Journées du ${reverse_date(this.start_day)} au ${reverse_date(this.end_day)}</caption>`;
@@ -194,30 +201,51 @@ class overload {
         this.result_capa["filtre"] = this.selected_percent;
         this.result_capa["zone"] = z;
         this.result_capa["range"] = [this.start_day, this.end_day];
-        this.result_capa["nombre"] = {"130":0, "140":0, "150":0, "160":0, "170":0, "180":0};
+        this.result_capa["nombre"] = 0;
         
+
         for (let day in this.result_peak) {
             for (var tv in this.result_peak[day]) {
-                    let peak_ods = parseInt(this.mv_json[`TV-${z}`][tv]["MV"]);
                     const full_tv = "LFM"+tv;
                     let peak_4f = this.otmv_b2b_4f[full_tv][0]["otmv"]["peak"]["threshold"];
                     try {
-                        this.result_peak[day][tv].forEach(value => {
+                        const l = this.result_peak[day][tv].length;
+                        for(let i=0;i<l-1-this.peak_threshold_time;i++) {
+                            let value = this.result_peak[day][tv][i];
+                            let heure = value[0];
                             let count = value[1];
                             let pourcentage_peak_4f = Math.round((100 * count) / peak_4f);
                             let dd = reverse_date(day);	
-                            if (pourcentage_peak_4f >= this.selected_percent) {
-                                this.result_capa["data"].push([dd, tv, value[0], count, peak_4f, pourcentage_peak_4f]);
-                            }
-                            Object.keys(this.result_capa["nombre"]).forEach( key => {
-                                if (pourcentage_peak_4f >= parseInt(key)) {
-                                    this.result_capa["nombre"][key]++;
+                            if (pourcentage_peak_4f > 100) {
+                                console.log("Tv:"+tv+"   heure: "+heure+"  count: "+count);
+                                // k commence à 1 (on a déjà la première valeur qui a dépassé)
+                                let depa = true;
+                                let tab_count = [count];
+                                console.log(tab_count);
+                                for(let k=1;k<this.peak_threshold_time;k++) {
+                                    let pourc_peak_4f = Math.round((100 * this.result_peak[day][tv][i+k][1]) / peak_4f);
+                                    tab_count.push(this.result_peak[day][tv][i+k][1]);
+                                    if (pourc_peak_4f < 101) {
+                                        console.log("turned to false    pour4f: "+pourc_peak_4f+"    selectedp: "+this.selected_percent);
+                                        depa = false;
+                                    }
                                 }
-                            })
-                        });	
+                                if (depa === true) {
+                                    console.log("depa true");
+                                    let maxi = Math.max(...tab_count);
+                                    let p_maxi = Math.round((100 * maxi) / peak_4f);
+                                    console.log("Maxi: "+maxi+"   p_maxi: "+p_maxi);
+                                    this.result_capa["data"].push([dd, tv, heure, maxi, peak_4f, p_maxi]);
+                                    i = i + this.peak_threshold_time - 1;                                                                    
+                                    this.result_capa["nombre"]++;                                                                      
+                                }
+                            }
+                        }	
                     }
       
                     catch (err) {
+                        console.log("Erreur: "+tv);
+                        console.log( this.result_capa);
                         show_popup("Erreur ! ", "Les données du TV: "+tv+" du "+day+" ne sont pas récupérées en B2B ou alors le TV n'est pas défini dans le fichier MV.json<br>MV 4f : "+peak_4f);
                     }
             }
