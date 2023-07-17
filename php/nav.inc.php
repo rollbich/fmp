@@ -70,9 +70,9 @@
           <a class="navbar-item" href="../mv">
             MVs-OTMVs
           </a>
-          <!--<a class="navbar-item" href="../aup">
+          <a class="navbar-item" href="../aup">
             AUP
-          </a>-->
+          </a>
         </div>
       </div>
 			<a class="navbar-item" href="../capa">
