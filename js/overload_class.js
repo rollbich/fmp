@@ -9,7 +9,7 @@ class overload {
 		@param {integer} selected_pourcent - pourcentage de dépassement de MV / OTMV
 	---------------------------------------------------------------------------------- */
 
-    constructor(containerId, type, start_day, end_day, zone, selected_percent) {
+    constructor(containerId, type, start_day, end_day, zone, selected_percent_MV, selected_percent_peak) {
         this.result_h20 = {};
         this.result_peak = {};
         this.result_capa = {};
@@ -18,7 +18,8 @@ class overload {
         this.end_day = end_day;
         this.zone = zone;
         this.z = this.zone === "AE" ? "est" : "ouest";
-        this.selected_percent = selected_percent;
+        this.selected_percent_MV = selected_percent_MV;
+        this.selected_percent_peak = selected_percent_peak;
         this.containerId = containerId;
         this.mv_json = null;
         this.mv_b2b_4f = null;
@@ -138,7 +139,7 @@ class overload {
         let z = this.z.toUpperCase();
         
         this.result_capa["data"] = [];
-        this.result_capa["filtre"] = this.selected_percent;
+        this.result_capa["filtre"] = this.selected_percent_MV;
         this.result_capa["zone"] = z;
         this.result_capa["range"] = [this.start_day, this.end_day];
         this.result_capa["nombre"] = {"130":0, "140":0, "150":0, "160":0, "170":0, "180":0};
@@ -153,7 +154,7 @@ class overload {
                             let count = value[1];
                             let pourcentage_mv_4f = Math.round((100 * count) / mv_4f);
                             let dd = reverse_date(day);	
-                            if (pourcentage_mv_4f >= this.selected_percent) {
+                            if (pourcentage_mv_4f >= this.selected_percent_MV) {
                                 this.result_capa["data"].push([dd, tv, value[0], count, mv_4f, pourcentage_mv_4f]);
                             }
                             Object.keys(this.result_capa["nombre"]).forEach( key => {
@@ -198,7 +199,7 @@ class overload {
         let z = this.z.toUpperCase();
         
         this.result_capa["data"] = [];
-        this.result_capa["filtre"] = this.selected_percent;
+        this.result_capa["filtre"] = this.selected_percent_peak;
         this.result_capa["zone"] = z;
         this.result_capa["range"] = [this.start_day, this.end_day];
         this.result_capa["nombre"] = 0;
@@ -216,25 +217,21 @@ class overload {
                             let count = value[1];
                             let pourcentage_peak_4f = Math.round((100 * count) / peak_4f);
                             let dd = reverse_date(day);	
-                            if (pourcentage_peak_4f > 100) {
+                            if (pourcentage_peak_4f > this.selected_percent_peak) {
                                 console.log("Tv:"+tv+"   heure: "+heure+"  count: "+count);
                                 // k commence à 1 (on a déjà la première valeur qui a dépassé)
                                 let depa = true;
                                 let tab_count = [count];
-                                console.log(tab_count);
                                 for(let k=1;k<this.peak_threshold_time;k++) {
                                     let pourc_peak_4f = Math.round((100 * this.result_peak[day][tv][i+k][1]) / peak_4f);
                                     tab_count.push(this.result_peak[day][tv][i+k][1]);
-                                    if (pourc_peak_4f < 101) {
-                                        console.log("turned to false    pour4f: "+pourc_peak_4f+"    selectedp: "+this.selected_percent);
+                                    if (pourc_peak_4f <= this.selected_percent_peak) {
                                         depa = false;
                                     }
                                 }
                                 if (depa === true) {
-                                    console.log("depa true");
                                     let maxi = Math.max(...tab_count);
                                     let p_maxi = Math.round((100 * maxi) / peak_4f);
-                                    console.log("Maxi: "+maxi+"   p_maxi: "+p_maxi);
                                     this.result_capa["data"].push([dd, tv, heure, maxi, peak_4f, p_maxi]);
                                     i = i + this.peak_threshold_time - 1;                                                                    
                                     this.result_capa["nombre"]++;                                                                      
