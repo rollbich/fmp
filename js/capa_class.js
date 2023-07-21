@@ -405,6 +405,7 @@ class capa {
 					if (d === this.day && zone.toLowerCase() === this.zone) {
 						if (t >= debut && t< fin) {
 							if (type === "Inst") { in15mn[i][0] += 2; in15mn[i][1].push({type: type, comm: comm}); }
+							if (type === "Inst1") { in15mn[i][0] += 1; in15mn[i][1].push({type: type, comm: comm}); }
 							if (type === "Eleve") { in15mn[i][1].push({type: type, comm: comm}); }
 							if (type === "Asa") { in15mn[i][0] -= 1; in15mn[i][1].push({type: type, comm: comm}); }
 							if (type === "Simu1PC") { in15mn[i][0] -= 1; in15mn[i][1].push({type: type, comm: comm}); }
