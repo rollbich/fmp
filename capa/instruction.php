@@ -77,7 +77,8 @@
             <label class="form-label" for="type_in">Type:</label>
             <select id="type_in" class="form-control">
                 <option selected value="Eleve">Eleves</option>
-                <option value="Inst">Instrus</option>
+                <option value="Inst1">1 Instru</option>
+                <option value="Inst">2 Instrus</option>
                 <option value="Asa">Asa</option>
                 <option value="Simu1PC">Simu 1 PC</option>
                 <option value="Simu2PC">Simu 2 PC</option>
