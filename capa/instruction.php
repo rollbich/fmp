@@ -82,11 +82,12 @@
                 <option value="Asa">Asa</option>
                 <option value="Simu1PC">Simu 1 PC</option>
                 <option value="Simu2PC">Simu 2 PC</option>
+                <option value="-1PC">-1 PC</option>
             </select>
         </div>
         <div class="form-group">
             <label class="form-label" for="com_in">Comm:</label>
-            <input class="form-control" id="com_in" name="com_in" placeholder="Secteur / Commentaire" type="texte" maxlength="12">
+            <input class="form-control" id="com_in" name="com_in" placeholder="Secteur / Commentaire" type="texte" maxlength="14">
         </div>
         <button id='button_ajout' type='button' class="btn">Ajouter</button>
     </form>
