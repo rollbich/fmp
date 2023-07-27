@@ -410,6 +410,7 @@ class capa {
 							if (type === "Asa") { in15mn[i][0] -= 1; in15mn[i][1].push({type: type, comm: comm}); }
 							if (type === "Simu1PC") { in15mn[i][0] -= 1; in15mn[i][1].push({type: type, comm: comm}); }
 							if (type === "Simu2PC") { in15mn[i][0] -= 2; in15mn[i][1].push({type: type, comm: comm}); }
+							if (type === "-1PC") { in15mn[i][0] -= 1; in15mn[i][1].push({type: type, comm: comm}); }
 						} 
 					}
 				});
@@ -700,7 +701,7 @@ class feuille_capa extends capa {
 				const pos = td_el.getBoundingClientRect();
 				el.style.position = 'absolute';
 				el.style.left = pos.left + 'px';
-				el.style.top = pos.top + 20 + 'px';
+				el.style.top = pos.top + 20 + window.scrollY + 'px';
 				el.style.backgroundColor = '#fbb';
 				el.style.padding = '10px';
 				el.style.width = '200px';
