@@ -1,4 +1,6 @@
 <?php
+define("DATA_PATH", "/opt/bitnami/data/json");
+
 // dernier dimanche d'octobre => heure d'hiver
 $date_hiver = get_hiver();
 $date_ete = get_ete();
