@@ -264,5 +264,4 @@ catch (Exception $e) {
 	echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";
 }
 
-
 ?>
