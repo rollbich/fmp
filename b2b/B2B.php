@@ -3,7 +3,7 @@
 class B2B {
 	
 	//Paramètres d'accès au B2B
-	private $version = '26.0.0';
+	private $version = '27.0.0';
 	private $passphrase_MM = "1234";
 	private $wsdl_flow_services_MM;
 	private $wsdl_airspace_services_MM;
