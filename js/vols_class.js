@@ -33,8 +33,8 @@ class vols {
 		const date = this.day.replace(/-/g, ''); // yyyymmdd
 		const year = this.day.substr(0,4);
 		const month = date.substr(4,2);
-		const url = `../b2b/json/${year}/${month}/${date}-vols.json`;	
-		const resp = await loadJson(url);
+		const url = `${year}/${month}/${date}-vols.json`;	
+		const resp = await get_data(url);
 		if (typeof resp !== 'undefined') {
 			return resp;
 		}
@@ -173,8 +173,8 @@ class weekly_vols {
 			} = this.nbre_vols
 	-------------------------------------------------------------------------------------*/
 	async get_data_weekly_vols() {
-		const url = `../b2b/json/${this.year}/${this.year}-weekly-flights.json`;	
-		const resp = await loadJson(url);
+		const url = `${this.year}/${this.year}-weekly-flights.json`;	
+		const resp = await get_data(url);
 		return resp;
 	}
 

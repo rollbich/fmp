@@ -1,5 +1,9 @@
 <?php
 
+include_once("path.inc.php");
+define("FLIGHTS_SUFFIX", "-monthly-flights.json");
+define("REG_SUFFIX", "-monthly-reg.json");
+
 /*  ---------------------------------------------------------------
 		sauvegarde le fichier des vols monthly pour toute l'année
 	---------------------------------------------------------------  */
@@ -16,13 +20,13 @@ function calcul_mois($year, $month) {
     echo "Last day of month: ".$last_day_of_month->format('Y-m-d')."<br>";
 
     $arr_traffic = get_monthly_traffic($first_day_of_month, $last_day_of_month);
-    $file_traffic = "localhost/fmp/b2b/json/$year/$year-monthly-flights.json";
+    $file_traffic = DATA_PATH."/$year/$year".FLIGHTS_SUFFIX;
     //$file_traffic = "https://dev.lfmm-fmp.fr/b2b/json/$year/$year-monthly-flights.json";
     //$file_traffic = "https://lfmm-fmp.fr/b2b/json/$year/$year-monthly-flights.json";
     process_file_traffic($file_traffic, $arr_traffic, $month, $year);
 
     $arr_reguls = get_monthly_regs($first_day_of_month, $last_day_of_month);
-    $file_reg = "localhost/fmp/b2b/json/$year/$year-monthly-reg.json";
+    $file_reg = DATA_PATH."/$year/$year".REG_SUFFIX;
     //$file_reg = "https://dev.lfmm-fmp.fr/b2b/json/$year/$year-monthly-reg.json";
     //$file_reg = "https://lfmm-fmp.fr/b2b/json/$year/$year-monthly-reg.json";
     process_file_reg($file_reg, $arr_reguls, $month, $year);
@@ -36,7 +40,7 @@ function calcul_year(int $year) {
     }
 }
 
-calcul_year(2022);
+calcul_year(2023);
 
 /*  ----------------------------------------------------
                 Monthly Traffic & Regs
@@ -61,7 +65,7 @@ function get_monthly_traffic($dateTime1, $dateTime2) {
         $month = $value->format('m');
         $d = $value->format('Ymd');
         echo "day : $d<br>";
-        $file_name = "localhost/fmp/b2b/json/$year/$month/$d-vols.json";
+        $file_name = DATA_PATH."/$year/$month/$d-vols.json";
         //$file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$month/$d-vols.json";
         //$data = file_get_contents("./json/".$file_name);
         $data = get_file($file_name);
@@ -114,7 +118,7 @@ function get_monthly_regs($dateTime1, $dateTime2) {
         $year = $value->format('Y');
         $month = $value->format('m');
         $d = $value->format('Ymd');
-        $file_name = "localhost/fmp/b2b/json/$year/$month/$d-reg.json";
+        $file_name = DATA_PATH."/$year/$month/$d-reg.json";
         //$file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$month/$d-reg.json";
         $data = get_file($file_name);
         array_push($donnees, json_decode($data[0]));
@@ -249,13 +253,13 @@ function process_file_reg($file, $arr, $month_number, $year) {
 
 // ne fonctionne pas sans dirname(__FILE__)
 function write_json_traffic($json, $year) {
-	$fp = fopen(dirname(__FILE__)."/json/$year/".$year."-monthly-flights.json", 'w');
+	$fp = fopen(WRITE_PATH."/json/$year/$year".FLIGHTS_SUFFIX, 'w');
 	fwrite($fp, json_encode($json));
 	fclose($fp);
 }
 
 function write_json_reg($json, $year) {
-	$fp = fopen(dirname(__FILE__)."/json/$year/".$year."-monthly-reg.json", 'w');
+	$fp = fopen(WRITE_PATH."/json/$year/$year".REG_SUFFIX, 'w');
 	fwrite($fp, json_encode($json));
 	fclose($fp);
 }
@@ -270,8 +274,12 @@ function get_file($url) {
     echo "Fichier: ".$url."<br>";
 	$status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 	echo "HTTP CODE: " . $status_code."<br>";
-	echo curl_error($ch);
-	curl_close($ch);  
+	$curl_error = curl_error($ch);
+	if ($curl_error !== '') {
+        echo "\nCurl Error : $curl_error";
+    }
+	//curl_close($ch);  //no effect on php >= 8.0
+	unset($ch);   // to use with php >= 8.0 : launch garbage mechanism for $ch
     return [$result, $status_code];
 }
 

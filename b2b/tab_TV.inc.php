@@ -1,4 +1,5 @@
 <?php
+// Calcule le nombre de vols et capture les vols de RAE, RAW et App
 // Liste des vols des TV à compter par jour
 // important : laisser RAE et RAW car ils servent à récupérer les vols de la zone
 $tab_TVE = ["LFMRAE", "LFMSBAM", "LFMGY", "LFMAB", "LFMEK"];

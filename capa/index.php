@@ -29,7 +29,7 @@
 	<link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
 	<link rel="stylesheet" type="text/css" href="../css/upload.css" />
 	<script>
-		document.addEventListener('DOMContentLoaded', (event) => {
+		document.addEventListener('DOMContentLoaded', async (event) => {
 			<?php include("../php/nav.js.inc.php"); ?>
 
 			document.querySelector('.help_button').addEventListener('click', e => {

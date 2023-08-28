@@ -1,4 +1,11 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+require("../smtp/PHPMailer/PHPMailer.php");
+require("../smtp/PHPMailer/SMTP.php");
+
 
 class Service {
 
@@ -23,18 +30,40 @@ class Service {
     }
 
     public function send_mail($erreur) {
+        //Create an instance; passing `true` enables exceptions
+        $mail = new PHPMailer(true);    
         $heure = date('Y-m-d H:i');
-        $from = "error@lfmm-fmp.fr";
-        $to = "christophe.rolland@aviation-civile.gouv.fr";
-        $to2 = "adonis.koffi-d-almeida@aviation-civile.gouv.fr";
-        $sujet = "B2B Error : $heure";
-        $message = "Verifiez vos fichiers B2B <br>\n\n";
-        $message .= $erreur."<br><br>";
-        $header  = "From: $from \n";
-        $header .= "MIME-Version: 1.0 \n";
-        $header .= "Content-Type: text/plain \n";
-        mail($to, $sujet, $message, $header);
-        //mail($to2, $sujet, $message, $header);
+        //Server settings
+        $mail->SMTPDebug = 0;                     							//1 : error and message 2 : message only, 0 : rien
+        $mail->isSMTP();                                            		//Send using SMTP
+        $mail->Host       = 'email-smtp.eu-west-3.amazonaws.com';   		//Set the SMTP server to send through
+        $mail->SMTPAuth   = true;                                   		//Enable SMTP authentication
+        $mail->Username   = 'AKIAQS3HTHPYMXBCDG6V';                 	   				//SMTP username
+        $mail->Password   = 'BMOK/1TncML5lnCTeVukm9XHWEPzzikVMyRnGYzmLigB'; 										//SMTP password
+        $mail->SMTPSecure = 'tls';           								//Enable implicit TLS encryption
+        $mail->Port       = 587;                           			        //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+
+        //Recipients
+        $mail->setFrom('christophe.rolland@aviation-civile.gouv.fr', 'Error LFMM-FMP');
+        //$mail->addAddress('lfmm-fmp@aviation-civile.gouv.fr', 'LFMM-FMP');  //Add a recipient
+        $mail->addAddress('rollbich2@yahoo.fr');              				//Name is optional
+        //$mail->addAddress("adonis.koffi-d-almeida@aviation-civile.gouv.fr");
+        //$mail->addReplyTo('info@example.com', 'Information');
+        //$mail->addCC('cc@example.com');
+        //$mail->addBCC('bcc@example.com');
+
+        //Attachments
+        //$mail->addAttachment('/var/tmp/file.tar.gz');        				//Add attachments
+        //$mail->addAttachment('/tmp/image.jpg', 'new.jpg');  				//Optional name
+
+        //Content
+        $mail->isHTML(true);                                				//Set email format to HTML
+        $mail->Subject = "B2B Error (Test de Christophe) : $heure";
+        $mail->Body    = "Le grand ragout a parl&eacute; <b>depuis l'hyper espace</b><br><br>Verifiez vos fichiers B2B <br><br>$erreur<br><br>";
+        $mail->AltBody = "Verifiez vos fichiers B2B <br>\n\n<br>$erreur<br><br>";
+
+        $mail->send();
+        
     }
 
     public function getSoapClient() {

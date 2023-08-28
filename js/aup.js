@@ -38,7 +38,7 @@ class aup {
     // ex : 20230525-aup.json
     async get_aup() { 
         const d = this.day.split("-");
-        let aup = await loadJson(`../b2b/json/${d[0]}/${d[1]}/${d[0]}${d[1]}${d[2]}-aup.json`);
+        let aup = await get_data(`${d[0]}/${d[1]}/${d[0]}${d[1]}${d[2]}-aup.json`);
         if (typeof aup === 'undefined') {
             show_popup("Erreur", `L'AUP de la date ${reverse_date(this.day)} n'existe pas`);
         }

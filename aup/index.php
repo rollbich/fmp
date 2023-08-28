@@ -19,6 +19,7 @@
 	<link rel="stylesheet" type="text/css" href="../css/style.css" />
 	<script type="text/javascript" src="../js/base.js"></script>
 	<script type="text/javascript" src="../js/utils.js"></script>
+	<script type="text/javascript" src="../js/data.js"></script>
 	<script type="text/javascript" src="../js/list-component.js"></script>
 	<script src="../js/sortable.min.js"></script>
 	<script type="text/javascript" src="../js/upload.js"></script>

@@ -5,7 +5,7 @@ require_once("B2B.php");
 require_once("B2B-Service.php");
 require_once("Airspace.php");
 require_once("B2B-AirspaceServices.php");
-include_once("config.inc.php");
+include_once("path.inc.php");
 
 /*  -------------------------------------------------------
 		Ecriture du fichier AUP json
@@ -20,7 +20,7 @@ function write_json($resultat) {
     $y = $date->format('Y');
     $m = $date->format('m');
    
-    $dir = dirname(__FILE__)."/json/$y/$m/";
+    $dir = WRITE_PATH."/json/$y/$m/";
     
     if (!file_exists($dir)) {
         mkdir($dir, 0777, true);
@@ -42,5 +42,4 @@ function get_aup() {
 $resultat = get_aup();
 echo json_encode($resultat);
 write_json($resultat);
-
 ?>

@@ -10,31 +10,29 @@
 	------------------------------------------------- */
 async function loadJsonB2B(url, type, zone) { 
   try {
-	let response = await fetch(url).then(rep_status_B2B); 
-    let json = await response.json(); 
-    return json;
-  }
-  catch (err) {
-	const z = zone === "AE" ? "EST" : "OUEST";
-	//alert(`Erreur ${type} zone ${z} : ${err.message}`);
-  }
-}
-
-/*	-------------------------------------------
-	  vérifie la réception du fichier H20/Occ
-	  	@param {promise} response
-		@returns {promise}
-	------------------------------------------- */
-function rep_status_B2B(response) {
+	let response = await fetch("../php/get_data.php", {
+		method: 'POST',
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ "url": url})
+	});
+	console.log("response : "+response.status);
+	// Note : suppression du .then(rep_status) car interfère avec await
 	if (response.ok) { // entre 200 et 300
-		return Promise.resolve(response)
+		if (response == 404) { return 404 }
+		return Promise.resolve(response.json())
 	} else {
 		const d = response.url.split('json/');
 		const date = hyphen_date(d[1].substr(5,8));
-		// l'erreur est transmise au bloc catch de loadJsonB2B
+		// l'erreur est transmise au bloc catch
 		if (response.status == 404) { return Promise.reject(new Error(`Le fichier B2B du ${date} n'existe pas`)); }
 		return Promise.reject(new Error('Erreur: '+response.statusText))
 	}
+  }
+  catch (err) {
+	const z = zone === "AE" ? "EST" : "OUEST";
+	console.log(err);
+	//alert(`Erreur ${type} zone ${z} : ${err.message}`);
+  }
 }
 
 /*  -----------------------------------------------------------------------
@@ -62,40 +60,42 @@ async function get_h20_b2b(day, zone, schema = undefined) {
 	const year = day.substring(0,4);
 	const month = date.substring(4,6);
 	const area = zone === "AE" ? "est" : "west";
-	
-	const url = `../b2b/json/${year}/${month}/${date}-H20-${area}.json`;	
+	const url = `${year}/${month}/${date}-H20-${area}.json`;	
 	const resp = await loadJsonB2B(url, "H20", zone);
-		
-	result = {};
-	result[day] = {};
-	
-	resp.forEach( arr => {
-						
-		const tv = arr[0];
-		const time = arr[2];
-		const time_min = time_to_min(arr[2]);
-		const mv = arr[3];
-		const h20 = arr[4];
-			
-		if (schema["tv_h"].hasOwnProperty(tv)) {
+	let result; 
+	if (resp !== 404) {
+		result = {};
+		result[day] = {};
+		resp.forEach( arr => {
 							
-			if (!(result[day].hasOwnProperty(tv))) { 
-				result[day][tv] = [];
-			}
-								
-			let open = schema["tv_h"][tv].some( elem => {
-				const deb = elem[0];
-				const fin = elem[1];
-				if (time_min>= deb-graph_margin && time_min+59 < fin+graph_margin) return true;
-				return false;
-			});
-			
-			if (open === true) result[day][tv].push([time, h20, mv]);
+			const tv = arr[0];
+			const time = arr[2];
+			const time_min = time_to_min(arr[2]);
+			const mv = arr[3];
+			const h20 = arr[4];
 				
-		}
-						
-	});
-	
+			if (schema["tv_h"].hasOwnProperty(tv)) {
+								
+				if (!(result[day].hasOwnProperty(tv))) { 
+					result[day][tv] = [];
+				}
+									
+				let open = schema["tv_h"][tv].some( elem => {
+					const deb = elem[0];
+					const fin = elem[1];
+					if (time_min>= deb-graph_margin && time_min+59 < fin+graph_margin) return true;
+					return false;
+				});
+				
+				if (open === true) result[day][tv].push([time, h20, mv]);
+					
+			}
+							
+		});
+		console.log("Get H20 via B2B : OK");
+	} else {
+		result = 404;
+	}
 	return result;
 }
 
@@ -116,39 +116,42 @@ async function get_occ_b2b(day, zone, schema = undefined) {
 	const year = day.substring(0,4);
 	const month = date.substring(4,6);
 	const area = zone === "AE" ? "est" : "west";
-	
-	const url = `../b2b/json/${year}/${month}/${date}-Occ-${area}.json`;	
+	const url = `${year}/${month}/${date}-Occ-${area}.json`;	
 	const resp = await loadJsonB2B(url, "OCC", zone);
-		
-	const result = {};
-	result[day] = {};
+	let result;
+	if (resp !== 404) {
+		result = {};
+		result[day] = {};
 	
-	resp.forEach( arr => {
-						
-		const tv = arr[0];
-		const time = arr[2];
-		const time_min = time_to_min(arr[2]);
-		const peak = arr[3];
-		const sustain = arr[4];
-		const occ = arr[5];
-					
-		if (schema["tv_h"].hasOwnProperty(tv)) {
+		resp.forEach( arr => {
 							
-			if (!(result[day].hasOwnProperty(tv))) { 
-				result[day][tv] = [];
-			}
-			let open = schema["tv_h"][tv].some( elem => {
-				const deb = elem[0];
-				const fin = elem[1];
-				if (time_min>= deb && time_min < fin) return true;
-				return false;
-			});
-			
-			if (open === true) result[day][tv].push([time, occ, peak, sustain]);
+			const tv = arr[0];
+			const time = arr[2];
+			const time_min = time_to_min(arr[2]);
+			const peak = arr[3];
+			const sustain = arr[4];
+			const occ = arr[5];
+						
+			if (schema["tv_h"].hasOwnProperty(tv)) {
+								
+				if (!(result[day].hasOwnProperty(tv))) { 
+					result[day][tv] = [];
+				}
+				let open = schema["tv_h"][tv].some( elem => {
+					const deb = elem[0];
+					const fin = elem[1];
+					if (time_min>= deb && time_min < fin) return true;
+					return false;
+				});
 				
-		}					
-	});
-	console.log("Get Occ via B2B : OK");			
+				if (open === true) result[day][tv].push([time, occ, peak, sustain]);
+					
+			}					
+		});
+		console.log("Get Occ via B2B : OK");
+	} else {
+		result = 404;
+	}
 	return result;
 	
 }
@@ -1514,8 +1517,6 @@ function show_delay_graph_mois_par_tvs(containerId, year, month, data, titre) {
       ]
 	-------------------------------------------------------------------------- */
 function show_delay_graph_week_par_causes(containerId, year, week, data, titre) {
-	console.log("DATA");
-	console.log(data);
 	let chartDom = $(containerId);
 	chartDom.style.height = "400px";
 	chartDom.style.width = "870px";

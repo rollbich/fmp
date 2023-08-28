@@ -1,5 +1,9 @@
 <?php
 
+include_once("path.inc.php");
+define("FLIGHTS_SUFFIX", "-weekly-flights.json");
+define("REG_SUFFIX", "-weekly-reg.json");
+
 /*  --------------------------------------------------------------
 		sauvegarde le fichier des vols weekly tous les lundis
 	--------------------------------------------------------------  */
@@ -14,14 +18,19 @@ $monday = new DateTime();
 $year = $monday_last_week->format('Y');
 $week_number = getWeekNumber($monday_last_week);
 
-echo "Year: ".$year."<br>";
-echo "Week number: ".$week_number."<br>";
+echo "Year: ".$year."<br>\n";
+echo "Week number: ".$week_number."<br>\n";
+
+$data_path = DATA_PATH."/$year/";
+if (!file_exists($data_path)) {
+    mkdir($data_path, 0775, true);
+}
 
 /*  ----------------------------------------------------
                      Weekly Traffic
     ---------------------------------------------------- */
 $arr_traffic = get_weekly_traffic($monday_last_week, $monday);
-$file_traffic = "https://dev.lfmm-fmp.fr/b2b/json/$year/".$year.'-weekly-flights.json';
+$file_traffic = DATA_PATH."/$year/$year".FLIGHTS_SUFFIX;
 
 process_file_traffic($file_traffic, $arr_traffic, $week_number, $year);
 
@@ -41,7 +50,7 @@ function get_weekly_traffic($dateTime1, $dateTime2) {
         //$file_name = $value->format('Ymd')."-vols.json";
         $year = $value->format('Y');
 		$month = $value->format('m');
-        $file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$month/".$value->format('Ymd')."-vols.json";
+        $file_name = DATA_PATH."/$year/$month/".$value->format('Ymd')."-vols.json";
         //$data = file_get_contents("./json/".$file_name);
         $data = get_file($file_name);
         $donnees = json_decode($data[0]);
@@ -58,7 +67,7 @@ function get_weekly_traffic($dateTime1, $dateTime2) {
                      Weekly Regs
     ---------------------------------------------------- */
 $arr_reguls = get_weekly_regs($monday_last_week, $monday);
-$file_reg = "https://dev.lfmm-fmp.fr/b2b/json/$year/".$year.'-weekly-reg.json';
+$file_reg = DATA_PATH."/$year/$year".REG_SUFFIX;
 
 process_file_reg($file_reg, $arr_reguls, $week_number, $year);
 
@@ -75,7 +84,7 @@ function get_weekly_regs($dateTime1, $dateTime2) {
     foreach ($period as $key => $value) {
         $year = $value->format('Y');
 		$month = $value->format('m');
-        $file_name = "https://dev.lfmm-fmp.fr/b2b/json/$year/$month/".$value->format('Ymd')."-reg.json";
+        $file_name = DATA_PATH."/$year/$month/".$value->format('Ymd')."-reg.json";
         $data = get_file($file_name);
         array_push($donnees, json_decode($data[0]));
     }
@@ -127,6 +136,7 @@ function process_file_traffic($file, $arr, $week_number, $year) {
         $json_year->est = new stdClass();
         $json_year->west = new stdClass();
         $json_year->cta = new stdClass();
+        $json_year->app = new stdClass();
     }
 
     $json_year->est->$week_number = $arr[1];
@@ -193,15 +203,15 @@ function addDays($datetime) {
     return $datetime;
 }
 
-// ne fonctionne pas sans dirname(__FILE__)
+// 
 function write_json_traffic($json, $year) {
-	$fp = fopen(dirname(__FILE__)."/json/$year/".$year."-weekly-flights.json", 'w');
+	$fp = fopen(WRITE_PATH."/json/$year/$year".FLIGHTS_SUFFIX, 'w');
 	fwrite($fp, json_encode($json));
 	fclose($fp);
 }
 
 function write_json_reg($json, $year) {
-	$fp = fopen(dirname(__FILE__)."/json/$year/".$year."-weekly-reg.json", 'w');
+	$fp = fopen(WRITE_PATH."/json/$year/$year".REG_SUFFIX, 'w');
 	fwrite($fp, json_encode($json));
 	fclose($fp);
 }
@@ -216,8 +226,12 @@ function get_file($url) {
     echo "Fichier: ".$url."<br>";
 	$status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 	echo "HTTP CODE: " . $status_code."<br>";
-	echo curl_error($ch);
-	curl_close($ch);  
+    $curl_error = curl_error($ch);
+	if ($curl_error !== '') {
+        echo "\nCurl Error : $curl_error";
+    }
+	//curl_close($ch);  //no effect on php >= 8.0
+	unset($ch);   // to use with php >= 8.0 : launch garbage mechanism for $ch
     return [$result, $status_code];
 }
 

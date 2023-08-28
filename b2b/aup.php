@@ -6,6 +6,7 @@ require_once("Airspace.php");
 require_once("B2B-AirspaceServices.php");
 require_once("B2B-InfoServices.php");
 include_once("config.inc.php");
+include_once("path.inc.php");
 //include_once("hour_config".$config.".inc.php");
 
 /*  -------------------------------------------
@@ -22,7 +23,7 @@ function write_json($arr, $zone, $type, $wef) {
 	$d = $date->format('Ymd');
 	$y = $date->format('Y');
 	$m = $date->format('m');
-	$dir = dirname(__FILE__)."/json/$y/$m/";
+	$dir = WRITE_PATH."/json/$y/$m/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);

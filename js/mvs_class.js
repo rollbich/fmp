@@ -51,10 +51,14 @@ class mv {
 				method: 'POST',
 				headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ "zone": this.zone, "day": this.day})
-			})
-			.then(rep_status); 
-			let json = await response.json(); 
-			return json;
+			});
+			if (response.ok) { // entre 200 et 300
+                return Promise.resolve(response.json())
+              } else {
+                // l'erreur est transmise au bloc catch de loadJson
+                if (response.status == 404) { return Promise.reject(new Error(`Le fichier ${response.url} n'existe pas`)); }
+                return Promise.reject(new Error('Erreur: '+response.statusText))
+            }  
 		}
 		
 		catch (err) {
@@ -69,10 +73,14 @@ class mv {
 				method: 'POST',
 				headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ "zone": this.zone, "day": this.day})
-			})
-			.then(rep_status); 
-			let json = await response.json(); 
-			return json;
+			});
+			if (response.ok) { // entre 200 et 300
+                return Promise.resolve(response.json())
+              } else {
+                // l'erreur est transmise au bloc catch de loadJson
+                if (response.status == 404) { return Promise.reject(new Error(`Le fichier ${response.url} n'existe pas`)); }
+                return Promise.reject(new Error('Erreur: '+response.statusText))
+            }  
 		}
 		
 		catch (err) {

@@ -96,8 +96,8 @@ class regul {
 		const date = this.day.replace(/-/g, ''); // yyyymmdd
 		const year = this.day.substr(0,4);
 		const month = date.substr(4,2);
-		const url = `../b2b/json/${year}/${month}/${date}-reg.json`;	
-		const resp = await loadJson(url);
+		const url = `${year}/${month}/${date}-reg.json`;	
+		const resp = await get_data(url);
 		if (typeof resp !== 'undefined') {
 			return resp;
 		}
@@ -112,8 +112,8 @@ class regul {
 		const date = this.day.replace(/-/g, ''); // yyyymmdd
 		const year = this.day.substr(0,4);
 		const month = date.substr(4,2);
-		const url = `../b2b/json/${year}/${month}/${date}-reg${heure}.json`;	
-		const resp = await loadJson(url);
+		const url = `${year}/${month}/${date}-reg${heure}.json`;	
+		const resp = await get_data(url);
 		return resp;
 	}
 
@@ -486,8 +486,8 @@ class weekly_regs {
 			} = this.delay
 	-------------------------------------------------------------------------------------*/
 	async get_data_weekly_regs() {
-		const url = `../b2b/json/${this.year}/${this.year}-weekly-reg.json`;	
-		const resp = await loadJson(url);
+		const url = `${this.year}/${this.year}-weekly-reg.json`;	
+		const resp = await get_data(url);
 		return resp;
 	}
 
@@ -656,8 +656,8 @@ class monthly_regs {
 			} = this.delay
 	-------------------------------------------------------------------------------------*/
 	async get_data_monthly_regs() {
-		const url = `../b2b/json/${this.year}/${this.year}-monthly-reg.json`;	
-		const resp = await loadJson(url);
+		const url = `${this.year}/${this.year}-monthly-reg.json`;	
+		const resp = await get_data(url);
 		return resp;
 	}
 

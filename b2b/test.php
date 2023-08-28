@@ -4,7 +4,7 @@ require_once("B2B.php");
 require_once("B2B-Service.php");
 require_once("B2B-FlightServices.php");
 require_once("B2B-FlowServices.php");
-include_once("config.inc.php");
+include_once("path.inc.php");
 include_once("hour_config-vps.inc.php");
 /*
 $wef=gmdate("Y-m-d H:i", mktime(15, 0, 0, 5, 16, 2021));
@@ -25,7 +25,7 @@ function write_json($arr, $zone, $type, $wef) {
 	$d = $date->format('Ymd');
 	$y = $date->format('Y');
 	$m = $date->format('m');
-	$dir = dirname(__FILE__)."/json/$y/$m/";
+	$dir = WRITE_PATH."/json/$y/$m/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);

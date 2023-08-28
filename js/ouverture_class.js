@@ -282,9 +282,11 @@ class ouverture extends schema_rea {
     async add_ouverture_listener() {
         try {	
             const tds = document.querySelectorAll('.tv');
-            
+            console.log("000");
             const h20 = await get_h20_b2b(this.day, this.zone, this.schema); //  {	date: { tv: [ ["heure:min", load, mv_ods], ... ] } }
+            console.log("111");
             const occ = await get_occ_b2b(this.day, this.zone, this.schema);
+            console.log("222");
             const h = h20[this.day];
             console.log("H TV");
             console.log(h);
@@ -311,14 +313,14 @@ class ouverture extends schema_rea {
             let year = dd[0];
             let month = dd[1];
             let file_name;
-            file_name = `../b2b/json/${year}/${month}/${rd}-mv_otmv-${z}.json`;
-            let mv_otmv = await loadJson(file_name);
+            file_name = `${year}/${month}/${rd}-mv_otmv-${z}.json`;
+            let mv_otmv = await get_data(file_name);
             if (typeof mv_otmv === 'undefined') {
                 const default_date_MV_json = await loadJson("../default_date_MV_OTMV.json");
                 const ddmv = remove_hyphen_date(default_date_MV_json['date']);
                 const default_date_MV = reverse_date(default_date_MV_json['date']);
-                file_name = `../b2b/json/2023/06/${ddmv}-mv_otmv-${z}.json`;
-                mv_otmv = await loadJson(file_name);
+                file_name = `2023/06/${ddmv}-mv_otmv-${z}.json`;
+                mv_otmv = await get_data(file_name);
                 show_popup(`MV/OTMV du jour indisponibles`, `Date des MV/OTMV : ${default_date_MV}`);
             }
             console.log("otmv 4f");

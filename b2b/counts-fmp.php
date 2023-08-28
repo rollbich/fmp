@@ -9,6 +9,7 @@ require_once("B2B-FlightServices.php");
 require_once("B2B-FlowServices.php");
 include_once("config.inc.php");
 include_once("hour_config".$config.".inc.php");
+include_once("path.inc.php");
 /* 16 mai 2021 15h
 $wef=gmdate("Y-m-d H:i", mktime(15, 0, 0, 5, 16, 2021));
 $unt=gmdate("Y-m-d H:i", mktime(17, 0, 0, 5, 16, 2021));
@@ -137,7 +138,7 @@ function write_xls($zone, $wef, $occ_est, $occ_west, $h20_est, $h20_west, $regul
 	$d = $date->format('Ymd');
 	$y = $date->format('Y');
 	$m = $date->format('m');
-	$dir = dirname(__FILE__)."/xls/$y/$m/";
+	$dir = WRITE_PATH."/xls/$y/$m/";
 	//pour alban DGAC $dir = "J:/Svc_Expl/SUB_CT/FMP/Utilisateurs Bureau FMP/Adonis/Récup B2B NM/xls/$y/$m/";
 	
 	if (!file_exists($dir)) {
@@ -163,7 +164,7 @@ function write_json($arr, $zone, $type, $wef) {
 	$d = $date->format('Ymd');
 	$y = $date->format('Y');
 	$m = $date->format('m');
-	$dir = dirname(__FILE__)."/json/$y/$m/";
+	$dir = WRITE_PATH."/json/$y/$m/";
 	// pour Alban DGAC $dir = "J:/Svc_Expl/SUB_CT/FMP/Utilisateurs Bureau FMP/Adonis/Récup B2B NM/json/$y/$m/";
 	
 	if (!file_exists($dir)) {

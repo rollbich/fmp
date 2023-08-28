@@ -1,7 +1,5 @@
 <?php
 ini_set('memory_limit', '1G');
-require_once("xlsxwriter.class.php");
-require_once("mail-msg.php");
 require_once("B2B.php");
 require_once("B2B-Service.php");
 require_once("B2B-AirspaceServices.php");
@@ -9,101 +7,11 @@ require_once("B2B-FlightServices.php");
 require_once("B2B-FlowServices.php");
 include_once("config.inc.php");
 include_once("hour_config".$config.".inc.php");
+include_once("path.inc.php");
 /* 16 mai 2021 15h
 $wef=gmdate("Y-m-d H:i", mktime(15, 0, 0, 5, 16, 2021));
 $unt=gmdate("Y-m-d H:i", mktime(17, 0, 0, 5, 16, 2021));
 */
-
-/*  ------------------------------------------
-		Ecriture du fichier Excel XLS
-		4 onglets H20, Occ, Regul et flights
-	------------------------------------------ */
-function write_xls($zone, $wef, $occ_est, $occ_west, $h20_est, $h20_west) {
-		
-	$header_occ = array(
-		'TV'=>'string',
-		'Date'=>'date',
-		'Time'=>'string',
-		'Peak'=>'integer',
-		'Sustain'=>'integer',
-		'Load'=>'integer',
-		'Demand'=>'integer'
-	);
-	
-	$header_h20 = array(
-		'TV'=>'string',
-		'Date'=>'date',
-		'Time'=>'string',
-		'MV'=>'integer',
-		'Load'=>'integer',
-		'Demand'=>'integer'
-	);
-	
-	$header_reg = array(
-		'Reg-Id'=>'string',
-		'TV'=>'string',
-		'Date'=>'date',
-		'Début'=>'string',
-		'Fin'=>'string',
-		'Raison'=>'string',
-		'Normal Rate'=>'integer',
-		'Pending Rate'=>'integer',
-		'Equipment Rate'=>'integer',
-		'Total delay'=>'integer',
-		'Vols impactés'=>'integer',
-		'TV-Set'=>'string',
-		'Update Type'=>'string',
-		'Date update'=>'date',
-		'Heure update'=>'string'
-	);
-	
-	$header_flights = array(
-		'TV'=>'string',
-		'Date'=>'date',
-		'Vols'=>'integer'
-	);
-
-	$header_cta = array(
-		'Airspace'=>'string',
-		'Date'=>'date',
-		'RegDemand'=>'integer',
-		'Load'=>'integer',
-		'Demand'=>'integer'
-	);
-	
-	$style_header = array( 'font'=>'Arial','font-size'=>12,'font-style'=>'bold', 'halign'=>'center');
-	$style = array('halign'=>'center');
-
-	$writer = new XLSXWriter();
-	$writer->setAuthor('LFMM-FMP'); 
-	
-	// Occ
-	$writer->writeSheetHeader('Occ', $header_occ, $style_header );
-		
-	foreach(${"occ_".$zone} as $row) {
-		$writer->writeSheetRow('Occ', $row, $style);
-	}
-	
-	// H20
-	$writer->writeSheetHeader('H20', $header_h20, $style_header );
-		
-	foreach(${"h20_".$zone} as $row) {
-		$writer->writeSheetRow('H20', $row, $style);
-	}
-	
-	$date = new DateTime($wef);
-	$d = $date->format('Ymd');
-	$y = $date->format('Y');
-	$m = $date->format('m');
-	$dir = dirname(__FILE__)."/xls/$y/$m/";
-	
-	if (!file_exists($dir)) {
-		mkdir($dir, 0777, true);
-	}
-	
-	$writer->writeToFile($dir.$d."-Occ-H20-".$zone."-test.xlsx");
-
-}
 
 /*  ------------------------------------------
 		Ecriture du fichier générique json
@@ -113,19 +21,21 @@ function write_xls($zone, $wef, $occ_est, $occ_west, $h20_est, $h20_west) {
 		$wef : pour la date du jour
 		ex : 20210621-H20-est.csv
 	------------------------------------------ */
+
 function write_json($arr, $zone, $type, $wef) {
 	
 	$date = new DateTime($wef);
 	$d = $date->format('Ymd');
 	$y = $date->format('Y');
 	$m = $date->format('m');
-	$dir = dirname(__FILE__)."/json/$y/$m/";
+	$dir = WRITE_PATH."/json/$y/$m/";
+	// pour Alban DGAC $dir = "J:/Svc_Expl/SUB_CT/FMP/Utilisateurs Bureau FMP/Adonis/Récup B2B NM/json/$y/$m/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);
 	}
 	
-	$fp = fopen($dir.$d.$type.$zone."-test.json", 'w');
+	$fp = fopen($dir.$d.$type.$zone.".json", 'w');
 	fwrite($fp, json_encode($arr));
 	fclose($fp);
 
@@ -178,7 +88,6 @@ echo "Get H20 OK<br>";
 //	@params (array)	: [ ["RAE", "2022-06-07", "05:20", mv, demand], [...] ] 
 //  @return	(array)	: [ ["RAE", "2022-06-07", "05:20", mv, load, demand], [...] ]
 // -------------------------------------------------------------------------------------------
-$h20_est = array();
 $h20_west = array();
 foreach($h20_west1 as $key=>$val) {
 	array_push($val, $h20_west2[$key][4]);
@@ -191,7 +100,6 @@ foreach($h20_west1 as $key=>$val) {
 //	@params (array)	: [ ["RAE", "2022-07-07", "17:48", peak, sustain, demand], [...] ] 
 //  @return	(array)	: [ ["RAE", "2022-06-07", "17:48", peak, sustain, load, demand], [...] ]
 // ----------------------------------------------------------------------------------------------------
-$occ_est = array();
 $occ_west = array();
 foreach($occ_west1 as $key=>$val) {
 	array_push($val, $occ_west2[$key][5]);
@@ -200,11 +108,7 @@ foreach($occ_west1 as $key=>$val) {
 
 echo "Merge occ & H20 OK<br>";
 
-include("tab_TV.inc.php");
-
 try {	
-	
-	write_xls("west", $wef_counts, $occ_est, $occ_west, $h20_est, $h20_west);
 	
 	write_json($occ_west, "west", "-Occ-", $wef_counts);
 	write_json($h20_west, "west", "-H20-", $wef_counts);
