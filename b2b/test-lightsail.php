@@ -6,7 +6,7 @@ require_once("B2B-Service.php");
 require_once("B2B-AirspaceServices.php");
 require_once("B2B-FlightServices.php");
 require_once("B2B-FlowServices.php");
-include_once("config.inc.php");
+include_once("path.inc.php");
 include_once("hour_config-vps.inc.php");
 /* 16 mai 2021 15h
 $wef=gmdate("Y-m-d H:i", mktime(15, 0, 0, 5, 16, 2021));
@@ -27,7 +27,7 @@ function write_json($arr, $zone, $type, $wef) {
 	$d = $date->format('Ymd');
 	$y = $date->format('Y');
 	$m = $date->format('m');
-	$dir = DATA_PATH."/$y/$m/";
+	$dir = WRITE_PATH."/json/$y/$m/";
 	echo $dir."<br>";
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);
@@ -47,7 +47,7 @@ $soapClient = new B2B();
 $today = gmdate('Y-m-d', strtotime("today"));
 
 // ATC conf du jour
-$airspace1 = "LFMMCTAE";
+$airspace1 = "LFMMCTAEC"; // Erreur pour tester email
 $airspace2 = "LFMMCTAW";
 // today = minuit locale soit la veille 22h00 UTC
 $today = gmdate('Y-m-d', strtotime("today"));

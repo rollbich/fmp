@@ -1,7 +1,5 @@
 <?php
 ini_set('memory_limit', '1G');
-require_once("xlsxwriter.class.php");
-require_once("mail-msg.php");
 require_once("B2B.php");
 require_once("B2B-Service.php");
 require_once("B2B-AirspaceServices.php");
@@ -9,111 +7,11 @@ require_once("B2B-FlightServices.php");
 require_once("B2B-FlowServices.php");
 include_once("config.inc.php");
 include_once("hour_config".$config.".inc.php");
+include_once("path.inc.php");
 /* 16 mai 2021 15h
 $wef=gmdate("Y-m-d H:i", mktime(15, 0, 0, 5, 16, 2021));
 $unt=gmdate("Y-m-d H:i", mktime(17, 0, 0, 5, 16, 2021));
 */
-
-/*  ------------------------------------------
-		Ecriture du fichier Excel XLS
-		4 onglets H20, Occ, Regul et flights
-	------------------------------------------ */
-function write_xls($zone, $wef, $flights) {
-		
-	$header_occ = array(
-		'TV'=>'string',
-		'Date'=>'date',
-		'Time'=>'string',
-		'Peak'=>'integer',
-		'Sustain'=>'integer',
-		'Load'=>'integer',
-		'Demand'=>'integer'
-	);
-	
-	$header_h20 = array(
-		'TV'=>'string',
-		'Date'=>'date',
-		'Time'=>'string',
-		'MV'=>'integer',
-		'Load'=>'integer',
-		'Demand'=>'integer'
-	);
-	
-	$header_reg = array(
-		'Reg-Id'=>'string',
-		'TV'=>'string',
-		'Date'=>'date',
-		'Début'=>'string',
-		'Fin'=>'string',
-		'Raison'=>'string',
-		'Normal Rate'=>'integer',
-		'Pending Rate'=>'integer',
-		'Equipment Rate'=>'integer',
-		'Total delay'=>'integer',
-		'Vols impactés'=>'integer',
-		'TV-Set'=>'string',
-		'Update Type'=>'string',
-		'Date update'=>'date',
-		'Heure update'=>'string'
-	);
-	
-	$header_flights = array(
-		'TV'=>'string',
-		'Date'=>'date',
-		'Vols'=>'integer'
-	);
-
-	$header_cta = array(
-		'Airspace'=>'string',
-		'Date'=>'date',
-		'RegDemand'=>'integer',
-		'Load'=>'integer',
-		'Demand'=>'integer'
-	);
-	
-	$style_header = array( 'font'=>'Arial','font-size'=>12,'font-style'=>'bold', 'halign'=>'center');
-	$style = array('halign'=>'center');
-
-	$writer = new XLSXWriter();
-	$writer->setAuthor('LFMM-FMP'); 
-	
-	// Vols
-	$writer->writeSheetHeader('Vols jour', $header_flights, $style_header );
-	if ($zone == "est") {
-		if (isset($flights->LFMMFMPE)) {
-			foreach($flights->LFMMFMPE as $row) {
-				$writer->writeSheetRow('Vols jour', $row, $style);
-			}
-		}
-	}
-	if ($zone == "west") {
-		if (isset($flights->LFMMFMPE)) {
-			foreach($flights->LFMMFMPW as $row) {
-				$writer->writeSheetRow('Vols jour', $row, $style);
-			}
-		}
-	}
-
-	// Vols CTA
-	$writer->writeSheetHeader('Vols CTAs', $header_cta, $style_header );
-	$writer->writeSheetRow('Vols CTAs', $flights->LFMMCTA, $style);
-	$writer->writeSheetRow('Vols CTAs', $flights->LFMMCTAE, $style);
-	$writer->writeSheetRow('Vols CTAs', $flights->LFMMCTAW, $style);
-	
-	
-	$date = new DateTime($wef);
-	$d = $date->format('Ymd');
-	$y = $date->format('Y');
-	$m = $date->format('m');
-	$dir = dirname(__FILE__)."/xls/$y/$m/";
-	
-	if (!file_exists($dir)) {
-		mkdir($dir, 0777, true);
-	}
-	
-	$writer->writeToFile($dir.$d."-flights-".$zone.".xlsx");
-
-}
 
 /*  ------------------------------------------
 		Ecriture du fichier générique json
@@ -123,13 +21,15 @@ function write_xls($zone, $wef, $flights) {
 		$wef : pour la date du jour
 		ex : 20210621-H20-est.csv
 	------------------------------------------ */
+
 function write_json($arr, $zone, $type, $wef) {
 	
 	$date = new DateTime($wef);
 	$d = $date->format('Ymd');
 	$y = $date->format('Y');
 	$m = $date->format('m');
-	$dir = dirname(__FILE__)."/json/$y/$m/";
+	$dir = WRITE_PATH."/json/$y/$m/";
+	// pour Alban DGAC $dir = "J:/Svc_Expl/SUB_CT/FMP/Utilisateurs Bureau FMP/Adonis/Récup B2B NM/json/$y/$m/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);
@@ -147,6 +47,10 @@ function write_json($arr, $zone, $type, $wef) {
 
 $soapClient = new B2B();
 $today = gmdate('Y-m-d', strtotime("today"));
+
+// Counts de LFMMCTAE
+// Attention avec les réglages "local", on récupère effectiveTrafficWindow sur 2 jours => $query_LFMMCTA->data->counts->item[0]->value
+// Alors qu'en prod, on récupère bien sur 1 journée => data->counts->item->value
 
 $query_LFMMCTA_LOAD = $soapClient->flowServices()->query_entry_day_count("LFMMCTA","LOAD", $wef_flights, $unt_flights);
 if (is_array($query_LFMMCTA_LOAD->data->counts->item)) {
@@ -221,23 +125,26 @@ if (is_array($query_LFMMCTAW_REGDEMAND->data->counts->item)) {
 echo "get Entry day count Est-West OK<br>";
 
 include("tab_TV.inc.php");
+/* --------------------------------------------------------------
+    $tab_TVE = ["LFMRAE", "LFMSBAM", "LFMGY", "LFMAB", "LFMEK"];
+    $tab_TVW = ["LFMRAW", "LFMMALY", "LFMWW", "LFMMF", "LFMDZ"];
+    $tab_TVAPP = ["LFKJ","LFKF","LFKB","LFKC","LFMN","LFMD","LFTZ","LFTH","LFML","LFMV","LFMQ","LFLL","LFLY","LFLS","LFLB","LFLP","LFLC","LFMT","LFTW","LFMP","LFMU","LFLV","LFLN","LFLU"];
+    $tab_ADAPP = ["LFMI","LFMH","LFMA","LFLI","LFMC","LFKS","LFMY","LFMO","LFKA","LFKO","LFMS","LFMZ","LFMF","LFTF","LFLE","LFLG","LFLJ","LFLM","LFLO","LFNA","LFNB","LFNG","LFNH","LFXA"];
+----------------------------------------------------------------- */
 
 $flights = new stdClass();
 $flights->LFMMCTA = ["LFMMCTA", $today, $counts_LFMMCTA_REGDEMAND, $counts_LFMMCTA_LOAD, $counts_LFMMCTA_DEMAND];
 $flights->LFMMCTAE = ["LFMMCTAE", $today, $counts_LFMMCTAE_REGDEMAND, $counts_LFMMCTAE_LOAD, $counts_LFMMCTAE_DEMAND];
 $flights->LFMMCTAW = ["LFMMCTAW", $today, $counts_LFMMCTAW_REGDEMAND, $counts_LFMMCTAW_LOAD, $counts_LFMMCTAW_DEMAND];
 $soapClient->flightServices()->get_vols_Est($flights, $tab_TVE, $wef_flights, $unt_flights);
-echo "get vols Est OK<br>";
+echo "get vols Blocs Est OK<br>";
 $soapClient->flightServices()->get_vols_West($flights, $tab_TVW, $wef_flights, $unt_flights);
-echo "get vols West OK<br>";
+echo "get vols Blocs West OK<br>";
 $soapClient->flightServices()->get_vols_App($flights, $tab_TVAPP, $tab_ADAPP, $wef_flights, $unt_flights);
 echo "get vols App OK<br>";
 
 try {	
 	
-	write_xls("est", $wef_counts, $flights);
-	write_xls("west", $wef_counts, $flights);
-		
 	write_json($flights, "", "-vols", $wef_counts);
 	
 }

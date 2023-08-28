@@ -27,8 +27,8 @@ class conf {
 		const date = this.day.replace(/-/g, ''); // yyyymmdd
 		const year = this.day.substr(0,4);
 		const month = date.substr(4,2);
-		const url = `../../data/json/${year}/${month}/${date}-confs.json`;	
-		const resp = await loadJson(url);
+		const url = `${year}/${month}/${date}-confs.json`;	
+		const resp = await get_data(url);
 		return resp;
 	}
 
@@ -60,9 +60,13 @@ class conf {
 				method: 'POST',
 				headers: { "Content-Type": "application/json" }
 			})
-			.then(rep_status); 
-			let json = await response.json(); 
-			return json;
+			if (response.ok) { // entre 200 et 300
+				return Promise.resolve(response.json())
+			  } else {
+				// l'erreur est transmise au bloc catch de loadJson
+				if (response.status == 404) { return Promise.reject(new Error(`Le fichier ${response.url} n'existe pas`)); }
+				return Promise.reject(new Error('Erreur: '+response.statusText))
+			}  
 		}
 		
 		catch (err) {

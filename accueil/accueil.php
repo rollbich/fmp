@@ -15,6 +15,7 @@ require("../php/check_ok.inc.php");
 	<link rel="stylesheet" href="../css/style.css"> 
     <link rel="shortcut icon" type="image/x-icon" href="../favicon.ico">
     <script type="text/javascript" src="../js/utils.js"></script>
+	<script type="text/javascript" src="../js/data.js"></script>
 	<script type="text/javascript" src="../js/list-component.js"></script>
 	<script type="text/javascript" src="../js/upload.js"></script>
     <script type="text/javascript" src="../js/graph.js"></script>

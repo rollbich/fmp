@@ -1,12 +1,13 @@
 <?php
 ini_set('memory_limit', '1G');
-require_once("mail-msg.php");
 require_once("B2B.php");
 require_once("B2B-Service.php");
 require_once("B2B-AirspaceServices.php");
 require_once("B2B-FlightServices.php");
 require_once("B2B-FlowServices.php");
-include_once("hour_config-vps.inc.php");
+include_once("path.inc.php");
+include_once("config.inc.php");
+include_once("hour_config".$config.".inc.php");
 /* 16 mai 2021 15h
 $wef=gmdate("Y-m-d H:i", mktime(15, 0, 0, 5, 16, 2021));
 $unt=gmdate("Y-m-d H:i", mktime(17, 0, 0, 5, 16, 2021));
@@ -26,7 +27,7 @@ function write_json($arr, $zone, $type, $wef) {
 	$d = $date->format('Ymd');
 	$y = $date->format('Y');
 	$m = $date->format('m');
-	$dir = dirname(__FILE__)."/json/$y/$m/";
+	$dir = WRITE_PATH."/json/$y/$m/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);
@@ -263,6 +264,11 @@ if (is_array($query_LFMMCTAW_REGDEMAND->data->counts->item)) {
 
 echo "get Entry day count Est-West OK<br>";
 
+/* ----------------------------------------------------------------------
+	Insert les variables : $tab_TVE, $tab_TVW, $tab_TVAPP, $tab_ADAPP
+	qui sont des arrays de TV ou de AD
+	Sert pour le calcul du nbre de vols et des infos vols
+   ---------------------------------------------------------------------- */
 include("tab_TV.inc.php");
 
 $flights = new stdClass();

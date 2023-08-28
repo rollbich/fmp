@@ -20,6 +20,7 @@
 	<script type="text/javascript" src="../js/base.js"></script>
 	<script type="text/javascript" src="../js/tds-name.js"></script>
 	<script type="text/javascript" src="../js/utils.js"></script>
+	<script type="text/javascript" src="../js/data.js"></script>
 	<script type="text/javascript" src="../js/tri-config.js"></script>
 	<script type="text/javascript" src="../js/tri.js"></script>
 	<script type="text/javascript" src="../js/list-component.js"></script>

@@ -428,8 +428,8 @@ class monthly_vols {
             } = this.nbre_vols
     -------------------------------------------------------------------------------------*/
     async get_data_monthly_vols() {
-        const url = `../b2b/json/${this.year}/${this.year}-monthly-flights.json`;	
-        const resp = await loadJson(url);
+        const url = `${this.year}/${this.year}-monthly-flights.json`;	
+        const resp = await get_data(url);
         return resp;
     }
 

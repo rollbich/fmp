@@ -24,7 +24,6 @@ class visu {
             "18:00": true, "18:20": true, "19:00": true, "19:20": true, 
             "20:00": true, "20:20": true, "21:00": true, "21:20": true, "23:59": true };
         this.init();
-        //console.log(this.h);
     }
 
     async init() {
@@ -48,7 +47,7 @@ class visu {
             this.h[tt] = await get_visu_h20(this.day, this.zone, tt);
             this.o[tt] = await get_visu_occ(this.day, this.zone, tt);
         }
-        if (this.h[tt] === 'undefined') this.heures[t] = false;
+        if (this.h[tt] === 404) this.heures[t] = false;
         console.log(t);
         console.log(this.h[tt]);
         console.log(this.o[tt]);
@@ -127,14 +126,14 @@ class visu {
                 let year = dd[0];
                 let month = dd[1];
                 let file_name;
-                file_name = `../b2b/json/${year}/${month}/${rd}-mv_otmv-${z}.json`;
-                let mv_otmv = await loadJson(file_name);
+                file_name = `${year}/${month}/${rd}-mv_otmv-${z}.json`;
+                let mv_otmv = await get_data(file_name);
                 if (typeof mv_otmv === 'undefined') {
                     const default_date_MV_json = await loadJson("../default_date_MV_OTMV.json");
                     const ddmv = remove_hyphen_date(default_date_MV_json['date']);
                     const default_date_MV = reverse_date(default_date_MV_json['date']);
-                    file_name = `../b2b/json/2023/06/${ddmv}-mv_otmv-${z}.json`;
-                    mv_otmv = await loadJson(file_name);
+                    file_name = `2023/06/${ddmv}-mv_otmv-${z}.json`;
+                    mv_otmv = await get_data(file_name);
                     show_popup(`MV/OTMV du jour indisponibles`, `Date des MV/OTMV : ${default_date_MV}`);
                 }
                 this.mv_b2b_4f = mv_otmv["MV"];
@@ -240,14 +239,14 @@ async function get_visu_h20(day, zone, time = "") {
     const area = zone === "AE" ? "est" : "west";
     let url = "";
     if (time == "") {
-        url = `../b2b/json/${year}/${month}/${date}-H20-${area}.json`; 
+        url = `${year}/${month}/${date}-H20-${area}.json`; 
     } else {
         const h = time.substring(0,2);
         const mn = time.substring(2,4);
-        url = `../b2b/json/${year}/${month}/${date}-H20-${area}-${h}h${mn}.json`;	
+        url = `${year}/${month}/${date}-H20-${area}-${h}h${mn}.json`;	
     }
     const resp = await loadJsonB2B(url, "H20", zone);
-    if (typeof resp === 'undefined') return 'undefined';	
+    if (resp === 404) return 404;	
     result = {};
         
     resp.forEach( arr => {
@@ -287,14 +286,14 @@ async function get_visu_occ(day, zone, time = "") {
     const area = zone === "AE" ? "est" : "west";
     let url = "";
     if (time == "") {
-        url = `../b2b/json/${year}/${month}/${date}-Occ-${area}.json`; 
+        url = `${year}/${month}/${date}-Occ-${area}.json`; 
     } else {
         const h = time.substring(0,2);
         const mn = time.substring(2,4);
-        url = `../b2b/json/${year}/${month}/${date}-Occ-${area}-${h}h${mn}.json`;	
+        url = `${year}/${month}/${date}-Occ-${area}-${h}h${mn}.json`;	
     }
     const resp = await loadJsonB2B(url, "OCC", zone);
-    if (typeof resp === 'undefined') return 'undefined';
+    if (resp === 404) return 404;
     const result = {};
     
     resp.forEach( arr => {			

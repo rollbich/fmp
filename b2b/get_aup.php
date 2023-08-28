@@ -5,7 +5,6 @@ require_once("B2B.php");
 require_once("B2B-Service.php");
 require_once("Airspace.php");
 require_once("B2B-AirspaceServices.php");
-include_once("config.inc.php");
 
 function get_aup($day) {
     $date = new DateTime($day);

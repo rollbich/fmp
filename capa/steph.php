@@ -1,6 +1,6 @@
 <?php
   session_start();
-  if (!(isset($_SESSION['login_bureau'])) || $_SESSION['login_bureau'] === false) die("Interdit");
+  require("../php/check_ok.inc.php");
 ?>
 <!DOCTYPE html>
 <html>
@@ -8,22 +8,28 @@
 	<meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="robots" content="noindex">
-	<title>Administration B2B</title>
+	<title>Feuille Capa</title>
 	<link rel="icon" href="../favicon.ico" />
 	<script type="text/javascript" src="../js/base.js"></script>
+	<script type="text/javascript" src="../js/tds-name.js"></script>
 	<script type="text/javascript" src="../js/utils.js"></script>
+	<script type="text/javascript" src="../js/tri-config.js"></script>
+	<script type="text/javascript" src="../js/tri.js"></script>
 	<script type="text/javascript" src="../js/list-component.js"></script>
+	<script type="text/javascript" src="../js/schema.js"></script>
+	<script type="text/javascript" src="../js/olaf.js"></script>
+	<script type="text/javascript" src="../js/capa_class.js"></script>
 	<script type="text/javascript" src="../js/upload.js"></script>
-        <script type="text/javascript" src="nmir/reg/nmir_reg_to_json.js"></script>
 	<script src="../js/echarts.min.js"></script>
 	<link rel="stylesheet" href="../css/bulma.css">
 	<link rel="stylesheet" type="text/css" href="../css/font.css" />
 	<link rel="stylesheet" type="text/css" href="../css/list-component.css" />
 	<link rel="stylesheet" type="text/css" href="../css/font-awesome.min.css" />
 	<link rel="stylesheet" type="text/css" href="../css/style.css" />
+	<link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
 	<link rel="stylesheet" type="text/css" href="../css/upload.css" />
 	<script>
-		document.addEventListener('DOMContentLoaded', (event) => {
+		document.addEventListener('DOMContentLoaded', async (event) => {
 			<?php include("../php/nav.js.inc.php"); ?>
 
 			document.querySelector('.help_button').addEventListener('click', e => {
@@ -51,8 +57,15 @@
 				$('start').value = addDays_toString($('start').value,1);
 			});
 
-			$('bouton_save_reg').addEventListener('click', async e => {
-				new nmir_reg();
+			$('bouton_xls').addEventListener('click', async e => {
+				let zone = $('zone').value;
+				let day = $('start').value;
+				const capa = new feuille_capa("feuille_capa_tour", day, zone, false)
+				.then( (value) => {
+					console.log("RESULT UCESOS");
+					console.log(value.compacted);
+					console.log(value.quarter);
+				});
 			});
 			
 		});		
@@ -64,26 +77,32 @@
 
 <?php include("../php/nav.inc.php"); ?>
 
-<h1>Admin B2B</h1>
-<h2 class="center">Pour les REG Nmir : serveur localhost uniquement </h2>
+<h1>FEUILLE CAPA v2.1</h1>
 <div id="help_frame" class="off">
 	<h2>Help</h2>
-	<p><span>Save NMIR Reg</span> :<br>Sauvegarde les données Reguls B2B à partir d'un fichier NMIR (with_Applied_Rate) Regulations.csv placé dans admin/nmir/reg</p>
-	<p><span>H20/Occ D-1</span> :<br>Récupère en B2B les données H20/Occ de la veille de la date sélectée</p>
-	<p><span>Confs D-1</span> :<br>Récupère en B2B les données Confs de la veille</p>
-	<p><span>Flights D-1</span> :<br>Récupère en B2B les données LOAD, REG, REG_DEMAND de LFMMCTA, CTAE, CTAW et la liste des vols de RAE et RAW de la veille</p>
+	<p><span>Feuille</span> :<br>Cliquez sur ce bouton pour afficher la feuille de capa correspondante à la date et la zone choisie<br>Cliquez sur le nombre de pc dans la colonne PC afin de visualiser les effectifs par équipes. Cette case est surlignée lorsque l'effectif est différent de l'effectif OLAF</p>
+	<?php
+	if ($_SESSION['login_bureau'] === true || $_SESSION['login_encadrement'] === true) {
+		echo "<p><span>Simu</span> : Ce bouton permet de simuler un changement de BV ou de nombre de PC et de voir le résultat graphiquement.</p>";
+	}
+	?>
+	<p><span>Edit TDS</span> :<br>Ce bouton permet de modifier le tour de service ainsi que sa plage d'utilisation</p>
+	<p><span>Instr</span> :<br>Ce bouton permet de modifier une plage horaire en ajoutant ou enlevant de l'effectif, par exemple lors d'un recyclage instructeur, une ASA ou une simu remontée de trafic.</p>
 	<button class="help_close_button pointer">Close</button>
 </div>
 <ul class="menu">
-	<li id="bouton_save_reg" class="pointer"><span>Save NMIR Reg</span></li>
-	<li id="bouton_get_counts_est"><a href="../b2b/counts-yesterday-est.php" target="_blank">H20/Occ D-1 Est</a></li>
-	<li id="bouton_get_counts_west"><a href="../b2b/counts-yesterday-west.php" target="_blank">H20/Occ D-1 West</a></li>
-	<li id="bouton_get_yesterdaycounts_est"><a href="../b2b/counts-yesterday-confs.php" target="_blank">Confs D-1</a></li>
-	<li id="bouton_get_yesterdaycounts_west"><a href="../b2b/counts-yesterday-vols.php" target="_blank">Flights D-1 + Bloc TV</a></li>
+	<li id="bouton_xls" class="pointer"><span>Start</span></li>
 	<li>
-		<button id="arrow_left"><</button>
-		<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="2021-09-14" max="2030-12-31">
-		<button id="arrow_right">></button>
+	<!--<label for="start" class="dates">Date:</label>-->
+	<button id="arrow_left"><</button>
+	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="2021-09-14" max="2030-12-31">
+	<button id="arrow_right">></button>
+	</li>
+	<li class="feuille">
+	  <select id="zone" class="select">
+		<option selected value="AE">Zone EST</option>
+		<option value="AW">Zone WEST</option>
+	  </select>
 	</li>
 	<li class="feuille"><button class="help_button">Help</button></li>
 </ul>

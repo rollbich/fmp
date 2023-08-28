@@ -1,114 +1,19 @@
 <?php
 ini_set('memory_limit', '1G');
-require_once("xlsxwriter.class.php");
-require_once("mail-msg.php");
 require_once("B2B.php");
 require_once("B2B-Service.php");
 require_once("B2B-AirspaceServices.php");
 require_once("B2B-FlightServices.php");
 require_once("B2B-FlowServices.php");
 include_once("config.inc.php");
-include_once("hour_config-vps-journee.inc.php");
-define("DATA_PATH", "/opt/bitnami/data/json");
+include_once("hour_config".$config."-journee.inc.php");
+include_once("path.inc.php");
 
 /*  ----------------------------------------------------
 		LFMM-FMP.FR : tâche CRON à 05h20, 6h20
 		08h20, 10h20, 12h20, 14h20, 16h20 et 18h20 loc
     ---------------------------------------------------- */
 
-/*  ------------------------------------------
-		Ecriture du fichier Excel XLS
-		4 onglets H20, Occ, Regul et flights
-	------------------------------------------ */
-function write_xls($zone, $wef, $occ_est, $occ_west, $h20_est, $h20_west, $regul) {
-		
-	$header_occ = array(
-	  'TV'=>'string',
-	  'Date'=>'date',
-	  'Time'=>'string',
-	  'Peak'=>'integer',
-	  'Sustain'=>'integer',
-	  'Load'=>'integer',
-	  'Demand'=>'integer'
-	);
-	
-	$header_h20 = array(
-	  'TV'=>'string',
-	  'Date'=>'date',
-	  'Time'=>'string',
-	  'MV'=>'integer',
-	  'Load'=>'integer',
-	  'Demand'=>'integer'
-	);
-	
-	$header_reg = array(
-		'Reg-Id'=>'string',
-		'TV'=>'string',
-		'Date'=>'date',
-		'Début'=>'string',
-		'Fin'=>'string',
-		'Raison'=>'string',
-		'Normal Rate'=>'integer',
-		'Pending Rate'=>'integer',
-		'Equipment Rate'=>'integer',
-		'Total delay'=>'integer',
-		'Vols impactés'=>'integer',
-		'TV-Set'=>'string',
-		'Update Type'=>'string',
-		'Date update'=>'date',
-		'Heure update'=>'string'
-	  );
-
-	$style_header = array( 'font'=>'Arial','font-size'=>12,'font-style'=>'bold', 'halign'=>'center');
-	$style = array('halign'=>'center');
-
-	$writer = new XLSXWriter();
-	$writer->setAuthor('LFMM-FMP'); 
-	
-	// Occ
-	
-	$writer->writeSheetHeader('Occ', $header_occ, $style_header );
-		
-	foreach(${"occ_".$zone} as $row) {
-		$writer->writeSheetRow('Occ', $row, $style);
-	}
-	
-	// H20
-	$writer->writeSheetHeader('H20', $header_h20, $style_header );
-		
-	foreach(${"h20_".$zone} as $row) {
-		$writer->writeSheetRow('H20', $row, $style);
-	}
-	
-	// Reg
-	$writer->writeSheetHeader('Regul', $header_reg, $style_header );
-	if ($zone == "est") {
-		foreach($regul["LFMMFMPE"] as $row) {
-			$writer->writeSheetRow('Regul', $row, $style);
-		}
-	}
-	if ($zone == "west") {	
-		foreach($regul["LFMMFMPW"] as $row) {
-			$writer->writeSheetRow('Regul', $row, $style);
-		}
-	}
-	$writer->writeSheetHeader('Regul-App', $header_reg, $style_header );
-	foreach($regul["LFMMAPP"] as $row) {
-		$writer->writeSheetRow('Regul-App', $row, $style);
-	}
-
-	$date = new DateTime($wef);
-	$d = $date->format('Ymd');
-	$h = $date->format('H');
-	$dir = dirname(__FILE__)."/xls/";
-	
-	if (!file_exists($dir)) {
-		mkdir($dir, 0777, true);
-	}
-	
-	$writer->writeToFile($dir.$d."-Occ-H20-".$zone."-".$h."00.xlsx");
-
-}
 
 /*  ------------------------------------------
 		Ecriture du fichier générique json
@@ -125,7 +30,7 @@ function write_json($arr, $zone, $type, $wef) {
 	$y = $date->format('Y');
 	$m = $date->format('m');
 	$h = $date->format('H');
-	$dir = DATA_PATH."/$y/$m/";
+	$dir = WRITE_PATH."/json/$y/$m/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);
@@ -136,6 +41,7 @@ function write_json($arr, $zone, $type, $wef) {
 	fclose($fp);
 
 }
+
 /*  ------------------------------------------
 		Ecriture d'un log
 		ex : 20210621-log.csv
@@ -145,7 +51,7 @@ function write_log($occ_text, $reg_text, $vol_text) {
 	$date = new DateTime();
 	$d = $date->format('Ymd');
 	$h = $date->format('Hi');
-	$dir = dirname(__FILE__)."/log/";
+	$dir = WRITE_PATH."/log/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);
@@ -167,7 +73,6 @@ function write_log($occ_text, $reg_text, $vol_text) {
 /*  ---------------------------------------------------------- */
 
 $soapClient = new B2B();
-$today = gmdate('Y-m-d', strtotime("today"));
 
 // récupère les données MV, duration, sustain, peak des TV LFMM
 // données du fichier MV.json
@@ -240,15 +145,7 @@ foreach($occ_west1 as $key=>$val) {
 }
 */
 
-// Sauvegarde des fichiers
-// Affichage d'un message suivant la réussite de la sauvegarde
-// écriture d'un log
-// Envoi d'un email en cas d'erreur
-
 try {	
-	
-	//write_xls("est", $wef_counts, $occ_est, [], $h20_est, [], $reg);
-	//write_xls("west", $wef_counts, $occ_est, $occ_west, $h20_est, $h20_west, $reg);
 	
 	write_json($occ_est, "est", "-Occ-", $wef_counts);
 	write_json($occ_west, "west", "-Occ-", $wef_counts);
@@ -263,5 +160,6 @@ catch (Exception $e) {
 	echo "Erreur, verifier les sauvegardes\n<br>";
 	echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";
 }
+
 
 ?>

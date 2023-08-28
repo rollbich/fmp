@@ -9,6 +9,7 @@ require_once("B2B-FlightServices.php");
 require_once("B2B-FlowServices.php");
 include_once("config.inc.php");
 include_once("hour_config".$config."-journee.inc.php");
+include_once("path.inc.php");
 
 /*  ----------------------------------------------------
 		LFMM-FMP.FR : tâche CRON à 05h20, 6h20
@@ -30,7 +31,7 @@ function write_json($arr, $zone, $type, $wef) {
 	$y = $date->format('Y');
 	$m = $date->format('m');
 	$h = $date->format('H');
-	$dir = dirname(__FILE__)."/json/$y/$m/";
+	$dir = WRITE_PATH."/json/$y/$m/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);
@@ -50,7 +51,7 @@ function write_log($occ_text, $reg_text, $vol_text) {
 	$date = new DateTime();
 	$d = $date->format('Ymd');
 	$h = $date->format('Hi');
-	$dir = dirname(__FILE__)."/log/";
+	$dir = WRITE_PATH."/log/";
 	
 	if (!file_exists($dir)) {
 		mkdir($dir, 0777, true);
@@ -72,7 +73,6 @@ function write_log($occ_text, $reg_text, $vol_text) {
 /*  ---------------------------------------------------------- */
 
 $soapClient = new B2B();
-$today = gmdate('Y-m-d', strtotime("today"));
 
 // ---------------------------------------
 // 		récupère les données Reg
@@ -113,8 +113,8 @@ $json_atfcm_reg = $soapClient->flowServices()->get_ATFCM_situation();
 
 echo "get atfcm_situation OK<br>";
 
-// Remplit l'object $json_reg (et l'array $reg pour l'export xls)
-$soapClient->flowServices()->get_full_regulations("LF", $wef_regs, $unt_regs, $json_reg, $reg, $json_atfcm_reg);
+// Remplit l'object $json_reg 
+$soapClient->flowServices()->get_full_regulations_json("LF", $wef_regs, $unt_regs, $json_reg, $json_atfcm_reg);
 
 echo "get regulation OK<br>";
 

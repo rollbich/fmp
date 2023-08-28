@@ -63,7 +63,7 @@ class capa {
 					}, 
 					...
 				}, 
-                "pc_total_dispo_15mn": [ ["hh:mm", nb_pc_dispo], [...], ... ],
+                "pc_total_horsInstrRD_15mn": [ ["hh:mm", nb_pc_dispo], [...], ... ],
 				"pc_total_RD_15mn": [ ["hh:mm", nb_pc_dispo], [...], ... ],
 				"pc_instru_15mn": [ ["hh:mm", nb_pc_dispo], [...], ... ]
 			  }
@@ -448,7 +448,8 @@ class capa {
 
 			
 		}
-		return {"pc_vac": pc, "pc_total_dispo_15mn": pcs, "pc_instr_15mn": in15mn, "pc_RD_15mn": effectif_RD_15mn, "pc_total_RD_15mn": effectif_total_RD_15mn};
+		// pc_total_horsInstrRD_15mn : total pc hors instr & hors RD bleu supp (les RD Jx sont inclus)
+		return {"pc_vac": pc, "pc_total_horsInstrRD_15mn": pcs, "pc_instr_15mn": in15mn, "pc_RD_15mn": effectif_RD_15mn, "pc_total_RD_15mn": effectif_total_RD_15mn};
     }
 
     /* ---------------------------------------------------
@@ -462,9 +463,9 @@ class capa {
         const tab = {};
         for (let eq=1;eq<13;eq++) {
             let debvac = (ecartj - parseInt(eq) + this.eq_dep) % 12;
-            if (this.tabvac[(debvac) % 12] !== "" && this.tabvac[(debvac) % 12] !== "N") tab[this.tabvac[(debvac) % 12]] = eq;
-            if (this.tabvac[(debvac) % 12] === "N") {
-                tab[this.tabvac[(debvac) % 12]] = eq;
+            if (this.tabvac[debvac] !== "" && this.tabvac[debvac] !== "N") tab[this.tabvac[debvac]] = eq;
+            if (this.tabvac[debvac] === "N") {
+                tab[this.tabvac[debvac]] = eq;
                 const eqN1 = eq == 1 ? 12 : eq - 1; // equipe de nuit de la veille
                 tab["N-1"] = eqN1; 
             }
@@ -628,17 +629,21 @@ class capa {
 }
 
 class feuille_capa extends capa {
-	/* ----------------------------------------------------------------
+	/* -----------------------------------------------------------------------------------------------------------
 		@param {string} containerIdTour - id du container pour le tour
-	   ---------------------------------------------------------------- */
-	constructor(containerIdTour, day, zone) {
+		@param {boolean} show			- true pour afficher la feuille de capa
+										  false pour retourner l'array uceso [ [hdeb, hfin, _uceso], [...] ....]
+	   ----------------------------------------------------------------------------------------------------------- */
+	constructor(containerIdTour, day, zone, show = true) {
 		super(day, zone);
 		this.containerTour = $(containerIdTour);
-		this.init_data();
+		this.show = show;
+		return this.init_data();
 	}
 
 	/*	------------------------------------------
 					Init Data		
+			async function => return : promise
 		------------------------------------------ */
 	async init_data() {
 		show_popup("Patientez !", "Chargement en cours...");
@@ -647,13 +652,13 @@ class feuille_capa extends capa {
 		this.pc = await this.get_nbpc_dispo(this.update[this.zone][this.day]['update_count']);
 		console.log("pc");
 		console.log(this.pc);
-		document.querySelector('.popup-close').click();
-		this.pc_15mn = this.pc["pc_total_dispo_15mn"];
-		this.pc_instr_15mn = this.pc["pc_instr_15mn"];
-		this.pc_RD_15mn = this.pc["pc_RD_15mn"];
-		this.pc_total_RD_15mn = this.pc["pc_total_RD_15mn"];
-		this.pc_vac = this.pc["pc_vac"];
-		this.show_feuille_capa();
+		await document.querySelector('.popup-close').click();
+		this.pc_15mn = await this.pc["pc_total_horsInstrRD_15mn"];
+		this.pc_instr_15mn = await this.pc["pc_instr_15mn"];
+		this.pc_RD_15mn = await this.pc["pc_RD_15mn"];
+		this.pc_total_RD_15mn = await this.pc["pc_total_RD_15mn"];
+		this.pc_vac = await this.pc["pc_vac"];
+		if (this.show) {this.show_feuille_capa(); return this; } else { return this.get_uceso(); }
 	}
 
 	/*	------------------------------------------
@@ -1070,11 +1075,15 @@ class feuille_capa extends capa {
 		let res = `<tr><td class='left_2px bottom_2px' colspan="3">Demi UC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
 		return res;
 	}
-		
+	
+	get_uceso_15mn() {
+		return this.pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + this.pc_instr_15mn[index][0] + this.pc_total_RD_15mn[index]) / 2) ]);
+	}
+
 	// fabrique la ligne du nbre d'uceso dispo
 	//	uceso = partie entière nbr_pc/2
 	affiche_uceso() {
-		const uc = this.pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + this.pc_instr_15mn[index][0] + this.pc_total_RD_15mn[index]) / 2) ]);
+		const uc = this.get_uceso_15mn();
 		let res3 = "";
 		this.compact(uc).forEach( elem => {
 			let nb_occ = elem[1] - elem[0] + 1;
@@ -1218,6 +1227,27 @@ class feuille_capa extends capa {
 		}
 		counts.push([index_ini, 95, pcs[95][1]]);
 		return counts;
+	}
+
+	compact_with_hours(pcs) {
+		const counts = [];
+		let index_ini = 0;
+		for(var j=0;j<95;j++) {
+			if (pcs[j][1] !== pcs[j+1][1]) {
+				counts.push([get_time(index_ini), get_time(j+1), pcs[j][1]]);
+				index_ini = j+1;
+			}
+		}
+		counts.push([index_ini, 95, pcs[95][1]]);
+		return counts;
+	}
+
+	get_uceso() {
+		const res = this.get_uceso_15mn();
+		return {
+			"compacted": this.compact_with_hours(res),
+			"quarter": this.get_uceso_15mn()
+		}
 	}
 
 	/* --------------------------------------------------------------------------------------------------
@@ -1497,7 +1527,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 		await wait(1000);
 		document.querySelector('.popup-close').click();
 	} else {
-		pc_15mn = pc["pc_total_dispo_15mn"];
+		pc_15mn = pc["pc_total_horsInstrRD_15mn"];
 		pc_instr_15mn = pc["pc_instr_15mn"];
 		pc_total_RD_15mn = pc["pc_total_RD_15mn"];
 		uceso = pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn[index][0] + pc_total_RD_15mn[index]) / 2) ]);
@@ -1514,7 +1544,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 		data_series_uceso.push([new Date(d[0], d[1]-1, d[2], 23, 59), uceso[uceso.length-1][1]]);
 
 		if (pc_simu !=0 ) {
-			pc_15mn_simu = pc_simu["pc_total_dispo_15mn"];
+			pc_15mn_simu = pc_simu["pc_total_horsInstrRD_15mn"];
 			pc_instr_15mn_simu = pc_simu["pc_instr_15mn"];
 			pc_total_RD_15mn_simu = pc_simu["pc_total_RD_15mn"];
 			uceso_simu = pc_15mn_simu.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn_simu[index][0] + pc_total_RD_15mn_simu[index]) / 2) ]);
