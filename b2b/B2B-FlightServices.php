@@ -1,5 +1,13 @@
 <?php
 
+/*  -----------------------------------------------------------------------
+		SOAP FLIGHT Services
+		
+		Range de requête : 24h max
+		trafficWindow (OPERATIONAL)	 : [yesterday .. tomorrow]
+		trafficWindow (FORECAST)	 : [yesterday 21:00 UTC .. today+5d]
+	----------------------------------------------------------------------- */
+
 class FlightServices extends Service {
     /*  ---------------------------------------------------------------------
 		Nombre de vols d'un TV par jour : FlightService
@@ -54,7 +62,7 @@ class FlightServices extends Service {
             'trafficWindow'=>array('wef'=>$wef,'unt'=>$unt),
             'requestedFlightFields'=>array('timeAtReferenceLocationEntry','aircraftType','aircraftOperator','actualTakeOffTime','actualTimeOfArrival'),
             'aerodrome'=>$ad,
-            'aerodromeRole'=>'BOTH' // NM 27 : GLOBAL au lieu de BOTH 
+            'aerodromeRole'=>'GLOBAL' // NM 27 : GLOBAL au lieu de BOTH 
         );
                             
         try {

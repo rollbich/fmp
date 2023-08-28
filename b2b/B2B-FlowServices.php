@@ -21,7 +21,7 @@ class FlowServices extends Service {
             'trafficWindow'=>array('wef'=>$wef,'unt'=>$unt),
             'countsInterval'=>array('duration'=>'2400','step'=>'2400'),
             'airspace'=>$airspace,
-            'subTotalComputeMode'=>'NO_SUB_TOTALS', // NM 26.0
+            'subTotalComputeMode'=>'NO_SUB_TOTALS', // NM >= 26.0
             'calculationType'=>'ENTRY'
         );
         
@@ -51,11 +51,11 @@ class FlowServices extends Service {
                 @param $trafficType (string) - "LOAD" / "DEMAND" / "REGULATED_DEMAND"
                 @param $wef / $unt  (string) - "YYYY-MM-DD hh:mm"   (ex : gmdate('Y-m-d H:i'))
         --------------------------------------------------------------------------------------- */
-    function query_entry_count(string $tv, string $wef, string $unt, string $trafficType) {
+    function query_entry_count(string $tv, string $wef, string $unt, string $trafficType, string $dataset = 'OPERATIONAL') {
         
         $params = array(
             'sendTime'=>gmdate("Y-m-d H:i:s"),
-            'dataset'=>array('type'=>'OPERATIONAL'),
+            'dataset'=>array('type'=>$dataset),
             'trafficTypes'=>array('item'=>$trafficType),
             'includeProposalFlights'=>false,
             'includeForecastFlights'=>false,
@@ -93,11 +93,11 @@ class FlowServices extends Service {
                 @param $trafficType (string) - "LOAD" / "DEMAND" / "REGULATED_DEMAND"
                 @param $wef / $unt  (string) - "YYYY-MM-DD hh:mm"   (ex : gmdate('Y-m-d H:i'))
         ----------------------------------------------------------------------------------------------- */
-    function query_occ_count(string $tv, string $tv_duration, string $wef, string $unt, string $trafficType) {
+    function query_occ_count(string $tv, string $tv_duration, string $wef, string $unt, string $trafficType, string $dataset = 'OPERATIONAL') {
         
         $params = array(
             'sendTime'=>gmdate("Y-m-d H:i:s"),
-            'dataset'=>array('type'=>'OPERATIONAL'),
+            'dataset'=>array('type'=>$dataset),
             'trafficTypes'=>array('item'=>$trafficType),
             'includeProposalFlights'=>false,
             'includeForecastFlights'=>false,
@@ -137,7 +137,7 @@ class FlowServices extends Service {
           @param $wef / $unt  (string) - "YYYY-MM-DD hh:mm"   (ex : gmdate('Y-m-d H:i'))
 		    @return [ ["TV", "yyyy-mm-dd", "hh:mm", MV, H/20], [...], ... ]
 	------------------------------------------------------------------------------------------------ */
-    function get_entry(string $prefix, array $tv_group, $tv_zone_mv, string $wef, string $unt, string $trafficType) {
+    function get_entry(string $prefix, array $tv_group, $tv_zone_mv, string $wef, string $unt, string $trafficType, string $dataset = 'OPERATIONAL') {
         
         $arr = array();
         
@@ -150,7 +150,7 @@ class FlowServices extends Service {
             
             $date = new DateTime($wef);
             $timestamp = $date->getTimestamp();
-            $result = $this->query_entry_count($prefix.$tv, $wef, $unt, $trafficType);
+            $result = $this->query_entry_count($prefix.$tv, $wef, $unt, $trafficType, $dataset);
 
             for ($i=0; $i<count($result->data->counts->item); $i++) {
                 $date->setTimestamp($timestamp+$i*60*20);
@@ -160,17 +160,17 @@ class FlowServices extends Service {
         return $arr;
     }
 
-    /*  ----------------------------------------------------------------------------------------------
+    /*  --------------------------------------------------------------------------------------------------
                 récupère l'occ de la zone "est" ou "west"
             dans la plage horaire $wef-$unt en heure UTC
             @param $prefix (string)      - "LFM"
             @param $tv_group (array)     - array des TVs
-            @param $tv_mv (object)       - objet dont les clés sont les TVs contenant les MV, et OTMV
+            @param $tv_zone_mv (object)       - objet dont les clés sont les TVs contenant les MV, et OTMV
             @param $trafficType (string) - "LOAD" / "DEMAND" / "REGULATED_DEMAND"
             @param $wef / $unt  (string) - "YYYY-MM-DD hh:mm"   (ex : gmdate('Y-m-d H:i'))
                 @return [ ["TV", "yyyy-mm-dd", "hh:mm", peak, sustain, H/20], [...], ... ]
-        ---------------------------------------------------------------------------------------------- */
-    function get_occ(string $prefix, array $tv_group, $tv_zone_mv, string $wef, string $unt, string $trafficType) {
+        -------------------------------------------------------------------------------------------------- */
+    function get_occ(string $prefix, array $tv_group, $tv_zone_mv, string $wef, string $unt, string $trafficType, string $dataset = 'OPERATIONAL') {
         
         $tv_duration = 0;
         
@@ -208,7 +208,7 @@ class FlowServices extends Service {
             
             $date = new DateTime($wef);
             $timestamp = $date->getTimestamp();
-            $result = $this->query_occ_count($prefix.$tv, $tv_duration, $wef, $unt, $trafficType);
+            $result = $this->query_occ_count($prefix.$tv, $tv_duration, $wef, $unt, $trafficType, $dataset);
         
             for ($i=0; $i<count($result->data->counts->item); $i++) {
                 $date->setTimestamp($timestamp+$i*60);
@@ -295,6 +295,7 @@ class FlowServices extends Service {
 
     // PHP par défaut : objets sont passés par référence / array par copie
     // change for php 8.1 : les paramètres optionnels doivent être placés après les paramètres obligatoires
+    // $reg est un array pour l'export Excel
     public function get_full_regulations(string $area, string $wef_regs, string $unt_regs, $json_reg, & $reg, $situation_ATFCM = null) {
         
         try {
@@ -368,6 +369,64 @@ class FlowServices extends Service {
             
     }
 
+    public function get_full_regulations_json(string $area, string $wef_regs, string $unt_regs, $json_reg, $situation_ATFCM = null) {
+        
+        try {
+            $regulations = $this->get_regulations($area, $wef_regs, $unt_regs);
+            if ($situation_ATFCM == null) $situation_ATFCM = $this->get_ATFCM_situation();
+            $situation = $this->get_area_situation($situation_ATFCM, $area);
+            for ($i=0; $i<count($regulations->data->regulations->item); $i++) {
+                $r = $regulations->data->regulations->item[$i];
+                $id = $r->regulationId;
+                $lastUpdateDate = substr($r->lastUpdate->userUpdateEventTime, 0, 10);
+                $lastUpdateTime = substr($r->lastUpdate->userUpdateEventTime, 11, 5);
+                $delay = 0;
+                $nbrImpactedFlight = 0;
+                foreach ($situation as $regul) {
+                    if ($regul[0] == $id) {
+                        $delay = (int) $regul[1];
+                        $nbrImpactedFlight = (int) $regul[2];
+                    }
+                }
+                $tvset = $r->delayTVSet;
+                $c = $r->initialConstraints;
+                if (is_array($c)) {
+                    $obj = new stdClass();
+                    $obj->regId = $r->regulationId;
+                    $obj->tv = $r->location->id;
+                    $obj->lastUpdate = $r->lastUpdate;
+                    $obj->applicability = $r->applicability;
+                    $obj->constraints = $r->initialConstraints;
+                    $obj->reason = $r->reason;
+                    $obj->delay = $delay;
+                    $obj->impactedFlights = $nbrImpactedFlight;
+                    $obj->TVSet = $r->delayTVSet;
+                    array_push($json_reg->$tvset, $obj);
+                } else {
+                    $obj = new stdClass();
+                    $obj->regId = $r->regulationId;
+                    $obj->tv = $r->location->id;
+                    $obj->lastUpdate = $r->lastUpdate;
+                    $obj->applicability = $r->applicability;
+                    $obj->constraints = array($r->initialConstraints);
+                    $obj->reason = $r->reason;
+                    $obj->delay = $delay;
+                    $obj->impactedFlights = $nbrImpactedFlight;
+                    $obj->TVSet = $r->delayTVSet;
+                    array_push($json_reg->$tvset, $obj);
+                }
+            }
+        }
+        
+        catch (Exception $e) {
+            echo 'Exception reçue get_full_regulations: ',  $e->getMessage(), "<br>\n";
+            $erreur = $this->getFullErrorMessage("Erreur get_full_regulations");
+            echo $erreur."<br>\n";
+            $this->send_mail($erreur);
+        }
+            
+    }
+
     /*  -------------------------------------------------------------------------
             Extrait de la situation ATFCM europe une zone précise d'europe
             -> reguls de la zone avec delai de chaque TV, vols impactés
@@ -385,7 +444,7 @@ class FlowServices extends Service {
             $delay_mn = (int) substr($r->delay, -2);
             $delay = $delay_h*60 + $delay_mn;
             if (substr($r->trafficVolumeId, 0, 2) == $area) {
-                array_push($arr, array($r->regulationId, $delay, $r->nrImpactedFlights)); // NM 27 nrImpactedFlights remplacé par impactedFlightCount
+                array_push($arr, array($r->regulationId, $delay, $r->impactedFlightCount)); // NM 27 nrImpactedFlights remplacé par impactedFlightCount
 				// impactedFlightCount : Number of flights which are crossing the regulation location during the regulation activation period.
 				// delay : The cumulated delay of the flights having the regulation as most penalising regulation.
             }
@@ -754,7 +813,7 @@ class FlowServices extends Service {
             'trafficWindow'=>array('wef'=>$wef,'unt'=>$unt),
             'countsInterval'=>array('duration'=>'2400','step'=>'2400'),
             'aerodrome'=>$ad,
-            'subTotalComputeMode'=>'NO_SUB_TOTALS', // NM 26.0
+            'subTotalComputeMode'=>'NO_SUB_TOTALS', // NM >= 26.0
             'aerodromeRole'=>$adRole
         );
         
