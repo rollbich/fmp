@@ -1238,7 +1238,7 @@ class feuille_capa extends capa {
 				index_ini = j+1;
 			}
 		}
-		counts.push([index_ini, 95, pcs[95][1]]);
+		counts.push([get_time(index_ini), 95, pcs[95][1]]);
 		return counts;
 	}
 
