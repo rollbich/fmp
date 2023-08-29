@@ -52,7 +52,7 @@
 				let zone = $('zone').value;
 				let start_day = $('start').value;
 				let end_day = $('end').value;
-				/*
+				/* code sans utiliser php
 				const capa = new feuille_capa("feuille_capa_tour", day, zone, false)
 				.then( (value) => {
 					console.log("RESULT UCESOS");
