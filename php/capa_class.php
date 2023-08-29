@@ -1,5 +1,5 @@
 <?php
-require_once("../php/config_olaf.php");
+require_once("config_olaf.php");
 
 /*  ------------------------------------------
 		lecture d'un fichier via curl
@@ -12,9 +12,7 @@ function get_file($url) {
     //curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
     //curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // si pb de certificat SSL force la requête
     $result = curl_exec($ch);
-    echo "Fichier: ".$url."<br>";
     $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    echo "HTTP CODE: " . $status_code."<br>";
     $curl_error = curl_error($ch);
     if ($curl_error !== '') {
         echo "\nCurl Error : $curl_error";
@@ -41,12 +39,6 @@ function get_olaf($zone, $date, $yesterdate) {
 	curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 	curl_setopt($ch, CURLOPT_USERPWD, $cred);
 	$result = curl_exec($ch);
-	/*
-	$status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-	echo "HTTP CODE:: " . $status_code;
-	echo curl_error($ch);
-	*/
-	//curl_close($ch);  //no effect on php >= 8.0
 	unset($ch);   // to use with php >= 8.0 : launch garbage mechanism for $ch
 	return $result;
 }
@@ -65,8 +57,8 @@ function strtime_to_min(string $str_time) {
 }
 
 // récupère les 2 chiffres après la virgule
-function get_decimale(int $nombre) {
-	return (int) ($nombre - (int) $nombre) * 100 ;
+function get_decimale(float $nombre) {
+	return sprintf("%02d", ($nombre - (int) $nombre) * 100) ;
 }
 
 /*  ------------------------------------------------------------------------------
@@ -76,25 +68,11 @@ function get_decimale(int $nombre) {
 	------------------------------------------------------------------------------ */
 function get_time($col) {
 	$h = sprintf("%02d", floor($col/4));
-	$minut = $col%4 === 0 ? "00" : (int) get_decimale($col/4)*15/25;
+	$minut = $col%4 === 0 ? "00" : get_decimale($col/4)*15/25;
 	$minut = $minut === 3 ? "30" : $minut;
 	return $h.":".strval($minut);
 }
-
-/*  -------------------------------------------------------------
-	-------------------------------------------------------------
-			Début programme
-	-------------------------------------------------------------
-	------------------------------------------------------------- */
-	$res = new capa("2023-08-25","est");
-	$res->get_nbpc_dispo();
-
-/*  -------------------------------------------------------------
-	-------------------------------------------------------------
-			Fin programme
-	-------------------------------------------------------------
-	------------------------------------------------------------- */	
-
+	
 class capa {
 
 	/* ------------------------------------------------------
@@ -132,15 +110,10 @@ class capa {
 	public function init() {
 		$this->timeOffset = $this->get_decalage();
 		$this->tour_local = json_decode(file_get_contents("../tour_de_service.json"));
-		//echo "Tour local: <br>";
-		//var_dump($this->tour_local); 
 		$this->saison = $this->get_date_tour($this->tour_local);
-		echo "Saison: ".$this->saison."<br>";
 		$this->tour_utc = $this->get_tour_utc();
 		$this->tds_supp_local = json_decode(file_get_contents("../tds_supp.json"));
 		$this->tds_supp_utc = $this->get_tds_supp_utc();
-		//echo "Tour supp utc: <br>";
-		//var_dump($this->tds_supp_utc);
 		$this->instr = json_decode(file_get_contents("../instruction.json"));
 		$this->tab_vac_eq = $this->get_vac_eq();
 		$yesterday = new DateTime($this->day);
@@ -153,7 +126,6 @@ class capa {
 		$d = new DateTime($this->day);
 		$timeZoneParis = new DateTimeZone("Europe/Paris");
 		$timeOffset = abs(($timeZoneParis->getOffset($d)) / 3600);
-		echo "Offset: $timeOffset heure(s)<br>";
 		return $timeOffset;
 	}
 
@@ -196,11 +168,8 @@ class capa {
 		
 		// récupère l'objet contenant les propriétés equipes, return string
 		$effectif = get_olaf($this->zone_olaf, $this->day, $this->yesterday);
-		echo "OLAF<br>";
         // convert to stdClass
 		$this->effectif = json_decode($effectif);
-        //print_r($this->effectif);
-		
 
 		// Calcul du nombre de pc à afficher 
 		// On récupère l'effectif total, donc on doit enlever le cds sur les vacations qui en ont 1	
@@ -279,8 +248,7 @@ class capa {
 				$pc->JX->{$jx_type}->nombre_det += $nb_det;
 			}
 		}
-		echo "Renfort JX<br>";
-		var_dump($pc->JX);
+		
 		foreach ($this->tab_vac_eq as $vac => $value) {
 			$p = $value."-".$this->zone_olaf;
 			if ($vac !== "N-1") {
@@ -296,11 +264,9 @@ class capa {
 					$pc->{$vac}->aTeamComposition = $this->effectif->{$this->day}->{$p}->aTeamComposition;
 					$pc->{$vac}->html = $this->effectif->{$this->day}->{$p}->html->{$this->day}->{$p};
 					if (property_exists($pc->{$vac}->html, "lesrenforts") === false) {
-						echo "pas de renforts en $vac<br>";
 						$pc->{$vac}->renfort = 0;
 					} else {
 						$pc->{$vac}->renfort = count(array_keys(get_object_vars($pc->{$vac}->html->lesrenforts)));
-						echo "renforts en $vac, nb: ".$pc->{$vac}->renfort."<br>";
 					}
 					//$pc->{$vac}->detache = (int) $this->effectif->{$this->day}->{$p}->teamReserve->detacheQuantity;
 				} else {
@@ -337,6 +303,7 @@ class capa {
 		$nb_pc = 0;
 		$pcs = []; // total pc hors instr & hors RD bleu supp (les RD Jx sont inclus)
 		$pct = []; // total pc
+		$ucesos = [];
 		$in15mn = []; // nbre de pc instruction par 15 mn
 		// effectif_RD_15mn = {
 		//	  "RD...": [],
@@ -449,7 +416,6 @@ class capa {
 				if ($this->tour_utc->{$vacation}[$i][3] === 1) {
 						$nb_pc += $dispoB;
 				}
-				//echo "Vac: $vacation   heure: ".get_time($i)."  nbpc: $nb_pc";
 			}
 
 			// Nuit de 19h30 à 00h00
@@ -553,19 +519,33 @@ class capa {
 			};
 
 			array_push($pct, [$this->tour_utc->J1[$i][0], $nb_pc]);
+			array_push($ucesos, [$this->tour_utc->J1[$i][0], floor($nb_pc/2)]);
 			$nb_pc = 0;
 		}
 
+		$compacted_ucesos = [];
+		$index_ini = 0;
+		for($j=0;$j<95;$j++) {
+			if ($pcs[$j][1] !== $pcs[$j+1][1]) {
+				array_push($compacted_ucesos, [get_time($index_ini), get_time($j+1), floor($pct[$j][1]/2)]);
+				$index_ini = $j+1;
+			}
+		}
+		array_push($compacted_ucesos, [get_time($index_ini), get_time(95), floor($pct[95][1]/2)]);
+
 		$res = new stdClass();
-		$res->pc_vac = $pc;
+		$res->day= $this->day;
+		$res->zone = $this->zone;
+		$res->saison = $this->saison;
+		$res->offSetTime = $this->timeOffset;
 		$res->pc_total = $pct;
+		$res->uceso = $ucesos;
+		$res->compacted_uceso = $compacted_ucesos;
 		$res->pc_total_horsInstrRD_15mn = $pcs; // total pc hors instr & hors RD bleu supp (les RD Jx sont inclus)
 		$res->pc_instr_15mn = $in15mn;
 		$res->pc_RD_15mn = $effectif_RD_15mn;
 		$res->pc_total_RD_15mn = $effectif_total_RD_15mn;
-		echo "<pre>";
-		var_dump($pct);
-		echo "</pre>";
+		$res->pc_vac = $pc;
 		return $res;
 
     }
@@ -578,17 +558,12 @@ class capa {
     ---------------------------------------------------- */
     public function get_vac_eq () {
         $ecartj = $this->dep->diff(new DateTime($this->day))->days;
-		//echo "ECartj: $ecartj<br>";
         $tab = new stdClass();
         for ($eq=1;$eq<13;$eq++) {
-			//echo "Eq: $eq<br>";
             $debvac = ($ecartj - $eq + $this->eq_dep) % 12;
 			$z = $this->tabvac[$debvac];
-			//echo "debvac: $debvac<br>";
-			//echo "tabvac: $z<br>";
             if ($z !== "" && $z !== "N") {
 				$tab->$z = $eq;
-				//echo "tab[$z]=$eq<br>";
 			}
             if ($z === "N") {
                 $tab->$z = $eq;
