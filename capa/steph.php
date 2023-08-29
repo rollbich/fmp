@@ -8,7 +8,7 @@
 	<meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="robots" content="noindex">
-	<title>Feuille Capa</title>
+	<title>Export UCESOs to XLS</title>
 	<link rel="icon" href="../favicon.ico" />
 	<script type="text/javascript" src="../js/base.js"></script>
 	<script type="text/javascript" src="../js/tds-name.js"></script>
@@ -47,24 +47,31 @@
 				document.querySelector('.popup-box').classList.remove('transform-in');
 				document.querySelector('.popup-box').classList.add('transform-out');
 			});
-			
-			$('arrow_left').addEventListener('click', async e => {
-				$('start').value = addDays_toString($('start').value,-1);
-				
-			});
-
-			$('arrow_right').addEventListener('click', async e => {
-				$('start').value = addDays_toString($('start').value,1);
-			});
 
 			$('bouton_xls').addEventListener('click', async e => {
 				let zone = $('zone').value;
-				let day = $('start').value;
+				let start_day = $('start').value;
+				let end_day = $('end').value;
+				/*
 				const capa = new feuille_capa("feuille_capa_tour", day, zone, false)
 				.then( (value) => {
 					console.log("RESULT UCESOS");
 					console.log(value.compacted);
 					console.log(value.quarter);
+				});
+				*/
+				const obj = {"zone": zone, "startDay": start_day, "endDay": end_day};
+				const url = "../php/steph_xls.php";
+				const data = {
+					method: "post",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(obj)
+				};
+				fetch(url, data)
+				.then(function(response) {
+					return response.text().then(function(texte) {
+						show_popup("Export XLS réussi", `Cliquer pour télécharger le fichier<br><a href='download_capa_file.php?filename=${texte}'>${texte}</a>`); 
+					});
 				});
 			});
 			
@@ -77,7 +84,7 @@
 
 <?php include("../php/nav.inc.php"); ?>
 
-<h1>FEUILLE CAPA v2.1</h1>
+<h1>Export Ucesos to XLS</h1>
 <div id="help_frame" class="off">
 	<h2>Help</h2>
 	<p><span>Feuille</span> :<br>Cliquez sur ce bouton pour afficher la feuille de capa correspondante à la date et la zone choisie<br>Cliquez sur le nombre de pc dans la colonne PC afin de visualiser les effectifs par équipes. Cette case est surlignée lorsque l'effectif est différent de l'effectif OLAF</p>
@@ -91,17 +98,17 @@
 	<button class="help_close_button pointer">Close</button>
 </div>
 <ul class="menu">
-	<li id="bouton_xls" class="pointer"><span>Start</span></li>
+	<li id="bouton_xls" class="pointer"><span>Export</span></li>
 	<li>
-	<!--<label for="start" class="dates">Date:</label>-->
-	<button id="arrow_left"><</button>
-	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="2021-09-14" max="2030-12-31">
-	<button id="arrow_right">></button>
+	<label for="start" class="dates">D&eacute;but:</label>
+	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="2018-12-31">
+	<label for="end" class="dates">Fin:</label>
+	<input type="date" id="end" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="2018-12-31">
 	</li>
 	<li class="feuille">
 	  <select id="zone" class="select">
-		<option selected value="AE">Zone EST</option>
-		<option value="AW">Zone WEST</option>
+		<option selected value="est">Zone EST</option>
+		<option value="ouest">Zone WEST</option>
 	  </select>
 	</li>
 	<li class="feuille"><button class="help_button">Help</button></li>
