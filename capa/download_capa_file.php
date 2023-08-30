@@ -34,7 +34,7 @@ download(STEPH_PATH.$filename);
 
 function download($filename) {
 
-	echo "Download file : ".STEPH_PATH.$filename."<br>";
+	echo "Download file : $filename<br>";
 
 	if(file_exists($filename)) {
 		
