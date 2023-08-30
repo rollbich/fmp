@@ -1,6 +1,7 @@
 <?php
 
-define("STEPH_PATH", "https://data.lfmm-fmp.fr/steph/");
+//define("STEPH_PATH", "https://data.lfmm-fmp.fr/steph/");
+define("STEPH_PATH", "/opt/bitnami/data/steph/");
 
 function clean($data) {
     $data = trim($data);
@@ -34,7 +35,7 @@ download(STEPH_PATH.$filename);
 
 function download($filename) {
 
-	echo "Download file : ".STEPH_PATH.$filename."<br>";
+	echo "Download file : $filename<br>";
 
 	if(file_exists($filename)) {
 		
