@@ -34,7 +34,12 @@ download(STEPH_PATH.$filename);
 
 function download($filename) {
 
-	if(file_exists($filename)) {	
+	echo "Download file : ".STEPH_PATH.$filename."<br>";
+
+	if(file_exists($filename)) {
+		
+		echo "File ".STEPH_PATH.$filename." exists<br>";
+
 		$file_name = basename($filename);
 		$date = gmdate(DATE_RFC1123);
 		 
