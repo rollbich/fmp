@@ -1,5 +1,7 @@
 <?php
 
+define("STEPH_PATH", "https://data.lfmm-fmp.fr/steph/");
+
 function clean($data) {
     $data = trim($data);
     $data = htmlspecialchars($data);
@@ -28,7 +30,7 @@ function clean($data) {
 }
 
 $filename = clean($_GET['filename']);
-download($filename);
+download(STEPH_PATH.$filename);
 
 function download($filename) {
 
