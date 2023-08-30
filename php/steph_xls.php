@@ -93,15 +93,15 @@ try {
 	$end_date = new DateTime($end_day);
 	$sd = $start_date->format('Ymd');
 	$ed = $end_date->format('Ymd');
-	//$dir = WRITE_PATH."/xls/$y/$m/";
-	$dir = WRITE_PATH;
+	$dir = WRITE_PATH."/steph/";
+	//$dir = WRITE_PATH;
 	
 	//echo "Writing...<br>";
 	//echo $dir."<br>";
 
 	if (!file_exists($dir)) {
 		//echo "dossier inexistant<br>";
-		mkdir($dir, 0777, true);
+		mkdir($dir, 0775, true);
 	} else {
 		//echo "dossier deja existant<br>";
 	}
