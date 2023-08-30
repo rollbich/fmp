@@ -2,7 +2,7 @@
 ini_set('memory_limit', '1G');
 require_once("capa_class.php");
 require_once("xlsxwriter.class.php");
-define("WRITE_PATH", "/opt/bitnami/data/steph");
+define("WRITE_PATH", "/opt/bitnami/data");
 
 /*	----------------------------------------------------------
 	Récupère dans un tableau les dates entre 2 dates incluses
@@ -106,7 +106,7 @@ try {
 		//echo "dossier deja existant<br>";
 	}
 	$filename = "$sd-$ed-ucesos-$zone.xlsx";
-	$writer->writeToFile(WRITE_PATH."/$filename");
+	$writer->writeToFile($dir."/$filename");
 	echo $filename;
 }
 
