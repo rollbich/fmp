@@ -421,15 +421,6 @@ class capa {
 				});
 			}
 			
-			effectif_total_RD_15mn[i] = 0;
-			
-			RD_names_horsJX.forEach( vac_RD => {
-				const nb = pc["JX"][vac_RD]["nombre"];
-				if (this.tds_supp_utc[vac_RD][i][1] === 1) {
-					effectif_total_RD_15mn[i] += nb;
-				}
-			})
-			
 			// s'il y a un Jx ce jour là
 			// on ne créé que les vac_jx existantes ce jour là
 			RD_names_horsJX.forEach( (vac_jx, index) => {
@@ -446,10 +437,20 @@ class capa {
 				}
 			});
 
-			
 		}
+
+		for(var i=0;i<96;i++) {
+			const keys = Object.keys(effectif_RD_15mn);
+			effectif_total_RD_15mn[i] = 0;
+			keys.forEach( vac_RD => {
+				effectif_total_RD_15mn[i] += effectif_RD_15mn[vac_RD][i];
+			})
+		}
+
 		// pc_total_horsInstrRD_15mn : total pc hors instr & hors RD bleu supp (les RD Jx sont inclus)
-		return {"pc_vac": pc, "pc_total_horsInstrRD_15mn": pcs, "pc_instr_15mn": in15mn, "pc_RD_15mn": effectif_RD_15mn, "pc_total_RD_15mn": effectif_total_RD_15mn};
+		const result = {"pc_vac": pc, "pc_total_horsInstrRD_15mn": pcs, "pc_instr_15mn": in15mn, "pc_RD_15mn": effectif_RD_15mn, "pc_total_RD_15mn": effectif_total_RD_15mn};
+		console.log(result);
+		return result;
     }
 
     /* ---------------------------------------------------
