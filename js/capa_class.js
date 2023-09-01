@@ -426,7 +426,7 @@ class capa {
 			RD_names_horsJX.forEach( vac_RD => {
 				const nb = pc["JX"][vac_RD]["nombre"];
 				if (this.tds_supp_utc[vac_RD][i][1] === 1) {
-					effectif_total_RD_15mn[i] += nb;
+					effectif_total_RD_15mn[i] = nb;
 				}
 			})
 			
@@ -449,7 +449,9 @@ class capa {
 			
 		}
 		// pc_total_horsInstrRD_15mn : total pc hors instr & hors RD bleu supp (les RD Jx sont inclus)
-		return {"pc_vac": pc, "pc_total_horsInstrRD_15mn": pcs, "pc_instr_15mn": in15mn, "pc_RD_15mn": effectif_RD_15mn, "pc_total_RD_15mn": effectif_total_RD_15mn};
+		const result = {"pc_vac": pc, "pc_total_horsInstrRD_15mn": pcs, "pc_instr_15mn": in15mn, "pc_RD_15mn": effectif_RD_15mn, "pc_total_RD_15mn": effectif_total_RD_15mn};
+		console.log(result);
+		return result;
     }
 
     /* ---------------------------------------------------
