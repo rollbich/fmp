@@ -283,10 +283,10 @@ class weekly_briefing {
     get_cumul_cause(cause) {
         let cumul_greve = {"cta":0, "est":0, "west":0, "app":0};
         for (let i=1;i<this.week;i++) {
-            cumul_greve["cta"] += this.reguls.cause['cta'][i][cause] || 0;
-            cumul_greve["est"] += this.reguls.cause['est'][i][cause] || 0;
-            cumul_greve["west"] += this.reguls.cause['west'][i][cause] || 0;
-            cumul_greve["app"] += this.reguls.cause['app'][i][cause] || 0;
+            cumul_greve["cta"] += this.reguls.cause['cta'][i][cause] ?? 0;
+            cumul_greve["est"] += this.reguls.cause['est'][i][cause] ?? 0;
+            cumul_greve["west"] += this.reguls.cause['west'][i][cause] ?? 0;
+            cumul_greve["app"] += this.reguls.cause['app'][i][cause] ?? 0;
         }
         return cumul_greve;
     }
@@ -301,7 +301,7 @@ class weekly_briefing {
             res += '<tr>';
             const cumul = this.get_cumul_cause(key);
             res += `<td>${key}</td>`;
-            res += `<td>${this.reguls.cause['cta'][this.week-1][key]} min</td><td>${this.reguls.cause['est'][this.week-1][key] || 0} min</td><td>${this.reguls.cause['west'][this.week-1][key] || 0} min</td>`;
+            res += `<td>${this.reguls.cause['cta'][this.week-1][key]} min</td><td>${this.reguls.cause['est'][this.week-1][key] ?? 0} min</td><td>${this.reguls.cause['west'][this.week-1][key] ?? 0} min</td>`;
             res += `<td>${cumul['cta']} min</td><td>${cumul['est']} min</td><td>${cumul['west']} min</td>`;
             res += '</tr>';	
         })
@@ -320,7 +320,7 @@ class weekly_briefing {
             res += '<tr>';
             const cumul = this.get_cumul_cause(key);
             res += `<td>${key}</td>`;
-            res += `<td>${this.reguls.cause['app'][this.week-1][key] || 0} min</td><td>${cumul['app']} min</td>`;
+            res += `<td>${this.reguls.cause['app'][this.week-1][key] ?? 0} min</td><td>${cumul['app']} min</td>`;
             res += '</tr>';	
         })
         
