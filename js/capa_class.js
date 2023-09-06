@@ -9,9 +9,12 @@ class capa {
             @param {string} zone	- "AE" ou "AW"
 	   ------------------------------------------------------ */
     constructor(day, zone) {
+		if (typeof day !== 'string') throw new Error('Day value should be a String.');
+		if (typeof zone !== 'string') throw new Error('Zone value should be a String.');
+		if ((zone !== 'AE') && (zone !== 'AW')) throw new Error('La zone doit etre AE ou AW.');
         this.day = day;
 		this.zone_schema = zone;
-        this.zone_olaf = zone.substr(1,1); // 2è lettre de la zone (E ou W)
+        this.zone_olaf = zone.substring(1,2); // 2è lettre de la zone (E ou W)
 		this.zone = this.zone_olaf === "E" ? "est" : "ouest";
 		this.tabvac = ["J2","S1","N","","","","JX","J1","J3","S2","",""]; 
 		this.dep = new Date(2019, 0, 8);  // J2 le 8 janvier 2019 à 12heures pour eq11
@@ -69,11 +72,10 @@ class capa {
 			  }
     ------------------------------------------------------------------------------------------------------------------- */
     async get_nbpc_dispo(update = {"JX":0,"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0, "JXBV":0,"J1BV":0, "J3BV":0, "S2BV":0, "J2BV":0, "S1BV":0, "NBV":0, "N-1BV":0}, noBV = false) {
-        if (this.day === null) throw new Error("Le jour est indéfini");
 		
 		const yesterday = jmoins1(this.day);
 		// récupère l'objet contenant les propriétés equipes
-		this.effectif = this.effectif || await get_olaf(this.zone_olaf, this.day, yesterday);
+		this.effectif = this.effectif ?? await get_olaf(this.zone_olaf, this.day, yesterday);
 		console.log("OLAF result");
 		console.log(this.effectif);
 		// si pas de donnée on retourne 0
