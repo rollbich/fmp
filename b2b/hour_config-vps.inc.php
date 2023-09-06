@@ -7,7 +7,7 @@ $dat = new DateTime();
 // On donne l'heure du serveur et on récupère $wef_counts, regs, flights et $unt_counts, regs, flights en UTC
 // en php pas scope dans if
 if ($dat <= $date_ete || $dat > $date_hiver) {
-	echo "Heure hiver<br/>";
+	echo "Heure hiver<br/>\n";
 	// Plage horaire de récupération du H20 et Occ (6h loc à minuit loc)
 	// Tâche CRON effectuée le lendemain => query pour la veille
 	$wef_counts = gmdate('Y-m-d H:i', strtotime("yesterday 05:00"));
@@ -23,7 +23,7 @@ if ($dat <= $date_ete || $dat > $date_hiver) {
 	$wef_flights = gmdate('Y-m-d H:i', strtotime("yesterday 00:00"));
 	$unt_flights = gmdate('Y-m-d H:i', strtotime("yesterday 23:59"));
 } else {
-	echo "Heure ete<br/>";
+	echo "Heure ete<br/>\n";
 	// Plage horaire de récupération du H20 et Occ (6h loc à 2h loc)
 	// Tâche CRON effectuée le lendemain => query pour la veille
 	$wef_counts = gmdate('Y-m-d H:i', strtotime("yesterday 04:00"));
@@ -40,9 +40,9 @@ if ($dat <= $date_ete || $dat > $date_hiver) {
 	$unt_flights = gmdate('Y-m-d H:i', strtotime("yesterday 23:59"));
 }
 
-echo "wef/unt counts: $wef_counts - $unt_counts<br>";
-echo "wef/unt regs: $wef_regs - $unt_regs<br>";
-echo "wef/unt flights: $wef_flights - $unt_flights<br>";
+echo "wef/unt counts: $wef_counts - $unt_counts<br>\n";
+echo "wef/unt regs: $wef_regs - $unt_regs<br>\n";
+echo "wef/unt flights: $wef_flights - $unt_flights<br>\n";
 
 // 	---------------------------------------------------------
 // 		@return (DateTime) jour de passage à l'heure hiver
