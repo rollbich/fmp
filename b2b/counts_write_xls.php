@@ -190,62 +190,68 @@ $reg["LFMMFMPE"] = array();
 $reg["LFMMFMPW"] = array();
 $reg["LFMMAPP"] = array();
 
-foreach($temp_reg->LFMMFMPE as $r) {
-	$id = $r->regId;
-	$tv = $r->tv;
-	$reason = $r->reason;
-    $lastUpdateDate = substr($r->lastUpdate->userUpdateEventTime, 0, 10);
-    $lastUpdateTime = substr($r->lastUpdate->userUpdateEventTime, 11, 5);
-	$userUpdateType = $r->lastUpdate->userUpdateType;
-    $delay = $r->delay;
-    $nbrImpactedFlight = $r->impactedFlights;
-    $TVSet = $r->TVSet;
-	$constraints = $r->constraints;
-	for($j=0; $j<count($constraints); $j++) {
-		$date = substr($constraints[$j]->constraintPeriod->wef, 0, 10);
-    	$hdeb = substr($constraints[$j]->constraintPeriod->wef, -5);
-    	$hfin = substr($constraints[$j]->constraintPeriod->unt, -5);
-		array_push($reg[$TVSet], array($id, $tv, $date, $hdeb, $hfin, $reason, $constraints[$j]->normalRate, $constraints[$j]->pendingRate, $constraints[$j]->equipmentRate, $delay, $nbrImpactedFlight, $TVSet, $userUpdateType, $lastUpdateDate, $lastUpdateTime));
+if (isset($temp_reg->LFMMFMPE)) {
+	foreach($temp_reg->LFMMFMPE as $r) {
+		$id = $r->regId;
+		$tv = $r->tv;
+		$reason = $r->reason;
+		$lastUpdateDate = substr($r->lastUpdate->userUpdateEventTime, 0, 10);
+		$lastUpdateTime = substr($r->lastUpdate->userUpdateEventTime, 11, 5);
+		$userUpdateType = $r->lastUpdate->userUpdateType;
+		$delay = $r->delay;
+		$nbrImpactedFlight = $r->impactedFlights;
+		$TVSet = $r->TVSet;
+		$constraints = $r->constraints;
+		for($j=0; $j<count($constraints); $j++) {
+			$date = substr($constraints[$j]->constraintPeriod->wef, 0, 10);
+			$hdeb = substr($constraints[$j]->constraintPeriod->wef, -5);
+			$hfin = substr($constraints[$j]->constraintPeriod->unt, -5);
+			array_push($reg[$TVSet], array($id, $tv, $date, $hdeb, $hfin, $reason, $constraints[$j]->normalRate, $constraints[$j]->pendingRate, $constraints[$j]->equipmentRate, $delay, $nbrImpactedFlight, $TVSet, $userUpdateType, $lastUpdateDate, $lastUpdateTime));
+		}
 	}
-}
+} 
 
-foreach($temp_reg->LFMMFMPW as $r) {
-	$id = $r->regId;
-	$tv = $r->tv;
-	$reason = $r->reason;
-    $lastUpdateDate = substr($r->lastUpdate->userUpdateEventTime, 0, 10);
-    $lastUpdateTime = substr($r->lastUpdate->userUpdateEventTime, 11, 5);
-	$userUpdateType = $r->lastUpdate->userUpdateType;
-    $delay = $r->delay;
-    $nbrImpactedFlight = $r->impactedFlights;
-    $TVSet = $r->TVSet;
-	$constraints = $r->constraints;
-	for($j=0; $j<count($constraints); $j++) {
-		$date = substr($constraints[$j]->constraintPeriod->wef, 0, 10);
-    	$hdeb = substr($constraints[$j]->constraintPeriod->wef, -5);
-    	$hfin = substr($constraints[$j]->constraintPeriod->unt, -5);
-		array_push($reg[$TVSet], array($id, $tv, $date, $hdeb, $hfin, $reason, $constraints[$j]->normalRate, $constraints[$j]->pendingRate, $constraints[$j]->equipmentRate, $delay, $nbrImpactedFlight, $TVSet, $userUpdateType, $lastUpdateDate, $lastUpdateTime));
+if (isset($temp_reg->LFMMFMPW)) {
+	foreach($temp_reg->LFMMFMPW as $r) {
+		$id = $r->regId;
+		$tv = $r->tv;
+		$reason = $r->reason;
+		$lastUpdateDate = substr($r->lastUpdate->userUpdateEventTime, 0, 10);
+		$lastUpdateTime = substr($r->lastUpdate->userUpdateEventTime, 11, 5);
+		$userUpdateType = $r->lastUpdate->userUpdateType;
+		$delay = $r->delay;
+		$nbrImpactedFlight = $r->impactedFlights;
+		$TVSet = $r->TVSet;
+		$constraints = $r->constraints;
+		for($j=0; $j<count($constraints); $j++) {
+			$date = substr($constraints[$j]->constraintPeriod->wef, 0, 10);
+			$hdeb = substr($constraints[$j]->constraintPeriod->wef, -5);
+			$hfin = substr($constraints[$j]->constraintPeriod->unt, -5);
+			array_push($reg[$TVSet], array($id, $tv, $date, $hdeb, $hfin, $reason, $constraints[$j]->normalRate, $constraints[$j]->pendingRate, $constraints[$j]->equipmentRate, $delay, $nbrImpactedFlight, $TVSet, $userUpdateType, $lastUpdateDate, $lastUpdateTime));
+		}
 	}
-}
+} 
 
-foreach($temp_reg->LFMMAPP as $r) {
-	$id = $r->regId;
-	$tv = $r->tv;
-	$reason = $r->reason;
-    $lastUpdateDate = substr($r->lastUpdate->userUpdateEventTime, 0, 10);
-    $lastUpdateTime = substr($r->lastUpdate->userUpdateEventTime, 11, 5);
-	$userUpdateType = $r->lastUpdate->userUpdateType;
-    $delay = $r->delay;
-    $nbrImpactedFlight = $r->impactedFlights;
-    $TVSet = $r->TVSet;
-	$constraints = $r->constraints;
-	for($j=0; $j<count($constraints); $j++) {
-		$date = substr($constraints[$j]->constraintPeriod->wef, 0, 10);
-    	$hdeb = substr($constraints[$j]->constraintPeriod->wef, -5);
-    	$hfin = substr($constraints[$j]->constraintPeriod->unt, -5);
-		array_push($reg[$TVSet], array($id, $tv, $date, $hdeb, $hfin, $reason, $constraints[$j]->normalRate, $constraints[$j]->pendingRate, $constraints[$j]->equipmentRate, $delay, $nbrImpactedFlight, $TVSet, $userUpdateType, $lastUpdateDate, $lastUpdateTime));
+if (isset($temp_reg->LFMMAPP)) {
+	foreach($temp_reg->LFMMAPP as $r) {
+		$id = $r->regId;
+		$tv = $r->tv;
+		$reason = $r->reason;
+		$lastUpdateDate = substr($r->lastUpdate->userUpdateEventTime, 0, 10);
+		$lastUpdateTime = substr($r->lastUpdate->userUpdateEventTime, 11, 5);
+		$userUpdateType = $r->lastUpdate->userUpdateType;
+		$delay = $r->delay;
+		$nbrImpactedFlight = $r->impactedFlights;
+		$TVSet = $r->TVSet;
+		$constraints = $r->constraints;
+		for($j=0; $j<count($constraints); $j++) {
+			$date = substr($constraints[$j]->constraintPeriod->wef, 0, 10);
+			$hdeb = substr($constraints[$j]->constraintPeriod->wef, -5);
+			$hfin = substr($constraints[$j]->constraintPeriod->unt, -5);
+			array_push($reg[$TVSet], array($id, $tv, $date, $hdeb, $hfin, $reason, $constraints[$j]->normalRate, $constraints[$j]->pendingRate, $constraints[$j]->equipmentRate, $delay, $nbrImpactedFlight, $TVSet, $userUpdateType, $lastUpdateDate, $lastUpdateTime));
+		}
 	}
-}
+} 
 
 //var_dump($temp_reg);
 echo "get regulation OK<br>";
@@ -258,9 +264,9 @@ $flights = json_decode($json_flights_file[0], true);
 echo "get conf jour OK<br>";
 
 // Occ et H20
-$json_h20_est_file = get_file($dir."$d-h20-est.json");
+$json_h20_est_file = get_file($dir."$d-H20-est.json");
 $h20_est = json_decode($json_h20_est_file[0], true);
-$json_h20_west_file = get_file($dir."$d-h20-west.json");
+$json_h20_west_file = get_file($dir."$d-H20-west.json");
 $h20_west = json_decode($json_h20_west_file[0], true);
 
 $json_occ_est_file = get_file($dir."$d-Occ-est.json");
