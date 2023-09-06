@@ -261,7 +261,7 @@ $json_flights_file = get_file($dir."$d-vols.json");
 $flights = json_decode($json_flights_file[0], true);
 //var_dump($flights);
 
-echo "get conf jour OK<br>";
+echo "get conf jour OK<br>"; 
 
 // Occ et H20
 $json_h20_est_file = get_file($dir."$d-H20-est.json");
