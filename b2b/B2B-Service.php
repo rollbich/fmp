@@ -3,8 +3,8 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-require("../smtp/PHPMailer/PHPMailer.php");
-require("../smtp/PHPMailer/SMTP.php");
+require("/opt/bitnami/smtp/PHPMailer/PHPMailer.php");
+require("/opt/bitnami/smtp/PHPMailer/SMTP.php");
 
 
 class Service {
