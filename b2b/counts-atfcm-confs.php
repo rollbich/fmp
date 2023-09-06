@@ -8,10 +8,6 @@ require_once("B2B-FlowServices.php");
 include_once("config.inc.php");
 include_once("hour_config".$config.".inc.php");
 include_once("path.inc.php");
-/* 16 mai 2021 15h
-$wef=gmdate("Y-m-d H:i", mktime(15, 0, 0, 5, 16, 2021));
-$unt=gmdate("Y-m-d H:i", mktime(17, 0, 0, 5, 16, 2021));
-*/
 
 /*  ------------------------------------------
 		Ecriture du fichier générique json
@@ -161,9 +157,9 @@ $atc_confs->ouest = $plan_w->data->plan->nmSchedule->item;
 
 try {	
 	
-	write_json($json_reg, "", "-reg", $wef_counts);
-	write_json($json_atfcm_reg->data, "", "-atfcm-reg", $wef_counts);
-	write_json($atc_confs, "", "-confs", $wef_counts);
+	write_json($json_reg, "", "-reg", $wef_regs);
+	write_json($json_atfcm_reg->data, "", "-atfcm-reg", $wef_regs);
+	write_json($atc_confs, "", "-confs", $wef_regs);
 	
 }
 
