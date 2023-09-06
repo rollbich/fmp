@@ -254,14 +254,14 @@ if (isset($temp_reg->LFMMAPP)) {
 } 
 
 //var_dump($temp_reg);
-echo "get regulation OK<br>";
+echo "get regulation OK<br>\n";
 
 // Vols
 $json_flights_file = get_file($dir."$d-vols.json");
 $flights = json_decode($json_flights_file[0], true);
 //var_dump($flights);
 
-echo "get conf jour OK<br>"; 
+echo "get conf jour OK<br>\n"; 
 
 // Occ et H20
 $json_h20_est_file = get_file($dir."$d-H20-est.json");
@@ -274,13 +274,15 @@ $occ_est = json_decode($json_occ_est_file[0], true);
 $json_occ_west_file = get_file($dir."$d-Occ-west.json");
 $occ_west = json_decode($json_occ_west_file[0], true);
 
-echo "get H20 & Occ OK<br>";
-
+echo "get H20 & Occ OK<br>\n";
+echo "<pre>";
+var_dump($occ_est);
+echo "</pre>";
 
 try {	
 	
-	write_xls("est", $wef_counts, $occ_est, $occ_west, $h20_est, $h20_west, $reg, $flights);
-	write_xls("west", $wef_counts, $occ_est, $occ_west, $h20_est, $h20_west, $reg, $flights);
+	//write_xls("est", $wef_counts, $occ_est, $occ_west, $h20_est, $h20_west, $reg, $flights);
+	//write_xls("west", $wef_counts, $occ_est, $occ_west, $h20_est, $h20_west, $reg, $flights);
 	
 }
 
