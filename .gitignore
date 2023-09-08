@@ -17,7 +17,7 @@ b2b/counts-app.php
 b2b/aup.php
 b2b/mapd.php
 test/
-smtp/PHPMailer
+smtp/
 php/config_olaf
 b2b/get_aup.php
 b2b/hour_config-fmp-journee.inc.php

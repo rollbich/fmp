@@ -5,6 +5,7 @@ use PHPMailer\PHPMailer\Exception;
 
 require("/opt/bitnami/smtp/PHPMailer/PHPMailer.php");
 require("/opt/bitnami/smtp/PHPMailer/SMTP.php");
+require("/opt/bitnami/smtp/email-config.inc.php");
 
 class Service {
 
@@ -37,8 +38,8 @@ class Service {
         $mail->isSMTP();                                            		//Send using SMTP
         $mail->Host       = 'email-smtp.eu-west-3.amazonaws.com';   		//Set the SMTP server to send through
         $mail->SMTPAuth   = true;                                   		//Enable SMTP authentication
-        $mail->Username   = 'AKIAQS3HTHPYMXBCDG6V';                 	   				//SMTP username
-        $mail->Password   = 'BMOK/1TncML5lnCTeVukm9XHWEPzzikVMyRnGYzmLigB'; 										//SMTP password
+        $mail->Username   = SMTP_USERNAME;                 	   				//SMTP username
+        $mail->Password   = SMTP_PASSWORD; 										//SMTP password
         $mail->SMTPSecure = 'tls';           								//Enable implicit TLS encryption
         $mail->Port       = 587;                           			        //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
 
