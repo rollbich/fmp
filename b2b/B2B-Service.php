@@ -44,10 +44,9 @@ class Service {
         $mail->Port       = 587;                           			        //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
 
         //Recipients
-        $mail->setFrom('christophe.rolland@aviation-civile.gouv.fr', 'Error LFMM-FMP');
-        //$mail->addAddress('lfmm-fmp@aviation-civile.gouv.fr', 'LFMM-FMP');  //Add a recipient
-        $mail->addAddress('rollbich2@yahoo.fr');              				//Name is optional
-        //$mail->addAddress("adonis.koffi-d-almeida@aviation-civile.gouv.fr");
+        $mail->setFrom(CONTACT_FROM, 'Error LFMM-FMP');
+        $mail->addAddress(CONTACT_1, 'LFMM-FMP');  //Add a recipient            				//Name is optional
+        //$mail->addAddress(CONTACT_2);
         //$mail->addReplyTo('info@example.com', 'Information');
         //$mail->addCC('cc@example.com');
         //$mail->addBCC('bcc@example.com');
