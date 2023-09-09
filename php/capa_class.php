@@ -492,16 +492,6 @@ class capa {
 				};
 			}
 			
-			$effectif_total_RD_15mn[$i] = 0;
-			
-			foreach($RD_names_horsJX as $vac_RD) {
-				$nbr = $pc->JX->{$vac_RD}->nombre;
-				if ($this->tds_supp_utc->{$vac_RD}[$i][1] === 1) {
-					$effectif_total_RD_15mn[$i] += $nbr;
-					$nb_pc += $nbr;
-				}
-			}
-			
 			// s'il y a un Jx ce jour là
 			// on ne créé que les vac_jx existantes ce jour là
 			foreach($RD_names_horsJX as $index=>$vac_jx) {
@@ -518,20 +508,33 @@ class capa {
 				}
 			};
 
-			array_push($pct, [$this->tour_utc->J1[$i][0], $nb_pc]);
-			array_push($ucesos, [$this->tour_utc->J1[$i][0], floor($nb_pc/2)]);
+			
 			$nb_pc = 0;
+		}
+
+		for($i=0;$i<96;$i++) {
+			$keys = array_keys(get_object_vars($effectif_RD_15mn));
+			$effectif_total_RD_15mn[$i] = 0;
+			foreach($keys as $vac_RD) {
+				$effectif_total_RD_15mn[$i] += $effectif_RD_15mn->{$vac_RD}[$i];
+			}
+		}
+
+		for($i=0;$i<96;$i++) {
+			$nbr = $effectif_total_RD_15mn[$i] + $in15mn[$i][0] + $pcs[$i][1];
+			array_push($pct, [$this->tour_utc->J1[$i][0], $nbr]);
+			array_push($ucesos, [$this->tour_utc->J1[$i][0], floor($nbr/2)]);
 		}
 
 		$compacted_ucesos = [];
 		$index_ini = 0;
 		for($j=0;$j<95;$j++) {
-			if ($pcs[$j][1] !== $pcs[$j+1][1]) {
-				array_push($compacted_ucesos, [get_time($index_ini), get_time($j+1), floor($pct[$j][1]/2)]);
+			if ($ucesos[$j][1] !== $ucesos[$j+1][1]) {
+				array_push($compacted_ucesos, [get_time($index_ini), get_time($j+1), floor($ucesos[$j][1])]);
 				$index_ini = $j+1;
 			}
 		}
-		array_push($compacted_ucesos, [get_time($index_ini), get_time(95), floor($pct[95][1]/2)]);
+		array_push($compacted_ucesos, [get_time($index_ini), get_time(95), floor($ucesos[95][1])]);
 
 		$res = new stdClass();
 		$res->day= $this->day;
