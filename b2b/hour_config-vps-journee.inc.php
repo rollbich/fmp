@@ -23,22 +23,22 @@ if ($dat <= $date_ete || $dat > $date_hiver) {
 	// Plage horaire de récupération du H20 et Occ (now loc à now+6h loc)
     //$wef_counts = gmdate('Y-m-d H:i', strtotime("now"));
 	//$wef_counts = gmdate('Y-m-d H:i', mktime(intval(date("H")), 20, 0, intval(date("m")), intval(date("d")), intval(date("Y"))));
-	$wef_counts = gmdate('Y-m-d H:i', strtotime("now"));
-	$unt_counts = gmdate('Y-m-d H:i', strtotime("+6 hours"));
+	$wef_counts = date('Y-m-d H:i', strtotime("now"));
+	$unt_counts = date('Y-m-d H:i', strtotime("+6 hours"));
 
     // Plage horaire de récupération des reguls (minuit UTC à minuit UTC)
-	$wef_regs = gmdate('Y-m-d H:i', strtotime("today 00:00"));
-	$unt_regs = gmdate('Y-m-d H:i', strtotime("today 23:59"));
+	$wef_regs = date('Y-m-d H:i', strtotime("today 00:00"));
+	$unt_regs = date('Y-m-d H:i', strtotime("today 23:59"));
 } else {
 	echo "Heure ete<br/>";
 	// Plage horaire de récupération du H20 et Occ (now loc à now+6h loc)
     //$wef_counts = gmdate('Y-m-d H:i', strtotime("now"));
-	$wef_counts = gmdate('Y-m-d H:i', strtotime("now"));
-	$unt_counts = gmdate('Y-m-d H:i', strtotime("+6 hours"));
+	$wef_counts = date('Y-m-d H:i', strtotime("now"));
+	$unt_counts = date('Y-m-d H:i', strtotime("+6 hours"));
 
     // Plage horaire de récupération des reguls (minuit UTC à minuit UTC)
-	$wef_regs = gmdate('Y-m-d H:i', strtotime("today 00:00"));
-	$unt_regs = gmdate('Y-m-d H:i', strtotime("today 23:59"));
+	$wef_regs = date('Y-m-d H:i', strtotime("today 00:00"));
+	$unt_regs = date('Y-m-d H:i', strtotime("today 23:59"));
 }
 
 // 	---------------------------------------------------------

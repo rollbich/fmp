@@ -1,7 +1,6 @@
 <?php
 ini_set('memory_limit', '1G');
 require_once("xlsxwriter.class.php");
-require_once("mail-msg.php");
 require_once("B2B.php");
 require_once("B2B-Service.php");
 require_once("B2B-AirspaceServices.php");
@@ -111,12 +110,12 @@ $reg["LFDSNA"] = array();
 // objet contenant les reguls Europe
 $json_atfcm_reg = $soapClient->flowServices()->get_ATFCM_situation();
 
-echo "get atfcm_situation OK<br>";
+echo "get atfcm_situation OK<br>\n";
 
 // Remplit l'object $json_reg 
 $soapClient->flowServices()->get_full_regulations_json("LF", $wef_regs, $unt_regs, $json_reg, $json_atfcm_reg);
 
-echo "get regulation OK<br>";
+echo "get regulation OK<br>\n";
 
 // Sauvegarde des fichiers
 // Affichage d'un message suivant la réussite de la sauvegarde
@@ -126,7 +125,7 @@ echo "get regulation OK<br>";
 try {	
 	
 	write_json($json_reg, "", "-reg", $wef_counts);
-	echo "<br>Recup reg OK<br>";
+	echo "<br>Recup reg OK<br>\n";
 	
 }
 catch (Exception $e) {
