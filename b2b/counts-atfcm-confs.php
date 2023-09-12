@@ -141,7 +141,7 @@ $airspace1 = "LFMMCTAE";
 $airspace2 = "LFMMCTAW";
 
 // On récupère la conf du jour à l'heure de la tâche CRON (23:57 UTC)
-$today = gmdate('Y-m-d', strtotime("today"));
+$today = date('Y-m-d', strtotime("today"));
 $plan_e = $soapClient->flowServices()->get_atc_conf($airspace1, $today);
 $plan_w = $soapClient->flowServices()->get_atc_conf($airspace2, $today);
 
