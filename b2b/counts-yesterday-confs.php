@@ -1,7 +1,6 @@
 <?php
 ini_set('memory_limit', '1G');
 require_once("xlsxwriter.class.php");
-require_once("mail-msg.php");
 require_once("B2B.php");
 require_once("B2B-Service.php");
 require_once("B2B-AirspaceServices.php");
@@ -51,7 +50,7 @@ $soapClient = new B2B();
 $airspace1 = "LFMMCTAE";
 $airspace2 = "LFMMCTAW";
 // today = minuit locale soit la veille 22h00 UTC
-$today = gmdate('Y-m-d', strtotime("today"));
+$today = date('Y-m-d', strtotime("yesterday"));
 $plan_e = $soapClient->flowServices()->get_atc_conf($airspace1, $today);
 $plan_w = $soapClient->flowServices()->get_atc_conf($airspace2, $today);
 
@@ -68,7 +67,6 @@ $atc_confs->ouest = $plan_w->data->plan->nmSchedule->item;
 try {	
 
 	write_json($atc_confs, "", "-confs", $wef_counts);
-	//var_dump($atc_confs);
 	
 }
 
