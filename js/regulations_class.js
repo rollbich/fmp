@@ -113,7 +113,15 @@ class regul {
 		const year = this.day.substr(0,4);
 		const month = date.substr(4,2);
 		const url = `${year}/${month}/${date}-reg${heure}.json`;	
-		const resp = await get_data(url);
+		let resp = await get_data(url);
+		// return 404 si le fichier n'existe pas
+		// dans ce cas on retourne {"LFMMFMPE":[],"LFMMFMPW":[],"LFMMAPP":[], ...}
+		if (resp === 404) {
+			resp = {};
+			lfmm_tvset.forEach(tvset => {
+				resp[tvset] = [];
+			})
+		}
 		return resp;
 	}
 
@@ -205,7 +213,6 @@ class regul {
 			this.regul[tvset].forEach( value => {
 				reg[value] += value.delay;
 			});
-			//console.log(reg);
 			return reg;
 		}
 	}
@@ -274,7 +281,6 @@ class period_regul {
 				}
 			 }
         }
-		console.log(reguls);
 		return reguls;
 	}
 
@@ -417,8 +423,6 @@ class period_regul {
 		delays += "</div>";
 		delays += res;
 		$(containerId).innerHTML = delays;
-		//console.log("this.rates");
-		//console.log(this.rates);
 		const td_reg_id = document.querySelectorAll('.hover_reg_id');
 		td_reg_id.forEach(td_el => {
 			td_el.addEventListener('mouseover', (event) => {
@@ -427,8 +431,6 @@ class period_regul {
 				el.setAttribute('id', 'popratereg');
 				let contenu = reg_id+"<br>";
 				let data = this.rates[reg_id];
-				//console.log("data");
-				//console.log(data);
 				if (data["CREATION"] !== null) {
 					contenu += "CREATION" + " on " + data["CREATION"] + "<br>";
 				}
