@@ -10,34 +10,34 @@ if ($dat <= $date_ete || $dat > $date_hiver) {
 	echo "Heure hiver<br/>\n";
 	// Plage horaire de récupération du H20 et Occ (6h loc à minuit loc)
 	// Tâche CRON effectuée le lendemain => query pour la veille
-	$wef_counts = gmdate('Y-m-d H:i', strtotime("yesterday 05:00"));
-	$unt_counts = gmdate('Y-m-d H:i', strtotime("yesterday 22:59"));
+	$wef_counts = date('Y-m-d H:i', strtotime("yesterday 05:00"));
+	$unt_counts = date('Y-m-d H:i', strtotime("yesterday 22:59"));
 
 	// Plage horaire de récupération des reguls (minuit UTC à minuit UTC)
 	// Tâche CRON effectuée le jour même vers 23:55 UTC
-	$wef_regs = gmdate('Y-m-d H:i', strtotime("today 00:00"));
-	$unt_regs = gmdate('Y-m-d H:i', strtotime("today 23:59"));
+	$wef_regs = date('Y-m-d H:i', strtotime("today 00:00"));
+	$unt_regs = date('Y-m-d H:i', strtotime("today 23:59"));
 
 	// Plage horaire de récupération du nombre de vol par TV (minuit UTC à minuit UTC)
 	// Tâche CRON effectuée le lendemain => query pour la veille
-	$wef_flights = gmdate('Y-m-d H:i', strtotime("yesterday 00:00"));
-	$unt_flights = gmdate('Y-m-d H:i', strtotime("yesterday 23:59"));
+	$wef_flights = date('Y-m-d H:i', strtotime("yesterday 00:00"));
+	$unt_flights = date('Y-m-d H:i', strtotime("yesterday 23:59"));
 } else {
 	echo "Heure ete<br/>\n";
 	// Plage horaire de récupération du H20 et Occ (6h loc à 2h loc)
 	// Tâche CRON effectuée le lendemain => query pour la veille
-	$wef_counts = gmdate('Y-m-d H:i', strtotime("yesterday 04:00"));
-	$unt_counts = gmdate('Y-m-d H:i', strtotime("yesterday 21:59"));
+	$wef_counts = date('Y-m-d H:i', strtotime("yesterday 04:00"));
+	$unt_counts = date('Y-m-d H:i', strtotime("yesterday 21:59"));
 
 	// Plage horaire de récupération des reguls (minuit UTC à minuit UTC)
 	// Tâche CRON effectuée le jour même vers 23:55 UTC
-	$wef_regs = gmdate('Y-m-d H:i', strtotime("today 00:00"));
-	$unt_regs = gmdate('Y-m-d H:i', strtotime("today 23:59"));
+	$wef_regs = date('Y-m-d H:i', strtotime("today 00:00"));
+	$unt_regs = date('Y-m-d H:i', strtotime("today 23:59"));
 
 	// Plage horaire de récupération du nombre de vol par TV (minuit UTC à minuit UTC)
 	// Tâche CRON effectuée le lendemain => query pour la veille
-	$wef_flights = gmdate('Y-m-d H:i', strtotime("yesterday 00:00"));
-	$unt_flights = gmdate('Y-m-d H:i', strtotime("yesterday 23:59"));
+	$wef_flights = date('Y-m-d H:i', strtotime("yesterday 00:00"));
+	$unt_flights = date('Y-m-d H:i', strtotime("yesterday 23:59"));
 }
 
 echo "wef/unt counts: $wef_counts - $unt_counts<br>\n";
