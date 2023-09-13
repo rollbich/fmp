@@ -275,21 +275,18 @@ $json_occ_west_file = get_file($dir."$d-Occ-west.json");
 $occ_west = json_decode($json_occ_west_file[0], true);
 
 echo "get H20 & Occ OK<br>\n";
-echo "<pre>";
-var_dump($occ_est);
-echo "</pre>";
 
 try {	
 	
-	//write_xls("est", $wef_counts, $occ_est, $occ_west, $h20_est, $h20_west, $reg, $flights);
-	//write_xls("west", $wef_counts, $occ_est, $occ_west, $h20_est, $h20_west, $reg, $flights);
+	write_xls("est", $wef_counts, $occ_est, $occ_west, $h20_est, $h20_west, $reg, $flights);
+	write_xls("west", $wef_counts, $occ_est, $occ_west, $h20_est, $h20_west, $reg, $flights);
 	
 }
 
 catch (Exception $e) {
 	$err = "Erreur, verifier le fichier XLS\n"."Exception reçue : ".$e->getMessage()."\n";
 	echo $err;
-	//$soapClient->flightServices()->send_mail($err);
+	$soapClient->flightServices()->send_mail($err);
 }
 
 ?>
