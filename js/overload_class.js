@@ -1,3 +1,28 @@
+/*	---------------------------------------------------------------------------
+		Exporte le fichier json au format Excel xlsx 
+			@param {string} url 
+            ex : /opt/bitnami/data/overload/2023/2023-Sem37-capa-140%-EST.xlsx
+			@param {object} json - json à sauvegarder
+	--------------------------------------------------------------------------- */
+function export_json_to_xls(url, json) {
+    var data = {
+        method: "post",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(json)
+    };
+    fetch( url, data)
+    .then(function(response) {
+        return response.text().then(function(chemin) {
+            const data = chemin.split("/");
+            const nom = data[6];
+            //if (data[0] === "OK") { 
+                show_popup("Export réussi", `Cliquer pour télécharger le fichier<br><a href='php/download_file.php?filename=${chemin}'>${nom}</a>`); 
+            //}
+            //else { show_popup("Erreur d'écriture", "Vérifier le fichier dans le dossier xls"); }
+        });
+    });
+}
+
 class overload {
 
     /*  ----------------------------------------------------------------------------------

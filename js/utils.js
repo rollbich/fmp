@@ -398,32 +398,6 @@ function rep_status(response) {
   }
 
 /*	---------------------------------------------------------
-		Exporte le fichier json au format Excel xlsx 
-			@param {string} url
-			@param {object} json - son à sauvegarder
-		util overload
-	 	stocke dans fmp/overload/xls/2021
-	--------------------------------------------------------- */
-function export_json_to_xls(url, json) {
-	var data = {
-		method: "post",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(json)
-	};
-	fetch( url, data)
-	.then(function(response) {
-		return response.text().then(function(texte) {
-			const data = texte.split(" ");
-			const nom = data[1].split("/");
-			if (data[0] === "OK") { 
-				show_popup("Export réussi", `Cliquer pour télécharger le fichier<br><a href='php/download_file.php?filename=${data[1]}'>${nom[3]}</a>`); 
-			}
-			else { show_popup("Erreur d'écriture", "Vérifier le fichier dans le dossier xls"); }
-		});
-	});
-}
-
-/*	---------------------------------------------------------
 		Affiche une Pop-up générique 
 			@param {string} text1 - Titre
 			@param {string} text2 - Contenu HTML
