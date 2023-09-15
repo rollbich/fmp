@@ -1,5 +1,6 @@
 <?php
 include_once("xlsxwriter.class.php");
+define("WRITE_PATH", "/opt/bitnami/data");
 
 $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
 
@@ -40,9 +41,9 @@ if ($contentType === "application/json") {
 		}
 		write_xls($excel);
 		
-		$dir = "../xls/".$annee."/";
+		$dir = WRITE_PATH."/overload/".$annee."/";
 		$nom = $dir.$annee."-Sem".$week."-capa-".$filtre."%-".$zone.".xlsx";
-		echo "OK ".$nom;
+		echo $nom;
 	} else {
 		echo "Impossible de décoder le fichier JSON";
 		// Error  
@@ -76,11 +77,11 @@ function write_xls($excel) {
 		$writer->writeSheetRow('Capa', $row, $style);
 	}
 	
-	$dir = "../xls/".$annee."/";
-	
+	$dir = WRITE_PATH."/overload/".$annee."/";
 	if (!file_exists($dir)) {
-		mkdir($dir, 0777, true);
+		mkdir($dir, 0775, true);
 	}
+	
 	$nom = $dir.$annee."-Sem".$week."-capa-".$filtre."%-".$zone.".xlsx";
 	$writer->writeToFile($nom);
 	
