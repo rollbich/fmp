@@ -45,7 +45,7 @@ function download($filename) {
 	if(file_exists($filename)) {	
 		$file_name = basename($filename);
 		$date = gmdate(DATE_RFC1123);
-		 
+		ob_end_clean();
 		header('Pragma: public');
 		header('Cache-Control: must-revalidate, pre-check=0, post-check=0, max-age=0');
 		header('Content-Tranfer-Encoding: none');

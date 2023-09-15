@@ -14,8 +14,7 @@ define("WRITE_PATH", "/opt/bitnami/data");
 function getDatesFromRange(string $start, string $end, string $format = 'Y-m-d') {
       
     $array = array();
-    // Variable that store the date interval
-    // of period 1 day
+    // 1 day date interval
     $interval = new DateInterval('P1D');
 
     $realEnd = new DateTime($end);
@@ -27,7 +26,6 @@ function getDatesFromRange(string $start, string $end, string $format = 'Y-m-d')
         $array[] = $date->format($format); 
     }
   
-    // Return the array elements
     return $array;
 }
 
@@ -43,9 +41,6 @@ if ($contentType === "application/json") {
 	$zone = $decoded["zone"]; // "est" ou "ouest"
 	$start_day = $decoded["startDay"];
 	$end_day = $decoded["endDay"];
-	//echo "Zone: $zone<br>";
-	//echo "Start: $start_day<br>";
-	//echo "End: $end_day<br>";
 	
 } else { 
 	echo "<br/>pas json<br/>"; 
@@ -53,7 +48,6 @@ if ($contentType === "application/json") {
 
 try {	
 	$arr_dates = getDatesFromRange($start_day, $end_day);
-	//var_dump($arr_dates);
 
 	$header_steph = array(
 		'Date'=>'string',
@@ -71,11 +65,6 @@ try {
 	foreach($arr_dates as $day) {
 		$c = new capa($day, $zone);
 		$capacite = $c->get_nbpc_dispo();
-		//echo "$day - $zone<br><br>";
-		//echo "<pre>";
-		//var_dump($capacite->uceso);
-		//echo "</pre>";
-		//write_xls($day, "est", $capacite->uceso);
 
 		$writer->writeSheetHeader('Ucesos', $header_steph, $style_header );
 		foreach($capacite->compacted_uceso as $row) {
@@ -94,16 +83,10 @@ try {
 	$sd = $start_date->format('Ymd');
 	$ed = $end_date->format('Ymd');
 	$dir = WRITE_PATH."/steph/";
-	//$dir = WRITE_PATH;
-	
-	//echo "Writing...<br>";
-	//echo $dir."<br>";
 
 	if (!file_exists($dir)) {
-		//echo "dossier inexistant<br>";
 		mkdir($dir, 0775, true);
 	} else {
-		//echo "dossier deja existant<br>";
 	}
 	$filename = "$sd-$ed-ucesos-$zone.xlsx";
 	$writer->writeToFile($dir."/$filename");

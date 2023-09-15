@@ -35,15 +35,11 @@ download(STEPH_PATH.$filename);
 
 function download($filename) {
 
-	echo "Download file : $filename<br>";
-
 	if(file_exists($filename)) {
 		
-		echo "File ".STEPH_PATH.$filename." exists<br>";
-
 		$file_name = basename($filename);
 		$date = gmdate(DATE_RFC1123);
-		 
+		ob_end_clean(); // clean the buffer to be sure no caracter is before header
 		header('Pragma: public');
 		header('Cache-Control: must-revalidate, pre-check=0, post-check=0, max-age=0');
 		header('Content-Tranfer-Encoding: none');
