@@ -1,14 +1,19 @@
 /*	---------------------------------------------------------------------------
 		Exporte le fichier json au format Excel xlsx 
 			@param {string} url 
-            ex : /opt/bitnami/data/overload/2023/2023-Sem37-capa-140%-EST.xlsx
+            ex : /opt/bitnami/data/overload/2023/debut-fin-capa-140%-EST.xlsx
 			@param {object} json - json à sauvegarder
+            @param {string} type - "H20" ou "peak"
 	--------------------------------------------------------------------------- */
-function export_json_to_xls(url, json) {
+function export_json_to_xls(url, json, type) {
+    const exp = {};
+    exp.json = json;
+    exp.type = type;
+
     var data = {
         method: "post",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(json)
+        body: JSON.stringify(exp)
     };
     fetch( url, data)
     .then(function(response) {
@@ -35,8 +40,6 @@ class overload {
 	---------------------------------------------------------------------------------- */
 
     constructor(containerId, type, start_day, end_day, zone, selected_percent_MV, selected_percent_peak) {
-        this.result_h20 = {};
-        this.result_peak = {};
         this.result_capa = {};
         this.type = type;
         this.start_day = start_day;
@@ -215,11 +218,11 @@ class overload {
     } 
 
     /*  ----------------------------------------------------------------------------------
-	      Calcule le dépassement Capa
+	      Calcule le dépassement du peak
             @results {object} - {
                 "filtre": % du filtre (= selected_pourcent),
-                "data" : [ [date, tv, heure, count, mv, pourcentage_mv], ... ],
-                "nombre" : {"130":nb occurence, "140":nb occurence, ..., "180":nb}
+                "data" : [ [day, tv, heure, maxi, peak_4f, pourcent_maxi], ... ],
+                "nombre" : integer
             }
 	---------------------------------------------------------------------------------- */
     async calc_capa_peak() {
@@ -259,8 +262,8 @@ class overload {
                                 }
                                 if (depa === true) {
                                     let maxi = Math.max(...tab_count);
-                                    let p_maxi = Math.round((100 * maxi) / peak_4f);
-                                    this.result_capa["data"].push([dd, tv, heure, maxi, peak_4f, p_maxi]);
+                                    let pourcent_maxi = Math.round((100 * maxi) / peak_4f);
+                                    this.result_capa["data"].push([dd, tv, heure, maxi, peak_4f, pourcent_maxi]);
                                     i = i + this.peak_threshold_time - 1;                                                                    
                                     this.result_capa["nombre"]++;                                                                      
                                 }

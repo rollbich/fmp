@@ -35,6 +35,7 @@
 			
 			<?php include("../php/nav.js.inc.php"); ?>
 			let depassement = undefined;
+			let type = undefined;
 			
 			new dragger('graph-container-h20', 'drag-container');
 			new dragger('graph-container-occ', 'drag-container');
@@ -65,30 +66,30 @@
 			$('bouton_capa').addEventListener('click', async e => {
 				$('graph-container-h20').classList.add('off');
 				$('graph-container-occ').classList.add('off');
-				result_h20 = {};
 				let zone = $('zone').value;
 				let start_day = $('start').value; // yyyy-mm-dd
 				let end_day = $('end').value; // yyyy-mm-dd
 				let sel_percent_MV = parseInt($('selection_MV').value);
 				let sel_percent_peak = parseInt($('selection_peak').value);
 				depassement = new overload('result', "H20", start_day, end_day, zone, sel_percent_MV, sel_percent_peak);
+				type = "H20";
 			});
 
 			$('bouton_peak').addEventListener('click', async e => {
 				$('graph-container-h20').classList.add('off');
 				$('graph-container-occ').classList.add('off');
-				result_peak = {};
 				let zone = $('zone').value;
 				let start_day = $('start').value; // yyyy-mm-dd
 				let end_day = $('end').value; // yyyy-mm-dd
 				let sel_percent_MV = parseInt($('selection_MV').value);
 				let sel_percent_peak = parseInt($('selection_peak').value);
 				depassement = new overload('result', "peak", start_day, end_day, zone, sel_percent_MV, sel_percent_peak);
+				type = "peak";
 			});
 			
 			$('bouton_export').addEventListener('click', e => {
 				if (isObjEmpty(depassement.result_capa) === false) {
-					export_json_to_xls('php/export_to_excel.php', depassement.result_capa);
+					if (type === "H20") export_json_to_xls('php/export_to_excel.php', depassement.result_capa, "H20"); else export_json_to_xls('php/export_to_excel.php', depassement.result_capa, "peak");
 				} else {
 					show_popup("Il n'y a rien à exporter", "Il faut cliquer sur le bouton CAPA avant");
 				}
