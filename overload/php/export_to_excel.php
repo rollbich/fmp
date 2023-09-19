@@ -59,13 +59,22 @@ if ($contentType === "application/json") {
 	
 function write_xls($excel) {
 
-	$header = array(
+	$header_H20 = array(
 		'Date'=>'date',
 		'TV'=>'string',
 		'Heure'=>'string',
 		'H/20'=>'integer',
 		'MV'=>'integer',
 		'% MV'=>'integer'
+	);
+
+	$header_peak = array(
+		'Date'=>'date',
+		'TV'=>'string',
+		'Heure'=>'string',
+		'Max peak'=>'integer',
+		'Peak 4F'=>'integer',
+		'% Max Peak'=>'integer'
 	);
 
 	global $filtre, $zone, $week, $annee, $d, $d2, $type;
@@ -75,11 +84,19 @@ function write_xls($excel) {
 
 	$writer = new XLSXWriter();
 	$writer->setAuthor('LFMM-FMP'); 
-		
-	$writer->writeSheetHeader('Capa', $header, $style_header );
-		
-	foreach($excel as $row) {
-		$writer->writeSheetRow('Capa', $row, $style);
+	
+	if ($type === "H20") {
+		$writer->writeSheetHeader('Capa', $header_H20, $style_header );
+			
+		foreach($excel as $row) {
+			$writer->writeSheetRow('Capa', $row, $style);
+		}
+	} else {
+		$writer->writeSheetHeader('Peak', $header_peak, $style_header );
+			
+		foreach($excel as $row) {
+			$writer->writeSheetRow('Peak', $row, $style);
+		}
 	}
 	
 	$dir = WRITE_PATH."/overload/".$annee."/";
