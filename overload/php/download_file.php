@@ -11,16 +11,6 @@ function clean($data) {
 		die('Error');
 	}
 	
-	$pos = strpos($lower,'capa');
-	if($pos === false) {
-		die('Error');
-	}
-	
-	$pos = strpos($data,'Sem');
-	if($pos === false) {
-		die('Error');
-	}
-	
 	$pos = strpos($data,'EST');
 	$pos2 = strpos($data,'OUEST');
 	if(($pos === false) && ($pos2 === false)) {
