@@ -10,10 +10,10 @@ include_once("path.inc.php");
 require_once("MV-OTMV.inc.php");
 
 /*  -------------------------------------------------------
-		Ecriture du fichier AUP json
+		Ecriture du fichier MV-OTMV json
 		$resultat : données
-		Récupération auto à 16h24 de l'AUP du lendemain
-        => 20230525-aup.json
+		Récupération auto à 03h10 UTC
+        => 20230525-mv_otmv-zone.json
 	------------------------------------------------------- */
 function write_json($resultat, String $zone) {
 
@@ -41,12 +41,13 @@ function get_mv_otmv($plan) {
     $result = new stdClass();
     $result->MV = $soapClient->flowServices()->get_easy_capacity_plan($plan, $d);
     $result->OTMV = $soapClient->flowServices()->get_otmv_plan($plan, $d, $soapClient->getCurrentVersion());
+    var_dump($result->OTMV);
     return $result;
 }
 
-$res_est = get_mv_otmv($tv_est);
-write_json($res_est, "est");
+//$res_est = get_mv_otmv($tv_est);
+//write_json($res_est, "est");
 $res_west = get_mv_otmv($tv_west);
-write_json($res_west, "ouest");
+//write_json($res_west, "ouest");
 
 ?>
