@@ -145,7 +145,7 @@ class capa {
 						"RO": nbre_RO,
 						"RO induit": nbre_induit,
 					},
-					"vac": { // inclu "N-1"
+					"vac": { // inclus "N-1"
 						"nbpc": nbre_pc,
 						"nbcds": nbre_cds,
 						"renfort": nbre_renfort,
@@ -155,13 +155,12 @@ class capa {
 						"teamData": {...},
 						"userList": {...},
 						"aTeamComposition": {...},
-						"html": {...}
 					}, 
 					...
 				}, 
                 "pc_total_dispo_15mn": [ ["hh:mm", nb_pc_dispo], [...], ... ],
 				"pc_total_RD_15mn": [ ["hh:mm", nb_pc_dispo], [...], ... ],
-				"pc_instru_15mn": [ ["hh:mm", nb_pc_dispo], [...], ... ]
+				"pc_total_instru_15mn": [ ["hh:mm", nb_pc_dispo], [...], ... ]
 			  }
     ------------------------------------------------------------------------------------------------------------------- */
     public function get_nbpc_dispo() {
@@ -200,11 +199,14 @@ class capa {
 		}
 		-----------------------------------------------------  */
 
+		// Dans OLAF, Renfort contient les JX + les RD bleus
 		$Renfort = $this->effectif->{$this->day}->Renfort;
 		// Renfort hors JX
 		$RD_names_horsJX = [];
 		$nb_jx = 0;
 		$nb_jx_det = 0;
+		$RD = new stdClass();
+		$TDS_Supp = new stdClass();
 		foreach ($Renfort as $renf1 => $value1) {
 			foreach ($value1 as $cle => $obj) {
 				$label = $obj->contextmenutype->label;
@@ -216,6 +218,7 @@ class capa {
 				// "RD bleu J3a-ete" - "RD bleu S1b-ete" - "RD bleu J1-ete" + Est only "RD bleu JXb-ete" + West only "RD bleu J3b-ete" 
 				$nb_det = 0;
 				if (str_contains($label, "JX")) {
+					$type_vac = "JX";
 					if (str_contains($label, "RD bleu")) { // RD
 						$type_renfort = "RD";
 						$rd_type = substr($label, 8); // ex : Jxa-ms
@@ -228,6 +231,7 @@ class capa {
 					}
 					$nb_jx++;
 				} else { // RD non JX
+					$type_vac = "Supp";
 					$type_renfort = "RD";
 					$rd_type = substr($label, 8);
 					$jx_type = "RD$rd_type";
@@ -237,63 +241,178 @@ class capa {
 				
 				$agent = $obj->agent->nomComplet;
 				$agent_type = (str_contains($label, "det") || str_contains($label, "RD")) ? "détaché" : "salle";
-				if (property_exists($pc->JX, $jx_type) === false) { 
-					$pc->JX->{$jx_type} = new stdClass();
-					$pc->JX->{$jx_type}->nombre = 0;
-					$pc->JX->{$jx_type}->nombre_det = 0; 
-					$pc->JX->{$jx_type}->agent = new stdClass();
+
+				if ($type_vac === "JX") {
+					if (property_exists($pc->JX, $jx_type) === false) { 
+						$pc->JX->{$jx_type} = new stdClass();
+						$pc->JX->{$jx_type}->nombre = 0;
+						$pc->JX->{$jx_type}->nombre_det = 0; 
+						$pc->JX->{$jx_type}->agent = new stdClass();
+					}
+					$pc->JX->{$jx_type}->agent->{$agent} = $agent_type;
+					$pc->JX->{$jx_type}->nombre++;
+					$pc->JX->{$jx_type}->nombre_det += $nb_det;
+				} 
+				if ($type_renfort === "RD") {
+					if (property_exists($RD, $jx_type) === false) { 
+						$RD->{$jx_type} = new stdClass();
+						$RD->{$jx_type}->nombre = 0;
+						$RD->{$jx_type}->nombre_det = 0; 
+						$RD->{$jx_type}->agent = new stdClass();
+					}
+					$RD->{$jx_type}->agent->{$agent} = $agent_type;
+					$RD->{$jx_type}->nombre++;
+					$RD->{$jx_type}->nombre_det += $nb_det;
 				}
-				$pc->JX->{$jx_type}->agent->{$agent} = $agent_type;
-				$pc->JX->{$jx_type}->nombre++;
-				$pc->JX->{$jx_type}->nombre_det += $nb_det;
+
+				if ($type_vac === "Supp") {
+					if (property_exists($TDS_Supp, $jx_type) === false) { 
+						$TDS_Supp->{$jx_type} = new stdClass();
+						$TDS_Supp->{$jx_type}->nombre = 0;
+						$TDS_Supp->{$jx_type}->nombre_det = 0; 
+						$TDS_Supp->{$jx_type}->agent = new stdClass();
+					}
+					$TDS_Supp->{$jx_type}->agent->{$agent} = $agent_type;
+					$TDS_Supp->{$jx_type}->nombre++;
+					$TDS_Supp->{$jx_type}->nombre_det += $nb_det;
+				}
+				
 			}
 		}
 		
+		$pc->JX->equipe = $this->tab_vac_eq->JX;
+
 		foreach ($this->tab_vac_eq as $vac => $value) {
 			$p = $value."-".$this->zone_olaf;
-			if ($vac !== "N-1") {
-				if ($vac !== "JX") {
-					// Le RO induit apparait si detachés > 1 et plus que 1 n'est pas Expert Ops, ACDS ou Assistant sub
-					$pc->{$vac}->ROinduit = (int) $this->effectif->{$this->day}->{$p}->teamReserve->roInduction;
-					$pc->{$vac}->nbcds = (int) $this->tour_local->{$this->zone}->{$this->saison}->cds->{$vac};
-					$pc->{$vac}->nbpc = (int) $this->effectif->{$this->day}->{$p}->teamReserve->teamQuantity - (int) $pc->{$vac}->nbcds; 
-					$pc->{$vac}->BV = (int) $this->effectif->{$this->day}->{$p}->teamReserve->BV;
-					$pc->{$vac}->RO = (int) $this->effectif->{$this->day}->{$p}->teamReserve->roQuantity;
-					$pc->{$vac}->userList = $this->effectif->{$this->day}->{$p}->userList;
-					$pc->{$vac}->teamData = $this->effectif->{$this->day}->{$p}->teamData;
-					$pc->{$vac}->aTeamComposition = $this->effectif->{$this->day}->{$p}->aTeamComposition;
-					$pc->{$vac}->html = $this->effectif->{$this->day}->{$p}->html->{$this->day}->{$p};
-					if (property_exists($pc->{$vac}->html, "lesrenforts") === false) {
-						$pc->{$vac}->renfort = 0;
-					} else {
-						$pc->{$vac}->renfort = count(array_keys(get_object_vars($pc->{$vac}->html->lesrenforts)));
-					}
-					//$pc->{$vac}->detache = (int) $this->effectif->{$this->day}->{$p}->teamReserve->detacheQuantity;
+			$jour = $this->day;
+			if ($vac === "N-1") $jour = $this->yesterday;
+			if ($vac !== "JX") {
+				// Le RO induit apparait si detachés > 1 et plus que 1 n'est pas Expert Ops, ACDS ou Assistant sub
+				$pc->{$vac}->ROinduit = (int) $this->effectif->{$jour}->{$p}->teamReserve->roInduction;
+				if ($vac === "N-1") {
+					$pc->{$vac}->nbcds = (int) $this->tour_local->{$this->zone}->{$this->saison}->cds->N;
 				} else {
-					$pc->{$vac}->ROinduit = 0;
-					$pc->{$vac}->nbcds = 0;
-					$pc->{$vac}->nbpc = $nb_jx; 
-					$pc->{$vac}->BV = 10;
-					$pc->{$vac}->RO = 0;
-					$det = 0; 
-					$pc->{$vac}->renfort = $nb_jx_det;
+					$pc->{$vac}->nbcds = (int) $this->tour_local->{$this->zone}->{$this->saison}->cds->{$vac};
 				}
-			} else {
-				$pc->{$vac}->ROinduit = (int) $this->effectif->{$this->yesterday}->{$p}->teamReserve->roInduction;
-				$pc->{$vac}->nbcds = (int) $this->tour_local->{$this->zone}->{$this->saison}->cds->N;
-				$pc->{$vac}->nbpc = (int) $this->effectif->{$this->yesterday}->{$p}->teamReserve->teamQuantity - (int) $pc->{$vac}->nbcds; 
-				$pc->{$vac}->BV = (int) $this->effectif->{$this->yesterday}->{$p}->teamReserve->BV;
-				$pc->{$vac}->RO = (int) $this->effectif->{$this->yesterday}->{$p}->teamReserve->roQuantity;
-				$pc->{$vac}->userList = $this->effectif->{$this->yesterday}->{$p}->userList;
-				$pc->{$vac}->teamData = $this->effectif->{$this->yesterday}->{$p}->teamData;
-				$pc->{$vac}->aTeamComposition = $this->effectif->{$this->yesterday}->{$p}->aTeamComposition;
-				$pc->{$vac}->html = $this->effectif->{$this->yesterday}->{$p}->html->{$this->yesterday}->{$p};
-				if (property_exists($pc->{$vac}->html, "lesrenforts") === false) {
+				$pc->{$vac}->nbpc = (int) $this->effectif->{$jour}->{$p}->teamReserve->teamQuantity - (int) $pc->{$vac}->nbcds; 
+				$pc->{$vac}->BV = (int) $this->effectif->{$jour}->{$p}->teamReserve->BV;
+				$pc->{$vac}->RO = 0;
+				//$pc->{$vac}->RO = (int) $this->effectif->{$jour}->{$p}->teamReserve->roQuantity;
+				$pc->{$vac}->equipe = (int) explode("-", $p)[0];
+				$userList = $this->effectif->{$jour}->{$p}->userList;
+				$pc->{$vac}->teamNominalList = new stdClass();
+				$pc->{$vac}->teamNominalList->agentsList = [];
+				foreach ( $userList as $key=>$value ) {
+					if (!(is_array($value->role))) { // soit array vide, soit objet que l'on convertit en array
+						$value->role = explode(",", $value->role);
+					}
+					if (!(in_array(14, $value->role) || in_array(37, $value->role))) { // 14 = détaché 37 = assistant sub ne sont pas mis (OLAF les compte)
+						$nc = $value->prenom." ".$value->nom;
+						$pc->{$vac}->teamNominalList->{$nc} = new stdClass();
+						$pc->{$vac}->teamNominalList->{$nc}->nom = $value->nom;
+						$pc->{$vac}->teamNominalList->{$nc}->prenom = $value->prenom;
+						$pc->{$vac}->teamNominalList->{$nc}->nomComplet = $nc;
+						$pc->{$vac}->teamNominalList->{$nc}->role = $value->role;
+						array_push($pc->{$vac}->teamNominalList->agentsList, $value->nom);
+					}
+				}
+				
+				$aTeamComposition = $this->effectif->{$jour}->{$p}->aTeamComposition;
+				$pc->{$vac}->RoList = [];
+				$pc->{$vac}->CDS = "";
+				$pc->{$vac}->teamToday = new stdClass();
+				foreach ( $aTeamComposition as $key=>$value ) {
+					if ($key !== "lesrenforts") {
+						foreach ($value as $pers) {
+							$nc = $pers->agent->prenom." ".$pers->agent->nom;
+							$ro = false;
+							$cds = false;
+							if (is_array($pers->contextmenuType) === false) { // alors c'est un objet et non un array vide
+								if ($pers->contextmenuType->type === "reserve_operationnelle") {
+									$ro = true;
+								}
+								if ($pers->contextmenuType->type === "fonction" && $pers->contextmenuType->label === "CDS") {
+									$pc->{$vac}->CDS = $nc;
+									$cds = true;
+								}
+							}
+							if ($ro) {
+								array_push($pc->{$vac}->RoList, $nc);
+								$pc->{$vac}->RO += 1;
+							} 
+							if ($ro === false) {
+								
+								$pc->{$vac}->teamToday->{$nc} = new stdClass();
+								$pc->{$vac}->teamToday->{$nc}->prenom = $pers->agent->prenom;
+								$pc->{$vac}->teamToday->{$nc}->nom = $pers->agent->nom;
+								$pc->{$vac}->teamToday->{$nc}->nomComplet = $nc;
+								$pc->{$vac}->teamToday->{$nc}->fonction = "PC";
+
+								if (isset($pers->agent->role)) {
+									if (is_array($pers->agent->role)) {
+										$pc->{$vac}->teamToday->{$nc}->role = $pers->agent->role;
+									}else {
+										$pc->{$vac}->teamToday->{$nc}->role = explode(",", $pers->agent->role);
+									}
+									
+									if (in_array(82, $pc->{$vac}->teamToday->{$nc}->role)) $pc->{$vac}->teamToday->{$nc}->fonction = "PC-CDS";
+									if (in_array(80, $pc->{$vac}->teamToday->{$nc}->role)) $pc->{$vac}->teamToday->{$nc}->fonction = "PC-ACDS";
+								} else {
+									$pc->{$vac}->teamToday->{$nc}->role = [];
+								}
+								if ($cds) $pc->{$vac}->teamToday->{$nc}->fonction = "CDS";
+								if (in_array(10, $pc->{$vac}->teamToday->{$nc}->role)) $pc->{$vac}->teamToday->{$nc}->fonction = "stagiaire";
+							}
+						}
+					}
+				}
+				$pc->{$vac}->renfortAgent = new stdClass();
+				if (property_exists($aTeamComposition, "lesrenforts") === false) {
 					$pc->{$vac}->renfort = 0;
 				} else {
-					$pc->{$vac}->renfort = count(array_keys(get_object_vars($pc->{$vac}->html->lesrenforts)));
+					$pc->{$vac}->renfort = count(array_keys(get_object_vars($aTeamComposition->lesrenforts)));
+					$nomComplet ="";
+					foreach ($aTeamComposition->lesrenforts as $renf) {
+						$nomComplet = $renf->agent->nomComplet;
+						$pc->{$vac}->renfortAgent->{$nomComplet} = new stdClass();
+						$pc->{$vac}->renfortAgent->{$nomComplet}->nom = $renf->agent->nom;
+						$pc->{$vac}->renfortAgent->{$nomComplet}->prenom = $renf->agent->prenom;
+						$pc->{$vac}->renfortAgent->{$nomComplet}->nomComplet = $nomComplet;
+						$pc->{$vac}->renfortAgent->{$nomComplet}->fonction = "PC-DET";
+					}
 				}
-				//$pc->{$vac}->detache = (int) $this->effectif->{$this->day}->{$p}->teamReserve->detacheQuantity;
+
+				$teamData = $this->effectif->{$jour}->{$p}->teamData;
+
+				$pc->{$vac}->RPL = new stdClass();
+				if (isset($teamData->autre_agent)) {
+					foreach ($teamData->autre_agent as $nom=>$html_value) {
+						foreach ($pc->{$vac}->teamNominalList->agentsList as $agent) {
+							if (str_contains($html_value, $agent)) $pc->{$vac}->RPL->{$nom} = $agent;
+						}
+					}
+				}
+
+				if (is_array($teamData->stage) === false) { // alors c'est bien un objet sinon array vide
+					$pc->{$vac}->stage = array_keys(get_object_vars($teamData->stage));
+				} else {
+					$pc->{$vac}->stage = [];
+				}
+				if (is_array($teamData->conge) === false) { // alors c'est bien un objet sinon array vide
+					$pc->{$vac}->conge = array_keys(get_object_vars($teamData->conge));
+				} else {
+					$pc->{$vac}->conge = [];
+				}
+
+			} else {
+				$pc->{$vac}->ROinduit = 0;
+				$pc->{$vac}->nbcds = 0;
+				$pc->{$vac}->nbpc = $nb_jx; 
+				$pc->{$vac}->BV = 10;
+				$pc->{$vac}->RO = 0;
+				$det = 0; 
+				$pc->{$vac}->renfort = $nb_jx_det;
+				$pc->{$vac}->renfortAgent = new stdClass();
 			}
 		} 
 
@@ -501,7 +620,7 @@ class capa {
 			
 			foreach($RD_names_horsJX as $index=>$vac_jx) {
 				if ($vac_jx != "nbcds") {
-					$nb2 = $pc->JX->{$vac_jx}->nombre;
+					$nb2 = $RD->{$vac_jx}->nombre;
 					if ($this->tds_supp_utc->{$vac_jx}[$i][1] === 1) {
 						$effectif_RD_15mn->{$vac_jx}[$i] = $nb2;
 					}
@@ -536,6 +655,17 @@ class capa {
 		}
 		array_push($compacted_ucesos, [get_time($index_ini), get_time(95), floor($ucesos[95][1])]);
 
+		$roles = new stdClass();
+		$roles->CDS = 82;
+		$roles->ACDS = 80;
+		$roles->DET = 14;
+		$roles->ASS_SUB = 37;
+		$roles->STAGIAIRE = 10;
+		$roles->EXP_OPS = 145;
+		$roles->PC_MU = 98;
+		$roles->PC_salle = 9;
+		$roles->CE = 25;
+
 		$res = new stdClass();
 		$res->day= $this->day;
 		$res->zone = $this->zone;
@@ -545,10 +675,14 @@ class capa {
 		$res->uceso = $ucesos;
 		$res->compacted_uceso = $compacted_ucesos;
 		$res->pc_total_horsInstrRD_15mn = $pcs; // total pc hors instr & hors RD bleu supp (les RD Jx sont inclus)
-		$res->pc_instr_15mn = $in15mn;
+		$res->pc_total_instr_15mn = $in15mn;
 		$res->pc_RD_15mn = $effectif_RD_15mn;
 		$res->pc_total_RD_15mn = $effectif_total_RD_15mn;
 		$res->pc_vac = $pc;
+		$res->workingTeam = $this->tab_vac_eq;
+		$res->RD = $RD;
+		$res->roles = $roles;
+		$res->TDS_Supp = $TDS_Supp;
 		return $res;
 
     }
