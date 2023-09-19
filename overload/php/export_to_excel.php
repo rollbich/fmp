@@ -42,7 +42,7 @@ if ($contentType === "application/json") {
 		write_xls($excel);
 		
 		$dir = WRITE_PATH."/overload/".$annee."/";
-		$nom = $dir.$annee."-Sem".$week."-capa-".$filtre."%-".$zone.".xlsx";
+		$nom = $dir.$annee."-".$d->format('Ymd')."-".$d2->format('Ymd')."-capa-".$filtre."%-".$zone.".xlsx";
 		echo $nom;
 	} else {
 		echo "Impossible de décoder le fichier JSON";
