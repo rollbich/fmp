@@ -18,7 +18,7 @@ if ($contentType === "application/json") {
 	$content = trim(file_get_contents("php://input"));
 	$decoded = json_decode($content, true); // array
 	if (is_array($decoded)) {
-		global $filtre, $zone, $week, $annee;
+		global $filtre, $zone, $week, $annee, $d, $d2;
 		$filtre = $decoded["filtre"];
 		$zone = $decoded["zone"];
 		$data = $decoded["data"];
@@ -82,7 +82,7 @@ function write_xls($excel) {
 		mkdir($dir, 0775, true);
 	}
 	
-	$nom = $dir.$annee."-Sem".$week."-capa-".$filtre."%-".$zone.".xlsx";
+	$nom = $dir.$annee."-".$d->format('Ymd')."-".$d2->format('Ymd')."-capa-".$filtre."%-".$zone.".xlsx";
 	$writer->writeToFile($nom);
 	
 }
