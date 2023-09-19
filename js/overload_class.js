@@ -47,39 +47,19 @@ class overload {
         this.selected_percent_peak = selected_percent_peak;
         this.containerId = containerId;
         this.mv_json = null;
-        this.mv_b2b_4f = null;
-        this.otmv_b2b_4f = null;
         // dépassement de 5mn mini
         this.peak_threshold_time = 5;
+        this.init();
     }
 
     async init() {
-        const nom_fichier = "../b2b/MV.json";
-        this.mv_json = await loadJson(nom_fichier);
-        /*
-        this.mv_b2b = new mv(convertDate(new Date()), this.z);
-        this.mv_b2b_4f = await this.mv_b2b.get_b2b_mvs();
-        if (this.mv_b2b_4f === null) show_popup('Erreur connexion B2B', "MVs non récupérées");
-        this.otmv_b2b_4f = await this.mv_b2b.get_b2b_otmvs();
-        if (this.otmv_b2b_4f === null) show_popup('Erreur connexion B2B', "OTMVs non récupérées");
-        */
-        const dd = this.start_day.split("-");
-        const rd = remove_hyphen_date(this.start_day);
-        let year = dd[0];
-        let month = dd[1];
-        let file_name;
-        file_name = `${year}/${month}/${rd}-mv_otmv-${this.z}.json`;
-        let mv_otmv = await get_data(file_name);
-        if (typeof mv_otmv === 'undefined') {
-            const default_date_MV_json = await loadJson("../default_date_MV_OTMV.json");
-            const ddmv = remove_hyphen_date(default_date_MV_json['date']);
-            const default_date_MV = reverse_date(default_date_MV_json['date']);
-            file_name = `2023/06/${ddmv}-mv_otmv-${this.z}.json`;
-            mv_otmv = await get_data(file_name);
-            show_popup(`MV/OTMV du jour indisponibles`, `Date des MV/OTMV : ${default_date_MV}`);
-        }
-        this.mv_b2b_4f = mv_otmv["MV"];
-        this.otmv_b2b_4f = mv_otmv["OTMV"];
+        show_popup('Patientez','Chargement en cours');
+        this.data = await this.get_fichiers();
+        console.log("Data");
+        console.log(this.data);
+       	document.querySelector('.popup-close').click();
+		this.show_depassement_capa();
+        
     }
 
     /*  ----------------------------------------------------------------------------------
@@ -138,6 +118,52 @@ class overload {
     
     }
 
+    /* day = "2023-07-02" */
+    async get_fichiers() {
+        const days = get_dates_array(new Date(this.start_day), new Date(this.end_day));
+
+        const nom_fichier = "../b2b/MV.json";
+        this.mv_json = await loadJson(nom_fichier);
+
+        const donnees = {};
+        for (let day of days) {
+            donnees[day] = {};
+
+            // fichier mv-otmv du jour
+            const dd = day.split("-");
+            const rd = remove_hyphen_date(day);
+            let year = dd[0];
+            let month = dd[1];
+            let file_name;
+            file_name = `${year}/${month}/${rd}-mv_otmv-${this.z}.json`;
+            let mv_otmv = await get_data(file_name);
+            if (typeof mv_otmv === 'undefined') {
+                const default_date_MV_json = await loadJson("../default_date_MV_OTMV.json");
+                const d = default_date_MV_json.split("-");
+                const y = d[0];
+                const m = d[1];
+                const ddmv = remove_hyphen_date(default_date_MV_json['date']);
+                const default_date_MV = reverse_date(default_date_MV_json['date']);
+                file_name = `${y}/${m}/${ddmv}-mv_otmv-${this.z}.json`;
+                mv_otmv = await get_data(file_name);
+                show_popup(`MV/OTMV du jour indisponibles`, `Date par defaut des MV/OTMV : ${default_date_MV}`);
+            }
+            donnees[day]["mvotmv-b2b"] = mv_otmv;
+
+            const t = new schema_rea(day, this.zone);
+            donnees[day].rea = await t.read_schema_realise();
+            if (typeof donnees[day].rea !== 'undefined') {
+                const temp_h20 = await get_h20_b2b(day, this.zone, donnees[day].rea);
+                const temp_occ = await get_occ_b2b(day, this.zone, donnees[day].rea);	
+                donnees[day].h20 = temp_h20;
+                donnees[day].occ = temp_occ;
+            } else {
+                show_popup(`Attention<br>le ${reverse_date(day)}`, `Fichier réalisé manquant`);
+            }
+        }
+        return donnees;
+    }
+
     /*  ----------------------------------------------------------------------------------
 	      Calcule le dépassement Capa
             @results {object} - {
@@ -149,18 +175,8 @@ class overload {
     async calc_capa_H20() {
 
         const days = get_dates_array(new Date(this.start_day), new Date(this.end_day));
-        
-        for (let day of days) {
-            const sch = new schema_rea(day, this.zone);
-            const s = await sch.read_schema_realise();
-            if (typeof s !== 'undefined') {
-                const temp = await get_h20_b2b(day, this.zone, s);	
-                Object.assign(this.result_h20, temp);
-            } else {
-                show_popup(`Attention<br>le ${reverse_date(day)}`, `Fichier réalisé manquant`);
-            }
-        }
-        
+        console.log("Days array");
+        console.log(days);
         let z = this.z.toUpperCase();
         
         this.result_capa["data"] = [];
@@ -168,14 +184,14 @@ class overload {
         this.result_capa["zone"] = z;
         this.result_capa["range"] = [this.start_day, this.end_day];
         this.result_capa["nombre"] = {"130":0, "140":0, "150":0, "160":0, "170":0, "180":0};
-        
-        for (let day in this.result_h20) {
-            for (var tv in this.result_h20[day]) {
+
+        for (let day of days) {
+            for (var tv in this.data[day]["h20"][day]) {
                     let mv_ods = parseInt(this.mv_json[`TV-${z}`][tv]["MV"]);
                     const full_tv = "LFM"+tv;
-                    let mv_4f = this.mv_b2b_4f[full_tv][0]["capacity"];
+                    let mv_4f = this.data[day]["mvotmv-b2b"]["MV"][full_tv][0]["capacity"];
                     try {
-                        this.result_h20[day][tv].forEach(value => {
+                        this.data[day]["h20"][day][tv].forEach(value => {
                             let count = value[1];
                             let pourcentage_mv_4f = Math.round((100 * count) / mv_4f);
                             let dd = reverse_date(day);	
@@ -210,17 +226,6 @@ class overload {
 
         const days = get_dates_array(new Date(this.start_day), new Date(this.end_day));
         
-        for (let day of days) {
-            const sch = new schema_rea(day, this.zone);
-            const s = await sch.read_schema_realise();
-            if (typeof s !== 'undefined') {
-                const temp = await get_occ_b2b(day, this.zone, s);	
-                Object.assign(this.result_peak, temp);
-            } else {
-                show_popup(`Attention<br>le ${reverse_date(day)}`, `Fichier réalisé manquant`);
-            }
-        }
-        
         let z = this.z.toUpperCase();
         
         this.result_capa["data"] = [];
@@ -229,27 +234,25 @@ class overload {
         this.result_capa["range"] = [this.start_day, this.end_day];
         this.result_capa["nombre"] = 0;
         
-
-        for (let day in this.result_peak) {
-            for (var tv in this.result_peak[day]) {
+        for (let day of days) {
+            for (var tv in this.data[day]["occ"][day]) {
                     const full_tv = "LFM"+tv;
-                    let peak_4f = this.otmv_b2b_4f[full_tv][0]["otmv"]["peak"]["threshold"];
+                    let peak_4f = this.data[day]["mvotmv-b2b"]["OTMV"][full_tv][0]["otmv"]["peak"]["threshold"];
                     try {
-                        const l = this.result_peak[day][tv].length;
+                        const l = this.data[day]["occ"][day][tv].length;
                         for(let i=0;i<l-1-this.peak_threshold_time;i++) {
-                            let value = this.result_peak[day][tv][i];
+                            let value = this.data[day]["occ"][day][tv][i];
                             let heure = value[0];
                             let count = value[1];
                             let pourcentage_peak_4f = Math.round((100 * count) / peak_4f);
                             let dd = reverse_date(day);	
                             if (pourcentage_peak_4f > this.selected_percent_peak) {
-                                console.log("Tv:"+tv+"   heure: "+heure+"  count: "+count);
                                 // k commence à 1 (on a déjà la première valeur qui a dépassé)
                                 let depa = true;
                                 let tab_count = [count];
                                 for(let k=1;k<this.peak_threshold_time;k++) {
-                                    let pourc_peak_4f = Math.round((100 * this.result_peak[day][tv][i+k][1]) / peak_4f);
-                                    tab_count.push(this.result_peak[day][tv][i+k][1]);
+                                    let pourc_peak_4f = Math.round((100 * this.data[day]["occ"][day][tv][i+k][1]) / peak_4f);
+                                    tab_count.push(this.data[day]["occ"][day][tv][i+k][1]);
                                     if (pourc_peak_4f <= this.selected_percent_peak) {
                                         depa = false;
                                     }
@@ -299,11 +302,8 @@ class overload {
 
         let h = {}, o = {};
         for (const d of date_arr) {
-            const sch = new schema_rea(d, this.zone);
-            const s = await sch.read_schema_realise();	
-            h[d] = await get_h20_b2b(d, this.zone, s);
-            console.log("H20_ok");
-            o[d] = await get_occ_b2b(d, this.zone, s);
+           h[d] = this.data[d]["h20"];
+           o[d] = this.data[d]["occ"];
         }
 
         for (const td of td_tv) {
@@ -334,8 +334,8 @@ class overload {
                     //let peak = o[dat][dat][tv][0][2];
                     //let sustain = o[dat][dat][tv][0][3];
                     let full_tv = "LFM"+tv;
-                    let peak = this.otmv_b2b_4f[full_tv][0]["otmv"]["peak"]["threshold"];	
-                    let sustain = this.otmv_b2b_4f[full_tv][0]["otmv"]["sustained"]["threshold"];		
+                    let peak = this.data[dat]["mvotmv-b2b"]["OTMV"][full_tv][0]["otmv"]["peak"]["threshold"];	
+                    let sustain = this.data[dat]["mvotmv-b2b"]["OTMV"][full_tv][0]["otmv"]["sustained"]["threshold"];		
                     if (data.length === 0) { 
                         if (data_occ.length === 0) {
                             document.getElementById('graph-container-h20').classList.add('off');
@@ -353,7 +353,7 @@ class overload {
                         let z = this.zone === "AE" ? "EST" : "OUEST";
                         let mv_ods = parseInt(this.mv_json[`TV-${z}`][tv]["MV"]);
                         const full_tv = "LFM"+tv;
-                        let mv_4f = this.mv_b2b_4f[full_tv][0][ "capacity"];
+                        let mv_4f = this.data[dat]["mvotmv-b2b"]["MV"][full_tv][0]["capacity"];
                         show_h20_graph('graph_h20', dataAxis, data, mv_4f, mv_ods, tv);
                         show_occ_graph('graph_occ', dataAxis_occ, data_occ, peak, sustain, tv);
                     }

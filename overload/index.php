@@ -72,10 +72,6 @@
 				let sel_percent_MV = parseInt($('selection_MV').value);
 				let sel_percent_peak = parseInt($('selection_peak').value);
 				depassement = new overload('result', "H20", start_day, end_day, zone, sel_percent_MV, sel_percent_peak);
-				show_popup('Patientez 5s','Chargement en cours');
-				await depassement.init();
-				document.querySelector('.popup-close').click();
-				depassement.show_depassement_capa();
 			});
 
 			$('bouton_peak').addEventListener('click', async e => {
@@ -88,10 +84,6 @@
 				let sel_percent_MV = parseInt($('selection_MV').value);
 				let sel_percent_peak = parseInt($('selection_peak').value);
 				depassement = new overload('result', "peak", start_day, end_day, zone, sel_percent_MV, sel_percent_peak);
-				show_popup('Patientez 5s','Chargement en cours');
-				await depassement.init();
-				document.querySelector('.popup-close').click();
-				depassement.show_depassement_capa();
 			});
 			
 			$('bouton_export').addEventListener('click', e => {
