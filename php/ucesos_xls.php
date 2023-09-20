@@ -78,6 +78,8 @@ try {
 		$writer->writeSheetRow('Ucesos', [], $style);
 	}
 
+	$today = new DateTime();
+	$t = $today->format('Ymd');
 	$start_date = new DateTime($start_day);
 	$end_date = new DateTime($end_day);
 	$sd = $start_date->format('Ymd');
@@ -88,7 +90,7 @@ try {
 		mkdir($dir, 0775, true);
 	} else {
 	}
-	$filename = "$sd-$ed-ucesos-$zone.xlsx";
+	$filename = "$sd-$ed-ucesos-$zone-$t.xlsx";
 	$writer->writeToFile($dir."/$filename");
 	echo $filename;
 }

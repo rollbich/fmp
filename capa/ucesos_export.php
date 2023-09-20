@@ -52,16 +52,8 @@
 				let zone = $('zone').value;
 				let start_day = $('start').value;
 				let end_day = $('end').value;
-				/* Code sans utiliser PHP
-				const capa = new feuille_capa("feuille_capa_tour", day, zone, false)
-				.then( (value) => {
-					console.log("RESULT UCESOS");
-					console.log(value.compacted);
-					console.log(value.quarter);
-				});
-				*/
 				const obj = {"zone": zone, "startDay": start_day, "endDay": end_day};
-				const url = "../php/steph_xls.php";
+				const url = "../php/ucesos_xls.php";
 				const data = {
 					method: "post",
 					headers: { "Content-Type": "application/json" },
