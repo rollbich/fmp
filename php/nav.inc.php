@@ -75,9 +75,30 @@
           </a>
         </div>
       </div>
-			<a class="navbar-item" href="../capa">
-        Capa
-      </a>
+      <?php
+          if ($_SESSION['login_bureau'] === true) {
+            echo '
+            <div class="navbar-item has-dropdown is-hoverable">
+				      <a class="navbar-link" style="background: transparent;">
+              Capa
+              </a>
+				      <div class="navbar-dropdown">
+					      <a class="navbar-item" href="../capa">
+                Feuille de Capa
+                </a>
+                <a class="navbar-item" href="../capa/ucesos_export.php">
+                Export XLS Ucesos
+                </a>
+				      </div>
+			      </div>';
+          } else {
+            echo '
+            <a class="navbar-item" href="../capa">
+            Capa
+            </a>';
+          }
+      ?>
+			
       <div class="navbar-item has-dropdown is-hoverable">
 				<a class="navbar-link" style="background: transparent;">
             Trafic & reg
