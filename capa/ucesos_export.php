@@ -59,8 +59,10 @@
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify(obj)
 				};
+				show_popup('Patientez','Chargement en cours');
 				fetch(url, data)
 				.then(function(response) {
+					document.querySelector('.popup-close').click();
 					return response.text().then(function(texte) {
 						show_popup("Export XLS réussi", `Cliquer pour télécharger le fichier<br><a href='download_capa_file.php?filename=${texte}'>${texte}</a>`); 
 					});
