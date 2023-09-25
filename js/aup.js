@@ -10,14 +10,14 @@ class aup {
 
     async init_aup() {
         this.result = await this.get_aup();
-        this.show_aup("result");
+        this.show_aup("result", "AUP");
     }
 
     async init_uup() {
         show_popup("Patientez", `Chargement en cours...`);
         this.result = await this.get_direct_aup();
         document.querySelector('#popup-wrap a.popup-close').click();
-        this.show_aup("result");
+        this.show_aup("result", "Last UUP");
     }
 
     // get aup (LITSA72 + LIR64 + LFMM RSA)
@@ -52,9 +52,9 @@ class aup {
         return aup;
     }
 
-    show_aup(containerId) {
+    show_aup(containerId, titre) {
         if (typeof this.result !== 'undefined') {
-            let res = `<div><h2>AUP LFMM du ${reverse_date(this.day)} <br><span style='font-size:1rem'>06:00 UTC au lendemain 06:00 UTC</span></h2>`;
+            let res = `<div><h2>${titre} LFMM du ${reverse_date(this.day)} <br><span style='font-size:1rem'>06:00 UTC au lendemain 06:00 UTC</span></h2>`;
             res += `
             <table class="sortable">
                 <thead><tr class="titre"><th class="space">D54</th><th>Début</th><th>Fin</th><th>Lower Limit</th><th>Upper Limit</th></tr></thead>
