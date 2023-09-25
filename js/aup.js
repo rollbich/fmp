@@ -13,6 +13,13 @@ class aup {
         this.show_aup("result");
     }
 
+    async init_uup() {
+        show_popup("Patientez", `Chargement en cours...`);
+        this.result = await this.get_direct_aup();
+        document.querySelector('#popup-wrap a.popup-close').click();
+        this.show_aup("result");
+    }
+
     // get aup (LITSA72 + LIR64 + LFMM RSA)
     // récupère l'AUP à partir de l'heure de la demande
     // les données précédant l'heure la requête ne sont fournies

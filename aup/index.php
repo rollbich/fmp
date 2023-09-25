@@ -46,6 +46,12 @@
 				const lfmm_aup = new aup(day);
 				const result = await lfmm_aup.init_aup();
 			});
+
+			$('bouton_uup').addEventListener('click', async e => {
+				const day = $('day').value;
+				const lfmm_aup = new aup(day);
+				const result = await lfmm_aup.init_uup();
+			});
 			
 			document.querySelector('.popup-close').addEventListener('click', e => {
 				e.preventDefault();
@@ -68,6 +74,7 @@
 </div>
 <ul class="menu">
     <li id="bouton_aup" class="pointer"><span>AUP</span></li>
+	<li id="bouton_uup" class="pointer"><span>Last UUP</span></li>
 	<li class="pointer"><span id="bouton_conf">Date :</span><input type="date" id="day" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="<?php echo date("Y-m-d", strtotime("2023-06-01"));?>" max="<?php echo date("Y-m-d", strtotime("+1 day"));?>"></li>
 	<li><button class="help_button">Help</button></li>
 </ul>
