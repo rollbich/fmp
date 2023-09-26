@@ -7,6 +7,12 @@ require("/opt/bitnami/smtp/PHPMailer/PHPMailer.php");
 require("/opt/bitnami/smtp/PHPMailer/SMTP.php");
 require("/opt/bitnami/smtp/email-config.inc.php");
 
+/* -----------------------------------------------------------------
+    CONTACT_1 = christophe.rolland@aviation-civile.gouv.fr
+    CONTACT_2 = adonis.koffi-d-almeida@aviation-civile.gouv.fr
+    CONTACT_3 = lfmm-fmp@aviation-civile.gouv.fr
+   ----------------------------------------------------------------- */
+
 class Service {
 
     private $client;
@@ -44,9 +50,9 @@ class Service {
         $mail->Port       = 587;                           			        //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
 
         //Recipients
-        $mail->setFrom(CONTACT_FROM, 'Error LFMM-FMP');
-        $mail->addAddress(CONTACT_1, 'LFMM-FMP');  //Add a recipient            				//Name is optional
-        //$mail->addAddress(CONTACT_2);
+        $mail->setFrom(CONTACT_FROM, 'B2B Error LFMM-FMP');
+        $mail->addAddress(CONTACT_1, 'Chris');  //Add a recipient            				//Name is optional
+        $mail->addAddress(CONTACT_2);
         //$mail->addReplyTo('info@example.com', 'Information');
         //$mail->addCC('cc@example.com');
         //$mail->addBCC('bcc@example.com');
@@ -57,8 +63,8 @@ class Service {
 
         //Content
         $mail->isHTML(true);                                				//Set email format to HTML
-        $mail->Subject = "B2B Error (Test de Christophe) : $heure";
-        $mail->Body    = "Le grand ragout a parl&eacute; <b>depuis l'hyper espace</b><br><br>Verifiez vos fichiers B2B <br><br>$erreur<br><br>";
+        $mail->Subject = "B2B Error : $heure";
+        $mail->Body    = "Verifiez vos fichiers B2B <br><br>$erreur<br><br>";
         $mail->AltBody = "Verifiez vos fichiers B2B <br>\n\n<br>$erreur<br><br>";
 
         $mail->send();
