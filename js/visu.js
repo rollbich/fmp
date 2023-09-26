@@ -8,6 +8,7 @@ class visu {
     constructor(day, zone, show_regul = true) {
         this.day = day;
         this.zone = zone;
+        this.z = this.zone === "AE" ? "est" : "ouest";
         this.show_regul = show_regul;
         //this.container = $(containerId);
         this.h = {};
@@ -114,25 +115,21 @@ class visu {
                 const reg = new regul(this.day, this.zone, false);
                 await reg.init();
                 const regbytv = reg.get_regbytv();
-                /*
-                const z = this.zone === "AE" ? "est" : "ouest";
-                const d = convertDate(new Date);
-                const mv_b2b = new mv(d, z);
-                let mv_4f = await mv_b2b.get_b2b_mvs();
-                */
-                const z = this.zone === "AE" ? "est" : "ouest";
                 const dd = this.day.split("-");
                 const rd = remove_hyphen_date(this.day);
                 let year = dd[0];
                 let month = dd[1];
                 let file_name;
-                file_name = `${year}/${month}/${rd}-mv_otmv-${z}.json`;
+                file_name = `${year}/${month}/${rd}-mv_otmv-${this.z}.json`;
                 let mv_otmv = await get_data(file_name);
-                if (typeof mv_otmv === 'undefined') {
+                if (mv_otmv === 404) {
                     const default_date_MV_json = await loadJson("../default_date_MV_OTMV.json");
+                    const fig = default_date_MV_json["date"].split("-");
+                    const y = fig[0];
+                    const m = fig[1];
                     const ddmv = remove_hyphen_date(default_date_MV_json['date']);
                     const default_date_MV = reverse_date(default_date_MV_json['date']);
-                    file_name = `2023/06/${ddmv}-mv_otmv-${z}.json`;
+                    file_name = `${y}/${m}/${ddmv}-mv_otmv-${this.z}.json`;
                     mv_otmv = await get_data(file_name);
                     show_popup(`MV/OTMV du jour indisponibles`, `Date des MV/OTMV : ${default_date_MV}`);
                 }
