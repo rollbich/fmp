@@ -41,13 +41,12 @@ function get_mv_otmv($plan) {
     $result = new stdClass();
     $result->MV = $soapClient->flowServices()->get_easy_capacity_plan($plan, $d);
     $result->OTMV = $soapClient->flowServices()->get_otmv_plan($plan, $d, $soapClient->getCurrentVersion());
-    var_dump($result->OTMV);
     return $result;
 }
 
-//$res_est = get_mv_otmv($tv_est);
-//write_json($res_est, "est");
+$res_est = get_mv_otmv($tv_est);
+write_json($res_est, "est");
 $res_west = get_mv_otmv($tv_west);
-//write_json($res_west, "ouest");
+write_json($res_west, "ouest");
 
 ?>
