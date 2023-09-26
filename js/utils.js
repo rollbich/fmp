@@ -440,6 +440,19 @@ function get_time(col) {
     return h.toString()+":"+min.toString();
 }
 
+// récupère le décalage utc/local en heure
+// day = objet Date
+function get_decalage(d) {
+	d.setHours(6);
+	const diff = Math.abs(d.getTimezoneOffset()) / 60;
+	return diff;
+}
+
+// day = objet Date
+function get_utc_time(col, day) {
+	return min_to_time(time_to_min(this.get_time(col))-get_decalage(day)*60);
+}
+
 /* -------------------------------------------------------------------------------------
 		Cookie 
 	ex : setCookie({ name: 'count', value: 100, duration: 300 });   // 300s, 5 minutes
