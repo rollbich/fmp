@@ -9,6 +9,7 @@ class schema_rea {
     constructor(day, zone) {
         this.day = day;
         this.zone = zone;
+        this.z = this.zone === "AE" ? "est" : "ouest";
         let type = "cautra";
 		const d = new Date(this.day);
 		const date4f = new Date("2022-12-06");
@@ -137,7 +138,7 @@ class schema_rea {
                     // calcul du nbre max de secteurs
                     schema.max_secteurs = Math.max(schema.max_secteurs, ouverture.length);
                     // trier temp par ordre alphabétique
-                    let arr_ouv = this.zone === "AE" ? tri_salto(ouv, "est") : tri_salto(ouv, "ouest");
+                    let arr_ouv = tri_salto(ouv, this.z);
                     temp.push(arr_ouv);
                     schema.ouverture.push(temp);
                 }
@@ -282,7 +283,7 @@ class schema_rea {
                 // calcul du nbre max de secteurs
                 schema.max_secteurs = Math.max(schema.max_secteurs, mapping_obj.pos.length);
                 // trier temp par ordre alphabétique
-                let arr_ouv = this.zone === "AE" ? tri_salto(ouv, "est") : tri_salto(ouv, "ouest");
+                let arr_ouv = tri_salto(ouv, this.z);
                 temp.push(arr_ouv);
                 schema.ouverture.push(temp);
             })

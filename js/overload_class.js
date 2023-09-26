@@ -140,9 +140,9 @@ class overload {
             let file_name;
             file_name = `${year}/${month}/${rd}-mv_otmv-${this.z}.json`;
             let mv_otmv = await get_data(file_name);
-            if (typeof mv_otmv === 'undefined') {
+            if (mv_otmv === 404) {
                 const default_date_MV_json = await loadJson("../default_date_MV_OTMV.json");
-                const d = default_date_MV_json.split("-");
+                const d = default_date_MV_json["date"].split("-");
                 const y = d[0];
                 const m = d[1];
                 const ddmv = remove_hyphen_date(default_date_MV_json['date']);

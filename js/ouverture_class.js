@@ -38,19 +38,14 @@ class ouverture extends schema_rea {
 	  Prépare le fichier de correspondance confs-regroupements
 	--------------------------------------------------------------------------------------------- */
     async get_fichier_confs() {
-        const zon = this.zone === "AE" ? "est" : "ouest";
-        const cf = new conf(new Date(), zon);
+        const cf = new conf(new Date(), this.z);
         await cf.init_b2b();
         const confs_exist = cf.b2b_sorted_confs;
-		
-        const url_est =  `../confs-est-supp.json`;	
-        const url_west =  `../confs-west-supp.json`;	
-        const url = this.zone === "AE" ? url_est : url_west;
-		const confs_supp = await loadJson(url);
+		const confs_supp = await this.get_bdd_confs(this.z);
 
         // merge les 2 fichiers
         const conf_tot = {};
-        Object.assign(conf_tot, confs_exist[zon]);
+        Object.assign(conf_tot, confs_exist[this.z]);
         Object.keys(confs_supp).forEach( elem => {
             conf_tot[elem] = {...conf_tot[elem], ...confs_supp[elem]}
         })
@@ -89,8 +84,7 @@ class ouverture extends schema_rea {
                         <thead>
                         <tr class="titre"><th>Début</th><th>Fin</th><th>Nb sect.</th><th>Conf</th><th class="colspan">Confs</th></tr>
                     </thead>
-                    <tbody>`;
-        const zon = this.zone === "AE" ? "est" : "ouest";                    
+                    <tbody>`;                 
         this.schema.ouverture.forEach(row => {
             //console.log("Row");
             //console.log(row); 
@@ -126,7 +120,7 @@ class ouverture extends schema_rea {
             row[4].forEach(tv => {
                 //console.log("R: "+row[1]+" "+row[2]+"  tv: "+tv[0]);
                 let r = this.get_ouverture_totale(tv[0], time_to_min(row[1]), time_to_min(row[2]));
-                const color = get_group_color(tv[0], zon);
+                const color = get_group_color(tv[0], this.z);
                 res += `<td title="${tv[1]}" class="tv" data-tv="${tv[0]}" data-deb="${r[0]}" data-fin="${r[1]}" style="background: ${color}">${tv[0]}</td>`;
             });
             res += '</tr>';
@@ -151,7 +145,7 @@ class ouverture extends schema_rea {
                 if (!!exist === true) exist.remove();
                 let nbr_regroup = td_el.dataset.nbregr;
                 let tvs = td_el.dataset.tvs.split(",");
-                tvs = this.zone === "AE" ? tri_salto(tvs, "est") : tri_salto(tvs, "west");
+                tvs = tri_salto(tvs, this.z);
                 const confs_name = [];
                 const el = document.createElement('div');
 				el.setAttribute('id', 'popup-cree-conf');
@@ -170,7 +164,7 @@ class ouverture extends schema_rea {
                     for(let conf in this.confs[nbr_regroup]) {
                         confs_name.push(conf);
                         let arr_tv = this.confs[nbr_regroup][conf];
-                        arr_tv = this.zone === "AE" ? tri_salto(arr_tv, "est") : tri_salto(arr_tv, "west");
+                        arr_tv = tri_salto(arr_tv, this.z);
                         res2 += `<tr><td style="background: var(--color-2019);">${conf}</td>`; 
                         arr_tv.forEach(tv => {
                             res2 +=`<td>${tv}</td>`;
@@ -189,11 +183,11 @@ class ouverture extends schema_rea {
                         show_popup('Add Confs', `Conf non créée<br>Ce nom existe déjà`);
                         return;
                     }
-                    const json = await this.get_bdd_confs(zon);
+                    const json = await this.get_bdd_confs(this.z);
                     json[nbr_regroup][n] = tvs;
                     console.log("Creation");
                     console.log(json);
-                    await this.update_conf_file(json, zon);
+                    await this.update_conf_file(json, this.z);
                     show_popup('Add Confs', `Conf ${n} créée`);
                 })
                 $('close_creer_conf').addEventListener('click', e => {
@@ -300,26 +294,21 @@ class ouverture extends schema_rea {
             console.log("regreg");
             console.log(regbytv);
             
-            const z = this.zone === "AE" ? "est" : "ouest";
-            const d = convertDate(new Date);
-            console.log(d);
-            /*
-            const mv_b2b = new mv(d, z);
-            let mv_4f = await mv_b2b.get_b2b_mvs();
-            let otmv_4f = await mv_b2b.get_b2b_otmvs();
-            */
             const dd = this.day.split("-");
             const rd = remove_hyphen_date(this.day);
             let year = dd[0];
             let month = dd[1];
             let file_name;
-            file_name = `${year}/${month}/${rd}-mv_otmv-${z}.json`;
+            file_name = `${year}/${month}/${rd}-mv_otmv-${this.z}.json`;
             let mv_otmv = await get_data(file_name);
-            if (typeof mv_otmv === 'undefined') {
+            if (mv_otmv === 404) {
                 const default_date_MV_json = await loadJson("../default_date_MV_OTMV.json");
+                const fig = default_date_MV_json["date"].split("-");
+                const y = fig[0];
+                const m = fig[1];
                 const ddmv = remove_hyphen_date(default_date_MV_json['date']);
                 const default_date_MV = reverse_date(default_date_MV_json['date']);
-                file_name = `2023/06/${ddmv}-mv_otmv-${z}.json`;
+                file_name = `${y}/${m}/${ddmv}-mv_otmv-${this.z}.json`;
                 mv_otmv = await get_data(file_name);
                 show_popup(`MV/OTMV du jour indisponibles`, `Date des MV/OTMV : ${default_date_MV}`);
             }
