@@ -597,8 +597,8 @@ class capa {
 					if ($d === $this->day && strtolower($zone) === $this->zone) {
 						if ($t >= $debut && $t< $fin) {
 							$z = new stdClass();
-							$z->{$type} = $type;
-							$z->{$comm} = $comm;
+							$z->type = $type;
+							$z->comm = $comm;
 							if ($type === "Inst") { $in15mn[$i][0] += 2; $nb_pc += 2; array_push($in15mn[$i][1], $z); }
 							if ($type === "Inst1") { $in15mn[$i][0] += 1; $nb_pc += 2; array_push($in15mn[$i][1], $z); }
 							if ($type === "Eleve") { array_push($in15mn[$i][1], $z); }
