@@ -384,12 +384,26 @@ class capa {
 
 				$teamData = $this->effectif->{$jour}->{$p}->teamData;
 
+				/*
+				autre_agent: {
+					"COUDERC": "<tr ki=39165 class='conge'>\n\t\t<td class=w150p>FRACHON</td>\n    <td class=w250p>PER avec &lt;strong&gt;Isabelle COUDERC&lt;/strong&gt;</td>\n    <td class=w250p>\n\t\n\tLe <b>02/07/2023</b>\n    </td>\n</tr>\n",
+					"FREZOULS": "<tr ki=4001030 class='conge'>\n\t\t<td class=w150p>BEAUDONNET</td>\n    <td class=w250p>RPL par &lt;b&gt;FREZOULS&lt;/b&gt;</td>\n    <td class=w250p>\n\t\n\tLe <b>02/07/2023</b>\n    </td>\n</tr>\n"
+				}
+				*/
+
 				$this->pc->{$vac}->RPL = new stdClass();
 				if (isset($teamData->autre_agent)) {
-					foreach ($teamData->autre_agent as $nom=>$html_value) {
-						foreach ($this->pc->{$vac}->teamNominalList->agentsList as $agent) {
+					foreach ($teamData->autre_agent as $nom=>$html_value) { // nom du remplaçant
+						foreach ($this->pc->{$vac}->teamNominalList->agentsList as $agent) { // agent remplacé
 							if (str_contains($html_value, $agent)) $this->pc->{$vac}->RPL->{$nom} = $agent;
 						}
+					}
+				}
+
+				// Précise la fonction RPL des Remplacant dans teamToday
+				foreach ($this->pc->{$vac}->RPL as $remplacant => $remplace) {
+					foreach ($this->pc->{$vac}->teamToday as $fullname => $obj) {
+						if (strcmp($remplacant, $obj->nom) === 0) $this->pc->{$vac}->teamToday->{$obj->nomComplet}->fonction = "PC-RPL";
 					}
 				}
 
@@ -432,6 +446,7 @@ class capa {
 		$effectif_total_RD_15mn = [];
 		$effectif_RD_15mn = new stdClass();
 		$vacs = ["JX","J1", "J3", "S2", "J2", "S1", "N", "N-1"];
+
 		$nb_pc_sousvac = new stdClass();
 		foreach($vacs as $vacation) {
 			$nb_pc_sousvac->{$vacation} = new StdClass();
