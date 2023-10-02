@@ -172,15 +172,15 @@ class capa {
 
 		// Calcul du nombre de pc à afficher 
 		// On récupère l'effectif total, donc on doit enlever le cds sur les vacations qui en ont 1	
-		$pc = new stdClass();
-		$pc->JX = new stdClass();
-		$pc->J1 = new stdClass();
-		$pc->J3 = new stdClass();
-		$pc->S2 = new stdClass();
-		$pc->J2 = new stdClass();
-		$pc->S1 = new stdClass();
-		$pc->N = new stdClass();
-		$pc->{'N-1'} = new stdClass();
+		$this->pc = new stdClass();
+		$this->pc->JX = new stdClass();
+		$this->pc->J1 = new stdClass();
+		$this->pc->J3 = new stdClass();
+		$this->pc->S2 = new stdClass();
+		$this->pc->J2 = new stdClass();
+		$this->pc->S1 = new stdClass();
+		$this->pc->N = new stdClass();
+		$this->pc->{'N-1'} = new stdClass();
 
 		/*  -------------------------------------------------
 			pc["JX"] contient les JX mais aussi les RD bleus
@@ -243,15 +243,15 @@ class capa {
 				$agent_type = (str_contains($label, "det") || str_contains($label, "RD")) ? "détaché" : "salle";
 
 				if ($type_vac === "JX") {
-					if (property_exists($pc->JX, $jx_type) === false) { 
-						$pc->JX->{$jx_type} = new stdClass();
-						$pc->JX->{$jx_type}->nombre = 0;
-						$pc->JX->{$jx_type}->nombre_det = 0; 
-						$pc->JX->{$jx_type}->agent = new stdClass();
+					if (property_exists($this->pc->JX, $jx_type) === false) { 
+						$this->pc->JX->{$jx_type} = new stdClass();
+						$this->pc->JX->{$jx_type}->nombre = 0;
+						$this->pc->JX->{$jx_type}->nombre_det = 0; 
+						$this->pc->JX->{$jx_type}->agent = new stdClass();
 					}
-					$pc->JX->{$jx_type}->agent->{$agent} = $agent_type;
-					$pc->JX->{$jx_type}->nombre++;
-					$pc->JX->{$jx_type}->nombre_det += $nb_det;
+					$this->pc->JX->{$jx_type}->agent->{$agent} = $agent_type;
+					$this->pc->JX->{$jx_type}->nombre++;
+					$this->pc->JX->{$jx_type}->nombre_det += $nb_det;
 				} 
 				if ($type_renfort === "RD") {
 					if (property_exists($RD, $jx_type) === false) { 
@@ -280,7 +280,7 @@ class capa {
 			}
 		}
 		
-		$pc->JX->equipe = $this->tab_vac_eq->JX;
+		$this->pc->JX->equipe = $this->tab_vac_eq->JX;
 
 		foreach ($this->tab_vac_eq as $vac => $value) {
 			$p = $value."-".$this->zone_olaf;
@@ -288,39 +288,39 @@ class capa {
 			if ($vac === "N-1") $jour = $this->yesterday;
 			if ($vac !== "JX") {
 				// Le RO induit apparait si detachés > 1 et plus que 1 n'est pas Expert Ops, ACDS ou Assistant sub
-				$pc->{$vac}->ROinduit = (int) $this->effectif->{$jour}->{$p}->teamReserve->roInduction;
+				$this->pc->{$vac}->ROinduit = (int) $this->effectif->{$jour}->{$p}->teamReserve->roInduction;
 				if ($vac === "N-1") {
-					$pc->{$vac}->nbcds = (int) $this->tour_local->{$this->zone}->{$this->saison}->cds->N;
+					$this->pc->{$vac}->nbcds = (int) $this->tour_local->{$this->zone}->{$this->saison}->cds->N;
 				} else {
-					$pc->{$vac}->nbcds = (int) $this->tour_local->{$this->zone}->{$this->saison}->cds->{$vac};
+					$this->pc->{$vac}->nbcds = (int) $this->tour_local->{$this->zone}->{$this->saison}->cds->{$vac};
 				}
-				$pc->{$vac}->nbpc = (int) $this->effectif->{$jour}->{$p}->teamReserve->teamQuantity - (int) $pc->{$vac}->nbcds; 
-				$pc->{$vac}->BV = (int) $this->effectif->{$jour}->{$p}->teamReserve->BV;
-				$pc->{$vac}->RO = 0;
-				//$pc->{$vac}->RO = (int) $this->effectif->{$jour}->{$p}->teamReserve->roQuantity;
-				$pc->{$vac}->equipe = (int) explode("-", $p)[0];
+				$this->pc->{$vac}->nbpc = (int) $this->effectif->{$jour}->{$p}->teamReserve->teamQuantity - (int) $this->pc->{$vac}->nbcds; 
+				$this->pc->{$vac}->BV = (int) $this->effectif->{$jour}->{$p}->teamReserve->BV;
+				$this->pc->{$vac}->RO = 0;
+				//$this->pc->{$vac}->RO = (int) $this->effectif->{$jour}->{$p}->teamReserve->roQuantity;
+				$this->pc->{$vac}->equipe = (int) explode("-", $p)[0];
 				$userList = $this->effectif->{$jour}->{$p}->userList;
-				$pc->{$vac}->teamNominalList = new stdClass();
-				$pc->{$vac}->teamNominalList->agentsList = [];
+				$this->pc->{$vac}->teamNominalList = new stdClass();
+				$this->pc->{$vac}->teamNominalList->agentsList = [];
 				foreach ( $userList as $key=>$value ) {
 					if (!(is_array($value->role))) { // soit array vide, soit objet que l'on convertit en array
 						$value->role = explode(",", $value->role);
 					}
 					if (!(in_array(14, $value->role) || in_array(37, $value->role))) { // 14 = détaché 37 = assistant sub ne sont pas mis (OLAF les compte)
 						$nc = $value->prenom." ".$value->nom;
-						$pc->{$vac}->teamNominalList->{$nc} = new stdClass();
-						$pc->{$vac}->teamNominalList->{$nc}->nom = $value->nom;
-						$pc->{$vac}->teamNominalList->{$nc}->prenom = $value->prenom;
-						$pc->{$vac}->teamNominalList->{$nc}->nomComplet = $nc;
-						$pc->{$vac}->teamNominalList->{$nc}->role = $value->role;
-						array_push($pc->{$vac}->teamNominalList->agentsList, $value->nom);
+						$this->pc->{$vac}->teamNominalList->{$nc} = new stdClass();
+						$this->pc->{$vac}->teamNominalList->{$nc}->nom = $value->nom;
+						$this->pc->{$vac}->teamNominalList->{$nc}->prenom = $value->prenom;
+						$this->pc->{$vac}->teamNominalList->{$nc}->nomComplet = $nc;
+						$this->pc->{$vac}->teamNominalList->{$nc}->role = $value->role;
+						array_push($this->pc->{$vac}->teamNominalList->agentsList, $value->nom);
 					}
 				}
 				
 				$aTeamComposition = $this->effectif->{$jour}->{$p}->aTeamComposition;
-				$pc->{$vac}->RoList = [];
-				$pc->{$vac}->CDS = "";
-				$pc->{$vac}->teamToday = new stdClass();
+				$this->pc->{$vac}->RoList = [];
+				$this->pc->{$vac}->CDS = "";
+				$this->pc->{$vac}->teamToday = new stdClass();
 				foreach ( $aTeamComposition as $key=>$value ) {
 					if ($key !== "lesrenforts") {
 						foreach ($value as $pers) {
@@ -332,87 +332,87 @@ class capa {
 									$ro = true;
 								}
 								if ($pers->contextmenuType->type === "fonction" && $pers->contextmenuType->label === "CDS") {
-									$pc->{$vac}->CDS = $nc;
+									$this->pc->{$vac}->CDS = $nc;
 									$cds = true;
 								}
 							}
 							if ($ro) {
-								array_push($pc->{$vac}->RoList, $nc);
-								$pc->{$vac}->RO += 1;
+								array_push($this->pc->{$vac}->RoList, $nc);
+								$this->pc->{$vac}->RO += 1;
 							} 
 							if ($ro === false) {
 								
-								$pc->{$vac}->teamToday->{$nc} = new stdClass();
-								$pc->{$vac}->teamToday->{$nc}->prenom = $pers->agent->prenom;
-								$pc->{$vac}->teamToday->{$nc}->nom = $pers->agent->nom;
-								$pc->{$vac}->teamToday->{$nc}->nomComplet = $nc;
-								$pc->{$vac}->teamToday->{$nc}->fonction = "PC";
+								$this->pc->{$vac}->teamToday->{$nc} = new stdClass();
+								$this->pc->{$vac}->teamToday->{$nc}->prenom = $pers->agent->prenom;
+								$this->pc->{$vac}->teamToday->{$nc}->nom = $pers->agent->nom;
+								$this->pc->{$vac}->teamToday->{$nc}->nomComplet = $nc;
+								$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC";
 
 								if (isset($pers->agent->role)) {
 									if (is_array($pers->agent->role)) {
-										$pc->{$vac}->teamToday->{$nc}->role = $pers->agent->role;
+										$this->pc->{$vac}->teamToday->{$nc}->role = $pers->agent->role;
 									}else {
-										$pc->{$vac}->teamToday->{$nc}->role = explode(",", $pers->agent->role);
+										$this->pc->{$vac}->teamToday->{$nc}->role = explode(",", $pers->agent->role);
 									}
 									
-									if (in_array(82, $pc->{$vac}->teamToday->{$nc}->role)) $pc->{$vac}->teamToday->{$nc}->fonction = "PC-CDS";
-									if (in_array(80, $pc->{$vac}->teamToday->{$nc}->role)) $pc->{$vac}->teamToday->{$nc}->fonction = "PC-ACDS";
+									if (in_array(82, $this->pc->{$vac}->teamToday->{$nc}->role)) $this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-CDS";
+									if (in_array(80, $this->pc->{$vac}->teamToday->{$nc}->role)) $this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-ACDS";
 								} else {
-									$pc->{$vac}->teamToday->{$nc}->role = [];
+									$this->pc->{$vac}->teamToday->{$nc}->role = [];
 								}
-								if ($cds) $pc->{$vac}->teamToday->{$nc}->fonction = "CDS";
-								if (in_array(10, $pc->{$vac}->teamToday->{$nc}->role)) $pc->{$vac}->teamToday->{$nc}->fonction = "stagiaire";
+								if ($cds) $this->pc->{$vac}->teamToday->{$nc}->fonction = "CDS";
+								if (in_array(10, $this->pc->{$vac}->teamToday->{$nc}->role)) $this->pc->{$vac}->teamToday->{$nc}->fonction = "stagiaire";
 							}
 						}
 					}
 				}
-				$pc->{$vac}->renfortAgent = new stdClass();
+				$this->pc->{$vac}->renfortAgent = new stdClass();
 				if (property_exists($aTeamComposition, "lesrenforts") === false) {
-					$pc->{$vac}->renfort = 0;
+					$this->pc->{$vac}->renfort = 0;
 				} else {
-					$pc->{$vac}->renfort = count(array_keys(get_object_vars($aTeamComposition->lesrenforts)));
+					$this->pc->{$vac}->renfort = count(array_keys(get_object_vars($aTeamComposition->lesrenforts)));
 					$nomComplet ="";
 					foreach ($aTeamComposition->lesrenforts as $renf) {
 						$nomComplet = $renf->agent->nomComplet;
-						$pc->{$vac}->renfortAgent->{$nomComplet} = new stdClass();
-						$pc->{$vac}->renfortAgent->{$nomComplet}->nom = $renf->agent->nom;
-						$pc->{$vac}->renfortAgent->{$nomComplet}->prenom = $renf->agent->prenom;
-						$pc->{$vac}->renfortAgent->{$nomComplet}->nomComplet = $nomComplet;
-						$pc->{$vac}->renfortAgent->{$nomComplet}->fonction = "PC-DET";
+						$this->pc->{$vac}->renfortAgent->{$nomComplet} = new stdClass();
+						$this->pc->{$vac}->renfortAgent->{$nomComplet}->nom = $renf->agent->nom;
+						$this->pc->{$vac}->renfortAgent->{$nomComplet}->prenom = $renf->agent->prenom;
+						$this->pc->{$vac}->renfortAgent->{$nomComplet}->nomComplet = $nomComplet;
+						$this->pc->{$vac}->renfortAgent->{$nomComplet}->fonction = "PC-DET";
 					}
 				}
 
 				$teamData = $this->effectif->{$jour}->{$p}->teamData;
 
-				$pc->{$vac}->RPL = new stdClass();
+				$this->pc->{$vac}->RPL = new stdClass();
 				if (isset($teamData->autre_agent)) {
 					foreach ($teamData->autre_agent as $nom=>$html_value) {
-						foreach ($pc->{$vac}->teamNominalList->agentsList as $agent) {
-							if (str_contains($html_value, $agent)) $pc->{$vac}->RPL->{$nom} = $agent;
+						foreach ($this->pc->{$vac}->teamNominalList->agentsList as $agent) {
+							if (str_contains($html_value, $agent)) $this->pc->{$vac}->RPL->{$nom} = $agent;
 						}
 					}
 				}
 
 				if (is_array($teamData->stage) === false) { // alors c'est bien un objet sinon array vide
-					$pc->{$vac}->stage = array_keys(get_object_vars($teamData->stage));
+					$this->pc->{$vac}->stage = array_keys(get_object_vars($teamData->stage));
 				} else {
-					$pc->{$vac}->stage = [];
+					$this->pc->{$vac}->stage = [];
 				}
 				if (is_array($teamData->conge) === false) { // alors c'est bien un objet sinon array vide
-					$pc->{$vac}->conge = array_keys(get_object_vars($teamData->conge));
+					$this->pc->{$vac}->conge = array_keys(get_object_vars($teamData->conge));
 				} else {
-					$pc->{$vac}->conge = [];
+					$this->pc->{$vac}->conge = [];
 				}
 
 			} else {
-				$pc->{$vac}->ROinduit = 0;
-				$pc->{$vac}->nbcds = 0;
-				$pc->{$vac}->nbpc = $nb_jx; 
-				$pc->{$vac}->BV = 10;
-				$pc->{$vac}->RO = 0;
+				$this->pc->{$vac}->ROinduit = 0;
+				$this->pc->{$vac}->nbcds = 0;
+				$this->pc->{$vac}->nbpc = $nb_jx; 
+				$this->pc->{$vac}->BV = 10;
+				$this->pc->{$vac}->RO = 0;
 				$det = 0; 
-				$pc->{$vac}->renfort = $nb_jx_det;
-				$pc->{$vac}->renfortAgent = new stdClass();
+				$this->pc->{$vac}->renfort = $nb_jx_det;
+				$this->pc->{$vac}->renfortAgent = new stdClass();
 			}
 		} 
 
@@ -431,152 +431,53 @@ class capa {
 		//  }
 		$effectif_total_RD_15mn = [];
 		$effectif_RD_15mn = new stdClass();
-		$vacs = ["JX","J1", "J3", "S2", "J2", "S1"];
+		$vacs = ["JX","J1", "J3", "S2", "J2", "S1", "N", "N-1"];
+		$nb_pc_sousvac = new stdClass();
+		foreach($vacs as $vacation) {
+			$nb_pc_sousvac->{$vacation} = new StdClass();
+			$nb_pc_sousvac->{$vacation}->cds = [];
+			$nb_pc_sousvac->{$vacation}->A = [];
+			$nb_pc_sousvac->{$vacation}->B = [];
+		}
 
 		for($i=0;$i<96;$i++) {
 			foreach($vacs as $vacation) {
-				$cds = $pc->{$vacation}->nbcds;
-				$dispoA = min(floor($pc->{$vacation}->nbpc/2), floor(($pc->{$vacation}->BV + $pc->{$vacation}->renfort - $cds - $pc->{$vacation}->ROinduit)/2));
-				$dispoB = min(floor($pc->{$vacation}->nbpc/2)+($pc->{$vacation}->nbpc)%2, floor(($pc->{$vacation}->BV + $pc->{$vacation}->renfort - $cds - $pc->{$vacation}->ROinduit)/2)+($pc->{$vacation}->BV + $pc->{$vacation}->renfort - $cds - $pc->{$vacation}->ROinduit)%2);
+				$nb_pc_sousvac->{$vacation}->cds[$i] = 0;
+				$nb_pc_sousvac->{$vacation}->A[$i] = 0;
+				$nb_pc_sousvac->{$vacation}->B[$i] = 0;
+			}
+		}
 
-				if ($vacation === "JX" && $this->zone === "est" && $this->saison === "ete") {
-					$dispoB = min(floor($pc->{$vacation}->nbpc/2), floor(($pc->{$vacation}->BV + $pc->{$vacation}->renfort - $cds - $pc->{$vacation}->ROinduit)/2));
-					$dispoA = min(floor($pc->{$vacation}->nbpc/2)+($pc->{$vacation}->nbpc)%2, floor(($pc->{$vacation}->BV + $pc->{$vacation}->renfort - $cds - $pc->{$vacation}->ROinduit)/2)+($pc->{$vacation}->BV + $pc->{$vacation}->renfort - $cds - $pc->{$vacation}->ROinduit)%2);
-				}
+		for($i=0;$i<96;$i++) {
+			foreach($vacs as $vacation) {
 
-				if ($vacation === "S1" && $this->zone === "est" && $this->saison === "ete") {
-					switch ($pc->S1->nbpc) {
-						case 6:
-							$dispoA = 3;
-							$dispoB = 3;
-							break;
-						case 7:
-							$dispoA = 3;
-							$dispoB = 4;
-							break;
-						case 8:
-							$dispoA = 3;
-							$dispoB = 5;
-							break;
-						case 9:
-							$dispoA = 3;
-							$dispoB = 6;
-							break;
-						case 10:
-							$dispoA = 3;
-							$dispoB = 7;
-							break;
-						case 11:
-							$dispoA = 4;
-							$dispoB = 7;
-							break;
-						case 12:
-							$dispoA = 4;
-							$dispoB = 8;
-							break;
-						case 13:
-							$dispoA = 4;
-							$dispoB = 9;
-							break;
-					}
-				}
-		
-				if ($vacation === "S1" && $this->zone === "ouest" && $this->saison === "ete") {
-					$d = new DateTime($this->day);
-					$jour_sem = (int) $d->format("w"); // 0=dimanche
-					if ($jour_sem === 2 || $jour_sem === 3 || $jour_sem === 4) {
-						$dispoA = 0;
-						$dispoB = $pc->S1->nbpc;
-					} else {
-						switch ($pc->S1->nbpc) {
-							case 6:
-								$dispoA = 3;
-								$dispoB = 3;
-								break;
-							case 7:
-								$dispoA = 3;
-								$dispoB = 4;
-								break;
-							case 8:
-								$dispoA = 3;
-								$dispoB = 5;
-								break;
-							case 9:
-								$dispoA = 3;
-								$dispoB = 6;
-								break;
-							case 10:
-								$dispoA = 3;
-								$dispoB = 7;
-								break;
-							case 11:
-								$dispoA = 4;
-								$dispoB = 7;
-								break;
-							case 12:
-								$dispoA = 4;
-								$dispoB = 8;
-								break;
-							case 13:
-								$dispoA = 4;
-								$dispoB = 9;
-								break;
-						}
+				$rep = $this->get_repartition($vacation);
+				$tour_vacation = $vacation;
+				if ($vacation === "N-1") $tour_vacation = "N";
+				$doLoop = true;
+				if ($vacation === "N-1" && $i>48) $doLoop = false;
+				if ($vacation === "N" && $i<48) $doLoop = false;
+
+				if ($doLoop) {
+					// Ajout du CDS qui bosse sur secteur
+					if ($this->tour_utc->{$tour_vacation}[$i][1] === 1) {
+						$nb_pc += $this->pc->{$vacation}->nbcds;
+						$nb_pc_sousvac->{$vacation}->cds[$i] = $this->pc->{$vacation}->nbcds;
+					} 
+					// Ajout de la sous-vacation A
+					if ($this->tour_utc->{$tour_vacation}[$i][2] === 1) {
+						$nb_pc += $rep->A;
+						$nb_pc_sousvac->{$vacation}->A[$i] = $rep->A;
+					} 
+					// Ajout de la sous-vacation B
+					if ($this->tour_utc->{$tour_vacation}[$i][3] === 1) {
+						$nb_pc += $rep->B;
+						$nb_pc_sousvac->{$vacation}->B[$i] = $rep->B;
 					}
 				}
 
-				// Ajout du CDS qui bosse sur secteur
-				if ($this->tour_utc->{$vacation}[$i][1] === 1) $nb_pc += $cds;
-				// Ajout de la sous-vacation A
-				if ($this->tour_utc->{$vacation}[$i][2] === 1) {
-						$nb_pc += $dispoA;
-				}
-				// Ajout de la sous-vacation B
-				if ($this->tour_utc->{$vacation}[$i][3] === 1) {
-						$nb_pc += $dispoB;
-				}
 			}
 
-			// Nuit de 19h30 à 00h00
-			$cds = $pc->N->nbcds;
-			// CDS
-			if ($this->tour_utc->N[$i][1] === 1 && $i>48) $nb_pc += $cds; // cds qui bosse sur secteur
-			// Sous-vacation A
-			if ($this->tour_utc->N[$i][2] === 1 && $i>48) {
-				if ($this->saison === "ete" && $pc->N->nbpc === 6) {
-					$nb_pc += 2;
-				} else {
-					$nb_pc += min(floor($pc->N->nbpc/2), floor(($pc->N->BV + $pc->N->renfort - $cds - $pc->N->ROinduit)/2));
-				}
-			}
-			// Sous-vacation B
-			if ($this->tour_utc->N[$i][3] === 1 && $i>48) {
-				if ($this->saison === "ete" && $pc->N->nbpc === 6) {
-					$nb_pc += 4;
-				} else {
-					$nb_pc += min(floor($pc->N->nbpc/2)+($pc->N->nbpc)%2, floor(($pc->N->BV + $pc->N->renfort - $cds - $pc->N->ROinduit)/2)+($pc->N->BV + $pc->N->renfort - $cds - $pc->N->ROinduit)%2);
-				}
-			}
-
-			// Nuit de 00h00 à 06h30
-			$cds = $pc->{'N-1'}->nbcds;
-			if ($this->tour_utc->N[$i][1] === 1 && $i<48) $nb_pc += $cds; // cds qui bosse sur secteur
-			// Sous-vacation A
-			if ($this->tour_utc->N[$i][2] === 1 && $i<48) {
-				if ($this->saison === "ete" && $pc->{'N-1'}->nbpc === 6) {
-					$nb_pc += 2;
-				} else {
-					$nb_pc += min(floor($pc->{"N-1"}->nbpc/2), floor(($pc->{"N-1"}->BV + $pc->{"N-1"}->renfort - $cds - $pc->{'N-1'}->ROinduit)/2));
-				}
-			}
-			// Sous-vacation B
-			if ($this->tour_utc->N[$i][3] === 1 && $i<48) {
-				if ($this->saison === "ete" && $pc->{'N-1'}->nbpc === 6) {
-					$nb_pc += 4;
-				} else {
-					$nb_pc += min(floor($pc->{"N-1"}->nbpc/2)+($pc->{"N-1"}->nbpc)%2, floor(($pc->{"N-1"}->BV + $pc->{"N-1"}->renfort - $cds - $pc->{"N-1"}->ROinduit)/2) + ($pc->{"N-1"}->BV + $pc->{"N-1"}->renfort - $cds - $pc->{"N-1"}->ROinduit)%2);
-				}
-			}
 			// this.tour_utc["J1"][i][0] = heure (ex : "01:45"), on aurait pu prendre n'importe quelle vac à la place de J1
 			array_push($pcs, [$this->tour_utc->J1[$i][0], $nb_pc]);
 			
@@ -655,6 +556,14 @@ class capa {
 		}
 		array_push($compacted_ucesos, [get_time($index_ini), get_time(95), floor($ucesos[95][1])]);
 
+		$minutes_ucesos = 0;
+		for($j=0;$j<95;$j++) {
+			$minutes_ucesos += $ucesos[$j][1]*15;
+		}
+
+		$heures_ucesos = floor($minutes_ucesos/60);
+		$reste_minutes = $minutes_ucesos%60;
+
 		$roles = new stdClass();
 		$roles->CDS = 82;
 		$roles->ACDS = 80;
@@ -674,18 +583,154 @@ class capa {
 		$res->pc_total = $pct;
 		$res->uceso = $ucesos;
 		$res->compacted_uceso = $compacted_ucesos;
+		$res->heures_uceso = new StdClass();
+		$res->heures_uceso->min = $minutes_ucesos;
+		$res->heures_uceso->hmin = $heures_ucesos."h".$reste_minutes;
 		$res->pc_total_horsInstrRD_15mn = $pcs; // total pc hors instr & hors RD bleu supp (les RD Jx sont inclus)
 		$res->pc_total_instr_15mn = $in15mn;
 		$res->pc_RD_15mn = $effectif_RD_15mn;
 		$res->pc_total_RD_15mn = $effectif_total_RD_15mn;
-		$res->pc_vac = $pc;
+		$res->pc_vac = $this->pc;
 		$res->workingTeam = $this->tab_vac_eq;
 		$res->RD = $RD;
 		$res->roles = $roles;
 		$res->TDS_Supp = $TDS_Supp;
+		$res->pc_sousvac_15mn = $nb_pc_sousvac;
 		return $res;
 
     }
+
+	public function get_default_repartition($vacation) {
+		$rep = new stdClass();
+
+		$rep->A = min(floor($this->pc->{$vacation}->nbpc/2), floor(($this->pc->{$vacation}->BV + $this->pc->{$vacation}->renfort - $this->pc->{$vacation}->nbcds - $this->pc->{$vacation}->ROinduit)/2));
+
+		$rep->B = min(floor($this->pc->{$vacation}->nbpc/2)+($this->pc->{$vacation}->nbpc)%2, floor(($this->pc->{$vacation}->BV + $this->pc->{$vacation}->renfort - $this->pc->{$vacation}->nbcds - $this->pc->{$vacation}->ROinduit)/2)+($this->pc->{$vacation}->BV + $this->pc->{$vacation}->renfort - $this->pc->{$vacation}->nbcds - $this->pc->{$vacation}->ROinduit)%2); 
+
+		return $rep;
+	}
+
+	public function get_repartition (String $vacation) {
+		$rep = new stdClass();
+		switch ($vacation){
+			case "JX":
+				$result = $this->get_default_repartition($vacation);
+				$rep->A = $result->A;
+				$rep->B = $result->B;
+				if ($this->saison === "ete" && $this->zone === "est") {
+					$rep->B = $result->A;
+					$rep->A = $result->B;
+				}
+				break;
+			case "S1":
+				$result = $this->get_default_repartition($vacation);
+				$rep->A = $result->A;
+				$rep->B = $result->B;
+				if ($this->saison === "ete" && $this->zone === "est") {
+					switch ($this->pc->{$vacation}->nbpc) {
+						case 6:
+							$rep->A = 3;
+							$rep->B = 3;
+							break;
+						case 7:
+							$rep->A = 3;
+							$rep->B = 4;
+							break;
+						case 8:
+							$rep->A = 3;
+							$rep->B = 5;
+							break;
+						case 9:
+							$rep->A = 3;
+							$rep->B = 6;
+							break;
+						case 10:
+							$rep->A = 3;
+							$rep->B = 7;
+							break;
+						case 11:
+							$rep->A = 4;
+							$rep->B = 7;
+							break;
+						case 12:
+							$rep->A = 4;
+							$rep->B = 8;
+							break;
+						case 13:
+							$rep->A = 4;
+							$rep->B = 9;
+							break;
+					}
+				}
+				if ($this->saison === "ete" && $this->zone === "ouest") {
+					$d = new DateTime($this->day);
+					$jour_sem = (int) $d->format("w"); // 0=dimanche
+					if ($jour_sem === 2 || $jour_sem === 3 || $jour_sem === 4) {
+						$rep->A = 0;
+						$rep->B = $this->pc->{$vacation}->nbpc;
+					} else {
+						switch ($this->pc->{$vacation}->nbpc) {
+							case 6:
+								$rep->A = 3;
+								$rep->B = 3;
+								break;
+							case 7:
+								$rep->A = 3;
+								$rep->B = 4;
+								break;
+							case 8:
+								$rep->A = 3;
+								$rep->B = 5;
+								break;
+							case 9:
+								$rep->A = 3;
+								$rep->B = 6;
+								break;
+							case 10:
+								$rep->A = 3;
+								$rep->B = 7;
+								break;
+							case 11:
+								$rep->A = 4;
+								$rep->B = 7;
+								break;
+							case 12:
+								$rep->A = 4;
+								$rep->B = 8;
+								break;
+							case 13:
+								$rep->A = 4;
+								$rep->B = 9;
+								break;
+						}
+					}
+				}
+				break;
+			case "N":
+				$result = $this->get_default_repartition($vacation);
+				$rep->A = $result->A;
+				$rep->B = $result->B;
+				if ($this->saison != "hiver" && $this->pc->{$vacation}->nbpc === 6) {
+					$rep->A = 2;
+					$rep->B = 4;
+				}
+				break;
+			case "N-1":
+				$result = $this->get_default_repartition($vacation);
+				$rep->A = $result->A;
+				$rep->B = $result->B;
+				if ($this->saison != "hiver" && $this->pc->{$vacation}->nbpc === 6) {
+					$rep->A = 2;
+					$rep->B = 4;
+				}
+				break;
+			default:
+				$result = $this->get_default_repartition($vacation);
+				$rep->A = $result->A;
+				$rep->B = $result->B;
+		}
+		return $rep;
+	}
 
     /* ---------------------------------------------------
         Calcule les équipes qui travaillent et leur vac
