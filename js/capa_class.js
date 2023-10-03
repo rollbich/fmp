@@ -811,12 +811,14 @@ class simu_capa extends capa {
 		console.log("pc");
 		//this.pc = await this.get_nbpc_dispo();
 		this.pc = structuredClone(this.pc_ini);
+		console.log("this.pc");
 		console.log(this.pc);
 		this.cds = this.tour_local[this.zone][this.saison]["cds"];
 		this.cds["N-1"] = 0;
 		document.querySelector('.popup-close').click();
 		this.pc_vac = this.pc["pc_vac"];
 		this.RD = this.pc["RD"];
+		this.pc_sousvac_15mn = this.pc["pc_sousvac_15mn"];
 		
 		// Récupération des schémas réalisés
 		const day7 = addDays_toString(this.day, -7);
@@ -923,11 +925,11 @@ class simu_capa extends capa {
 	get_default_repartition(vacation) {
 		const rep = {};
 
-		rep.A = min(floor(this.pc[vacation]["nbpc"]/2), floor((this.pc[vacation]["BV"] + this.pc[vacation]["renfort"] - this.pc[vacation]["nbcds"] - this.pc[vacation]["ROinduit"])/2));
+		rep.A = Math.min(Math.floor(this.pc["pc_vac"][vacation]["nbpc"]/2), Math.floor((this.pc["pc_vac"][vacation]["BV"] + this.pc["pc_vac"][vacation]["renfort"] - this.pc["pc_vac"][vacation]["nbcds"] - this.pc["pc_vac"][vacation]["ROinduit"])/2));
 
-		rep.B = min(floor(this.pc[vacation]["nbpc"]/2)+(this.pc[vacation]["nbpc"])%2, floor((this.pc[vacation]["BV"] + this.pc[vacation]["renfort"] - this.pc[vacation]["nbcds"] - this.pc[vacation]["ROinduit"])/2)+(this.pc[vacation]["BV"] + this.pc[vacation]["renfort"] - this.pc[vacation]["nbcds"] - this.pc[vacation]["ROinduit"])%2); 
+		rep.B = Math.min(Math.floor(this.pc["pc_vac"][vacation]["nbpc"]/2)+(this.pc["pc_vac"][vacation]["nbpc"])%2, Math.floor((this.pc["pc_vac"][vacation]["BV"] + this.pc["pc_vac"][vacation]["renfort"] - this.pc["pc_vac"][vacation]["nbcds"] - this.pc["pc_vac"][vacation]["ROinduit"])/2)+(this.pc["pc_vac"][vacation]["BV"] + this.pc["pc_vac"][vacation]["renfort"] - this.pc["pc_vac"][vacation]["nbcds"] - this.pc["pc_vac"][vacation]["ROinduit"])%2); 
 
-		return $rep;
+		return rep;
 	}
 
 	get_repartition (vacation) {
@@ -988,9 +990,9 @@ class simu_capa extends capa {
 					const jour_sem = dat_jour.getDay(); // 0=dimanche
 					if (jour_sem === 2 || jour_sem === 3 || jour_sem === 4) {
 						rep.A = 0;
-						rep.B = this.pc[vacation]["nbpc"];
+						rep.B = this.pc["pc_vac"][vacation]["nbpc"];
 					} else {
-						switch (this.pc[vacation]["nbpc"]) {
+						switch (this.pc["pc_vac"][vacation]["nbpc"]) {
 							case 6:
 								rep.A = 3;
 								rep.B = 3;
@@ -1031,7 +1033,7 @@ class simu_capa extends capa {
 				result = this.get_default_repartition(vacation);
 				rep.A = result.A;
 				rep.B = result.B;
-				if (this.saison != "hiver" && this.pc[vacation]["nbpc"] === 6) {
+				if (this.saison != "hiver" && this.pc["pc_vac"][vacation]["nbpc"] === 6) {
 					rep.A = 2;
 					rep.B = 4;
 				}
@@ -1040,7 +1042,7 @@ class simu_capa extends capa {
 				result = this.get_default_repartition(vacation);
 				rep.A = result.A;
 				rep.B = result.B;
-				if (this.saison != "hiver" && this.pc[vacation]["nbpc"] === 6) {
+				if (this.saison != "hiver" && this.pc["pc_vac"][vacation]["nbpc"] === 6) {
 					rep.A = 2;
 					rep.B = 4;
 				}
@@ -1063,6 +1065,20 @@ class simu_capa extends capa {
 			el.addEventListener('click', async (event) => {
 				const vac = el.dataset.vac;
 				$$(`span[data-vacBV='${vac}']`).innerHTML = parseInt($$(`span[data-vacBV='${vac}']`).innerHTML) + 1;
+				this.pc["pc_vac"][vac]["BV"]++;
+				const rep = this.get_repartition(vac);
+				for(let i=0;i<95;i++) {
+					if (this.pc["pc_sousvac_15mn"][vac]["A"][i] != 0) {
+						let temp1 = this.pc["pc_sousvac_15mn"][vac]["A"][i] - rep.A;
+						this.pc["pc_sousvac_15mn"][vac]["A"][i] = rep.A;
+						this.pc["pc_total_horsInstrRD_15mn"][i][1] -= temp1;
+					}
+					if (this.pc["pc_sousvac_15mn"][vac]["B"][i] != 0) {
+						let temp2 = this.pc["pc_sousvac_15mn"][vac]["B"][i] - rep.B;
+						this.pc["pc_sousvac_15mn"][vac]["B"][i] = rep.B;
+						this.pc["pc_total_horsInstrRD_15mn"][i][1] -= temp2;
+					}
+				}	
 				const BV_elem = $$(`td.bv[data-vacBV='${vac}']`);
 				BV_elem.innerHTML = parseInt(BV_elem.innerHTML) + 1;
 				if (BV_elem.innerHTML != $$(`td.bvini[data-vacBV='${vac}']`).innerHTML) {
@@ -1070,7 +1086,6 @@ class simu_capa extends capa {
 				} else {
 					BV_elem.classList.remove('bg_red');
 				}
-				this.pc_vac[vac]["BV"]++;
 				show_capa_graph("right_part", this.day, this.zone_schema, this.pc_ini, this.schema, this.schema7, this.schema2019, this.pc);
 			});
 		});
@@ -1079,6 +1094,20 @@ class simu_capa extends capa {
 			el.addEventListener('click', async (event) => {
 				const vac = el.dataset.vac;
 				$$(`span[data-vacBV='${vac}']`).innerHTML = parseInt($$(`span[data-vacBV='${vac}']`).innerHTML) - 1;
+				this.pc["pc_vac"][vac]["BV"]--;
+				const rep = this.get_repartition(vac);
+				for(let i=0;i<95;i++) {
+					if (this.pc["pc_sousvac_15mn"][vac]["A"][i] != 0) {
+						let temp1 = this.pc["pc_sousvac_15mn"][vac]["A"][i] - rep.A;
+						this.pc["pc_sousvac_15mn"][vac]["A"][i] = rep.A;
+						this.pc["pc_total_horsInstrRD_15mn"][i][1] -= temp1;
+					}
+					if (this.pc["pc_sousvac_15mn"][vac]["B"][i] != 0) {
+						let temp2 = this.pc["pc_sousvac_15mn"][vac]["B"][i] - rep.B;
+						this.pc["pc_sousvac_15mn"][vac]["B"][i] = rep.B;
+						this.pc["pc_total_horsInstrRD_15mn"][i][1] -= temp2;
+					}
+				}	
 				const BV_elem = $$(`td.bv[data-vacBV='${vac}']`);
 				BV_elem.innerHTML = parseInt(BV_elem.innerHTML) - 1;
 				if (BV_elem.innerHTML != $$(`td.bvini[data-vacBV='${vac}']`).innerHTML) {
@@ -1086,7 +1115,6 @@ class simu_capa extends capa {
 				} else {
 					BV_elem.classList.remove('bg_red');
 				}
-				this.pc_vac[vac]["BV"]--;
 				show_capa_graph("right_part", this.day, this.zone_schema, this.pc_ini, this.schema, this.schema7, this.schema2019, this.pc);
 			});
 		});
@@ -1095,20 +1123,20 @@ class simu_capa extends capa {
 			el.addEventListener('click', async (event) => {
 				const vac = el.dataset.vac;
 				$$(`span[data-vacPC='${vac}']`).innerHTML = parseInt($$(`span[data-vacPC='${vac}']`).innerHTML) + 1;
-				this.pc_vac[vac]["nbpc"]++;
-
-				let temp_pc_total = [];
-				let nombre_pc;
+				this.pc["pc_vac"][vac]["nbpc"]++;
+				const rep = this.get_repartition(vac);
 				for(let i=0;i<95;i++) {
-					nombre_pc = 0;
-					for(let obj of this.pc_sousvac_15mn) {
-						nombre_pc += obj.cds;
-						nombre_pc += obj.A;
-						nombre_pc += obj.B;
+					if (this.pc["pc_sousvac_15mn"][vac]["A"][i] != 0) {
+						let temp1 = this.pc["pc_sousvac_15mn"][vac]["A"][i] - rep.A;
+						this.pc["pc_sousvac_15mn"][vac]["A"][i] = rep.A;
+						this.pc["pc_total_horsInstrRD_15mn"][i][1] -= temp1;
 					}
-					temp_pc[i] = nombre_pc;
+					if (this.pc["pc_sousvac_15mn"][vac]["B"][i] != 0) {
+						let temp2 = this.pc["pc_sousvac_15mn"][vac]["B"][i] - rep.B;
+						this.pc["pc_sousvac_15mn"][vac]["B"][i] = rep.B;
+						this.pc["pc_total_horsInstrRD_15mn"][i][1] -= temp2;
+					}
 				}	
-				
 				const PC_elem = $$(`td.nbpc[data-vacPC='${vac}']`);
 				PC_elem.innerHTML = parseInt(PC_elem.innerHTML) + 1;
 				if ($$(`span[data-vacPC='${vac}']`).innerHTML != 0) {
@@ -1116,9 +1144,6 @@ class simu_capa extends capa {
 				} else {
 					PC_elem.classList.remove('bg_red');
 				}
-				console.log("+PC");
-				console.log(this.pc_ini);
-				console.log(this.pc);
 				show_capa_graph("right_part", this.day, this.zone_schema, this.pc_ini, this.schema, this.schema7, this.schema2019, this.pc);
 			});
 		});
@@ -1127,7 +1152,20 @@ class simu_capa extends capa {
 			el.addEventListener('click', async (event) => {
 				const vac = el.dataset.vac;
 				$$(`span[data-vacPC='${vac}']`).innerHTML = parseInt($$(`span[data-vacPC='${vac}']`).innerHTML) - 1;
-				this.pc_vac[vac]["nbpc"]--;
+				this.pc["pc_vac"][vac]["nbpc"]--;
+				const rep = this.get_repartition(vac);
+				for(let i=0;i<95;i++) {
+					if (this.pc["pc_sousvac_15mn"][vac]["A"][i] != 0) {
+						let temp1 = this.pc["pc_sousvac_15mn"][vac]["A"][i] - rep.A;
+						this.pc["pc_sousvac_15mn"][vac]["A"][i] = rep.A;
+						this.pc["pc_total_horsInstrRD_15mn"][i][1] -= temp1;
+					}
+					if (this.pc["pc_sousvac_15mn"][vac]["B"][i] != 0) {
+						let temp2 = this.pc["pc_sousvac_15mn"][vac]["B"][i] - rep.B;
+						this.pc["pc_sousvac_15mn"][vac]["B"][i] = rep.B;
+						this.pc["pc_total_horsInstrRD_15mn"][i][1] -= temp2;
+					}
+				}	
 				const PC_elem = $$(`td.nbpc[data-vacPC='${vac}']`);
 				PC_elem.innerHTML = parseInt(PC_elem.innerHTML) - 1;
 				if ($$(`span[data-vacPC='${vac}']`).innerHTML != 0) {
@@ -1135,9 +1173,6 @@ class simu_capa extends capa {
 				} else {
 					PC_elem.classList.remove('bg_red');
 				}
-				console.log("-PC");
-				console.log(this.pc_ini);
-				console.log(this.pc);
 				show_capa_graph("right_part", this.day, this.zone_schema, this.pc_ini, this.schema, this.schema7, this.schema2019, this.pc);
 			});
 		});
