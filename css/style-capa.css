@@ -99,6 +99,8 @@ header.instr span a:link, header.instr span a:visited {
 
 #tds_glob {
 	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
 }
 
 a:link, a:visited {
@@ -279,8 +281,16 @@ td.typePC:hover, td.typePC-DET:hover, td.typePC-RPL:hover {
 	color: red;
 }
 
-.surligne {
-	background-color: aquamarine;
+.surligne_cds {
+	background-color: #59d0ee;
+}
+
+.pc_color {
+	color: #0ac0f2;
+}
+
+.off_color {
+	color: #f8b6b6;
 }
 
 .max {
@@ -710,14 +720,14 @@ span.back {
 
 ul.menu_tds_editor {
 	display: grid;
-    grid-gap: 10px;
-	grid-template-columns: repeat(auto-fill, minmax(240px,1fr));
+	grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
 	height: 50px;
 	background-color: #34495e;
 	border-radius: 8px;
 	cursor: default;
 	margin: 12px auto 0;
 }
+
 
 ul.menu_tds_editor li {
 	line-height: 50px; /*permet le centrage vertical*/

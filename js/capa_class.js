@@ -26,6 +26,7 @@ class capa {
 		this.tour_local = await loadJson(tour_json);
 		this.saison = this.get_date_tour(this.tour_local);
 		this.tour_utc = await this.get_tour_utc();
+		console.log(this.tour_utc);
 		this.tds_supp_local = await loadJson(tour_supp_json);
 		this.tds_supp_utc = await this.get_tds_supp_utc(this.tds_supp_local);
 		this.instr = await loadJson("../instruction.json");
@@ -71,20 +72,18 @@ class capa {
 				"pc_instru_15mn": [ ["hh:mm", nb_pc_dispo], [...], ... ]
 			  }
     ------------------------------------------------------------------------------------------------------------------- */
-    async get_nbpc_dispo(update = {"JX":0,"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0, "JXBV":0,"J1BV":0, "J3BV":0, "S2BV":0, "J2BV":0, "S1BV":0, "NBV":0, "N-1BV":0}, noBV = false) {
+    async get_nbpc_dispo() {
 		
 		const yesterday = jmoins1(this.day);
 		// récupère l'objet contenant les propriétés equipes
 		this.effectif = this.effectif ?? await get_olaf(this.zone_olaf, this.day, yesterday);
+		/*
 		console.log("OLAF result");
 		console.log(this.effectif);
+		*/
 		// si pas de donnée on retourne 0
 		if (this.effectif == 0) return 0;
 		
-		// Calcul du nombre de pc à afficher 
-		// On récupère l'effectif total, donc on doit enlever le cds sur les vacations qui en ont 1	
-		const pc = {"JX":{},"J1":{}, "J3":{}, "S2":{}, "J2":{}, "S1":{}, "N":{}, "N-1":{}};
-
 		/*  -------------------------------------------------
 			pc["JX"] contient les JX mais aussi les RD bleus
 			pc["JX"] = {
@@ -102,355 +101,24 @@ class capa {
 		}
 		-----------------------------------------------------  */
 
-		const Renfort = this.effectif[this.day]['Renfort'];
-		// Renfort hors JX
-		const RD_names_horsJX = [];
-		let nb_jx = 0;
-		let nb_jx_det = 0;
-		for (let renf1 in Renfort) {
-			for (let cle in Renfort[renf1]) {
-				const obj = Renfort[renf1][cle];
-				let label = obj["contextmenutype"]["label"];
-				let jx_type = "";
-				let rd_type = "";
-				let type_renfort = "";
-				// JXA & JXB salle
-				// "RD bleu JXa-ms" - "RD bleu J1-ms" - "RD bleu J3b-ms" + Est only "RD bleu S1b-ms" + West only "RD bleu S1a-ms"
-				// "RD bleu J3a-ete" - "RD bleu S1b-ete" - "RD bleu J1-ete" + Est only "RD bleu JXb-ete" + West only "RD bleu J3b-ete" 
-				let nb_det = 0;
-				if (label.includes("JX")) {
-					if (label.includes("RD bleu")) { // RD
-						type_renfort = "RD";
-						rd_type = label.substring(8);
-						jx_type = rd_type;
-						nb_det++;
-						nb_jx_det++;
-					} else { // JX salle
-						type_renfort = "JX";
-						jx_type = label;
-					}
-					nb_jx++;
-				} else { // RD non JX
-					type_renfort = "RD";
-					rd_type = label.substring(8);
-					jx_type = "RD"+rd_type;
-					RD_names_horsJX.push(jx_type);
-					nb_det++;
-				}		
-				
-				let agent = obj["agent"]["nomComplet"];
-				let agent_type = (label.includes("det") || label.includes("RD")) ? "détaché" : "salle";
-				if (pc["JX"].hasOwnProperty(jx_type) === false) { pc["JX"][jx_type] = {"nombre": 0, "nombre_det": 0}; pc["JX"][jx_type]["agent"] = {}}
-				pc["JX"][jx_type]["agent"][agent] = agent_type;
-				pc["JX"][jx_type]["nombre"]++;
-				pc["JX"][jx_type]["nombre_det"] += nb_det;
-			}
-		}
-		console.log("Renfort JX");
-		console.log(pc["JX"]);
+		const pc = this.effectif["pc_vac"];
+		const RD = this.effectif["TDS_Supp"];
+		const pcs = this.effectif["pc_total_horsInstrRD_15mn"];
+		const in15mn = this.effectif["pc_total_instr_15mn"];
+		const pc_sousvac_15mn = this.effectif["pc_sousvac_15mn"];
 
-		for(const vac in this.tab_vac_eq) {
-			let p = this.tab_vac_eq[vac]+"-"+this.zone_olaf;
-			const upBV = vac+"BV";
-			if (vac !== "N-1") {
-				if (vac !== "JX") {
-					// Le RO induit apparait si detachés > 1 et plus que 1 n'est pas Expert Ops, ACDS ou Assistant sub
-					pc[vac]["ROinduit"] = parseInt(this.effectif[this.day][p]["teamReserve"]["roInduction"]);
-					pc[vac]["nbcds"] = parseInt(this.tour_local[this.zone][this.saison]["cds"][vac]);
-					pc[vac]["nbpc"] = parseInt(this.effectif[this.day][p]["teamReserve"]["teamQuantity"]) - pc[vac]["nbcds"] + update[vac]; 
-					pc[vac]["BV"] = parseInt(this.effectif[this.day][p]["teamReserve"]["BV"]) + update[upBV];
-					pc[vac]["RO"] = parseInt(this.effectif[this.day][p]["teamReserve"]["roQuantity"]);
-					pc[vac]["userList"] = this.effectif[this.day][p]["userList"];
-					pc[vac]["teamData"] = this.effectif[this.day][p]["teamData"];
-					pc[vac]["aTeamComposition"] = this.effectif[this.day][p]["aTeamComposition"];
-					pc[vac]["html"] = this.effectif[this.day][p]["html"][this.day][p];
-					if (typeof pc[vac]["html"]["lesrenforts"] === 'undefined') {
-						pc[vac]["renfort"] = 0;
-					} else {
-						pc[vac]["renfort"] = Object.keys(pc[vac]["html"]["lesrenforts"]).length;
-					}
-					//pc[vac]["detache"] = parseInt(this.effectif[this.day][p]["teamReserve"]["detacheQuantity"]);
-				} else {
-					console.log("VAC: "+vac);
-					pc[vac]["ROinduit"] = 0;
-					pc[vac]["nbcds"] = 0;
-					pc[vac]["nbpc"] = nb_jx + update[vac]; 
-					pc[vac]["BV"] = 10;
-					pc[vac]["RO"] = 0;
-					let det = 0; 
-					pc[vac]["renfort"] = nb_jx_det;
-				}
-			} else {
-				pc[vac]["ROinduit"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["roInduction"]);
-				pc[vac]["nbcds"] = parseInt(this.tour_local[this.zone][this.saison]["cds"]["N"]);
-				pc[vac]["nbpc"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["teamQuantity"]) - pc[vac]["nbcds"] + update[vac]; // le cds ne compte pas dans le nb de pc
-				pc[vac]["BV"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["BV"]) + update[upBV];
-				pc[vac]["RO"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["roQuantity"]);
-				pc[vac]["userList"] = this.effectif[yesterday][p]["userList"];
-				pc[vac]["teamData"] = this.effectif[yesterday][p]["teamData"];
-				pc[vac]["aTeamComposition"] = this.effectif[yesterday][p]["aTeamComposition"];
-				pc[vac]["html"] = this.effectif[yesterday][p]["html"][yesterday][p];
-				if (typeof pc[vac]["html"]["lesrenforts"] === 'undefined') {
-					pc[vac]["renfort"] = 0;
-				} else {
-					pc[vac]["renfort"] = Object.keys(pc[vac]["html"]["lesrenforts"]).length;
-				}
-				//pc[vac]["detache"] = parseInt(this.effectif[yesterday][p]["teamReserve"]["detacheQuantity"]);
-			}
-		} 
+		//console.log("JX");
+		//console.log(pc["JX"]);
 
+		//console.log("RD");
+		//console.log(RD);
 
-		// array du nombre de pc dispo associé au créneau horaire du tour de service
-		// En 24h, il y a 96 créneaux de 15mn.
-		// [ ["hh:mm", nb_pc_dispo], [...], ... ]
-		let nb_pc = 0;
-		let pcs = [];
-		const in15mn = []; // nbre de pc instruction par 15 mn
-		// effectif_RD_15mn = {
-		//	  "RD...": [],
-		//	  "RD...": []
-		//	  ...
-		//  }
-		const effectif_total_RD_15mn = [];
-		const effectif_RD_15mn = {};
-		const vacs = ["JX","J1", "J3", "S2", "J2", "S1"];
-
-		for(var i=0;i<96;i++) {
-			vacs.forEach(vacation => {
-				const cds = pc[vacation]["nbcds"];
-				let dispoA = Math.min(Math.floor(pc[vacation]["nbpc"]/2), Math.floor((pc[vacation]["BV"]+pc[vacation]["renfort"]-cds-pc[vacation]["ROinduit"])/2));
-				let dispoB = Math.min(Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2, Math.floor((pc[vacation]["BV"]+pc[vacation]["renfort"]-cds-pc[vacation]["ROinduit"])/2)+(pc[vacation]["BV"]+pc[vacation]["renfort"]-cds-pc[vacation]["ROinduit"])%2);
-
-				if (vacation === "JX" && this.zone === "est" && this.saison === "ete") {
-					dispoB = Math.min(Math.floor(pc[vacation]["nbpc"]/2), Math.floor((pc[vacation]["BV"]+pc[vacation]["renfort"]-cds-pc[vacation]["ROinduit"])/2));
-					dispoA = Math.min(Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2, Math.floor((pc[vacation]["BV"]+pc[vacation]["renfort"]-cds-pc[vacation]["ROinduit"])/2)+(pc[vacation]["BV"]+pc[vacation]["renfort"]-cds-pc[vacation]["ROinduit"])%2);
-				}
-
-				if (vacation === "S1" && this.zone === "est" && this.saison === "ete") {
-					switch (pc["S1"]["nbpc"]) {
-						case 6:
-							dispoA = 3;
-							dispoB = 3;
-								break;
-						case 7:
-							dispoA = 3;
-							dispoB = 4;
-							break;
-						case 8:
-							dispoA = 3;
-							dispoB = 5;
-							break;
-						case 9:
-							dispoA = 3;
-							dispoB = 6;
-							break;
-						case 10:
-							dispoA = 3;
-							dispoB = 7;
-							break;
-						case 11:
-							dispoA = 4;
-							dispoB = 7;
-							break;
-						case 12:
-							dispoA = 4;
-							dispoB = 8;
-							break;
-						case 13:
-							dispoA = 4;
-							dispoB = 9;
-							break;
-					}
-				}
-		
-				if (vacation === "S1" && this.zone === "ouest" && this.saison === "ete") {
-					let d = new Date(this.day);
-					let jour_sem = d.getDay();
-					if (jour_sem === 2 || jour_sem === 3 || jour_sem === 4) {
-						dispoA = 0;
-						dispoB = pc["S1"]["nbpc"];
-					} else {
-						switch (pc["S1"]["nbpc"]) {
-							case 6:
-								dispoA = 3;
-								dispoB = 3;
-								break;
-							case 7:
-								dispoA = 3;
-								dispoB = 4;
-								break;
-							case 8:
-								dispoA = 3;
-								dispoB = 5;
-								break;
-							case 9:
-								dispoA = 3;
-								dispoB = 6;
-								break;
-							case 10:
-								dispoA = 3;
-								dispoB = 7;
-								break;
-							case 11:
-								dispoA = 4;
-								dispoB = 7;
-								break;
-							case 12:
-								dispoA = 4;
-								dispoB = 8;
-								break;
-							case 13:
-								dispoA = 4;
-								dispoB = 9;
-								break;
-						}
-					}
-				}
-
-				// Ajout du CDS qui bosse sur secteur
-				if (this.tour_utc[vacation][i][1] === 1) nb_pc += cds;
-				// Ajout de la sous-vacation A
-				if (this.tour_utc[vacation][i][2] === 1) {
-					if (noBV === false) {
-						nb_pc += dispoA;
-					} else {
-						if (this.saison === "ete") {
-							nb_pc += dispoA;
-						} else {
-							nb_pc += Math.floor(pc[vacation]["nbpc"]/2);
-						}
-					}
-				}
-				// Ajout de la sous-vacation B
-				if (this.tour_utc[vacation][i][3] === 1) {
-					if (noBV === false) {
-						nb_pc += dispoB;
-					} else {
-						if (this.saison === "ete") {
-							nb_pc += dispoB;
-						} else {
-							nb_pc += Math.floor(pc[vacation]["nbpc"]/2)+(pc[vacation]["nbpc"])%2;
-						}
-					}
-				}
-				//console.log("Vac: "+vacation+"   heure: "+get_time(i)+"  nbpc: "+nb_pc);
-			})
-
-			// Nuit de 19h30 à 00h00
-			let cds = pc["N"]["nbcds"];
-			// CDS
-			if (this.tour_utc["N"][i][1] === 1 && i>48) nb_pc += cds; // cds qui bosse sur secteur
-			// Sous-vacation A
-			if (this.tour_utc["N"][i][2] === 1 && i>48) {
-				if (this.saison === "ete" && pc["N"]["nbpc"] === 6) {
-					nb_pc += 2;
-				} else {
-					if (noBV === false) {
-						nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2), Math.floor((pc["N"]["BV"]+pc["N"]["renfort"]-cds-pc["N"]["ROinduit"])/2));
-					} else {
-						nb_pc += Math.floor(pc["N"]["nbpc"]/2);
-					}
-				}
-			}
-			// Sous-vacation B
-			if (this.tour_utc["N"][i][3] === 1 && i>48) {
-				if (this.saison === "ete" && pc["N"]["nbpc"] === 6) {
-					nb_pc += 4;
-				} else {
-					if (noBV === false) {
-						nb_pc += Math.min(Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2, Math.floor((pc["N"]["BV"]+pc["N"]["renfort"]-cds-pc["N"]["ROinduit"])/2)+(pc["N"]["BV"]+pc["N"]["renfort"]-cds-pc["N"]["ROinduit"])%2);
-					} else {
-						nb_pc += Math.floor(pc["N"]["nbpc"]/2)+(pc["N"]["nbpc"])%2;
-					}
-				}
-			}
-
-			// Nuit de 00h00 à 06h30
-			cds = pc["N-1"]["nbcds"];
-			if (this.tour_utc["N"][i][1] === 1 && i<48) nb_pc += cds; // cds qui bosse sur secteur
-			// Sous-vacation A
-			if (this.tour_utc["N"][i][2] === 1 && i<48) {
-				if (this.saison === "ete" && pc["N-1"]["nbpc"] === 6) {
-					nb_pc += 2;
-				} else {
-					if (noBV === false) {
-						nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2), Math.floor((pc["N-1"]["BV"]+pc["N-1"]["renfort"]-cds-pc["N-1"]["ROinduit"])/2));
-					} else {
-						nb_pc += Math.floor(pc["N-1"]["nbpc"]/2);
-					}
-				}
-			}
-			// Sous-vacation B
-			if (this.tour_utc["N"][i][3] === 1 && i<48) {
-				if (this.saison === "ete" && pc["N-1"]["nbpc"] === 6) {
-					nb_pc += 4;
-				} else {
-					if (noBV === false) {
-						nb_pc += Math.min(Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2, Math.floor((pc["N-1"]["BV"]+pc["N-1"]["renfort"]-cds-pc["N-1"]["ROinduit"])/2)+(pc["N-1"]["BV"]+pc["N-1"]["renfort"]-cds-pc["N-1"]["ROinduit"])%2);
-					} else {
-						nb_pc += Math.floor(pc["N-1"]["nbpc"]/2)+(pc["N-1"]["nbpc"])%2;
-					}
-				}
-			}
-			// this.tour_utc["J1"][i][0] = heure (ex : "01:45"), on aurait pu prendre n'importe quelle vac à la place de J1
-			pcs.push([this.tour_utc["J1"][i][0], nb_pc]);
-			nb_pc = 0;
+		const effectif_RD_15mn = this.effectif["pc_RD_15mn"];
+		const effectif_total_RD_15mn = this.effectif["pc_total_RD_15mn"];
 			
-			/* 	----------------------------------------------------------------------------------------
-					in15mn[i] = [nb_pc_supp, { "type": "Inst ou Eleve ....", "comm": "commentaire"}]
-				---------------------------------------------------------------------------------------- */
-			in15mn[i] = [0, []];
-			if (typeof this.instr[this.zone][this.day] !== 'undefined') {
-				this.instr[this.zone][this.day].forEach( (elem, index) => {
-					const debut = elem["debut"];
-					const fin = elem["fin"];
-					const d = elem["date"];
-					const zone = elem["zone"];
-					const type = elem["type"];
-					const comm = elem["comm"];
-					let t = get_time(i);
-					if (d === this.day && zone.toLowerCase() === this.zone) {
-						if (t >= debut && t< fin) {
-							if (type === "Inst") { in15mn[i][0] += 2; in15mn[i][1].push({type: type, comm: comm}); }
-							if (type === "Inst1") { in15mn[i][0] += 1; in15mn[i][1].push({type: type, comm: comm}); }
-							if (type === "Eleve") { in15mn[i][1].push({type: type, comm: comm}); }
-							if (type === "Asa") { in15mn[i][0] -= 1; in15mn[i][1].push({type: type, comm: comm}); }
-							if (type === "Simu1PC") { in15mn[i][0] -= 1; in15mn[i][1].push({type: type, comm: comm}); }
-							if (type === "Simu2PC") { in15mn[i][0] -= 2; in15mn[i][1].push({type: type, comm: comm}); }
-							if (type === "-1PC") { in15mn[i][0] -= 1; in15mn[i][1].push({type: type, comm: comm}); }
-						} 
-					}
-				});
-			}
-			
-			// s'il y a un Jx ce jour là
-			// on ne créé que les vac_jx existantes ce jour là
-			RD_names_horsJX.forEach( (vac_jx, index) => {
-				if (typeof effectif_RD_15mn[vac_jx] === 'undefined') effectif_RD_15mn[vac_jx] = [];
-				effectif_RD_15mn[vac_jx][i] = 0;
-			})
-			
-			RD_names_horsJX.forEach( (vac_jx, index) => {
-				if (vac_jx != "nbcds") {
-					const nb = pc["JX"][vac_jx]["nombre"];
-					if (this.tds_supp_utc[vac_jx][i][1] === 1) {
-						effectif_RD_15mn[vac_jx][i] = nb;
-					}
-				}
-			});
-
-		}
-
-		for(var i=0;i<96;i++) {
-			const keys = Object.keys(effectif_RD_15mn);
-			effectif_total_RD_15mn[i] = 0;
-			keys.forEach( vac_RD => {
-				effectif_total_RD_15mn[i] += effectif_RD_15mn[vac_RD][i];
-			})
-		}
 
 		// pc_total_horsInstrRD_15mn : total pc hors instr & hors RD bleu supp (les RD Jx sont inclus)
-		return {"pc_vac": pc, "pc_total_horsInstrRD_15mn": pcs, "pc_instr_15mn": in15mn, "pc_RD_15mn": effectif_RD_15mn, "pc_total_RD_15mn": effectif_total_RD_15mn};
+		return {"pc_vac": pc, "pc_sousvac_15mn": pc_sousvac_15mn, "pc_total_horsInstrRD_15mn": pcs, "pc_instr_15mn": in15mn, "pc_RD_15mn": effectif_RD_15mn, "pc_total_RD_15mn": effectif_total_RD_15mn, "RD": RD};
     }
 
     /* ---------------------------------------------------
@@ -565,8 +233,8 @@ class capa {
         push_utc("J2");
         push_utc("S1");
         push_utc("N");
-		console.log("Tour_utc");
-		console.log(tour_utc);
+		//console.log("Tour_utc");
+		//console.log(tour_utc);
         return tour_utc;
     }
 	/* -----------------------------------------------------------------------------------------
@@ -595,8 +263,8 @@ class capa {
         const tour_utc = {};
 		// RD_vac_hors_Jx = ["RD...","RD...",...]
 		const RD_vac_hors_Jx = Object.keys(tour);
-		console.log("RD_vac_hors_Jx");
-		console.log(RD_vac_hors_Jx);
+		//console.log("RD_vac_hors_Jx");
+		//console.log(RD_vac_hors_Jx);
         RD_vac_hors_Jx.forEach(vac => {
 			tour_utc[vac] = [];
 		})
@@ -649,16 +317,22 @@ class feuille_capa extends capa {
 	async init_data() {
 		show_popup("Patientez !", "Chargement en cours...");
 		this.update = {"est": {}, "ouest": {}};
-		this.update[this.zone][this.day] = {"update_count": {"JX":0,"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0, "JXBV":0,"J1BV":0, "J3BV":0, "S2BV":0, "J2BV":0, "S1BV":0, "NBV":0, "N-1BV":0}, "update_name": {"JX":[],"J1":[], "J3":[], "S2":[], "J2":[], "S1":[], "N":[], "N-1":[]}};
-		this.pc = await this.get_nbpc_dispo(this.update[this.zone][this.day]['update_count']);
-		console.log("pc");
-		console.log(this.pc);
+		this.update[this.zone][this.day] = {
+			"update_count": {"JX":0,"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0}, 
+			"update_countBV": {"JXBV":0,"J1BV":0, "J3BV":0, "S2BV":0, "J2BV":0, "S1BV":0, "NBV":0, "N-1BV":0}, 
+			"update_name": {"JX":[],"J1":[], "J3":[], "S2":[], "J2":[], "S1":[], "N":[], "N-1":[]}
+		};
+		this.pc = await this.get_nbpc_dispo(this.update[this.zone][this.day]['update_count'],this.update[this.zone][this.day]['update_countBV']);
+		//console.log("pc");
+		//console.log(this.pc);
 		await document.querySelector('.popup-close').click();
 		this.pc_15mn = await this.pc["pc_total_horsInstrRD_15mn"];
 		this.pc_instr_15mn = await this.pc["pc_instr_15mn"];
 		this.pc_RD_15mn = await this.pc["pc_RD_15mn"];
 		this.pc_total_RD_15mn = await this.pc["pc_total_RD_15mn"];
 		this.pc_vac = await this.pc["pc_vac"];
+		this.pc_sousvac_15mn = await this.pc["pc_sousvac_15mn"];
+		this.RD = await this.pc["RD"];
 		if (this.show) {this.show_feuille_capa(); return this; } else { return this.get_uceso(); }
 	}
 
@@ -732,7 +406,6 @@ class feuille_capa extends capa {
 		jx_types.forEach(elem => {
 			let detail = this.pc_vac["JX"][elem]["agent"];
 			const noms = Object.keys(detail);
-			console.log("noms: "+noms);
 			noms.forEach(nom => {
 				const detache = detail[nom] === "détaché" ? " (RD)" : "";
 				const aff = nom + detache;
@@ -766,7 +439,7 @@ class feuille_capa extends capa {
 		const td_RD = document.querySelectorAll(".click_RD");
 		td_RD.forEach(td_el => {
 			let RD_type = td_el.dataset.vac;
-			let detail = this.pc_vac["JX"][RD_type]["agent"];
+			let detail = this.RD[RD_type]["agent"];
 			td_el.addEventListener('mouseover', (event) => {
 				const el = document.createElement('div');
 				el.setAttribute('id', 'popinstr');
@@ -801,108 +474,20 @@ class feuille_capa extends capa {
 			let vac = td_el.dataset.vac;
 			if (this.update[this.zone][this.day]['update_count'][vac] !== 0) $$(`td[data-vac=${vac}].pc`).classList.add('bg_red');	
 			td_el.addEventListener('click', (event) => {
-				for (const user in this.pc_vac[vac]["userList"]) {
-					let ih = `
-					<div id="modif_eq">
-					${this.add_pers("J1")}
-					${this.add_pers("J3")}
-					${this.add_pers("S2")}
-					${this.add_pers("J2")}
-					${this.add_pers("S1")}
-					${this.add_pers("N")}
-					${this.add_pers("N-1")}`;
-					//ih += '<button id="ch">Changer</button>';
-					ih += `</div>`;
+				let ih = `
+				<div id="modif_eq">
+				${this.add_pers("J1")}
+				${this.add_pers("J3")}
+				${this.add_pers("S2")}
+				${this.add_pers("J2")}
+				${this.add_pers("S1")}
+				${this.add_pers("N")}
+				${this.add_pers("N-1")}`;
+				//ih += '<button id="ch">Changer</button>';
+				ih += `</div>`;
 				show_popup("Personnels", ih);
-				}
 			});
 		});
-	}
-	
-	check_S1() {
-		let dispoA = null;
-		let dispoB = null;
-		if (this.zone === "est" && this.saison === "ete") {
-			switch (this.pc_vac["S1"]["nbpc"]) {
-				case 6:
-					dispoA = 3;
-					dispoB = 3;
-				  	break;
-				case 7:
-					dispoA = 3;
-					dispoB = 4;
-					break;
-				case 8:
-					dispoA = 3;
-					dispoB = 5;
-					break;
-				case 9:
-					dispoA = 3;
-					dispoB = 6;
-					break;
-				case 10:
-					dispoA = 3;
-					dispoB = 7;
-					break;
-				case 11:
-					dispoA = 4;
-					dispoB = 7;
-					break;
-				case 12:
-					dispoA = 4;
-					dispoB = 8;
-					break;
-				case 13:
-					dispoA = 4;
-					dispoB = 9;
-					break;
-			}
-		}
-
-		if (this.zone === "ouest" && this.saison === "ete") {
-			let d = new Date(this.day);
-			let jour_sem = d.getDay();
-			if (jour_sem === 2 || jour_sem === 3 || jour_sem === 4) {
-				dispoA = 0;
-				dispoB = this.pc_vac["S1"]["nbpc"];
-			} else {
-				switch (this.pc_vac["S1"]["nbpc"]) {
-					case 6:
-						dispoA = 3;
-						dispoB = 3;
-						break;
-					case 7:
-						dispoA = 3;
-						dispoB = 4;
-						break;
-					case 8:
-						dispoA = 3;
-						dispoB = 5;
-						break;
-					case 9:
-						dispoA = 3;
-						dispoB = 6;
-						break;
-					case 10:
-						dispoA = 3;
-						dispoB = 7;
-						break;
-					case 11:
-						dispoA = 4;
-						dispoB = 7;
-						break;
-					case 12:
-						dispoA = 4;
-						dispoB = 8;
-						break;
-					case 13:
-						dispoA = 4;
-						dispoB = 9;
-						break;
-				}
-			}
-		}
-		return {"S1A": dispoA, "S1B": dispoB}
 	}
 
 	// Fabrique la ligne du tour de service
@@ -910,41 +495,13 @@ class feuille_capa extends capa {
 		let res1 = "", res2 = "", res3 = "";
 		// A = effectif/2
 		// B = effectif/2 (+1)
-		const cds = this.pc_vac[vac]["nbcds"];
-		let dispoA = Math.min(Math.floor(this.pc_vac[vac]["nbpc"]/2), Math.floor((this.pc_vac[vac]["BV"]+this.pc_vac[vac]["renfort"]-cds-this.pc_vac[vac]["ROinduit"])/2));
-		let dispoB = Math.min(Math.floor(this.pc_vac[vac]["nbpc"]/2)+(this.pc_vac[vac]["nbpc"])%2, Math.floor((this.pc_vac[vac]["BV"]+this.pc_vac[vac]["renfort"]-cds-this.pc_vac[vac]["ROinduit"])/2)+(this.pc_vac[vac]["BV"]+this.pc_vac[vac]["renfort"]-cds-this.pc_vac[vac]["ROinduit"])%2);
-		
-		let S1; 
-		if (vac === "S1") {
-			S1 = this.check_S1();
-			if (S1.S1A !== null && S1.S1B !== null) {
-				dispoA = S1.S1A;
-				dispoB = S1.S1B;
-			}
-		}
-
-		if (vac === "JX" && this.zone === "est" && this.saison === "ete") {
-			dispoB = Math.min(Math.floor(this.pc_vac[vac]["nbpc"]/2), Math.floor((this.pc_vac[vac]["BV"]+this.pc_vac[vac]["renfort"]-cds-this.pc_vac[vac]["ROinduit"])/2));
-			dispoA = Math.min(Math.floor(this.pc_vac[vac]["nbpc"]/2)+(this.pc_vac[vac]["nbpc"])%2, Math.floor((this.pc_vac[vac]["BV"]+this.pc_vac[vac]["renfort"]-cds-this.pc_vac[vac]["ROinduit"])/2)+(this.pc_vac[vac]["BV"]+this.pc_vac[vac]["renfort"]-cds-this.pc_vac[vac]["ROinduit"])%2);
-		}
-
-		if (vac === "N" && this.pc_vac[vac]["nbpc"] === 6) {
-				dispoA = 2;
-				dispoB = 4;
-		}
-
-		if (vac === "N-1" && this.pc_vac[vac]["nbpc"] === 6) {
-			dispoA = 2;
-			dispoB = 4;
-		}
-
-		// comp : { [ ["00:00", 0, 3, 4], ["hh:mm", cds, A, B], ... ] }
-		const vacation = (vac === "N-1") ? "N" : vac;
-		const comp = this.tour_utc[vacation].map( elem => [elem[0], parseInt(elem[1]), parseInt(elem[2])*dispoA, parseInt(elem[3])*dispoB]);
 		
 		// array d'index 0 à 95
-		comp.forEach( (elem, index) => {
-			let nb_cds = elem[1], nb_A = elem[2], nb_B = elem[3];
+		for (let index=0;index<96;index++) {
+			let nb_cds, nb_A, nb_B;
+			nb_cds = this.pc_sousvac_15mn[vac]["cds"][index];
+			nb_A = this.pc_sousvac_15mn[vac]["A"][index];
+			nb_B = this.pc_sousvac_15mn[vac]["B"][index];
 			let cl1 = "", cl2 = "", cl3="";
 			if (vac != "N" && vac != "N-1") {
 				if (nb_cds != 0) cl1 = "bg";
@@ -978,12 +535,12 @@ class feuille_capa extends capa {
 				if (index < 48) res2 += `<td class='${cl2}'>${nb_A || ''}</td>`; else res2 += `<td class='${cl2}'></td>`;
 				if (index < 48) res3 += `<td class='${cl3} bottom_2px'>${nb_B || ''}</td>`; else res3 += `<td class='${cl3} bottom_2px'></td>`;
 			}
-		});	
+		};	
 		const click_jx = vac === "JX" ? "pc details masque click_jx" : "pc details masque";
 		return `
 		<tr data-vac='${vac}'>
 			<td class='left_2px right_1px'></td><td class='right_1px'></td>
-			<td class='right_1px'>cds</td><td class='details masque'>${cds}</td>
+			<td class='right_1px'>cds</td><td class='details masque'>${this.pc_vac[vac]["nbcds"]}</td>
 			<td class='${click_jx}' data-vac='${vac}'>${this.pc_vac[vac]["nbpc"]}</td>
 			<td class='right_1px details masque' data-vac='${vac}'>${this.pc_vac[vac]["renfort"]}</td>
 			<td class='right_2px details masque'>${this.pc_vac[vac]["BV"]}</td>${res1}</tr>
@@ -1002,9 +559,10 @@ class feuille_capa extends capa {
 		let res2 = "";
 		res2 += `<td class='left_2px bottom_2px'></td>`; // border left à 2px pour la case 0
 		for(let i=1;i<95;i++) {	
-			//console.log("Time: "+get_time(i)+"  "+in15mn[i]);
+			//console.log("Time: "+get_time(i)+"  "+this.pc_instr_15mn[i][0]+"  "+this.pc_instr_15mn[i][0]);
 			if (this.pc_instr_15mn[i][1].length !== 0) {
 				let d = "data-instr='";
+				// val = { ""}
 				this.pc_instr_15mn[i][1].forEach(val => {
 					d += val.type + ":" + val.comm+"$";
 				})
@@ -1108,90 +666,50 @@ class feuille_capa extends capa {
 	// @param {string} vac - "J1"
 	// @param {array} present - [] 
 	
-	add_travailleurs_RO(vac, present) {
-		const values = Object.values(this.pc_vac[vac]["aTeamComposition"]);
-		for (const obj of values) {
-			for (const user in obj) {
-				//console.log("user: "+user);
-				const prenom = obj[user]["agent"]["prenom"];
-				const nom = obj[user]["agent"]["nom"];
-				const name = nom+" "+prenom;
-				if (typeof obj[user]["agent"]["role"] !== 'undefined') {
-					let role = obj[user]["agent"]["role"];
-					// bug si lesrenforts alors role est déjà un array [9,10,98], autrement un string "9,10,98"
-					if (typeof role === "string") role = role.split(","); // array des roles
-					role = role.map(elem => parseInt(elem)); // array d'integer
-					//console.log(name + " Role :");
-					//console.log(role);
-					let pushed = false;
-					if (role.includes(82)) {
-						//console.log("CDS ?"+obj[user]["contextmenuType"]);
-						if (Array.isArray(obj[user]["contextmenuType"])) present.push([name, "PC-CDS"]); else present.push([name, "CDS"]);
-						pushed = true;
-					}
-					if (role.includes(80)) {
-						//console.log("ACDS");
-						present.push([name, "PC-ACDS"]);
-						pushed = true;
-					} 	
-					if (role.includes(14)) {
-						//console.log("DET");
-						present.push([name, "PC-DET"]);
-						pushed = true;
-					} 
-					if (role.includes(10)) {
-						present.push([name, "stagiaire"]);
-						pushed = true;
-					}
-					if (typeof obj[user]["contextmenuType"] === 'object' && obj[user]["contextmenuType"] !== null && !Array.isArray(obj[user]["contextmenuType"])) { // c'est un objet
-						const type = obj[user]["contextmenuType"]["type"];
-						const label = obj[user]["contextmenuType"]["label"];
-						if (type === "reserve_operationnelle") {
-							present.push([name, "RO"]);
-							pushed = true;
-						}
-					}
-					if (pushed === false) present.push([name, "PC"]);
-				} 
-			}
+	add_travailleurs(vac, present) {
+		for (let [nom, obj] of Object.entries(this.pc_vac[vac]["teamToday"])) {
+			present.push([nom, obj.fonction]);
+		}
+		for (let [nom, obj] of Object.entries(this.pc_vac[vac]["renfortAgent"])) {
+			present.push([nom, obj.fonction]);
 		}
 		//console.log("VAC :");
 		//console.log(present);
 	}
 
-	// Gère les stages, CGE et RPL
-	add_stage_conge_autre(vac, present) {
-		const cles = Object.keys(this.pc_vac[vac]["teamData"]);
-		for (const k of cles) {
-			for (const user in this.pc_vac[vac]["teamData"][k]) {
-				if (k != "autre_agent") { 
-					if (k === "stage") {present.push([user, k]); } 
-					if (k === "conge") {present.push([user, k]); }
-				}
-				else {
-					if (this.pc_vac[vac]["teamData"][k][user].search(/RPL/) != -1 || this.pc_vac[vac]["teamData"][k][user].search(/PER avec/) != -1) {
-						for (const user2 in this.pc_vac[vac]["userList"]) {
-							const name = this.pc_vac[vac]["userList"][user2].screen_unique_name || this.pc_vac[vac]["userList"][user2].nom;
-							var re = new RegExp(name, 'g');
-							if (this.pc_vac[vac]["teamData"][k][user].match(re)) {
-								present.push([user, "PC-RPL", name]);
-							}
-						}
-					}
-				}
-			}
-		}
+	add_RO(vac, present) {
+		this.pc_vac[vac]["RoList"].forEach (nom => {
+			present.push([nom, "RO"]);
+		})
+	}
+
+	add_stage(vac, present) {
+		this.pc_vac[vac]["stage"].forEach (nom => {
+			present.push([nom, "stage"]);
+		})
+	}
+
+	add_conge(vac, present) {
+		this.pc_vac[vac]["conge"].forEach (nom => {
+			present.push([nom, "conge"]);
+		})
 	}
 
 	add_pers (vac) {
 		let res = `<table><caption>${vac}<span data-vac='${vac}'></span></caption><thead><tr><th style="background: #444;">Nom</th><th style="background: #444;">Type</th></tr></thead><tbody>`;
 		const eq = [];
-		this.add_travailleurs_RO(vac, eq);
-		this.add_stage_conge_autre(vac, eq);
+		this.add_travailleurs(vac, eq);
+		this.add_RO(vac, eq);
+		this.add_stage(vac, eq);
+		this.add_conge(vac, eq);
 		const personnel = this.tri_equipe(eq);
 		for (const p of personnel) {
 			let cl = `type${p[1]}`, cl_previous;
-			if (this.update[this.zone][this.day]['update_name'][vac].includes(p[0])) { cl += ' barre'; cl_previous = 'surligne'; }
+			if (p[1] === "CDS") { cl_previous = 'surligne_cds'; cl += ' surligne_cds'; }
+			if (p[1].includes("PC")) { cl_previous = 'pc_color'; cl += ' pc_color'; }
+			if (p[1] === "stage" || p[1] === "conge") { cl_previous = 'off_color'; cl += ' off_color'; }
+			//if (this.update[this.zone][this.day]['update_name'][vac].includes(p[0])) { cl += ' barre'; cl_previous = 'surligne'; }
+			// nom = p[0];
 			res += `<tr><td class='${cl_previous}'>${p[0]}</td><td class='${cl}' data-vac='${vac}' data-nom='${p[0]}'>${p[1]}</td><tr>`;
 		}
 		res += `</tbody></table>`;
@@ -1200,7 +718,7 @@ class feuille_capa extends capa {
 
 	// Tri dans l'ordre du tableau de valeurs
 	tri_equipe(arr_eq) {
-		const tab_valeurs = ["CDS", "PC-CDS", "PC", "PC-ACDS", "PC-DET", "PC-RPL", "stagiaire", "RO", "stage", "conge"];
+		const tab_valeurs = ["CDS", "PC-CDS", "PC-ACDS", "PC", "PC-RPL", "PC-DET", "stagiaire", "RO", "stage", "conge"];
 		let arr = [];
         tab_valeurs.forEach(valeur => {
             arr_eq.forEach(t => {
@@ -1287,13 +805,18 @@ class simu_capa extends capa {
 	async init_simu() {
 		this.containerTour.innerHTML = '<div id="left_part"><div id="table_option"></div><div id="table"></div></div><div id="right_part"></div>';
 		show_popup("Patientez !", "Chargement OLAF en cours...");
-		this.pc = await this.get_nbpc_dispo();
+		console.log("PC ini");
 		this.pc_ini = await this.get_nbpc_dispo();
+		console.log(this.pc_ini);
+		console.log("pc");
+		//this.pc = await this.get_nbpc_dispo();
+		this.pc = structuredClone(this.pc_ini);
+		console.log(this.pc);
 		this.cds = this.tour_local[this.zone][this.saison]["cds"];
 		this.cds["N-1"] = 0;
 		document.querySelector('.popup-close').click();
 		this.pc_vac = this.pc["pc_vac"];
-		this.v = {"JX":0,"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0, "JXBV":0,"J1BV":0, "J3BV":0, "S2BV":0, "J2BV":0, "S1BV":0, "NBV":0, "N-1BV":0};
+		this.RD = this.pc["RD"];
 		
 		// Récupération des schémas réalisés
 		const day7 = addDays_toString(this.day, -7);
@@ -1305,12 +828,14 @@ class simu_capa extends capa {
 		this.schema7 = await sch7.read_schema_realise() || "vide";
 		const sch2019 = new schema_rea(day2019, this.zone_schema);
 		this.schema2019 = await sch2019.read_schema_realise() || "vide";
+		/*
 		console.log("Schema");
 		console.log(this.schema);
 		console.log("Schema7");
 		console.log(this.schema7);
 		console.log("Schema2019");
 		console.log(this.schema2019);
+		*/
 		this.show_simu_capa();
 	}
 
@@ -1319,11 +844,6 @@ class simu_capa extends capa {
 		------------------------------------------ */
 	async show_simu_capa() {
 		//show_popup("Patientez !", "Chargement en cours...");
-		const update = {"est": {}, "ouest": {}};
-
-		if (typeof update[this.zone][this.day] === 'undefined') update[this.zone][this.day] = {"update_count": {"JX":0,"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0}, "update_name": {"JX":[],"J1":[], "J3":[], "S2":[], "J2":[], "S1":[], "N":[], "N-1":[]}};
-		//document.querySelector('.popup-close').click();
-
 		this.build_tab();
 		this.modify_listener();
 		show_capa_graph("right_part", this.day, this.zone_schema, this.pc, this.schema, this.schema7, this.schema2019);
@@ -1347,9 +867,9 @@ class simu_capa extends capa {
 				let sous_vac_RD = vac_RD_extraite.substring(2).toUpperCase();
 				vac_RD_extraite = vac_RD_extraite.substring(0,2);
 				if (vac_RD_extraite === vac) {
-					console.log(vac_RD+" en plus : "+this.pc_vac["JX"][vac_RD]["nombre"]);
-					nbpc_vac += this.pc_vac["JX"][vac_RD]["nombre"];
-					nbpcdet_vac += this.pc_vac["JX"][vac_RD]["nombre"];
+					console.log(vac_RD+" en plus : "+this.RD[vac_RD]["nombre"]);
+					nbpc_vac += this.RD[vac_RD]["nombre"];
+					nbpcdet_vac += this.RD[vac_RD]["nombre"];
 				}
 			})
 		}
@@ -1379,8 +899,8 @@ class simu_capa extends capa {
 			}
 		})
 		$('upd').addEventListener('click', async () => {
-			this.pc = await this.get_nbpc_dispo(this.v, this.noBV);
-			show_capa_graph("right_part", this.day, this.zone_schema, this.pc, this.schema, this.schema7, this.schema2019);
+			//this.pc = await this.get_nbpc_dispo(this.v, this.vBV, this.noBV);
+			//show_capa_graph("right_part", this.day, this.zone_schema, this.pc, this.schema, this.schema7, this.schema2019);
 		})
 		let res = `<table class="simu">
 					<thead>
@@ -1400,6 +920,139 @@ class simu_capa extends capa {
 		$('table').innerHTML = res;
 	}
 
+	get_default_repartition(vacation) {
+		const rep = {};
+
+		rep.A = min(floor(this.pc[vacation]["nbpc"]/2), floor((this.pc[vacation]["BV"] + this.pc[vacation]["renfort"] - this.pc[vacation]["nbcds"] - this.pc[vacation]["ROinduit"])/2));
+
+		rep.B = min(floor(this.pc[vacation]["nbpc"]/2)+(this.pc[vacation]["nbpc"])%2, floor((this.pc[vacation]["BV"] + this.pc[vacation]["renfort"] - this.pc[vacation]["nbcds"] - this.pc[vacation]["ROinduit"])/2)+(this.pc[vacation]["BV"] + this.pc[vacation]["renfort"] - this.pc[vacation]["nbcds"] - this.pc[vacation]["ROinduit"])%2); 
+
+		return $rep;
+	}
+
+	get_repartition (vacation) {
+		const rep = {};
+		let result;
+		switch (vacation){
+			case "JX":
+				result = this.get_default_repartition(vacation);
+				rep.A = result.A;
+				rep.B = result.B;
+				if (this.saison === "ete" && this.zone === "est") {
+					rep.B = result.A;
+					rep.A = result.B;
+				}
+				break;
+			case "S1":
+				result = this.get_default_repartition(vacation);
+				rep.A = result.A;
+				rep.B = result.B;
+				if (this.saison === "ete" && this.zone === "est") {
+					switch (this.pc[vacation]["nbpc"]) {
+						case 6:
+							rep.A = 3;
+							rep.B = 3;
+							break;
+						case 7:
+							rep.A = 3;
+							rep.B = 4;
+							break;
+						case 8:
+							rep.A = 3;
+							rep.B = 5;
+							break;
+						case 9:
+							rep.A = 3;
+							rep.B = 6;
+							break;
+						case 10:
+							rep.A = 3;
+							rep.B = 7;
+							break;
+						case 11:
+							rep.A = 4;
+							rep.B = 7;
+							break;
+						case 12:
+							rep.A = 4;
+							rep.B = 8;
+							break;
+						case 13:
+							rep.A = 4;
+							rep.B = 9;
+							break;
+					}
+				}
+				if (this.saison === "ete" && this.zone === "ouest") {
+					const dat_jour = new Date(this.day);
+					const jour_sem = dat_jour.getDay(); // 0=dimanche
+					if (jour_sem === 2 || jour_sem === 3 || jour_sem === 4) {
+						rep.A = 0;
+						rep.B = this.pc[vacation]["nbpc"];
+					} else {
+						switch (this.pc[vacation]["nbpc"]) {
+							case 6:
+								rep.A = 3;
+								rep.B = 3;
+								break;
+							case 7:
+								rep.A = 3;
+								rep.B = 4;
+								break;
+							case 8:
+								rep.A = 3;
+								rep.B = 5;
+								break;
+							case 9:
+								rep.A = 3;
+								rep.B = 6;
+								break;
+							case 10:
+								rep.A = 3;
+								rep.B = 7;
+								break;
+							case 11:
+								rep.A = 4;
+								rep.B = 7;
+								break;
+							case 12:
+								rep.A = 4;
+								rep.B = 8;
+								break;
+							case 13:
+								rep.A = 4;
+								rep.B = 9;
+								break;
+						}
+					}
+				}
+				break;
+			case "N":
+				result = this.get_default_repartition(vacation);
+				rep.A = result.A;
+				rep.B = result.B;
+				if (this.saison != "hiver" && this.pc[vacation]["nbpc"] === 6) {
+					rep.A = 2;
+					rep.B = 4;
+				}
+				break;
+			case "N-1":
+				result = this.get_default_repartition(vacation);
+				rep.A = result.A;
+				rep.B = result.B;
+				if (this.saison != "hiver" && this.pc[vacation]["nbpc"] === 6) {
+					rep.A = 2;
+					rep.B = 4;
+				}
+				break;
+			default:
+				result = this.get_default_repartition(vacation);
+				rep.A = result.A;
+				rep.B = result.B;
+		}
+		return rep;
+	}
+
 	modify_listener() {
 		const moinsBV = document.querySelectorAll('.minusBV');
 		const plusBV = document.querySelectorAll('.plusBV');
@@ -1409,9 +1062,7 @@ class simu_capa extends capa {
 		plusBV.forEach(el => {
 			el.addEventListener('click', async (event) => {
 				const vac = el.dataset.vac;
-				const vacBV = vac+"BV";
 				$$(`span[data-vacBV='${vac}']`).innerHTML = parseInt($$(`span[data-vacBV='${vac}']`).innerHTML) + 1;
-				this.v[vacBV]++;
 				const BV_elem = $$(`td.bv[data-vacBV='${vac}']`);
 				BV_elem.innerHTML = parseInt(BV_elem.innerHTML) + 1;
 				if (BV_elem.innerHTML != $$(`td.bvini[data-vacBV='${vac}']`).innerHTML) {
@@ -1419,7 +1070,7 @@ class simu_capa extends capa {
 				} else {
 					BV_elem.classList.remove('bg_red');
 				}
-				this.pc = await this.get_nbpc_dispo(this.v, this.noBV);
+				this.pc_vac[vac]["BV"]++;
 				show_capa_graph("right_part", this.day, this.zone_schema, this.pc_ini, this.schema, this.schema7, this.schema2019, this.pc);
 			});
 		});
@@ -1427,9 +1078,7 @@ class simu_capa extends capa {
 		moinsBV.forEach(el => {
 			el.addEventListener('click', async (event) => {
 				const vac = el.dataset.vac;
-				const vacBV = vac+"BV";
 				$$(`span[data-vacBV='${vac}']`).innerHTML = parseInt($$(`span[data-vacBV='${vac}']`).innerHTML) - 1;
-				this.v[vacBV]--;
 				const BV_elem = $$(`td.bv[data-vacBV='${vac}']`);
 				BV_elem.innerHTML = parseInt(BV_elem.innerHTML) - 1;
 				if (BV_elem.innerHTML != $$(`td.bvini[data-vacBV='${vac}']`).innerHTML) {
@@ -1437,7 +1086,7 @@ class simu_capa extends capa {
 				} else {
 					BV_elem.classList.remove('bg_red');
 				}
-				this.pc = await this.get_nbpc_dispo(this.v, this.noBV);
+				this.pc_vac[vac]["BV"]--;
 				show_capa_graph("right_part", this.day, this.zone_schema, this.pc_ini, this.schema, this.schema7, this.schema2019, this.pc);
 			});
 		});
@@ -1446,7 +1095,20 @@ class simu_capa extends capa {
 			el.addEventListener('click', async (event) => {
 				const vac = el.dataset.vac;
 				$$(`span[data-vacPC='${vac}']`).innerHTML = parseInt($$(`span[data-vacPC='${vac}']`).innerHTML) + 1;
-				this.v[vac]++;
+				this.pc_vac[vac]["nbpc"]++;
+
+				let temp_pc_total = [];
+				let nombre_pc;
+				for(let i=0;i<95;i++) {
+					nombre_pc = 0;
+					for(let obj of this.pc_sousvac_15mn) {
+						nombre_pc += obj.cds;
+						nombre_pc += obj.A;
+						nombre_pc += obj.B;
+					}
+					temp_pc[i] = nombre_pc;
+				}	
+				
 				const PC_elem = $$(`td.nbpc[data-vacPC='${vac}']`);
 				PC_elem.innerHTML = parseInt(PC_elem.innerHTML) + 1;
 				if ($$(`span[data-vacPC='${vac}']`).innerHTML != 0) {
@@ -1454,7 +1116,9 @@ class simu_capa extends capa {
 				} else {
 					PC_elem.classList.remove('bg_red');
 				}
-				this.pc = await this.get_nbpc_dispo(this.v, this.noBV);
+				console.log("+PC");
+				console.log(this.pc_ini);
+				console.log(this.pc);
 				show_capa_graph("right_part", this.day, this.zone_schema, this.pc_ini, this.schema, this.schema7, this.schema2019, this.pc);
 			});
 		});
@@ -1463,7 +1127,7 @@ class simu_capa extends capa {
 			el.addEventListener('click', async (event) => {
 				const vac = el.dataset.vac;
 				$$(`span[data-vacPC='${vac}']`).innerHTML = parseInt($$(`span[data-vacPC='${vac}']`).innerHTML) - 1;
-				this.v[vac]--;
+				this.pc_vac[vac]["nbpc"]--;
 				const PC_elem = $$(`td.nbpc[data-vacPC='${vac}']`);
 				PC_elem.innerHTML = parseInt(PC_elem.innerHTML) - 1;
 				if ($$(`span[data-vacPC='${vac}']`).innerHTML != 0) {
@@ -1471,7 +1135,9 @@ class simu_capa extends capa {
 				} else {
 					PC_elem.classList.remove('bg_red');
 				}
-				this.pc = await this.get_nbpc_dispo(this.v, this.noBV);
+				console.log("-PC");
+				console.log(this.pc_ini);
+				console.log(this.pc);
 				show_capa_graph("right_part", this.day, this.zone_schema, this.pc_ini, this.schema, this.schema7, this.schema2019, this.pc);
 			});
 		});
@@ -1498,14 +1164,14 @@ class simu_capa extends capa {
 		 @param {objet/string} schema2019 - objet schema rea 2019 ou 'no' par défaut
 	----------------------------------------------------------------------------------- */
 async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', schema7 = 'no', schema2019 = 'no', pc_simu = 0) {
-	
+	/*
 	console.log("-Schema");
 	console.log(schema);
 	console.log("-Schema7");
 	console.log(schema7);
 	console.log("-Schema2019");
 	console.log(schema2019);
-
+	*/
 	const container = $(containerId);
 	container.innerHTML = '<div style="display: flex;"><div id="i1"></div><ul id="date_legend"><li class="bleu"></li><li class="orange"></li><li class="vert"></li></ul></div><div id="uceso"></div>';
 	let chartDom = $("uceso");
@@ -1532,8 +1198,8 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 		pc_instr_15mn = pc["pc_instr_15mn"];
 		pc_total_RD_15mn = pc["pc_total_RD_15mn"];
 		uceso = pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn[index][0] + pc_total_RD_15mn[index]) / 2) ]);
-		console.log("uceso");
-		console.log(uceso);
+		//console.log("uceso");
+		//console.log(uceso);
 		data_series_uceso = [];
 		uceso.forEach(row => {
 			let deb = row[0];
@@ -1586,14 +1252,14 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 	if (schema === 'vide') schema = undefined;
 	if (schema7 === 'vide') schema7 = undefined;
 	if (schema2019 === 'vide') schema2019 = undefined;
-
+	/*
 	console.log("*Schema");
 	console.log(schema);
 	console.log("*Schema7");
 	console.log(schema7);
 	console.log("*Schema2019");
 	console.log(schema2019);
-
+*/
 	data_series = [];
 	data_series7 = [];
 	data_series2019 = [];
@@ -1646,13 +1312,9 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 	const jour2019 = tab_jour[new Date(day2019).getDay()];
 	const jour7 = tab_jour[new Date(day7).getDay()];
 	const jour = tab_jour[new Date(day).getDay()];
-	console.log("111");
 	$$(".bleu").innerHTML = '2019 : '+jour2019+' '+reverse_date(day2019);
-	console.log("222");
 	$$(".orange").innerHTML = 'J-7 : '+jour7+' '+reverse_date(day7);
-	console.log("333");
 	$$(".vert").innerHTML = 'J : '+jour+' '+reverse_date(day);
-	console.log("444");
 	
 	const couleur_bleu = getComputedStyle(document.documentElement).getPropertyValue('--color-2019');
 	const couleur_orange = getComputedStyle(document.documentElement).getPropertyValue('--color-j-7');
