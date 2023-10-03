@@ -171,8 +171,6 @@ class schema_rea {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ "zone": zone, "day": day})
             })
-            console.log("Response");
-            console.log(response);
             return response;
         }
         
@@ -238,8 +236,8 @@ class schema_rea {
             }
             // termine le mapping à 23:59
             json_4f["mapping"][json_4f["mapping"].length - 1]['end_time'] = '23:59';
-            console.log("Json_4f");
-            console.log(json_4f);
+            //console.log("Json_4f");
+            //console.log(json_4f);
             
             json_4f["mapping"].forEach(mapping_obj => { 
                 let tv_h_d = mapping_obj.start_time;
@@ -358,8 +356,8 @@ class schema_rea {
 
             // enlève les doublons du tableau des TV
             schema.tv = [...new Set(schema.tv)];
-            console.log("Schema");
-            console.log(schema);
+            //console.log("Schema");
+            //console.log(schema);
             return schema;
         }
         catch (err) {

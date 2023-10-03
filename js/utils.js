@@ -181,7 +181,6 @@ const jour_sem = day => {
 // year : année passée où on veut récupérer le jour correspondant
 const get_sameday = (day, year) => {
 	const d = new Date(day);
-	console.log("Day: "+d);
 	const j = d.getDate();
 	const m = d.getMonth();
 	const y = d.getFullYear();
@@ -192,10 +191,8 @@ const get_sameday = (day, year) => {
 	let past_d_js = past_d.getDay();
 	// ecart entre les jours de la semaine de day et past_d
 	const ecart = past_d_js - js;
-	console.log("ecart: "+ecart);
 	// on corrige pour avoir le même jour de la semaine
 	past_d = past_d.addDays(-ecart);
-	console.log("past_day: "+past_d);
 	const past_d_month = past_d.getMonth();
 	const past_d_jour = past_d.getDate();
 	// Calcul de l'écart en jour entre les 2 journées (on fixe une année quelconque pour le calcul)
