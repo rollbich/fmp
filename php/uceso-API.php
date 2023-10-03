@@ -19,7 +19,7 @@ require_once("capa_class.php");
             "uceso" : nombre d'ucecos par 15 minutes [ ["00:00", ucesos], [...] ...]
             "compacted_uceso" : nombre d'ucesos [ ["00:00", "02:30", ucesos], ...]
             "pc_total_horsInstrRD_15mn" : PC hors instruction et RD bleus mais avec JX et RD JX
-            "pc_total_instr_15mn" : PC instruction par 15 minutes
+            "pc_total_instr_15mn" : PC instruction par 15 minutes [ [nb,[{"type": "type", "comm":"comm"}, ...], ...] ]
             "pc_RD_15mn" : RD bleus hors JX {"RDS1b-ete" : [ ["00:00", nb_pc], ...], ...}
             "pc_total_RD_15mn" : total RD bleus par 15 minutes
             "workingTeam" : { "J2": 1, "vac": equipe, ...}
@@ -93,8 +93,22 @@ require_once("capa_class.php");
                     TDS_Supp: {
                         = RD sans les JX
                     }
-                    }
-                }}
+                    
+                }
+            },
+            heures_uceso: {
+                min : 11970
+                hmin: 199h30
+            },
+            pc_sousvac_15mn: {
+                vac: {
+                    cds: [ de 0 à 95 ]
+                    A: [ de 0 à 95 ]
+                    B: [ de 0 à 95 ]
+                },
+                ...
+            }
+            }
         }
 /*  -------------------------------------------------------------------------------------------- */
 

@@ -73,6 +73,11 @@ function get_time($col) {
 	return $h.":".strval($minut);
 }
 	
+// return nom famille pour les congé et stage
+function firstElem($elem) {
+	return explode(" ", $elem)[0] ?? $elem;
+}
+
 class capa {
 
 	/* ------------------------------------------------------
@@ -347,6 +352,8 @@ class capa {
 								$this->pc->{$vac}->teamToday->{$nc}->nom = $pers->agent->nom;
 								$this->pc->{$vac}->teamToday->{$nc}->nomComplet = $nc;
 								$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC";
+								$this->pc->{$vac}->teamToday->{$nc}->hasCDSCapability = false; 
+								$this->pc->{$vac}->teamToday->{$nc}->hasACDSCapability = false; 
 
 								if (isset($pers->agent->role)) {
 									if (is_array($pers->agent->role)) {
@@ -355,8 +362,14 @@ class capa {
 										$this->pc->{$vac}->teamToday->{$nc}->role = explode(",", $pers->agent->role);
 									}
 									
-									if (in_array(82, $this->pc->{$vac}->teamToday->{$nc}->role)) $this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-CDS";
-									if (in_array(80, $this->pc->{$vac}->teamToday->{$nc}->role)) $this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-ACDS";
+									if (in_array(82, $this->pc->{$vac}->teamToday->{$nc}->role)) {
+										$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-CDS";
+										$this->pc->{$vac}->teamToday->{$nc}->hasCDSCapability = true; 
+									}
+									if (in_array(80, $this->pc->{$vac}->teamToday->{$nc}->role)) {
+										$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-ACDS";
+										$this->pc->{$vac}->teamToday->{$nc}->hasACDSCapability = true;
+									} 
 								} else {
 									$this->pc->{$vac}->teamToday->{$nc}->role = [];
 								}
@@ -394,6 +407,7 @@ class capa {
 				$this->pc->{$vac}->RPL = new stdClass();
 				if (isset($teamData->autre_agent)) {
 					foreach ($teamData->autre_agent as $nom=>$html_value) { // nom du remplaçant
+						if (str_contains($nom, " ")) $nom = explode(" ", $nom)[0];
 						foreach ($this->pc->{$vac}->teamNominalList->agentsList as $agent) { // agent remplacé
 							if (str_contains($html_value, $agent)) $this->pc->{$vac}->RPL->{$nom} = $agent;
 						}
@@ -403,16 +417,20 @@ class capa {
 				// Précise la fonction RPL des Remplacant dans teamToday
 				foreach ($this->pc->{$vac}->RPL as $remplacant => $remplace) {
 					foreach ($this->pc->{$vac}->teamToday as $fullname => $obj) {
-						if (strcmp($remplacant, $obj->nom) === 0) $this->pc->{$vac}->teamToday->{$obj->nomComplet}->fonction = "PC-RPL";
+						if (strcmp($remplacant, $obj->nom) === 0) {
+							$this->pc->{$vac}->teamToday->{$obj->nomComplet}->fonction = "PC-RPL";
+						}
 					}
 				}
 
 				if (is_array($teamData->stage) === false) { // alors c'est bien un objet sinon array vide
+					//$this->pc->{$vac}->stage = array_map('firstElem', array_keys(get_object_vars($teamData->stage)));
 					$this->pc->{$vac}->stage = array_keys(get_object_vars($teamData->stage));
 				} else {
 					$this->pc->{$vac}->stage = [];
 				}
 				if (is_array($teamData->conge) === false) { // alors c'est bien un objet sinon array vide
+					//$this->pc->{$vac}->conge = array_map('firstElem', array_keys(get_object_vars($teamData->conge)));
 					$this->pc->{$vac}->conge = array_keys(get_object_vars($teamData->conge));
 				} else {
 					$this->pc->{$vac}->conge = [];
