@@ -50,10 +50,10 @@ try {
 	$arr_dates = getDatesFromRange($start_day, $end_day);
 
 	$header_steph = array(
-		'Date'=>'string',
+		'Date'=>'date',
 		'Zone'=>'string',
-		'Heure'=>'string',
-		'ucesos'=>'string'
+		'Heure'=>'heure',
+		'ucesos'=>'integer'
 	);
 	
 	$style_header = array( 'font'=>'Arial','font-size'=>12,'font-style'=>'bold', 'halign'=>'center');
