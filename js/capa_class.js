@@ -37,9 +37,6 @@ class capa {
     /* ----------------------------------------------------------------------------------------------------------------
         *Calcul du nbre de PC total par vac
         *Calcul du nbre de PC total dispo par pas de 15mn à la date choisie
-            @param {object} update	- {"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0, "J1BV":0, "J3BV":0,...}
-                                    - Nombre de pc à retrancher à l'effectif OLAF ou au BV
-			@param {boolean} noBV	- false pour ne pas prendre en compte les BV
             @returns {object} : 
 			  { "pc_vac": {
 					"JX" : {
@@ -115,7 +112,6 @@ class capa {
 
 		const effectif_RD_15mn = this.effectif["pc_RD_15mn"];
 		const effectif_total_RD_15mn = this.effectif["pc_total_RD_15mn"];
-			
 
 		// pc_total_horsInstrRD_15mn : total pc hors instr & hors RD bleu supp (les RD Jx sont inclus)
 		return {"pc_vac": pc, "pc_sousvac_15mn": pc_sousvac_15mn, "pc_total_horsInstrRD_15mn": pcs, "pc_instr_15mn": in15mn, "pc_RD_15mn": effectif_RD_15mn, "pc_total_RD_15mn": effectif_total_RD_15mn, "RD": RD};
@@ -316,13 +312,7 @@ class feuille_capa extends capa {
 		------------------------------------------ */
 	async init_data() {
 		show_popup("Patientez !", "Chargement en cours...");
-		this.update = {"est": {}, "ouest": {}};
-		this.update[this.zone][this.day] = {
-			"update_count": {"JX":0,"J1":0, "J3":0, "S2":0, "J2":0, "S1":0, "N":0, "N-1":0}, 
-			"update_countBV": {"JXBV":0,"J1BV":0, "J3BV":0, "S2BV":0, "J2BV":0, "S1BV":0, "NBV":0, "N-1BV":0}, 
-			"update_name": {"JX":[],"J1":[], "J3":[], "S2":[], "J2":[], "S1":[], "N":[], "N-1":[]}
-		};
-		this.pc = await this.get_nbpc_dispo(this.update[this.zone][this.day]['update_count'],this.update[this.zone][this.day]['update_countBV']);
+		this.pc = await this.get_nbpc_dispo();
 		//console.log("pc");
 		//console.log(this.pc);
 		await document.querySelector('.popup-close').click();
@@ -472,7 +462,6 @@ class feuille_capa extends capa {
 		$$('.popup-box').classList.add('popup-modif');
 		td_pc.forEach(td_el => {
 			let vac = td_el.dataset.vac;
-			if (this.update[this.zone][this.day]['update_count'][vac] !== 0) $$(`td[data-vac=${vac}].pc`).classList.add('bg_red');	
 			td_el.addEventListener('click', (event) => {
 				let ih = `
 				<div id="modif_eq">
@@ -708,7 +697,6 @@ class feuille_capa extends capa {
 			if (p[1] === "CDS") { cl_previous = 'surligne_cds'; cl += ' surligne_cds'; }
 			if (p[1].includes("PC")) { cl_previous = 'pc_color'; cl += ' pc_color'; }
 			if (p[1] === "stage" || p[1] === "conge") { cl_previous = 'off_color'; cl += ' off_color'; }
-			//if (this.update[this.zone][this.day]['update_name'][vac].includes(p[0])) { cl += ' barre'; cl_previous = 'surligne'; }
 			// nom = p[0];
 			res += `<tr><td class='${cl_previous}'>${p[0]}</td><td class='${cl}' data-vac='${vac}' data-nom='${p[0]}'>${p[1]}</td><tr>`;
 		}
@@ -863,11 +851,11 @@ class simu_capa extends capa {
 		let nbpcdet_vac = this.pc_vac[vac]["renfort"];
 		const vac_RD_tab = Object.keys(this.pc["pc_RD_15mn"]);
 		if (vac_RD_tab.length != 0) {
-			vac_RD_tab.forEach( vac_RD => {
-				let vac_RD_extraite = vac_RD.substring(2);
-				vac_RD_extraite = vac_RD_extraite.split("-")[0];
-				let sous_vac_RD = vac_RD_extraite.substring(2).toUpperCase();
-				vac_RD_extraite = vac_RD_extraite.substring(0,2);
+			vac_RD_tab.forEach( vac_RD => {  // "RDJ3a-ete"
+				let vac_RD_extraite = vac_RD.substring(2); // "J3a-ete"
+				vac_RD_extraite = vac_RD_extraite.split("-")[0]; // "J3a"
+				let sous_vac_RD = vac_RD_extraite.substring(2).toUpperCase(); // "J3A"
+				vac_RD_extraite = vac_RD_extraite.substring(0,2); // "J3"
 				if (vac_RD_extraite === vac) {
 					console.log(vac_RD+" en plus : "+this.RD[vac_RD]["nombre"]);
 					nbpc_vac += this.RD[vac_RD]["nombre"];
@@ -950,7 +938,7 @@ class simu_capa extends capa {
 				rep.A = result.A;
 				rep.B = result.B;
 				if (this.saison === "ete" && this.zone === "est") {
-					switch (this.pc[vacation]["nbpc"]) {
+					switch (this.pc["pc_vac"][vacation]["nbpc"]) {
 						case 6:
 							rep.A = 3;
 							rep.B = 3;
