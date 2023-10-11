@@ -52,7 +52,7 @@ try {
 	$header_steph = array(
 		'Date'=>'date',
 		'Zone'=>'string',
-		'Heure'=>'heure',
+		'Heure'=>'string',
 		'ucesos'=>'integer'
 	);
 	
