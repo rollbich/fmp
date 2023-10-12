@@ -129,6 +129,7 @@ class capa {
 	// Récupère le décalage horaire en heures
 	public function get_decalage() {
 		$d = new DateTime($this->day);
+		$d->modify('+ 6 hours');
 		$timeZoneParis = new DateTimeZone("Europe/Paris");
 		$timeOffset = abs(($timeZoneParis->getOffset($d)) / 3600);
 		return $timeOffset;
