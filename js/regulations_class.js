@@ -98,13 +98,14 @@ class regul {
 		const month = date.substr(4,2);
 		const url = `${year}/${month}/${date}-reg.json`;	
 		const resp = await get_data(url);
-		if (typeof resp !== 'undefined') {
+		if (resp !== 404) {
 			return resp;
 		}
 		else {
-			show_popup(`Erreur`, `Le fichier Reg du ${date} n'existe pas`);
-			await wait(800);
-		    document.querySelector('.popup-close').click();
+			console.error(`Le fichier Reg du ${date} n'existe pas`);
+			show_popup(`Erreur`, `Le fichier Reg du ${date} n'existe pas<br>Il ne sera pas compté dans la stat`);
+			//await wait(800);
+		    //document.querySelector('.popup-close').click();
 		}
 	}
 
