@@ -5,11 +5,6 @@ class vols {
 
 	async init() {
 		this.daily_vols = await this.get_data_daily_vols();
-		/*
-		if (typeof this.daily_vols !== 'undefined') {
-			this.nbre_vols = this.get_daily_vols();
-		}
-		*/
 	}
 
 	/*  ----------------------------------------------------------------------------------
@@ -35,13 +30,14 @@ class vols {
 		const month = date.substr(4,2);
 		const url = `${year}/${month}/${date}-vols.json`;	
 		const resp = await get_data(url);
-		if (typeof resp !== 'undefined') {
+		if (resp !== 404) {
 			return resp;
 		}
 		else {
-			show_popup(`Erreur`, `Le fichier du ${date} n'existe pas`);
-			await wait(800);
-		    document.querySelector('.popup-close').click();
+			console.error(`Le fichier du ${date} n'existe pas`);
+			show_popup(`Erreur`, `Le fichier du ${date} n'existe pas<br>Il ne sera pas compté dans la stat`);
+			//await wait(1000);
+		    //document.querySelector('.popup-close').click();
 		}
 	}
 
@@ -92,7 +88,7 @@ class period_vols {
         for (const date of this.dates_arr) {
              const v = new vols(date);
 			 await v.init();
-			 if (typeof v.daily_vols !== 'undefined') {
+			 if (v.daily_vols !== 404) {
              	plage_vols[date] = v.daily_vols;
 			 }
         }
@@ -103,9 +99,7 @@ class period_vols {
 		const vols = {};
 		let total_vols_est = 0, total_vols_west = 0, total_vols_cta = 0, total_vols_app = 0; 
 		for (const date of this.dates_arr) {
-			if (typeof this.vols[date] !== 'undefined') {
-				//console.log("this.vols[date]");
-				//console.log(this.vols[date]);
+			if (this.vols[date] !== 404) {
 				total_vols_est += parseInt(this.vols[date]['LFMMCTAE'][2]);
 				total_vols_west += parseInt(this.vols[date]['LFMMCTAW'][2]);
 				total_vols_cta += parseInt(this.vols[date]['LFMMCTA'][2]);
