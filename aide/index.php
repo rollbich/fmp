@@ -47,7 +47,7 @@ require("../php/check_ok.inc.php");
         <div class="content">
             <h2><a href="regulsName.php">Nom des réguls</a></h2>
             <p>Un petit rappel concernant les règles de nommage des réguls NM. Ceci dans le cadre de l'utilisation des fonctionnalités NMP FLow (simulation, création de réguls).</p>
-            <footer>Mercredi 05 octobre 2022</footer>
+            <footer>Jeudi 26 octobre 2023</footer>
         </div>
     </div>
 </div>
