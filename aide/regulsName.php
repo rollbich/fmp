@@ -59,33 +59,26 @@ require("../php/check_ok.inc.php");
 <article class="center">
     <div>
     <h2 id="titre2" class="center">Approches</h2>
-    <p>La règle générale est de commencer par :</p>
-    <ul>
-        <li>le code OACI de l'AD (méthode recommandée par NM)</li>
-        <li>ou les 2 dernières lettres du code OACI de l'AD lorsque cela est possible <span>*&nbsp;</span></li>
-    </ul>
+    <p>Pour les approches, le "Regulation Id code" est le code OACI à 4 lettres de l'AD.</p>
     <p>Ensuite, en fonction du nombre de lettre utilisé pour le début on peut utiliser quelques caractères pour compléter le nom</p>
     <ul>
         <li>LFTHA16M : ici 1 seul caractère en plus (le A)</li>
         <li>LFTHAR16 : ici 2 caractères (AR) pour compléter car on a rogné la période de la journée</li>
-        <li>THARR16A : ici 3 caractères (ARR) pour compléter car on a utilisé que 2 lettres pour coder le début</li>
     </ul>
     <p class="intro">Puis on indique la date et la période de la journée (optionnelle)</p>
-    <p><span>* </span>: Cette 2è possibilité est faisable lorsque les 2 lettres ne correspondent pas à un "Regulation Id code"</p>
-    <p>Codes ne fonctionnant pas chez nous</p>
-    <ul>
-        <li>Tous les AD commençant par LFM (car M est déjà pris pour le CRNA) <br>&nbsp;ex : MDARR16 est incorrect => LFMDA16 est correct</li>
-        <li>LL car affecté à Tel Aviv (LLARR16M n'est donc pas correct => LFLLA16M est correct)</li>
-        <li>LY car affecté à la Serbie</li>
-        <li>LU car affecté à a Moldavie</li>
-        <li>LP car affecté au Portugal</li>
-        <li>LB car affecté à la Bulgarie</li>
-        <li>LC car affecté à Chypre</li>
-    </ul>
-    <p class="intro></p>
+    <p class="intro"></p>
     </div>
 </article>
-
+<article class="center">
+    <div>
+    <h2 id="titre2" class="center">Régulations MCP</h2>
+    <p>Pour les MCP, le "Regulation Id code" est "X".</p>
+    <ul>
+        <li>ex : XGY1218A : régul MCP sur GY12 le 18 apès-midi</li>
+    </ul>
+    <p class="intro"></p>
+    </div>
+</article>
 
 <?php include("../php/upload.inc.php"); ?>
 <div id="scroll_to_top">
