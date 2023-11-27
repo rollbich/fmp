@@ -89,7 +89,6 @@ require("../php/check_ok.inc.php");
 	<div id="reguls_est" class="accueil_bilan"></div>
 	<div id="reguls_ouest" class="accueil_bilan"></div>
 	<h2 class="delimiter">Données par causes</h2>
-	<h2 class="delimiter">Données par causes</h2>
 	<div id="bilan_causes" class="accueil_bilan"></div>
 	<h2 class="delimiter">Données journalières</h2>
 	<div id="bilan_jour" class="accueil_bilan"></div>
