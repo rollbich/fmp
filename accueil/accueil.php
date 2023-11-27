@@ -57,7 +57,8 @@ require("../php/check_ok.inc.php");
 			const data_regs_year = new weekly_regs(year);
 			await data_regs_year.init();
 			show_delay_graph("accueil_reguls", year, listWeek, data_regs_year.delay['cta'], data_regs_lastyear.delay['cta'], data_regs_2019.delay['cta'], "LFMMCTA");
-
+			show_delay_graph("reguls_est", year, listWeek, data_regs_year.delay['est'], data_regs_lastyear.delay['est'], data_regs_2019.delay['est'], "LFMM Est");
+			show_delay_graph("reguls_ouest", year, listWeek, data_regs_year.delay['west'], data_regs_lastyear.delay['west'], data_regs_2019.delay['west'], "LFMM West");
 			const tabl = new weekly_briefing(year, week_number, "bilan_vols", "bilan_reguls", "bilan_causes");
 			await tabl.init();
 			tabl.show_data();
@@ -84,6 +85,10 @@ require("../php/check_ok.inc.php");
 	<h2 class="delimiter">Vols par zone</h2>
 	<div id="vols_est" class="accueil_bilan"></div>
 	<div id="vols_ouest" class="accueil_bilan"></div>
+	<h2 class="delimiter">Delay par zone</h2>
+	<div id="reguls_est" class="accueil_bilan"></div>
+	<div id="reguls_ouest" class="accueil_bilan"></div>
+	<h2 class="delimiter">Données par causes</h2>
 	<h2 class="delimiter">Données par causes</h2>
 	<div id="bilan_causes" class="accueil_bilan"></div>
 	<h2 class="delimiter">Données journalières</h2>
