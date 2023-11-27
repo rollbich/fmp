@@ -48,6 +48,8 @@ require("../php/check_ok.inc.php");
 			const data_vols_year = new weekly_vols(year);
 			await data_vols_year.init();
 			show_traffic_graph("accueil_vols", year, listWeek, data_vols_year.nbre_vols['cta'], data_vols_lastyear.nbre_vols['cta'], data_vols_2019.nbre_vols['cta'], "LFMMCTA");
+			show_traffic_graph("vols_est", year, listWeek, data_vols_year.nbre_vols['est'], data_vols_lastyear.nbre_vols['est'], data_vols_2019.nbre_vols['est'], "LFMM Est");
+			show_traffic_graph("vols_ouest", year, listWeek, data_vols_year.nbre_vols['west'], data_vols_lastyear.nbre_vols['west'], data_vols_2019.nbre_vols['west'], "LFMM West");
 			const data_regs_2019 = new weekly_regs(2019);
 			await data_regs_2019.init();
 			const data_regs_lastyear = new weekly_regs(lastyear);
@@ -79,6 +81,9 @@ require("../php/check_ok.inc.php");
 		<div id="bilan_reguls"></div>
 		</div>
 	</div>
+	<h2 class="delimiter">Vols par zone</h2>
+	<div id="vols_est" class="accueil_bilan"></div>
+	<div id="vols_ouest" class="accueil_bilan"></div>
 	<h2 class="delimiter">Données par causes</h2>
 	<div id="bilan_causes" class="accueil_bilan"></div>
 	<h2 class="delimiter">Données journalières</h2>
