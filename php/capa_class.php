@@ -1,5 +1,6 @@
 <?php
 require_once("config_olaf.php");
+require_once("bdd.class.php");
 
 /*  ------------------------------------------
 		lecture d'un fichier via curl
@@ -89,7 +90,7 @@ class capa {
     private $zone;
 	private $timeOffset;
     private $zone_olaf;
-    private $tabvac;
+    private $cycle;
     private $dep;
     private $eq_dep;
     private $tour_local;
@@ -100,33 +101,48 @@ class capa {
     private $instr;
     private $tab_vac_eq;
     private $effectif;
+	private $donnees;
 
     // $zone : "est" ou "ouest"
     public function __construct(string $day, string $zone) {
+		$this->bdd = new bdd($day, $zone);
+		$this->bdd_instr = new bdd_instr();
         $this->day = $day;
         $this->zone = $zone;
         $this->zone_olaf = ($zone === "ouest") ? 'W' : 'E';
-        $this->tabvac = ["J2","S1","N","","","","JX","J1","J3","S2","",""]; 
-        $this->dep = new DateTime('2019-01-08'); // 8 janv 2019
-        $this->eq_dep = 11; // équipe 11 en J2
+        $this->cycle = $this->bdd->get_cycle();   		// ["JX","J1","J3","S2","","","J2","S1","N","","",""]; 
+		$this->clean_cycle = $this->get_clean_cycle();	// ["JX","J1","J3","S2","J2","S1","N"]; 
+        $this->dep = new DateTime('2021-01-13'); // 13 janv 2021
+        $this->eq_dep = 9; // équipe 9 en JX
         $this->init();
     }
 
 	public function init() {
 		$this->timeOffset = $this->get_decalage();
-		$this->tour_local = json_decode(file_get_contents("../tour_de_service.json"));
-		$this->saison = $this->get_date_tour($this->tour_local);
+		$this->tour_local = $this->bdd->get_tds();
+		$this->saison = $this->bdd->get_current_tds();
 		$this->tour_utc = $this->get_tour_utc();
-		$this->tds_supp_local = json_decode(file_get_contents("../tds_supp.json"));
+		$this->tds_supp_local = $this->bdd->get_tds_supp();
 		$this->tds_supp_utc = $this->get_tds_supp_utc();
-		$this->instr = json_decode(file_get_contents("../instruction.json"));
+		$this->instr = $this->bdd_instr->get_creneaux_day($this->day, $this->zone);
 		$this->tab_vac_eq = $this->get_vac_eq();
+		$this->repartition = $this->bdd->get_repartition();
 		$yesterday = new DateTime($this->day);
         $yesterday = $yesterday->modify("-1 day");
 		$this->yesterday = $yesterday->format("Y-m-d");
 	}
 
-	// Récupère le décalage horaire en heures
+	// @return ["JX", "J1", "J3", "S2", "J2", "S1", "N"]
+	public function get_clean_cycle() {
+		$clean_vacs = [];
+		$vacs = $this->cycle;
+		foreach ($vacs as $value) {
+			if ($value !== "") array_push($clean_vacs, $value);
+		}
+		return $clean_vacs;
+	}
+
+	// Récupère le décalage horaire en heures à 6h
 	public function get_decalage() {
 		$d = new DateTime($this->day);
 		$d->modify('+ 6 hours');
@@ -175,30 +191,25 @@ class capa {
 		$effectif = get_olaf($this->zone_olaf, $this->day, $this->yesterday);
         // convert to stdClass
 		$this->effectif = json_decode($effectif);
-
 		// Calcul du nombre de pc à afficher 
 		// On récupère l'effectif total, donc on doit enlever le cds sur les vacations qui en ont 1	
 		$this->pc = new stdClass();
-		$this->pc->JX = new stdClass();
-		$this->pc->J1 = new stdClass();
-		$this->pc->J3 = new stdClass();
-		$this->pc->S2 = new stdClass();
-		$this->pc->J2 = new stdClass();
-		$this->pc->S1 = new stdClass();
-		$this->pc->N = new stdClass();
+		foreach($this->clean_cycle as $vac) {
+			$this->pc->$vac = new stdClass();
+		}
 		$this->pc->{'N-1'} = new stdClass();
 
 		/*  -------------------------------------------------
 			pc["JX"] contient les JX mais aussi les RD bleus
 			pc["JX"] = {
-				"JXA": {
+				"JXA-2023": {
 					"nombre": 2,
 					"agent": {
 						"Jean Coco": "détaché",
 						"Moustache": "salle"
 					}
 				},
-				"RDJ3b-ms": {
+				"RDJ3b-ms-2023": {
 					...
 				}
 				...
@@ -219,7 +230,7 @@ class capa {
 				$jx_type = "";
 				$rd_type = "";
 				$type_renfort = "";
-				// JXA & JXB salle
+				// JXA & JXB salle 2023
 				// "RD bleu JXa-ms" - "RD bleu J1-ms" - "RD bleu J3b-ms" + Est only "RD bleu S1b-ms" + West only "RD bleu S1a-ms"
 				// "RD bleu J3a-ete" - "RD bleu S1b-ete" - "RD bleu J1-ete" + Est only "RD bleu JXb-ete" + West only "RD bleu J3b-ete" 
 				$nb_det = 0;
@@ -227,7 +238,7 @@ class capa {
 					$type_vac = "JX";
 					if (str_contains($label, "RD bleu")) { // RD
 						$type_renfort = "RD";
-						$rd_type = substr($label, 8); // ex : Jxa-ms
+						$rd_type = substr($label, 8); // ex : JXa-ms
 						$jx_type = $rd_type;
 						$nb_det++;
 						$nb_jx_det++;
@@ -296,9 +307,9 @@ class capa {
 				// Le RO induit apparait si detachés > 1 et plus que 1 n'est pas Expert Ops, ACDS ou Assistant sub
 				$this->pc->{$vac}->ROinduit = (int) $this->effectif->{$jour}->{$p}->teamReserve->roInduction;
 				if ($vac === "N-1") {
-					$this->pc->{$vac}->nbcds = (int) $this->tour_local->{$this->zone}->{$this->saison}->cds->N;
+					$this->pc->{$vac}->nbcds = (int) $this->tour_local->N->nb_cds;
 				} else {
-					$this->pc->{$vac}->nbcds = (int) $this->tour_local->{$this->zone}->{$this->saison}->cds->{$vac};
+					$this->pc->{$vac}->nbcds = (int) $this->tour_local->{$vac}->nb_cds;
 				}
 				$this->pc->{$vac}->nbpc = (int) $this->effectif->{$jour}->{$p}->teamReserve->teamQuantity - (int) $this->pc->{$vac}->nbcds; 
 				$this->pc->{$vac}->BV = (int) $this->effectif->{$jour}->{$p}->teamReserve->BV;
@@ -464,105 +475,110 @@ class capa {
 		//  }
 		$effectif_total_RD_15mn = [];
 		$effectif_RD_15mn = new stdClass();
-		$vacs = ["JX","J1", "J3", "S2", "J2", "S1", "N", "N-1"];
+
+		// vacs = ["JX","J1", "J3", "S2", "J2", "S1", "N", "N-1"]  avec le "N-1"
+		$vacs = $this->clean_cycle;
+		array_push($vacs, "N-1");
 
 		$nb_pc_sousvac = new stdClass();
 		foreach($vacs as $vacation) {
+			$sv = $this->get_sousvacs($vacation);
 			$nb_pc_sousvac->{$vacation} = new StdClass();
 			$nb_pc_sousvac->{$vacation}->cds = [];
-			$nb_pc_sousvac->{$vacation}->A = [];
-			$nb_pc_sousvac->{$vacation}->B = [];
-		}
-
-		for($i=0;$i<96;$i++) {
-			foreach($vacs as $vacation) {
-				$nb_pc_sousvac->{$vacation}->cds[$i] = 0;
-				$nb_pc_sousvac->{$vacation}->A[$i] = 0;
-				$nb_pc_sousvac->{$vacation}->B[$i] = 0;
+			foreach($sv as $sousvac) {
+				$nb_pc_sousvac->{$vacation}->$sousvac = [];
 			}
 		}
 
 		for($i=0;$i<96;$i++) {
 			foreach($vacs as $vacation) {
-
-				$rep = $this->get_repartition($vacation);
+				$sv = $this->get_sousvacs($vacation);
+				$nb_pc_sousvac->{$vacation}->cds[$i] = 0;
+				foreach($sv as $sousvac) {
+					$nb_pc_sousvac->$vacation->{$sousvac}[$i] = 0;
+				}
+			}
+		}
+		
+		for($i=0;$i<96;$i++) {
+			foreach($vacs as $vacation) {
+				$sv = $this->get_sousvacs($vacation);
 				$tour_vacation = $vacation;
 				if ($vacation === "N-1") $tour_vacation = "N";
+				$rep = $this->get_repartition($vacation);
+				
 				$doLoop = true;
 				if ($vacation === "N-1" && $i>48) $doLoop = false;
 				if ($vacation === "N" && $i<48) $doLoop = false;
 
 				if ($doLoop) {
 					// Ajout du CDS qui bosse sur secteur
-					if ($this->tour_utc->{$tour_vacation}[$i][1] === 1) {
+					if ($this->tour_utc->{$tour_vacation}->cds[$i] === 1) {
 						$nb_pc += $this->pc->{$vacation}->nbcds;
 						$nb_pc_sousvac->{$vacation}->cds[$i] = $this->pc->{$vacation}->nbcds;
 					} 
-					// Ajout de la sous-vacation A
-					if ($this->tour_utc->{$tour_vacation}[$i][2] === 1) {
-						$nb_pc += $rep->A;
-						$nb_pc_sousvac->{$vacation}->A[$i] = $rep->A;
-					} 
-					// Ajout de la sous-vacation B
-					if ($this->tour_utc->{$tour_vacation}[$i][3] === 1) {
-						$nb_pc += $rep->B;
-						$nb_pc_sousvac->{$vacation}->B[$i] = $rep->B;
+					foreach($sv as $sousvac) {
+						// Ajout des sous-vacations
+						if ($this->tour_utc->{$tour_vacation}->{$sousvac}[$i] === 1) {
+							$nb_pc += $rep->$sousvac;
+							$nb_pc_sousvac->{$vacation}->{$sousvac}[$i] = $rep->$sousvac;
+						} 
 					}
 				}
 
 			}
 
-			// this.tour_utc["J1"][i][0] = heure (ex : "01:45"), on aurait pu prendre n'importe quelle vac à la place de J1
-			array_push($pcs, [$this->tour_utc->J1[$i][0], $nb_pc]);
+			$heure = get_time($i);
+			array_push($pcs, [$heure, $nb_pc]);
 			
 			
 			/* 	----------------------------------------------------------------------------------------
 					in15mn[i] = [nb_pc_supp, { "type": "Inst ou Eleve ....", "comm": "commentaire"}]
 				---------------------------------------------------------------------------------------- */
 			$in15mn[$i] = [0, []];
-			if (property_exists($this->instr->{$this->zone}, $this->day)) {
-				foreach($this->instr->{$this->zone}->{$this->day} as $index=>$elem) {
-					$debut = $elem->debut;
-					$fin = $elem->fin;
-					$d = $elem->date;
-					$zone = $elem->zone;
-					$type = $elem->type;
-					$comm = $elem->comm;
-					$t = get_time($i);
-					if ($d === $this->day && strtolower($zone) === $this->zone) {
-						if ($t >= $debut && $t< $fin) {
-							$z = new stdClass();
-							$z->type = $type;
-							$z->comm = $comm;
-							if ($type === "Inst") { $in15mn[$i][0] += 2; $nb_pc += 2; array_push($in15mn[$i][1], $z); }
-							if ($type === "Inst1") { $in15mn[$i][0] += 1; $nb_pc += 2; array_push($in15mn[$i][1], $z); }
-							if ($type === "Eleve") { array_push($in15mn[$i][1], $z); }
-							if ($type === "Asa") { $in15mn[$i][0] -= 1; $nb_pc -= 1; array_push($in15mn[$i][1], $z); }
-							if ($type === "Simu1PC") { $in15mn[$i][0] -= 1; $nb_pc -= 1; array_push($in15mn[$i][1], $z); }
-							if ($type === "Simu2PC") { $in15mn[$i][0] -= 2; $nb_pc -= 2; array_push($in15mn[$i][1], $z); }
-							if ($type === "-1PC") { $in15mn[$i][0] -= 1; $nb_pc -= 1; array_push($in15mn[$i][1], $z); }
-						} 
-					}
-				};
-			}
+			
+			
+			foreach($this->instr as $index=>$elem) {
+				$debut = $elem["debut"];
+				$fin = $elem["fin"];
+				$d = $elem["day"];
+				$zone = $elem["zone"];
+				$type = $elem["type"];
+				$comm = $elem["comment"];
+				$t = get_time($i);
+				if ($d === $this->day && strtolower($zone) === $this->zone) {
+					if ($t >= $debut && $t< $fin) {
+						$z = new stdClass();
+						$z->type = $type;
+						$z->comm = $comm;
+						if ($type === "Inst") { $in15mn[$i-1][0] += 2; $nb_pc += 2; array_push($in15mn[$i-1][1], $z); }
+						if ($type === "Inst1") { $in15mn[$i-1][0] += 1; $nb_pc += 2; array_push($in15mn[$i-1][1], $z); }
+						if ($type === "Eleve") { array_push($in15mn[$i-1][1], $z); }
+						if ($type === "Asa") { $in15mn[$i-1][0] -= 1; $nb_pc -= 1; array_push($in15mn[$i-1][1], $z); }
+						if ($type === "Simu1PC") { $in15mn[$i-1][0] -= 1; $nb_pc -= 1; array_push($in15mn[$i-1][1], $z); }
+						if ($type === "Simu2PC") { $in15mn[$i-1][0] -= 2; $nb_pc -= 2; array_push($in15mn[$i-1][1], $z); }
+						if ($type === "-1PC") { $in15mn[$i-1][0] -= 1; $nb_pc -= 1; array_push($in15mn[$i-1][1], $z); }
+					} 
+				}
+			};
+			
 			
 			// s'il y a un Jx ce jour là
 			// on ne créé que les vac_jx existantes ce jour là
-			foreach($RD_names_horsJX as $index=>$vac_jx) {
+			foreach($RD_names_horsJX as $vac_jx) {
 				if (property_exists($effectif_RD_15mn, $vac_jx) === false) $effectif_RD_15mn->{$vac_jx} = [];
 				$effectif_RD_15mn->{$vac_jx}[$i] = 0;
 			}
 			
-			foreach($RD_names_horsJX as $index=>$vac_jx) {
+			foreach($RD_names_horsJX as $vac_jx) {
 				if ($vac_jx != "nbcds") {
 					$nb2 = $RD->{$vac_jx}->nombre;
-					if ($this->tds_supp_utc->{$vac_jx}[$i][1] === 1) {
+					if ($this->tds_supp_utc->{$vac_jx}[$i] === 1) {
 						$effectif_RD_15mn->{$vac_jx}[$i] = $nb2;
 					}
 				}
 			};
 
-			
 			$nb_pc = 0;
 		}
 
@@ -575,9 +591,10 @@ class capa {
 		}
 
 		for($i=0;$i<96;$i++) {
+			$heure = get_time($i);
 			$nbr = $effectif_total_RD_15mn[$i] + $in15mn[$i][0] + $pcs[$i][1];
-			array_push($pct, [$this->tour_utc->J1[$i][0], $nbr]);
-			array_push($ucesos, [$this->tour_utc->J1[$i][0], floor($nbr/2)]);
+			array_push($pct, [$heure, $nbr]);
+			array_push($ucesos, [$heure, floor($nbr/2), $nbr/2 - floor($nbr/2)]);
 		}
 
 		$compacted_ucesos = [];
@@ -613,6 +630,7 @@ class capa {
 		$res->day= $this->day;
 		$res->zone = $this->zone;
 		$res->saison = $this->saison;
+		$res->tour_local = $this->tour_local;
 		$res->offSetTime = $this->timeOffset;
 		$res->pc_total = $pct;
 		$res->uceso = $ucesos;
@@ -630,37 +648,123 @@ class capa {
 		$res->roles = $roles;
 		$res->TDS_Supp = $TDS_Supp;
 		$res->pc_sousvac_15mn = $nb_pc_sousvac;
+		$res->cycle = $this->cycle;
+		$res->clean_cycle = $this->clean_cycle;
+		$res->tour_utc = $this->tour_utc;
+		$res->all_sv= $this->get_all_sousvacs();
+		$res->repartition = $this->repartition;
 		return $res;
 
     }
 
-	public function get_default_repartition($vacation) {
+	// retourne le caractère correspondant au code (65 = A)
+	// @param int $u
+	// @return char
+	private function unichr(int $u) {
+		return mb_convert_encoding('&#' . intval($u) . ';', 'UTF-8', 'HTML-ENTITIES');
+	}
+
+	// 	retourne les sous-vacs d'une vac
+	// $sv = ["A", "B"]
+	public function get_sv(string $vacation) {
+		$vac = $vacation;
+		if ($vacation === "N-1") $vac = "N";
+		$temp_sv = array_keys(get_object_vars($this->tour_local->{$vac}));
+		$sv = array_filter($temp_sv, static function ($element) {
+			return ($element !== "cds" && $element !== "nb_cds");
+		});
+		return $sv;
+	}
+
+	// 	retourne les sous-vacs d'une vac
+	//	return ["A", "B", "C"...]
+	public function get_sousvacs($vacation) {
+		$vac = $vacation;
+		if ($vacation === "N-1") $vac = "N";
+		$nb_sousvacs = count(array_keys(get_object_vars($this->tour_local->$vac))) - 2;
+		$arr = [];
+		for($i=1;$i<$nb_sousvacs+1;$i++) {
+			array_push($arr, $this->unichr($i+64));
+		}
+		return $arr;
+	}
+
+	// @return {"vac": ["A", "B",...], ...}
+	public function get_all_sousvacs() {
+		$vacs = $this->get_clean_cycle();
+		$obj = new stdClass();
+		foreach($vacs as $vac) {
+			$obj->$vac = $this->get_sv($vac);
+		}
+		return $obj;
+	}
+
+	// defaut: 50/50 avec A<B
+	public function get_default_repartition(string $vacation) {
+		$tour_vacation = $vacation;
+		if ($vacation === "N-1") $tour_vacation = "N";
+		$sousvacs = $this->get_sv($tour_vacation);
+		$nb_sousvacs = count($sousvacs);
+
 		$rep = new stdClass();
 
-		$rep->A = min(floor($this->pc->{$vacation}->nbpc/2), floor(($this->pc->{$vacation}->BV + $this->pc->{$vacation}->renfort - $this->pc->{$vacation}->nbcds - $this->pc->{$vacation}->ROinduit)/2));
-
-		$rep->B = min(floor($this->pc->{$vacation}->nbpc/2)+($this->pc->{$vacation}->nbpc)%2, floor(($this->pc->{$vacation}->BV + $this->pc->{$vacation}->renfort - $this->pc->{$vacation}->nbcds - $this->pc->{$vacation}->ROinduit)/2)+($this->pc->{$vacation}->BV + $this->pc->{$vacation}->renfort - $this->pc->{$vacation}->nbcds - $this->pc->{$vacation}->ROinduit)%2); 
-
+		switch ($nb_sousvacs) {
+            case 2:
+				$reste = ($this->pc->{$vacation}->nbpc) % 2;
+				if ($reste === 0) {
+					$repart = $this->repartition->$tour_vacation->standard->sousvac2->reste0;
+				}
+				if ($reste === 1) {
+					$repart = $this->repartition->$tour_vacation->standard->sousvac2->reste1;
+				}
+				$pc1 = floor($this->pc->{$vacation}->nbpc/2);
+				$pc2 = floor(($this->pc->{$vacation}->BV + $this->pc->{$vacation}->renfort - $this->pc->{$vacation}->nbcds - $this->pc->{$vacation}->ROinduit)/2);
+				foreach ($sousvacs as $sousvac) {
+					$rep->$sousvac = min($pc1 + $repart->$sousvac, $pc2 + $repart->$sousvac);
+				}
+                break;
+			case 3:
+				$reste = ($this->pc->{$vacation}->nbpc) % 3;
+				if ($reste === 0) {
+					$repart = $this->repartition->$vacation->standard->sousvac3->reste0;
+				}
+				if ($reste === 1) {
+					$repart = $this->repartition->$vacation->standard->sousvac3->reste1;
+				}
+				if ($reste === 2) {
+					$repart = $this->repartition->$vacation->standard->sousvac3->reste2;
+				}
+				$pc1 = floor($this->pc->{$vacation}->nbpc/3);
+				$pc2 = floor(($this->pc->{$vacation}->BV + $this->pc->{$vacation}->renfort - $this->pc->{$vacation}->nbcds - $this->pc->{$vacation}->ROinduit)/3);
+				foreach ($sousvacs as $sousvac) {
+					$rep->$sousvac = min($pc1 + $repart->$sousvac, $pc2 + $repart->$sousvac);
+				}
+				break;
+            default:
+				$pc1 = $this->pc->{$vacation}->nbpc;
+				$pc2 = $this->pc->{$vacation}->BV + $this->pc->{$vacation}->renfort - $this->pc->{$vacation}->nbcds - $this->pc->{$vacation}->ROinduit;
+				$rep->$sousvacs[0] = min($pc1, $pc2);
+		}
+		/*
+		echo "$vacation<br>";
+		var_dump($rep);
+		echo "<br>";
+		*/
 		return $rep;
 	}
 
-	public function get_repartition (String $vacation) {
+	public function get_repartition(String $vacation) {
 		$rep = new stdClass();
 		switch ($vacation){
 			case "JX":
 				$result = $this->get_default_repartition($vacation);
-				$rep->A = $result->A;
-				$rep->B = $result->B;
-				if ($this->saison === "ete" && $this->zone === "est") {
-					$rep->B = $result->A;
-					$rep->A = $result->B;
-				}
+				$rep = $result;
 				break;
 			case "S1":
 				$result = $this->get_default_repartition($vacation);
 				$rep->A = $result->A;
 				$rep->B = $result->B;
-				if ($this->saison === "ete" && $this->zone === "est") {
+				if (str_contains($this->saison, "ete") && $this->zone === "est") {
 					switch ($this->pc->{$vacation}->nbpc) {
 						case 6:
 							$rep->A = 3;
@@ -760,8 +864,7 @@ class capa {
 				break;
 			default:
 				$result = $this->get_default_repartition($vacation);
-				$rep->A = $result->A;
-				$rep->B = $result->B;
+				$rep = $result;
 		}
 		return $rep;
 	}
@@ -777,7 +880,7 @@ class capa {
         $tab = new stdClass();
         for ($eq=1;$eq<13;$eq++) {
             $debvac = ($ecartj - $eq + $this->eq_dep) % 12;
-			$z = $this->tabvac[$debvac];
+			$z = $this->cycle[$debvac];
             if ($z !== "" && $z !== "N") {
 				$tab->$z = $eq;
 			}
@@ -790,66 +893,39 @@ class capa {
         return $tab;
     }
 
-    /* --------------------------------------------------------------------------------------
-        Détection du tour de service en vigueur à la date choisie
-        @param {object} tour 	- le json du tour de service
-        @param {string} day 	- "yyyy-mm-jj"
-        @param {string} zone 	- "est" ou "ouest"
-        @returns {string}  - saison : "ete", "hiver", "mi-saison-basse", "mi-saison-haute"
-    -------------------------------------------------------------------------------------- */
-    public function get_date_tour($tour) {
-        $d = new DateTime($this->day);
-		$annee = (int) $d->format("Y");
-		$mois = (int) $d->format("m");
-        $d_hiver = explode("-", $tour->{$this->zone}->hiver->plage[0][0]);
-		$f_hiver = explode("-", $tour->{$this->zone}->hiver->plage[0][1]);
-        $d_ete = explode("-", $tour->{$this->zone}->ete->plage[0][0]);
-        $f_ete = explode("-", $tour->{$this->zone}->ete->plage[0][1]);
-        $index = $mois < 7 ? 0 : 1;
-        $d_msb = explode("-", $tour->{$this->zone}->{'mi-saison-basse'}->plage[$index][0]);
-        $f_msb = explode("-", $tour->{$this->zone}->{'mi-saison-basse'}->plage[$index][1]);
-        $d_msh = explode("-", $tour->{$this->zone}->{'mi-saison-haute'}->plage[$index][0]);
-        $f_msh = explode("-", $tour->{$this->zone}->{'mi-saison-haute'}->plage[$index][1]);
-        
-        $decembre = new DateTime("$annee-12-31"); // 31 decembre
-        $janvier = new DateTime("$annee-01-01"); // 1er janvier
-        $fin_hiver = new DateTime("$annee-$f_hiver[1]-$f_hiver[0]");
-        $debut_hiver = new DateTime("$annee-$d_hiver[1]-$d_hiver[0]");
-        $debut_msb = new DateTime("$annee-$d_msb[1]-$d_msb[0]");
-        $fin_msb = new DateTime("$annee-$f_msb[1]-$f_msb[0]");
-        $debut_msh = new DateTime("$annee-$d_msh[1]-$d_msh[0]");
-        $fin_msh = new DateTime("$annee-$f_msh[1]-$f_msh[0]");
-        $debut_ete = new DateTime("$annee-$d_ete[1]-$d_ete[0]");
-        $fin_ete = new DateTime("$annee-$f_ete[1]-$f_ete[0]");
-
-        if ($d >= $debut_hiver && $d <= $decembre) return "hiver";
-        if ($d >= $janvier && $d <= $fin_hiver) return "hiver";
-        if ($d >= $debut_ete && $d <= $fin_ete) return "ete";
-        if ($d >= $debut_msb && $d <= $fin_msb) return "mi-saison-basse";
-        if ($d >= $debut_msh && $d <= $fin_msh) return "mi-saison-haute";
-    }
-
 	// objet : passage par référence par défaut
 	private function push_utc($vac, $tour_utc) {
-		$tour = $this->tour_local->{$this->zone}->{$this->saison};
 		$index_deb = $this->timeOffset*4 - 1;	
-
-		foreach($tour->{$vac} as $index=>$elem) {
-			if ($index > $index_deb) {
-				$h = min_to_strtime(strtime_to_min($elem[0]) - $this->timeOffset*60);
-				array_push($tour_utc->{$vac}, [$h, $elem[1], $elem[2], $elem[3]]);
-			}
-		};
+		$nb_cds = $this->tour_local->{$vac}->nb_cds;
+		$tour_cds = $this->tour_local->{$vac}->cds;
+		$tour_A = $this->tour_local->{$vac}->A;
+		$tour_B = $this->tour_local->{$vac}->B;
+		
 		if ($this->timeOffset === 2) {
-			array_push($tour_utc->{$vac}, ["22:00", $tour->{$vac}[0][1], $tour->{$vac}[0][2], $tour->{$vac}[0][3]]);
-			array_push($tour_utc->{$vac}, ["22:15", $tour->{$vac}[1][1], $tour->{$vac}[1][2], $tour->{$vac}[1][3]]);
-			array_push($tour_utc->{$vac}, ["22:30", $tour->{$vac}[2][1], $tour->{$vac}[2][2], $tour->{$vac}[2][3]]);
-			array_push($tour_utc->{$vac}, ["22:45", $tour->{$vac}[3][1], $tour->{$vac}[3][2], $tour->{$vac}[3][3]]);
+			for($i=0;$i<4;$i++) {
+				$z = array_shift($tour_cds);
+				array_push($tour_cds, $z);
+				$z = array_shift($tour_A);
+				array_push($tour_A, $z);
+				$z = array_shift($tour_B);
+				array_push($tour_B, $z);
+			}
 		}
-		array_push($tour_utc->{$vac}, ["23:00", $tour->{$vac}[4][1], $tour->{$vac}[4][2], $tour->{$vac}[4][3]]);
-		array_push($tour_utc->{$vac}, ["23:15", $tour->{$vac}[5][1], $tour->{$vac}[5][2], $tour->{$vac}[5][3]]);
-		array_push($tour_utc->{$vac}, ["23:30", $tour->{$vac}[6][1], $tour->{$vac}[6][2], $tour->{$vac}[6][3]]);
-		array_push($tour_utc->{$vac}, ["23:45", $tour->{$vac}[7][1], $tour->{$vac}[7][2], $tour->{$vac}[7][3]]);
+
+		for($i=0;$i<4;$i++) {
+			$z = array_shift($tour_cds);
+			array_push($tour_cds, $z);
+			$z = array_shift($tour_A);
+			array_push($tour_A, $z);
+			$z = array_shift($tour_B);
+			array_push($tour_B, $z);
+		}
+
+		$tour_utc->{$vac}->nb_cds = $nb_cds;
+		$tour_utc->{$vac}->cds = $tour_cds;
+		$tour_utc->{$vac}->A = $tour_A;
+		$tour_utc->{$vac}->B = $tour_B;
+
 	}
 
     /* -----------------------------------------------------------------------------------------
@@ -860,13 +936,13 @@ class capa {
     public function get_tour_utc() {
 
         $tour_utc = new stdClass();
-		$tour_utc->JX = [];
-        $tour_utc->J1 = [];
-        $tour_utc->J3 = [];
-        $tour_utc->S2 = [];
-        $tour_utc->J2 = [];
-        $tour_utc->S1 = [];
-        $tour_utc->N = [];
+		$tour_utc->JX = new stdClass();
+        $tour_utc->J1 = new stdClass();
+        $tour_utc->J3 = new stdClass();
+        $tour_utc->S2 = new stdClass();
+        $tour_utc->J2 = new stdClass();
+        $tour_utc->S1 = new stdClass();
+        $tour_utc->N = new stdClass();
         
 		$this->push_utc("JX", $tour_utc);
 		$this->push_utc("J1", $tour_utc);
@@ -879,61 +955,39 @@ class capa {
         return $tour_utc;
     }
 
-	// objet : passage par référence par défaut
-	private function push_utc_supp($vac, $tour_utc_supp) {
-		$tour = $this->tds_supp_local->{$this->zone};
-		$index_deb = $this->timeOffset*4 - 1;
-
-		foreach($tour->{$vac} as $index=>$elem) {
-			if ($index > $index_deb) {
-				$h = min_to_strtime(strtime_to_min($elem[0]) - $this->timeOffset*60);
-				array_push($tour_utc_supp->{$vac}, [$h, $elem[1]]);
-			}
-		};
-
-		if ($this->timeOffset === 2) {
-			array_push($tour_utc_supp->{$vac}, ["22:00", $tour->{$vac}[0][1]]);
-			array_push($tour_utc_supp->{$vac}, ["22:15", $tour->{$vac}[1][1]]);
-			array_push($tour_utc_supp->{$vac}, ["22:30", $tour->{$vac}[2][1]]);
-			array_push($tour_utc_supp->{$vac}, ["22:45", $tour->{$vac}[3][1]]);
-		}
-		array_push($tour_utc_supp->{$vac}, ["23:00", $tour->{$vac}[4][1]]);
-		array_push($tour_utc_supp->{$vac}, ["23:15", $tour->{$vac}[5][1]]);
-		array_push($tour_utc_supp->{$vac}, ["23:30", $tour->{$vac}[6][1]]);
-		array_push($tour_utc_supp->{$vac}, ["23:45", $tour->{$vac}[7][1]]);
-	}
-
 	/* -----------------------------------------------------------------------------------------
-        Transformation du tour de service (défini en heure locale) en heure UTC
-        @param {object} tour_local 	- le json du tour de service
-			{"est":{
-				"RD...":[["00:00",0],["00:15",0],...],
-				"RD...":[["00:00",0],["00:15",0],...]
-				...
-			}}
+        Transformation du tour supp (défini en heure locale) en heure UTC
+        @tds_supp_local {object} - le json du tour supp
+			object(stdClass)#26 (3) {
+                "RDJ1-msh-2023": [ 0, 0, 1, 1, 0, 0 ... ],   96 valeurs
+                ...
+            }
         @returns {object}  - tour_utc (sans la zone) 
 			{ 
-				"RD...": [ ["00:00", 0], ["hh:mm", nb], ... ],
-				"RD...": [ ["00:00", 0], ["hh:mm", nb], ... ]
+				"RD...": [ 0, 0, 1, 1, 0, 0 ... ],		96 valeurs
+				"RD...": [ 0, 0, 1, 1, 0, 0 ... ]
 				...
 			}
     ----------------------------------------------------------------------------------------- */
 	public function get_tds_supp_utc() {
-		
-        $tour = $this->tds_supp_local->{$this->zone};	
-        $index_deb = $this->timeOffset*4 - 1;
        
         $tour_utc_supp = new stdClass();
 
 		// RD_vac_hors_Jx = ["RD...","RD...",...]
-		$RD_vac_hors_Jx = array_keys(get_object_vars($tour));
+		$RD_vac_hors_Jx = array_keys(get_object_vars($this->tds_supp_local));
 
         foreach ($RD_vac_hors_Jx as $vac) {
-			$tour_utc_supp->{$vac} = [];
-		}
-        
-		foreach ($RD_vac_hors_Jx as $vac) {
-			$this->push_utc_supp($vac, $tour_utc_supp);
+			$tour_utc_supp->{$vac} = $this->tds_supp_local->{$vac};
+			if ($this->timeOffset === 2) {
+				for($i=0;$i<4;$i++) {
+					$z = array_shift($tour_utc_supp->{$vac});
+					array_push($tour_utc_supp->{$vac}, $z);
+				}
+			}
+			for($i=0;$i<4;$i++) {
+				$z = array_shift($tour_utc_supp->{$vac});
+				array_push($tour_utc_supp->{$vac}, $z);
+			}
 		}
 
         return $tour_utc_supp;

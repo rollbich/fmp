@@ -13,13 +13,16 @@ if (!(isset($_SESSION['login_bureau'])) || $_SESSION['login_bureau'] === false) 
     <script type="text/javascript" src="../js/utils.js"></script>
     <script type="text/javascript" src="../js/cute-alert.js"></script>
     <script type="text/javascript" src="../js/tds_editor_class.js"></script>
+    <script src="../js/sortable.min.js"></script>
     <link rel="stylesheet" type="text/css" href="../css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../css/sortable.css" />
     <link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
     <link rel="stylesheet" type="text/css" href="../css/custom-checkbox.css" />
     <link rel="stylesheet" type="text/css" href="../css/cute-style.css" />
+
     <script>
 	  document.addEventListener('DOMContentLoaded', async (event) => { 	
-      new tds_editor();
+      new tds_editor("main");
 		
       document.querySelector('#popup-wrap a.popup-close').addEventListener('click', e => {
         e.preventDefault();
@@ -30,7 +33,11 @@ if (!(isset($_SESSION['login_bureau'])) || $_SESSION['login_bureau'] === false) 
 	</script>
 </head>
 <body class="editor">
-
+<div id="main"></div>
+<div id="modal_popup" class="modal fade" tabindex="-1" role="dialog"></div>
+<div id="modal_tds" class="off" role="dialog"></div>
+<div id="modal_tds_supp" class="off" role="dialog"></div>
+<div id="modal_repartition" class="off" role="dialog"></div>
 <div id="popup-wrap" class="off" >
   <div class="popup-box">
     <h2></h2>

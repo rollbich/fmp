@@ -1,6 +1,22 @@
-async function inst(containerId) {
-    let instr = await loadJson("../instruction.json");
+async function get_instr_sql(zone) {
     
+    const obj = {"fonction": "get_all", "zone": zone};
+
+    const data = {
+        method: "post",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(obj)
+    };
+
+   const result = await fetch("inst_sql.php", data);
+   return result.json();
+    
+}
+
+async function inst(containerId) {
+    const zone = document.getElementById('zone').value;
+    let instr = await get_instr_sql(zone);
+    console.log(instr);
     affiche(containerId, instr);
 
     const supp = document.querySelectorAll('.supprime');
@@ -16,36 +32,30 @@ async function inst(containerId) {
                 message: `Confirmez la suppression du créneau du ${parent.firstChild.innerHTML} à ${parent.firstChild.nextSibling.innerHTML}<br>${parent.firstChild.nextSibling.nextSibling.nextSibling.nextSibling.innerHTML} zone ${parent.firstChild.nextSibling.nextSibling.nextSibling.innerHTML}`,
                 confirmText: "Okay",
                 cancelText: "Annuler"
-            }).then((e)=>{
+            }).then(async(e)=>{
                 if ( e == ("confirm")){
+                    /*
                     let ind;
                     instr[zone][day].forEach( (el, index) => {
                         if (id == el["id"]) ind = index;
                     })
+                    */
                     parent.parentNode.removeChild(parent);
-                    instr[zone][day].splice(ind,1);
+                    //instr[zone][day].splice(ind,1);
+                    const content = {"fonction": "delete", "id": id};
                     const data = {
                         method: "post",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(instr)
+                        body: JSON.stringify(content)
                     };
-                    fetch("export_inst_to_json.php", data);
+                    const result = await fetch("inst_sql.php", data);
+                    inst(containerId);
                 } else {
                 }
             })
         });
     }
 }
-
-function compare(a, b) {
-    if (a["date"] < b["date"])
-       return -1;
-    if (a["date"] > b["date"])
-       return 1;
-    // a doit être égal à b
-    return 0;
-  }
-  
 
 function affiche(containerId, instr) {
     let res = `
@@ -55,66 +65,38 @@ function affiche(containerId, instr) {
             <tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Date</th><th class="top_2px bottom_2px right_1px">Début</th><th class="top_2px bottom_2px right_1px">Fin</th><th class="top_2px right_1px bottom_2px">Secteur</th><th class="top_2px bottom_2px right_1px">Type</th><th class="top_2px bottom_2px right_1px">Comment</th><th class="top_2px bottom_2px right_2px">Supprime</th></tr>
         </thead>
         <tbody>`;
-    const cles_est = Object.keys(instr["est"]);
-    // On affiche que les dates > à day-2
-    const d = new Date().addDays(-2);
-    console.log("DD: "+d);
-    for (const dat of cles_est) {
-        instr["est"][dat].forEach(elem => {
-            if (new Date(dat) > d) {
-                const debut = elem["debut"];
-                const fin = elem["fin"];
-                const d = elem["date"];
-                const zone = elem["zone"];
-                const type = elem["type"];
-                const comm = elem["comm"];
-                const id = elem["id"];
-                res += `<tr><td>${d}</td><td>${debut}</td><td>${fin}</td><td>${zone}</td><td>${type}</td><td>${comm}</td><td class="supprime" data-zone="${zone}" data-date="${d}" data-id="${id}">x</td></tr>`;
-            }
-        });
-    }
-    const cles_ouest = Object.keys(instr["ouest"]);
-    for (const dat of cles_ouest) {
-        instr["ouest"][dat].forEach(elem => {
-            if (new Date(dat) > d) {
-                const debut = elem["debut"];
-                const fin = elem["fin"];
-                const d = elem["date"];
-                const zone = elem["zone"];
-                const type = elem["type"];
-                const comm = elem["comm"];
-                const id = elem["id"];
-                res += `<tr><td>${d}</td><td>${debut}</td><td>${fin}</td><td>${zone}</td><td>${type}</td><td>${comm}</td><td class="supprime" data-zone="${zone}" data-date="${d}" data-id="${id}">x</td></tr>`;
-            }
-        });
-    }
+    
+    instr.forEach(elem => {
+        const debut = elem["debut"];
+        const fin = elem["fin"];
+        const d = elem["day"];
+        const zone = elem["zone"];
+        const type = elem["type"];
+        const comm = elem["comment"];
+        const id = elem["id"];
+        res += `<tr><td>${d}</td><td>${debut}</td><td>${fin}</td><td>${zone}</td><td>${type}</td><td>${comm}</td><td class="supprime" data-zone="${zone}" data-date="${d}" data-id="${id}">x</td></tr>`;
+    });
     res += '</tbody></table>';
     $(containerId).innerHTML = res;
+    $('zone').addEventListener('change', (e) => {
+        inst(containerId);
+    })
     $$('.titre').firstChild.click();
     $$('.titre').firstChild.click();
 } 
 
-async function ajoute(containerId, ajout) {
-    let instr = await loadJson("../instruction.json");
-    let id = 1;
-    const zone = ajout["zone"].toLowerCase();
-    const day = ajout["date"];
-    if (typeof instr[zone][day] === 'undefined') {
-        instr[zone][day] = [];
-    } else {
-        for(let i=1;i<99;i++) {
-            const k = instr[zone][day].every( elem => elem["id"] != i );
-            if (k == true) { id = i; break; }
-        }
-    }
-    ajout["id"] = id;
-    instr[zone][day].push(ajout);
+async function ajoute_sql(containerId, ajout) {
+    
+    ajout["zone"] = ajout["zone"].toLowerCase();
+    ajout["fonction"] = "add";
+    
     const data = {
         method: "post",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(instr)
+        body: JSON.stringify(ajout)
     };
-    fetch("export_inst_to_json.php", data).then(function(response) {
+
+    fetch("inst_sql.php", data).then(function(response) {
         inst(containerId);
     })
     

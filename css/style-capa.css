@@ -2,11 +2,14 @@
 	--table-titre-color: #eef3f5;
 	--ligne-impaire-color: #eceff1;
 	--ligne-paire-color: #dfe3e6;
+	--focus: #dfe3e6;
+	--border-color: hsla(0, 0%, 100%, .5);
 }
 
 body {
 	background: var(--main-color);
 	color: var(--main-bg-color);
+	scroll-behavior: smooth;
 }
 
 /* sert pour sélectionner les colonnes masquées (ne pas remplacer par .off) */
@@ -107,17 +110,23 @@ a:link, a:visited {
 	color: var(--main-color);
 }
 
+#tds_glob select {
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+#tds_glob button {
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
 #saison.select {
 	margin-left: 0px;
 	line-height: 20px;
 	height: 24px;
 	margin-top: 0;
 	z-index: 1;
-	width: 100px;
-}
-
-#saison.select {
-	width: 120px;
+	width: 90px;
 }
 
 input {
@@ -190,6 +199,12 @@ input {
 	padding: 20px;
 	padding-top: 0px;
 	min-height: 100%;
+}
+
+#result_supp {
+	margin: 18px;
+	padding: 20px;
+	padding-top: 0px;
 }
 
 table {
@@ -382,16 +397,45 @@ th.bordure, td.bordure {
 
 table.plage {
 	margin-bottom: 20px;
+	margin-left: 45px;
 }
 
 table.plage th, table.plage td {
-	width: 200px;
+	width: 160px;
 	border: 1px solid rgb(20, 20, 20);
+	padding: 5px;
 }
 
-table.plage td:hover {
-	background-color: orange;
+table.plage td:hover, td.save_supp, td.delete_supp {
 	cursor: pointer;
+}
+
+table.plage th.px80, table.plage td.px80 {
+	width: 80px;
+}
+
+table.plage select {
+	margin: 0;
+}
+
+td.plage_validate {
+	color: greenyellow;
+}
+
+td.plage_validate:hover {
+	background-color: rgb(189, 189, 133);
+}
+
+td.plage_supprime {
+	color: rgb(253, 3, 3);
+}
+
+td.plage_supprime:hover {
+	background-color: rgba(226, 157, 68, 0.89);
+}
+
+.sortable tbody tr:nth-child(2n) {
+	background: #b8b7b7;
 }
 
 input.date {
@@ -594,13 +638,13 @@ table.creneaux tr:nth-child(2n+1) {
 	background-color: var(--ligne-impaire-color);
 }
 
-td.supprime, td.vac_supp {
+td.supprime, td.vac_supp, td.vac_tds_delete {
 	color: red;
 	cursor: pointer;
 }
 
-td.vac_supp:hover, td[data-day]:hover {
-	background-color: rgb(235, 247, 183);
+td.vac_supp:hover, td[data-day]:hover, td.vac_tds_delete:hover, td.add_sousvac:hover {
+	background-color: rgba(226, 157, 68, 0.89);
 	cursor: pointer;
 }
 
@@ -713,6 +757,17 @@ body.editor select {
 	margin-top: 5px;
 }
 
+#filtre {
+	margin: 5px;
+	padding: 5px;
+	font-size: 1.5rem;
+	background-color: #FFCC6633;
+}
+
+#filtre select {
+	margin-top: 0;
+}
+
 span.back {
 	margin-left: 20px;
 	font-size: 1.1rem;
@@ -739,18 +794,7 @@ ul.menu_tds_editor li {
 	text-decoration: none;
 	text-transform: uppercase;
 	color: #ecf0f1;
-}
-
-#poptds {
-	position: absolute;
-	background-color: #fbb;
-	padding: 10px;
-	width: 150px;
-	z-index: 99;
-}
-
-#poptds div {
-	margin : 3px;
+	margin-left: -30px;
 }
 
 .click_jx {
@@ -759,4 +803,211 @@ ul.menu_tds_editor li {
 
 .click_jx:hover {
 	background-color: #FFCC66;
+}
+
+/* modal create sousvac */
+#modal_popup {
+	display: flex;
+  	justify-content: center;
+}
+
+.modal-body {
+	display: flex;
+	padding: 0;
+	border-radius: 4rem;
+	font-family: 'PT Sans', sans-serif;
+	background: white;
+  }
+  
+.modal-content {
+	border-radius: 4rem;
+	box-shadow: -1px -2px 42px -19px rgba(0,0,0,0.74);
+}
+
+.modal-content h1, .modal-content h2, .modal-content h3 {
+	text-align: center;
+}
+
+.modal-content h1 {
+	font-size: 1.4em;
+	text-transform: uppercase;
+	text-shadow: none;
+}
+
+.modal-content h2 {
+	font-size: 1.1em;
+}
+
+.modal-content h3 {
+	font-size: .8em;
+	letter-spacing: 2px;
+}
+  
+#modal_popup form {
+	font-size: 1.2em;
+	margin-top: 30px;
+}
+
+.column {
+	flex: 50%;
+	padding: 10px;
+	padding: 40px;
+	margin-left: 15px;
+}
+
+#primary {
+	text-align: center;
+}
+  
+#secondary {
+	background-color: #F9BC35;
+	border-radius: 0 4rem 4rem 0;
+	text-align: center;
+	padding: 40px;
+}
+
+#primary .form-control {
+	border-radius: 0;
+	font-size: 1em;
+	display: block;
+}
+
+.btn {
+	text-transform: uppercase;
+	border-radius: .15rem;
+	width: 200px;
+	padding: .150rem .75rem;
+	margin: 30px auto;
+	font-family: 'PT Sans', sans-serif;
+	letter-spacing: 2px;
+}
+  
+.btn-primary {
+	border-color: rgba( 255, 255, 255, 0);
+	background: #f1da36; /* Old browsers */
+  	background: linear-gradient(to right, #f1da36 0%,#fca86c 99%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+}
+  
+.btn-primary:hover {
+	border-color: rgba( 255, 255, 255, 0);
+}
+  
+#main .btn-primary {
+	width: 100%;
+}
+
+#secondary .btn-primary {
+	background: #f8f9fa4f;
+	color: #000;
+}
+
+.modal-body label {
+	margin-bottom: 0;
+}
+
+.close_modal {
+	width: 2.5rem;
+	height: 2.5rem;
+	border: 1px solid var(--border-color);
+	border-radius: 100rem;
+
+	color: inherit;
+	font-size: 2.2rem;
+	text-decoration: none;
+
+	position: absolute;
+	top: 1.4rem;
+	right: 1.4rem;
+
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	transition: .2s;
+}
+
+.close_modal::before {
+	content: '×';
+	transform: translateY(-.1rem);
+	color: red;
+}
+
+.close_modal:hover, .close_modal:focus {
+	background: var(--focus);
+	border-color: var(--focus);
+	transform: translateY(-.2rem);
+}
+
+.modal_text {
+	background: rgb(194, 230, 250);
+	margin: 20px;
+	padding: 10px;
+	border-radius: 10px;
+}
+
+/* --------- popup gestion tds --------- */
+#modal_tds, #modal_tds_supp, #modal_repartition {
+	position: absolute;
+	top: 120px;
+	left: 0;
+	right: 0;
+	margin-left: auto;
+	margin-right: auto;
+	width: 1400px;
+	background-color: white;
+	border-radius: 20px;
+	padding: 20px;
+}
+
+#modal_tds h1, #modal_tds_supp h1, #modal_repartition h1 {
+	text-shadow: none;
+}
+
+#modal_tds table {
+	margin-left: 20px;
+}
+
+.saison {
+	display: block;
+	background-color: #ccc;
+	border-radius: 10px;
+	margin: 15px;
+	padding: 15px;
+}
+
+.modif {
+	display: flex;
+	justify-content: left;
+}
+
+.modif select {
+	margin-left: 5px;
+}
+
+#modal_tds label {
+	margin-left: 15px;
+}
+
+#modal_tds .form-group {
+	display: inline;
+}
+
+td.save_supp {
+	color: greenyellow;
+}
+
+td.save_supp {
+	color: green;
+}
+
+td.save_supp:hover {
+	background-color: rgb(226, 226, 68);
+}
+
+td.delete_supp:hover {
+	background-color: rgba(226, 157, 68, 0.89);
+}
+
+td.delete_supp {
+	color: rgb(253, 3, 3);
 }
