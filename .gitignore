@@ -4,6 +4,7 @@ b2b/log/
 b2b/B2B_params.php
 Realise/
 php/config_olaf.php
+php/configsql.inc.php
 overload/xls/
 *.json
 *.csv

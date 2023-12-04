@@ -16,22 +16,21 @@ class capa {
 		this.zone_schema = zone;
         this.zone_olaf = zone.substring(1,2); // 2è lettre de la zone (E ou W)
 		this.zone = this.zone_olaf === "E" ? "est" : "ouest";
-		this.tabvac = ["J2","S1","N","","","","JX","J1","J3","S2","",""]; 
-		this.dep = new Date(2019, 0, 8);  // J2 le 8 janvier 2019 à 12heures pour eq11
-		this.eq_dep = 11;
-		this.init();
+		this.pc_ini = null;
     }
 
 	async init() {
-		this.tour_local = await loadJson(tour_json);
-		this.saison = this.get_date_tour(this.tour_local);
-		this.tour_utc = await this.get_tour_utc();
-		console.log(this.tour_utc);
-		this.tds_supp_local = await loadJson(tour_supp_json);
-		this.tds_supp_utc = await this.get_tds_supp_utc(this.tds_supp_local);
-		this.instr = await loadJson("../instruction.json");
-		this.tab_vac_eq = this.get_vac_eq();
-		
+		show_popup("Patientez !", "Chargement en cours...");
+		this.pc_ini = this.pc_ini || await this.get_nbpc_dispo();
+		console.log("pc_ini");
+		console.log(this.pc_ini);
+		await document.querySelector('.popup-close').click();
+		this.saison =  this.pc_ini.saison;
+		this.repartition =  this.pc_ini.repartition;
+		this.clean_cycle = this.pc_ini.clean_cycle;
+		console.log("Saison");
+		console.log(this.saison);
+		this.workingTeam = this.pc_ini.workingTeam;
 	}
 
     /* ----------------------------------------------------------------------------------------------------------------
@@ -74,10 +73,10 @@ class capa {
 		const yesterday = jmoins1(this.day);
 		// récupère l'objet contenant les propriétés equipes
 		this.effectif = this.effectif ?? await get_olaf(this.zone_olaf, this.day, yesterday);
-		/*
+		
 		console.log("OLAF result");
 		console.log(this.effectif);
-		*/
+		
 		// si pas de donnée on retourne 0
 		if (this.effectif == 0) return 0;
 		
@@ -98,205 +97,15 @@ class capa {
 		}
 		-----------------------------------------------------  */
 
-		const pc = this.effectif["pc_vac"];
-		const RD = this.effectif["TDS_Supp"];
-		const pcs = this.effectif["pc_total_horsInstrRD_15mn"];
-		const in15mn = this.effectif["pc_total_instr_15mn"];
-		const pc_sousvac_15mn = this.effectif["pc_sousvac_15mn"];
-
-		//console.log("JX");
-		//console.log(pc["JX"]);
-
-		//console.log("RD");
-		//console.log(RD);
-
-		const effectif_RD_15mn = this.effectif["pc_RD_15mn"];
-		const effectif_total_RD_15mn = this.effectif["pc_total_RD_15mn"];
-
-		// pc_total_horsInstrRD_15mn : total pc hors instr & hors RD bleu supp (les RD Jx sont inclus)
-		return {"pc_vac": pc, "pc_sousvac_15mn": pc_sousvac_15mn, "pc_total_horsInstrRD_15mn": pcs, "pc_instr_15mn": in15mn, "pc_RD_15mn": effectif_RD_15mn, "pc_total_RD_15mn": effectif_total_RD_15mn, "RD": RD};
+		return this.effectif;
     }
-
-    /* ---------------------------------------------------
-        Calcule les équipes qui travaillent et leur vac
-        Paramètres
-            @param {string} day - yyyy-mm-jj
-            @returns {object} { "J1": 5, "vac": n°eq ... }
-    ---------------------------------------------------- */
-    get_vac_eq () {
-        const ecartj = this.dep.ecartJour(new Date(this.day));
-        const tab = {};
-        for (let eq=1;eq<13;eq++) {
-            let debvac = (ecartj - parseInt(eq) + this.eq_dep) % 12;
-            if (this.tabvac[debvac] !== "" && this.tabvac[debvac] !== "N") tab[this.tabvac[debvac]] = eq;
-            if (this.tabvac[debvac] === "N") {
-                tab[this.tabvac[debvac]] = eq;
-                const eqN1 = eq == 1 ? 12 : eq - 1; // equipe de nuit de la veille
-                tab["N-1"] = eqN1; 
-            }
-        }
-        return tab;
-    }
-
-    /* --------------------------------------------------------------------------------------
-        Détection du tour de service en vigueur à la date choisie
-        @param {object} tour 	- le json du tour de service
-        @param {string} day 	- "yyyy-mm-jj"
-        @param {string} zone 	- "est" ou "ouest"
-        @returns {string}  - saison : "ete", "hiver", "mi-saison-basse", "mi-saison-haute"
-    -------------------------------------------------------------------------------------- */
-    get_date_tour(tour) {
-        const d = this.day.split("-");
-        const annee = parseInt(d[0]);
-        const mois = parseInt(d[1]);
-        const jour = d[2];
-        const dat = new Date(annee, mois-1, jour); // index du mois commence à 0
-        
-        const d_hiver = tour[this.zone]["hiver"]["plage"][0][0].split("-");
-        const f_hiver = tour[this.zone]["hiver"]["plage"][0][1].split("-");
-        const d_ete = tour[this.zone]["ete"]["plage"][0][0].split("-");
-        const f_ete = tour[this.zone]["ete"]["plage"][0][1].split("-");
-        const index = mois < 7 ? 0 : 1;
-        const d_msb = tour[this.zone]["mi-saison-basse"]["plage"][index][0].split("-");
-        const f_msb = tour[this.zone]["mi-saison-basse"]["plage"][index][1].split("-");
-        const d_msh = tour[this.zone]["mi-saison-haute"]["plage"][index][0].split("-");
-        const f_msh = tour[this.zone]["mi-saison-haute"]["plage"][index][1].split("-");
-        
-        const decembre = new Date(annee, 11, 31); // 31 decembre
-        const janvier = new Date(annee, 0, 1); // 1er janvier
-        const fin_hiver = new Date(annee, f_hiver[1]-1, f_hiver[0]);
-        const debut_hiver = new Date(annee, d_hiver[1]-1, d_hiver[0]);
-        const debut_msb = new Date(annee, d_msb[1]-1, d_msb[0]);
-        const fin_msb = new Date(annee, f_msb[1]-1, f_msb[0]);
-        const debut_msh = new Date(annee, d_msh[1]-1, d_msh[0]);
-        const fin_msh = new Date(annee, f_msh[1]-1, f_msh[0]);
-        const debut_ete = new Date(annee, d_ete[1]-1, d_ete[0]);
-        const fin_ete = new Date(annee, f_ete[1]-1, f_ete[0]);
-
-        if (dat >= debut_hiver && dat <= decembre) return "hiver";
-        if (dat >= janvier && dat <= fin_hiver) return "hiver";
-        if (dat >= debut_ete && dat <= fin_ete) return "ete";
-        if (dat >= debut_msb && dat <= fin_msb) return "mi-saison-basse";
-        if (dat >= debut_msh && dat <= fin_msh) return "mi-saison-haute";
-    }
-
-    /* -----------------------------------------------------------------------------------------
-        Transformation du tour de service (défini en heure locale) en heure UTC
-        @param {object} tour_local 	- le json du tour de service
-        @returns {object}  - tour_utc : { [ ["00:00", 0, 1, 1], ["hh:mm", cds, A, B], ... ] }
-    ----------------------------------------------------------------------------------------- */	
-    async get_tour_utc() {
-        
-        // récupère le décalage utc/local en heure
-		const d = new Date(this.day);
-		d.setHours(6);
-        const diff = Math.abs(d.getTimezoneOffset()) / 60;
-        const tour = this.tour_local[this.zone][this.saison];	
-        
-        const index_deb = diff*4 - 1;
-        const tour_utc = {};
-		tour_utc["JX"] = [];
-        tour_utc["J1"] = [];
-        tour_utc["J3"] = [];
-        tour_utc["S2"] = [];
-        tour_utc["J2"] = [];
-        tour_utc["S1"] = [];
-        tour_utc["N"] = [];
-            
-        function push_utc(vac) {
-            tour[vac].forEach( (elem, index) => {
-                if (index > index_deb) {
-                    let h = min_to_time(time_to_min(elem[0]) - diff*60);
-                    tour_utc[vac].push([h, elem[1], elem[2], elem[3]]);
-                }
-            });
-            if (diff === 2) {
-                tour_utc[vac].push(["22:00", tour[vac][0][1], tour[vac][0][2], tour[vac][0][3]]);
-                tour_utc[vac].push(["22:15", tour[vac][1][1], tour[vac][1][2], tour[vac][1][3]]);
-                tour_utc[vac].push(["22:30", tour[vac][2][1], tour[vac][2][2], tour[vac][2][3]]);
-                tour_utc[vac].push(["22:45", tour[vac][3][1], tour[vac][3][2], tour[vac][3][3]]);
-            }
-            tour_utc[vac].push(["23:00", tour[vac][4][1], tour[vac][4][2], tour[vac][4][3]]);
-            tour_utc[vac].push(["23:15", tour[vac][5][1], tour[vac][5][2], tour[vac][5][3]]);
-            tour_utc[vac].push(["23:30", tour[vac][6][1], tour[vac][6][2], tour[vac][6][3]]);
-            tour_utc[vac].push(["23:45", tour[vac][7][1], tour[vac][7][2], tour[vac][7][3]]);
-        }
-        
-		push_utc("JX");
-        push_utc("J1");
-        push_utc("J3");
-        push_utc("S2");
-        push_utc("J2");
-        push_utc("S1");
-        push_utc("N");
-		//console.log("Tour_utc");
-		//console.log(tour_utc);
-        return tour_utc;
-    }
-	/* -----------------------------------------------------------------------------------------
-        Transformation du tour de service (défini en heure locale) en heure UTC
-        @param {object} tour_local 	- le json du tour de service
-			{"est":{
-				"RD...":[["00:00",0],["00:15",0],...],
-				"RD...":[["00:00",0],["00:15",0],...]
-				...
-			}}
-        @returns {object}  - tour_utc (sans la zone) 
-			{ 
-				"RD...": [ ["00:00", 0], ["hh:mm", nb], ... ],
-				"RD...": [ ["00:00", 0], ["hh:mm", nb], ... ]
-				...
-			}
-    ----------------------------------------------------------------------------------------- */
-	async get_tds_supp_utc(tour_sup_local) {
-		// récupère le décalage utc/local en heure
-		const d = new Date(this.day);
-		d.setHours(6);
-        const diff = Math.abs(d.getTimezoneOffset()) / 60;
-        const tour = tour_sup_local[this.zone];	
-        
-        const index_deb = diff*4 - 1;
-        const tour_utc = {};
-		// RD_vac_hors_Jx = ["RD...","RD...",...]
-		const RD_vac_hors_Jx = Object.keys(tour);
-		//console.log("RD_vac_hors_Jx");
-		//console.log(RD_vac_hors_Jx);
-        RD_vac_hors_Jx.forEach(vac => {
-			tour_utc[vac] = [];
-		})
-            
-        function push_utc(vac) {
-            tour[vac].forEach( (elem, index) => {
-                if (index > index_deb) {
-                    let h = min_to_time(time_to_min(elem[0]) - diff*60);
-                    tour_utc[vac].push([h, elem[1]]);
-                }
-            });
-            if (diff === 2) {
-                tour_utc[vac].push(["22:00", tour[vac][0][1]]);
-                tour_utc[vac].push(["22:15", tour[vac][1][1]]);
-                tour_utc[vac].push(["22:30", tour[vac][2][1]]);
-                tour_utc[vac].push(["22:45", tour[vac][3][1]]);
-            }
-            tour_utc[vac].push(["23:00", tour[vac][4][1]]);
-            tour_utc[vac].push(["23:15", tour[vac][5][1]]);
-            tour_utc[vac].push(["23:30", tour[vac][6][1]]);
-            tour_utc[vac].push(["23:45", tour[vac][7][1]]);
-        }
-        
-		RD_vac_hors_Jx.forEach(vac => {
-			push_utc(vac);
-		})
-
-        return tour_utc;
-	}
 
 }
 
 class feuille_capa extends capa {
 	/* -----------------------------------------------------------------------------------------------------------
 		@param {string} containerIdTour - id du container pour le tour
-		@param {boolean} show			- true pour afficher la feuille de capa
+		@param {boolean} show			- true pour afficher la feuille de capa et retourner this
 										  false pour retourner l'array uceso [ [hdeb, hfin, _uceso], [...] ....]
 	   ----------------------------------------------------------------------------------------------------------- */
 	constructor(containerIdTour, day, zone, show = true) {
@@ -311,18 +120,14 @@ class feuille_capa extends capa {
 			async function => return : promise
 		------------------------------------------ */
 	async init_data() {
-		show_popup("Patientez !", "Chargement en cours...");
-		this.pc = await this.get_nbpc_dispo();
-		//console.log("pc");
-		//console.log(this.pc);
-		await document.querySelector('.popup-close').click();
-		this.pc_15mn = await this.pc["pc_total_horsInstrRD_15mn"];
-		this.pc_instr_15mn = await this.pc["pc_instr_15mn"];
-		this.pc_RD_15mn = await this.pc["pc_RD_15mn"];
-		this.pc_total_RD_15mn = await this.pc["pc_total_RD_15mn"];
-		this.pc_vac = await this.pc["pc_vac"];
-		this.pc_sousvac_15mn = await this.pc["pc_sousvac_15mn"];
-		this.RD = await this.pc["RD"];
+		await this.init();
+		this.pc_15mn = await this.pc_ini["pc_total_horsInstrRD_15mn"];
+		this.pc_instr_15mn = await this.pc_ini["pc_total_instr_15mn"];
+		this.pc_RD_15mn = await this.pc_ini["pc_RD_15mn"];
+		this.pc_total_RD_15mn = await this.pc_ini["pc_total_RD_15mn"];
+		this.pc_vac = await this.pc_ini["pc_vac"];
+		this.pc_sousvac_15mn = await this.pc_ini["pc_sousvac_15mn"];
+		this.RD = await this.pc_ini["RD"];
 		if (this.show) {this.show_feuille_capa(); return this; } else { return this.get_uceso(); }
 	}
 
@@ -334,22 +139,19 @@ class feuille_capa extends capa {
 		
 		// Construit le tableau
 		let res = `<table class="uceso">
-					<caption>Journée du ${reverse_date(this.day)} - Zone ${this.zone}</caption>`;
+					<caption>Journ&eacute;e du ${reverse_date(this.day)} - Zone ${this.zone}</caption>`;
 		res += `<thead>
 				<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th>`;
 		res += `<th class="top_2px bottom_2px details masque">CDS</th><th class="top_2px bottom_2px details masque">PC</th><th class="top_2px bottom_2px right_1px details masque">det</th><th class="top_2px bottom_2px right_2px details masque">BV</th>`;
 		res += `<th class="top_2px bottom_2px right_2px" colspan="96">...</th></tr>
 				</thead>
 				<tbody>`;
-
-		res += `${this.affiche_vac("JX")}`;
-		res += `${this.affiche_vac("J1")}`;
-		res += `${this.affiche_vac("J3")}`;
-		res += `${this.affiche_vac("S2")}`;
-		res += `${this.affiche_vac("J2")}`;
-		res += `${this.affiche_vac("S1")}`;
-		res += `${this.affiche_vac("N")}`;
-		res += `${this.affiche_vac("N-1")}`;
+		
+		const cycle = [...this.clean_cycle];
+		cycle.push("N-1");
+		cycle.forEach(vac => {
+			res += `${this.affiche_vac(vac)}`;
+		})
 		res += `${this.affiche_RD()}`;
 		res += `${this.affiche_inst()}`;
 		res += `<tr class="titre"><td class='bottom_2px left_2px' colspan="3">Heures UTC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${this.heure()}`;
@@ -461,7 +263,6 @@ class feuille_capa extends capa {
 		$('popup-wrap').classList.add('popup-modif');
 		$$('.popup-box').classList.add('popup-modif');
 		td_pc.forEach(td_el => {
-			let vac = td_el.dataset.vac;
 			td_el.addEventListener('click', (event) => {
 				let ih = `
 				<div id="modif_eq">
@@ -534,7 +335,7 @@ class feuille_capa extends capa {
 			<td class='right_1px details masque' data-vac='${vac}'>${this.pc_vac[vac]["renfort"]}</td>
 			<td class='right_2px details masque'>${this.pc_vac[vac]["BV"]}</td>${res1}</tr>
 		<tr data-vac='${vac}'>
-			<td class='eq left_2px right_1px' data-vac='${vac}'>${this.tab_vac_eq[vac]}</td>
+			<td class='eq left_2px right_1px' data-vac='${vac}'>${this.workingTeam[vac]}</td>
 			<td class='right_1px'>${vac}</td><td class='right_1px'>A</td>
 			<td class='right_1px details masque' colspan="3"></td><td class='right_2px details masque'></td>${res2}</tr>
 		<tr data-vac='${vac}'>
@@ -573,7 +374,6 @@ class feuille_capa extends capa {
 		vac_RD_tab.forEach( vac_RD => {
 			let vac_RD_affiche = vac_RD.substring(2);
 			vac_RD_affiche = vac_RD_affiche.split("-")[0] + " RD bleu";
-			let sous_vac_RD = vac_RD_affiche.substring(2).toUpperCase();
 			let res2 = "";
 			if (this.pc_RD_15mn[vac_RD][0] === 0) {
 				res2 += `<td class='left_2px bottom_2px'></td>`; // border left à 2px pour la case 0
@@ -791,19 +591,17 @@ class simu_capa extends capa {
 	}
 
 	async init_simu() {
-		this.containerTour.innerHTML = '<div id="left_part"><div id="table_option"></div><div id="table"></div></div><div id="right_part"></div>';
-		show_popup("Patientez !", "Chargement OLAF en cours...");
-		console.log("PC ini");
-		this.pc_ini = await this.get_nbpc_dispo();
+		show_popup("Patientez !", "Chargement en cours...");
+		await this.init();
+		//this.pc_ini = this.pc_ini || await this.get_nbpc_dispo();
+		
+		console.log("pc_ini_simu_capa");
 		console.log(this.pc_ini);
-		console.log("pc");
-		//this.pc = await this.get_nbpc_dispo();
+		await document.querySelector('.popup-close').click();
+		this.containerTour.innerHTML = '<div id="left_part"><div id="table_option"></div><div id="table"></div></div><div id="right_part"></div>';
 		this.pc = structuredClone(this.pc_ini);
 		console.log("this.pc");
 		console.log(this.pc);
-		this.cds = this.tour_local[this.zone][this.saison]["cds"];
-		this.cds["N-1"] = 0;
-		document.querySelector('.popup-close').click();
 		this.pc_vac = this.pc["pc_vac"];
 		this.RD = this.pc["RD"];
 		this.pc_sousvac_15mn = this.pc["pc_sousvac_15mn"];
@@ -845,7 +643,7 @@ class simu_capa extends capa {
 
 	// Fabrique la partie gauche
 	affiche_vac(vac) {
-		const cds = this.cds[vac];
+		const cds = this.pc_vac[vac]["nbcds"];
 		// ajoute les RD bleus détachés à ceux de l'équipe
 		let nbpc_vac = this.pc_vac[vac]["nbpc"];
 		let nbpcdet_vac = this.pc_vac[vac]["renfort"];
@@ -866,7 +664,7 @@ class simu_capa extends capa {
 		
 		return `
 		<tr data-vac='${vac}'>
-		<td class='eq left_2px right_1px bottom_2px' data-vac='${vac}'>${this.tab_vac_eq[vac]}</td><td class='right_1px bottom_2px'>${vac}</td><td class='bottom_2px'>${cds}</td>
+		<td class='eq left_2px right_1px bottom_2px' data-vac='${vac}'>${this.workingTeam[vac]}</td><td class='right_1px bottom_2px'>${vac}</td><td class='bottom_2px'>${cds}</td>
 			<td class='nbpc bottom_2px' data-vacPC='${vac}'>${nbpc_vac}</td>
 			<td class='nbpc right_1px bottom_2px' data-vacDET='${vac}'>${nbpcdet_vac}</td>
 			<td class='bv right_1px bottom_2px' data-vacBV='${vac}'>${this.pc_vac[vac]["BV"]}</td>
@@ -879,8 +677,11 @@ class simu_capa extends capa {
 	build_tab() {
 		// Construit le tableau
 		let to = `<h2>Zone ${this.zone.toUpperCase()} / ${reverse_date(this.day)}</h2>`;
+		/*
 		to += '<input type="checkbox" id="check_nobv" name="check_nobv"><label for="check_nobv">Enlever les BVs pour le calcul des UCESOs</label><div><button id="upd">Update</button></div>';
+		*/
 		$('table_option').innerHTML = to;
+		/*
 		$('check_nobv').addEventListener('click', () => {
 			if ($('check_nobv').checked) {
 				this.noBV = true;
@@ -892,6 +693,7 @@ class simu_capa extends capa {
 			//this.pc = await this.get_nbpc_dispo(this.v, this.vBV, this.noBV);
 			//show_capa_graph("right_part", this.day, this.zone_schema, this.pc, this.schema, this.schema7, this.schema2019);
 		})
+		*/
 		let res = `<table class="simu">
 					<thead>
 						<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px">PC</th><th class="top_2px bottom_2px right_1px">det</th><th class="top_2px bottom_2px right_1px">BV</th><th class="top_2px bottom_2px right_1px">BVini</th><th class="top_2px bottom_2px right_2px">Mod BV</th>
@@ -928,7 +730,7 @@ class simu_capa extends capa {
 				result = this.get_default_repartition(vacation);
 				rep.A = result.A;
 				rep.B = result.B;
-				if (this.saison === "ete" && this.zone === "est") {
+				if (this.saison.includes("ete") && this.zone === "est") {
 					rep.B = result.A;
 					rep.A = result.B;
 				}
@@ -937,7 +739,7 @@ class simu_capa extends capa {
 				result = this.get_default_repartition(vacation);
 				rep.A = result.A;
 				rep.B = result.B;
-				if (this.saison === "ete" && this.zone === "est") {
+				if (this.saison.includes("ete") && this.zone === "est") {
 					switch (this.pc["pc_vac"][vacation]["nbpc"]) {
 						case 6:
 							rep.A = 3;
@@ -973,7 +775,7 @@ class simu_capa extends capa {
 							break;
 					}
 				}
-				if (this.saison === "ete" && this.zone === "ouest") {
+				if (this.saison.includes("ete") && this.zone === "ouest") {
 					const dat_jour = new Date(this.day);
 					const jour_sem = dat_jour.getDay(); // 0=dimanche
 					if (jour_sem === 2 || jour_sem === 3 || jour_sem === 4) {
@@ -1021,7 +823,7 @@ class simu_capa extends capa {
 				result = this.get_default_repartition(vacation);
 				rep.A = result.A;
 				rep.B = result.B;
-				if (this.saison != "hiver" && this.pc["pc_vac"][vacation]["nbpc"] === 6) {
+				if (this.pc["pc_vac"][vacation]["nbpc"] === 6) {
 					rep.A = 2;
 					rep.B = 4;
 				}
@@ -1030,7 +832,7 @@ class simu_capa extends capa {
 				result = this.get_default_repartition(vacation);
 				rep.A = result.A;
 				rep.B = result.B;
-				if (this.saison != "hiver" && this.pc["pc_vac"][vacation]["nbpc"] === 6) {
+				if (this.pc["pc_vac"][vacation]["nbpc"] === 6) {
 					rep.A = 2;
 					rep.B = 4;
 				}
@@ -1213,14 +1015,14 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 	let uceso_simu = null;
 	let data_series_uceso = null;
 	if (pc == 0) {
-		show_popup("Données OLAF indisponibles", "Pas de graph UCESO proposé");
+		show_popup("Donn&eacute;es OLAF indisponibles", "Pas de graph UCESO propos&eacute;");
 		await wait(1000);
 		document.querySelector('.popup-close').click();
 	} else {
 		pc_15mn = pc["pc_total_horsInstrRD_15mn"];
-		pc_instr_15mn = pc["pc_instr_15mn"];
+		pc_instr_15mn = pc["pc_total_instr_15mn"];
 		pc_total_RD_15mn = pc["pc_total_RD_15mn"];
-		uceso = pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn[index][0] + pc_total_RD_15mn[index]) / 2) ]);
+		uceso = pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn[index][0] + pc_total_RD_15mn[index]) / 2), Math.floor((elem[1] + pc_instr_15mn[index][0] + pc_total_RD_15mn[index]) % 2) ]);
 		//console.log("uceso");
 		//console.log(uceso);
 		data_series_uceso = [];
@@ -1235,7 +1037,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 
 		if (pc_simu !=0 ) {
 			pc_15mn_simu = pc_simu["pc_total_horsInstrRD_15mn"];
-			pc_instr_15mn_simu = pc_simu["pc_instr_15mn"];
+			pc_instr_15mn_simu = pc_simu["pc_total_instr_15mn"];
 			pc_total_RD_15mn_simu = pc_simu["pc_total_RD_15mn"];
 			uceso_simu = pc_15mn_simu.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn_simu[index][0] + pc_total_RD_15mn_simu[index]) / 2) ]);
 			data_series_uceso_simu = [];
@@ -1286,6 +1088,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 	data_series = [];
 	data_series7 = [];
 	data_series2019 = [];
+	data_d = [];
 	
 	// Si le schema du jour J existe, alors on l'affiche
 	if (typeof schema !== 'undefined') {
@@ -1294,11 +1097,20 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 			let deb = row[1];
 			let fin = row[2];
 			let nb_sect = row[3];
+			let arr_tv = row[4];
 			let f = deb.split(":");
 			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]); // -1 pour le mois car l'index commence à 0
 			data_series.push([time,nb_sect]);
+			// "2023-05-31T22:00:00.000Z"
+			let a = [];
+			arr_tv.forEach(elem => {
+				a.push(elem[0]);
+			})
+			data_d.push([deb,nb_sect,a]);
 		}); 
+		data_d[0][0] = "00:00";
 		data_series.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema.ouverture[schema.ouverture.length-1][3]]);
+		
 	}
 	
 	// Si le schema du jour J n'existe pas mais que J-7 existe, alors on affiche J-7
@@ -1326,7 +1138,9 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]);
 			data_series2019.push([time,nb_sect]);
 		}); 
-		data_series2019.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema2019.ouverture[schema2019.ouverture.length-1][3]]);
+		if (typeof schema2019.ouverture[schema2019.ouverture.length-1] != 'undefined') {
+			data_series2019.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema2019.ouverture[schema2019.ouverture.length-1][3]]);
+		}
 	}
 	
 	const i1 = get_i1(data_series, data_series_uceso);
@@ -1335,6 +1149,15 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 	const jour2019 = tab_jour[new Date(day2019).getDay()];
 	const jour7 = tab_jour[new Date(day7).getDay()];
 	const jour = tab_jour[new Date(day).getDay()];
+	const z = (zone === "AE") ? "est" : "ouest";
+	console.log("max secteurs");
+	console.log(schema.max_secteurs);
+	const vacs = Object.keys(pc["pc_vac"]);
+	const nbr = {};
+	vacs.forEach(vac => {
+		nbr[vac] = pc["pc_vac"][vac]["nbpc"];
+	});
+	save_uceso(z, day, jour, i1, uceso, data_d, schema.max_secteurs, schema.tv_h, nbr);
 	$$(".bleu").innerHTML = '2019 : '+jour2019+' '+reverse_date(day2019);
 	$$(".orange").innerHTML = 'J-7 : '+jour7+' '+reverse_date(day7);
 	$$(".vert").innerHTML = 'J : '+jour+' '+reverse_date(day);
@@ -1469,20 +1292,43 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 		 @param {array} data_realise - [ [time, nb_secteurs], ... ]
 		 @param {array} data_uceso - [ [time, nb_secteurs], ... ]
 	-------------------------------------------------------------------------------- */
-	function get_i1(data_realise, data_uceso) {
-		const rl = data_realise.length;
-		const ul = data_uceso.length;
-		let rea = 0;
-		let uce = 0;
+function get_i1(data_realise, data_uceso) {
+	const rl = data_realise.length;
+	const ul = data_uceso.length;
+	let rea = 0;
+	let uce = 0;
 
-		for(let i=0;i<rl-1;i++) {
-			rea += (get_minutes(data_realise[i+1][0]) - get_minutes(data_realise[i][0]))*data_realise[i][1];
-		}
-		for(let i=1;i<ul-1;i++) {
-			uce += (get_minutes(data_uceso[i+1][0]) - get_minutes(data_uceso[i][0]))*data_uceso[i][1];
-		}
-		const i1 = Math.round(rea*100/uce);
-		console.log("Minutes réalisées: "+rea);
-		return i1;
-
+	for(let i=0;i<rl-1;i++) {
+		rea += (get_minutes(data_realise[i+1][0]) - get_minutes(data_realise[i][0]))*data_realise[i][1];
 	}
+	for(let i=1;i<ul-1;i++) {
+		uce += (get_minutes(data_uceso[i+1][0]) - get_minutes(data_uceso[i][0]))*data_uceso[i][1];
+	}
+	const i1 = Math.round(rea*100/uce);
+	console.log("Minutes réalisées: "+rea);
+	return i1;
+
+}
+
+async function save_uceso(zone, day, jour, i1, uceso, realise, maxsecteurs, tvh, nbpc) {
+	const save = {
+		"fonction": "save_uceso", 
+		"zone": zone, 
+		"day": day, 
+		"typejour": jour, 
+		"maxsecteurs": maxsecteurs,
+		"uceso": JSON.stringify(uceso), 
+		"realise":JSON.stringify(realise),
+		"i1":i1, 
+		"tvh": JSON.stringify(tvh),
+		"nbpc": JSON.stringify(nbpc)	
+	}	
+	var data = {
+		method: "post",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(save)
+	};
+	
+	//await fetch("../capa/tds_sql.php", data);
+
+}

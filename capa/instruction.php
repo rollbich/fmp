@@ -21,7 +21,7 @@
                     "date": $('date_in').value,
                     "debut": $('debut_in').value,
                     "fin": $('fin_in').value,
-                    "zone": $('zone_in').value,
+                    "zone": $('zone_in').value.toLowerCase(),
                     "type": $('type_in').value,
                     "comm": $('com_in').value
                 }
@@ -33,7 +33,7 @@
                     cancelText: "Annuler"
                 }).then((e)=>{
                     if ( e == ("confirm")){
-                        ajoute("result",ajout);
+                        ajoute_sql("result",ajout);
                     } else {
                     }
                 })
@@ -48,7 +48,12 @@
     <h1>Créneaux/Absences Supplémentaires : HEURES UTC</h1>
     <span class="back"><a href="./">back to TDS</a></span>
 </header>
-
+<div id="filtre"><span>Filtre:</span>
+    <select id="zone" class="select">
+    <option selected="" value="est">Zone EST</option>
+    <option value="ouest">Zone WEST</option>
+    </select>
+</div>
 <div class="glob">
     <div id="result"></div>
     <div id="cont">
