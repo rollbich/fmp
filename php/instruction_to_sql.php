@@ -33,6 +33,21 @@ foreach (get_object_vars($instr->est) as $arr) {
         $stmt->execute();
     };
 }
+
+foreach (get_object_vars($instr->ouest) as $arr) {
+    foreach($arr as $index=>$elem) {
+        $debut = $elem->debut;
+        $fin = $elem->fin;
+        $d = $elem->date;
+        $zone = strtolower($elem->zone);
+        $type = $elem->type;
+        $comm = $elem->comm;
+        $table = "creneaux_supp";
+        $req = "INSERT INTO $table VALUES (NULL, '$d', '$debut', '$fin', '$zone', '$type', '$comm')"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+    };
+}
  
 
 ?>

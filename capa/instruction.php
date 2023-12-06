@@ -92,7 +92,7 @@
         </div>
         <div class="form-group">
             <label class="form-label" for="com_in">Comm:</label>
-            <input class="form-control" id="com_in" name="com_in" placeholder="Secteur / Commentaire" type="texte" maxlength="14">
+            <input class="form-control" id="com_in" name="com_in" placeholder="Secteur / Commentaire" type="texte" size="22" maxlength="22">
         </div>
         <button id='button_ajout' type='button' class="btn">Ajouter</button>
     </form>

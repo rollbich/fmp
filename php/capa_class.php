@@ -848,7 +848,7 @@ class capa {
 				$result = $this->get_default_repartition($vacation);
 				$rep->A = $result->A;
 				$rep->B = $result->B;
-				if ($this->saison != "hiver" && $this->pc->{$vacation}->nbpc === 6) {
+				if ($this->pc->{$vacation}->nbpc === 6) {
 					$rep->A = 2;
 					$rep->B = 4;
 				}
@@ -857,7 +857,7 @@ class capa {
 				$result = $this->get_default_repartition($vacation);
 				$rep->A = $result->A;
 				$rep->B = $result->B;
-				if ($this->saison != "hiver" && $this->pc->{$vacation}->nbpc === 6) {
+				if ($this->pc->{$vacation}->nbpc === 6) {
 					$rep->A = 2;
 					$rep->B = 4;
 				}
