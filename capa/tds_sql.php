@@ -63,6 +63,9 @@ if ($contentType === "application/json") {
         case "set_repartition":
             $bdd->set_repartition($content->nom_tds, $content->vac, $content->json);
             break;
+        case "change_type_repartition":
+            $bdd->change_type_repartition($content->nom_tds, $content->vac, $content->type);
+            break;
         default: 
             echo "";
     }

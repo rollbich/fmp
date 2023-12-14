@@ -33,6 +33,21 @@ class capa {
 		this.workingTeam = this.pc_ini.workingTeam;
 	}
 
+	compare_tds_name(a, b) {
+        const year_a = parseInt(a.slice(-4));
+        const year_b = parseInt(b.slice(-4));
+        if (year_a < year_b) {
+            return -1;
+        } else if (year_a > year_b) {
+            return 1;
+        }
+        if (year_a === year_b) {
+            if (a < b) return -1;
+            if (a > b) return 1;
+            if (a === b) return 0;
+        }
+    }
+
     /* ----------------------------------------------------------------------------------------------------------------
         *Calcul du nbre de PC total par vac
         *Calcul du nbre de PC total dispo par pas de 15mn à la date choisie
@@ -273,75 +288,91 @@ class feuille_capa extends capa {
 				${this.add_pers("S1")}
 				${this.add_pers("N")}
 				${this.add_pers("N-1")}`;
-				//ih += '<button id="ch">Changer</button>';
 				ih += `</div>`;
 				show_popup("Personnels", ih);
 			});
 		});
 	}
 
-	// Fabrique la ligne du tour de service
+	/*	-----------------------------------------------------------------------------------
+			 Fabrique les lignes de 96 <td> des sous vacation du tour de service
+			 Dans 1 journée : 96 1/4 d'heure
+		@return [ "96 <td> cds", "96 <td> sousvac A", "96 <td> autres sousvac", "..." ]
+		----------------------------------------------------------------------------------- */
 	affiche_vac(vac) {
-		let res1 = "", res2 = "", res3 = "";
-		// A = effectif/2
-		// B = effectif/2 (+1)
-		
+		const res = [];
+		// trie le tableau avec cds en premier, puis A, B ...
+		const sousvac = Object.keys(this.pc_sousvac_15mn[vac]).sort(this.compare_tds_name); 
+		sousvac.forEach((sv, index_sv) => {
+			res[index_sv] = "";
+		})
 		// array d'index 0 à 95
 		for (let index=0;index<96;index++) {
-			let nb_cds, nb_A, nb_B;
-			nb_cds = this.pc_sousvac_15mn[vac]["cds"][index];
-			nb_A = this.pc_sousvac_15mn[vac]["A"][index];
-			nb_B = this.pc_sousvac_15mn[vac]["B"][index];
-			let cl1 = "", cl2 = "", cl3="";
+			
 			if (vac != "N" && vac != "N-1") {
-				if (nb_cds != 0) cl1 = "bg";
-				if (nb_A != 0) cl2 = "bg"; 
-				if (nb_B != 0) cl3 = "bg";
-				if (index === 95) { cl1 += " right_2px"; cl2 += " right_2px"; cl3+= " right_2px"; }
-				if (index%4 === 0) { cl1 = (cl1+" left_2px").trimStart(); cl2 = (cl2+" left_2px").trimStart(); cl3 = (cl3+" left_2px").trimStart(); }
-				res1 += `<td class='${cl1}'>${nb_cds || ''}</td>`; 				// CDS travaille sur position ?
-				res2 += `<td class='${cl2}'>${nb_A || ''}</td>`; 				// partie A
-				res3 += `<td class='${cl3} bottom_2px'>${nb_B || ''}</td>`; 	// partie B
+				sousvac.forEach((sv, index_sv) => {
+					let cl="";
+					const nb = this.pc_sousvac_15mn[vac][sv][index];
+					if (nb != 0) cl = "bg";											// class="bg" => background bleu sur le td
+					if (index === 95) { cl += " right_2px"; }						// dernier <td>
+					if (index%4 === 0) { cl = (cl + " left_2px").trimStart(); }		// <td> de l'heure ronde
+					if (index_sv == (sousvac.length-1)) { cl += " bottom_2px"; } 	// ligne de la dernière sousvac
+					res[index_sv] += `<td class='${cl}'>${nb || ''}</td>`;
+				})
 			}
+
 			if (vac === "N") {
-				if (nb_cds != 0 && index >= 48) cl1 = "bg";
-				if (nb_A != 0 && index >= 48) cl2 = "bg"; 
-				if (nb_B != 0 && index >= 48) cl3 = "bg"; 
-				if (index == 95) { cl1 += " right_2px"; cl2 += " right_2px"; cl3+= " right_2px"; }
-				if (index%4 === 0) { cl1 = (cl1+" left_2px").trimStart(); cl2 = (cl2+" left_2px").trimStart(); cl3 = (cl3+" left_2px").trimStart(); }
-				// index 48 = midi donc >48 est le tour de nuit de soirée
-				if (index > 48) res1 += `<td class='${cl1}'>${nb_cds || ''}</td>`; else res1 += `<td class='${cl1}'></td>`; // CDS travaille sur position ?
-				if (index > 48) res2 += `<td class='${cl2}'>${nb_A || ''}</td>`; else res2 += `<td class='${cl2}'></td>`;
-				if (index > 48) res3 += `<td class='${cl3} bottom_2px'>${nb_B || ''}</td>`; else res3 += `<td class='${cl3} bottom_2px'></td>`;
+				sousvac.forEach((sv, index_sv) => {
+					let cl="";
+					const nb = this.pc_sousvac_15mn[vac][sv][index];
+					if (nb != 0 && index >= 48) cl = "bg";
+					if (index === 95) { cl += " right_2px"; }
+					if (index%4 === 0) { cl = (cl + " left_2px").trimStart(); }
+					if (index_sv == (sousvac.length-1)) { cl += " bottom_2px"; }
+					// vac de Nuit commençant à 19h30, on affiche que le soir ( 48 = midi)
+					if (index > 48) res[index_sv] += `<td class='${cl}'>${nb || ''}</td>`; else res[index_sv] += `<td class='${cl}'></td>`;
+				})
 			} 
+
 			if (vac === "N-1") {
-				if (nb_cds != 0 && index < 48) cl1 = "bg";
-				if (nb_A != 0 && index < 48) cl2 = "bg"; 
-				if (nb_B != 0 && index < 48) cl3 = "bg"; 
-				if (index == 95) { cl1 += " right_2px"; cl2 += " right_2px"; cl3+= " right_2px"; }
-				if (index%4 === 0) { cl1 = (cl1+" left_2px").trimStart(); cl2 = (cl2+" left_2px").trimStart(); cl3 = (cl3+" left_2px").trimStart(); }
-				// index 48 = midi donc <48 est le tour de nuit de la matinée
-				if (index < 48) res1 += `<td class='${cl1}'>${nb_cds || ''}</td>`; else res1 += `<td class='${cl1}'></td>`; // CDS travaille sur position ?
-				if (index < 48) res2 += `<td class='${cl2}'>${nb_A || ''}</td>`; else res2 += `<td class='${cl2}'></td>`;
-				if (index < 48) res3 += `<td class='${cl3} bottom_2px'>${nb_B || ''}</td>`; else res3 += `<td class='${cl3} bottom_2px'></td>`;
+				sousvac.forEach((sv, index_sv) => {
+					let cl="";
+					const nb = this.pc_sousvac_15mn[vac][sv][index];
+					if (nb != 0 && index < 48) cl = "bg";
+					if (index === 95) { cl += " right_2px"; }
+					if (index%4 === 0) { cl = (cl + " left_2px").trimStart(); }
+					if (index_sv == (sousvac.length-1)) { cl += " bottom_2px"; }
+					if (index < 48) res[index_sv] += `<td class='${cl}'>${nb || ''}</td>`; else res[index_sv] += `<td class='${cl}'></td>`;
+				})
 			}
 		};	
+		
 		const click_jx = vac === "JX" ? "pc details masque click_jx" : "pc details masque";
-		return `
+		// sousvac cds et A
+		let ret = `
 		<tr data-vac='${vac}'>
 			<td class='left_2px right_1px'></td><td class='right_1px'></td>
 			<td class='right_1px'>cds</td><td class='details masque'>${this.pc_vac[vac]["nbcds"]}</td>
 			<td class='${click_jx}' data-vac='${vac}'>${this.pc_vac[vac]["nbpc"]}</td>
 			<td class='right_1px details masque' data-vac='${vac}'>${this.pc_vac[vac]["renfort"]}</td>
-			<td class='right_2px details masque'>${this.pc_vac[vac]["BV"]}</td>${res1}</tr>
+			<td class='right_2px details masque'>${this.pc_vac[vac]["BV"]}</td>${res[0]}
+		</tr>
 		<tr data-vac='${vac}'>
 			<td class='eq left_2px right_1px' data-vac='${vac}'>${this.workingTeam[vac]}</td>
 			<td class='right_1px'>${vac}</td><td class='right_1px'>A</td>
-			<td class='right_1px details masque' colspan="3"></td><td class='right_2px details masque'></td>${res2}</tr>
-		<tr data-vac='${vac}'>
-			<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
-			<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px details masque' colspan="3"></td>
-			<td class='bottom_2px right_2px details masque'></td>${res3}</tr>`;
+			<td class='right_1px details masque' colspan="3"></td><td class='right_2px details masque'></td>${res[1]}
+		</tr>`;
+
+		// reste des sousvac au delà de A
+		for(let i=2;i<sousvac.length;i++) {
+			ret += `
+			<tr data-vac='${vac}'>
+				<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
+				<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px details masque' colspan="3"></td>
+				<td class='bottom_2px right_2px details masque'></td>${res[i]}
+			</tr>`;
+		}
+		return ret;
 	}
 		
 	// fabrique la ligne du supplément instruction
@@ -349,7 +380,6 @@ class feuille_capa extends capa {
 		let res2 = "";
 		res2 += `<td class='left_2px bottom_2px'></td>`; // border left à 2px pour la case 0
 		for(let i=1;i<95;i++) {	
-			//console.log("Time: "+get_time(i)+"  "+this.pc_instr_15mn[i][0]+"  "+this.pc_instr_15mn[i][0]);
 			if (this.pc_instr_15mn[i][1].length !== 0) {
 				let d = "data-instr='";
 				// val = { ""}
@@ -399,29 +429,29 @@ class feuille_capa extends capa {
 
 	// fabrique la ligne du nbre de pc dispo
 	affiche_nbpc() {
-		let res2 = "";
+		let res = "";
 		this.pc_15mn.forEach( (elem, index) => {
 			let cl = "left_1px";
 			if (index%4 === 0) cl = "left_2px";
 			if (index === 95) cl += " right_2px";
-			res2 += `<td class='${cl} bottom_2px'>${elem[1]+this.pc_instr_15mn[index][0]+this.pc_total_RD_15mn[index]}</td>`;
+			res += `<td class='${cl} bottom_2px'>${elem[1]+this.pc_instr_15mn[index][0]+this.pc_total_RD_15mn[index]}</td>`;
 		});
-		let res = `<tr><td class='left_2px bottom_2px' colspan="3">Nb PC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
-		return res;
+		let result = `<tr><td class='left_2px bottom_2px' colspan="3">Nb PC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res}</tr>`;
+		return result;
 	}
 
 	// fabrique la ligne du nbre de 1/2 pc
 	affiche_demi_uc() {
-		let res2 = "";
+		let res = "";
 		this.pc_15mn.forEach( (elem, index) => {
 			let cl = "left_1px";
 			if (index%4 === 0) cl = "left_2px";
 			if (index === 95) cl += " right_2px";
 			const demi = ((elem[1]+this.pc_instr_15mn[index][0]+this.pc_total_RD_15mn[index])%2 === 0) ? "" : "\u00bd";
-			res2 += `<td class='${cl} bottom_2px'>${demi}</td>`;
+			res += `<td class='${cl} bottom_2px'>${demi}</td>`;
 		});
-		let res = `<tr><td class='left_2px bottom_2px' colspan="3">Demi UC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
-		return res;
+		let result = `<tr><td class='left_2px bottom_2px' colspan="3">Demi UC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res}</tr>`;
+		return result;
 	}
 	
 	get_uceso_15mn() {
@@ -432,13 +462,13 @@ class feuille_capa extends capa {
 	//	uceso = partie entière nbr_pc/2
 	affiche_uceso() {
 		const uc = this.get_uceso_15mn();
-		let res3 = "";
+		let res = "";
 		this.compact(uc).forEach( elem => {
 			let nb_occ = elem[1] - elem[0] + 1;
-			res3 += `<td class="bordure_uc" colspan="${nb_occ}">${elem[2]}</td>`;
+			res += `<td class="bordure_uc" colspan="${nb_occ}">${elem[2]}</td>`;
 		});
-		let res = `<tr class="bold"><td class='left_2px bottom_2px' colspan="3">UCESO</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res3}</tr>`;
-		return res;
+		let result = `<tr class="bold"><td class='left_2px bottom_2px' colspan="3">UCESO</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res}</tr>`;
+		return result;
 	}
 		
 	// fabrique la ligne des heures du tableau
@@ -485,7 +515,13 @@ class feuille_capa extends capa {
 	}
 
 	add_pers (vac) {
-		let res = `<table><caption>${vac}<span data-vac='${vac}'></span></caption><thead><tr><th style="background: #444;">Nom</th><th style="background: #444;">Type</th></tr></thead><tbody>`;
+		let res = `
+		<table>
+			<caption>${vac}<span data-vac='${vac}'></span></caption>
+			<thead>
+				<tr><th style="background: #444;">Nom</th><th style="background: #444;">Type</th></tr>
+			</thead>
+			<tbody>`;
 		const eq = [];
 		this.add_travailleurs(vac, eq);
 		this.add_RO(vac, eq);
@@ -593,7 +629,6 @@ class simu_capa extends capa {
 	async init_simu() {
 		show_popup("Patientez !", "Chargement en cours...");
 		await this.init();
-		//this.pc_ini = this.pc_ini || await this.get_nbpc_dispo();
 		
 		console.log("pc_ini_simu_capa");
 		console.log(this.pc_ini);
@@ -661,10 +696,10 @@ class simu_capa extends capa {
 				}
 			})
 		}
-		
-		return `
+		let result = `
 		<tr data-vac='${vac}'>
-		<td class='eq left_2px right_1px bottom_2px' data-vac='${vac}'>${this.workingTeam[vac]}</td><td class='right_1px bottom_2px'>${vac}</td><td class='bottom_2px'>${cds}</td>
+			<td class='eq left_2px right_1px bottom_2px' data-vac='${vac}'>${this.workingTeam[vac]}</td>
+			<td class='right_1px bottom_2px'>${vac}</td><td class='bottom_2px'>${cds}</td>
 			<td class='nbpc bottom_2px' data-vacPC='${vac}'>${nbpc_vac}</td>
 			<td class='nbpc right_1px bottom_2px' data-vacDET='${vac}'>${nbpcdet_vac}</td>
 			<td class='bv right_1px bottom_2px' data-vacBV='${vac}'>${this.pc_vac[vac]["BV"]}</td>
@@ -672,6 +707,7 @@ class simu_capa extends capa {
 			<td class='right_1px bottom_2px'><div class="modify"><button class="minusBV minus" data-vac='${vac}'>-</button><span class="numberPlace" data-vacBV='${vac}'>0</span><button class="plusBV plus" data-vac='${vac}'>+</button></div></td>
 			<td class='right_2px bottom_2px'><div class="modify"><button class="minusPC minus" data-vac='${vac}'>-</button><span class="numberPlace" data-vacPC='${vac}'>0</span><button class="plusPC plus" data-vac='${vac}'>+</button></div></td>
 		</tr>`;
+		return result;
 	}
 
 	build_tab() {
@@ -696,8 +732,17 @@ class simu_capa extends capa {
 		*/
 		let res = `<table class="simu">
 					<thead>
-						<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px">CDS</th><th class="top_2px bottom_2px">PC</th><th class="top_2px bottom_2px right_1px">det</th><th class="top_2px bottom_2px right_1px">BV</th><th class="top_2px bottom_2px right_1px">BVini</th><th class="top_2px bottom_2px right_2px">Mod BV</th>
-						<th class="top_2px bottom_2px right_2px">Mod PC</th></tr>
+						<tr class="titre">
+							<th class="top_2px left_2px bottom_2px right_1px">Eq</th>
+							<th class="top_2px bottom_2px right_1px">Vac</th>
+							<th class="top_2px bottom_2px">CDS</th>
+							<th class="top_2px bottom_2px">PC</th>
+							<th class="top_2px bottom_2px right_1px">det</th>
+							<th class="top_2px bottom_2px right_1px">BV</th>
+							<th class="top_2px bottom_2px right_1px">BVini</th>
+							<th class="top_2px bottom_2px right_2px">Mod BV</th>
+							<th class="top_2px bottom_2px right_2px">Mod PC</th>
+						</tr>
 					</thead>
 					<tbody>`;
 		res += `${this.affiche_vac("JX")}`;
@@ -712,137 +757,78 @@ class simu_capa extends capa {
 		$('table').innerHTML = res;
 	}
 
+	/* 	--------------------------------------------------------
+			@return {
+				sousvac1: nb_pc,
+				sousvac2: nb_pc,
+				...
+			}
+		-------------------------------------------------------- */
 	get_default_repartition(vacation) {
 		const rep = {};
-
-		rep.A = Math.min(Math.floor(this.pc["pc_vac"][vacation]["nbpc"]/2), Math.floor((this.pc["pc_vac"][vacation]["BV"] + this.pc["pc_vac"][vacation]["renfort"] - this.pc["pc_vac"][vacation]["nbcds"] - this.pc["pc_vac"][vacation]["ROinduit"])/2));
-
-		rep.B = Math.min(Math.floor(this.pc["pc_vac"][vacation]["nbpc"]/2)+(this.pc["pc_vac"][vacation]["nbpc"])%2, Math.floor((this.pc["pc_vac"][vacation]["BV"] + this.pc["pc_vac"][vacation]["renfort"] - this.pc["pc_vac"][vacation]["nbcds"] - this.pc["pc_vac"][vacation]["ROinduit"])/2)+(this.pc["pc_vac"][vacation]["BV"] + this.pc["pc_vac"][vacation]["renfort"] - this.pc["pc_vac"][vacation]["nbcds"] - this.pc["pc_vac"][vacation]["ROinduit"])%2); 
-
+		let repart, reste, pc1, pc2;
+		let tour_vacation = vacation;
+		if (vacation === "N-1") tour_vacation = "N";
+		const sousvacs = this.pc.all_sv[tour_vacation];
+		const nb_sousvacs = sousvacs.length;
+		
+		switch (nb_sousvacs) {
+            case 2:
+				reste = this.pc_vac[vacation]["nbpc"] % 2;
+				if (reste === 0) {
+					repart = this.repartition[tour_vacation]["standard"]["sousvac2"]["reste0"];
+				}
+				if (reste === 1) {
+					repart = this.repartition[tour_vacation]["standard"]["sousvac2"]["reste1"];
+				}
+				pc1 = Math.floor(this.pc_vac[vacation]["nbpc"]/2);
+				pc2 = Math.floor((this.pc_vac[vacation]["BV"] + this.pc_vac[vacation]["renfort"] - this.pc_vac[vacation]["nbcds"] - this.pc_vac[vacation]["ROinduit"])/2);
+				sousvacs.forEach(sousvac => {
+					rep[sousvac] = Math.min(pc1 + repart[sousvac], pc2 + repart[sousvac]);
+				})
+                break;
+			case 3:
+				reste = this.pc_vac[vacation]["nbpc"] % 3;
+				if (reste === 0) {
+					repart = this.repartition[tour_vacation]["standard"]["sousvac3"]["reste0"];
+				}
+				if (reste === 1) {
+					repart = this.repartition[tour_vacation]["standard"]["sousvac3"]["reste1"];
+				}
+				if (reste === 2) {
+					repart = this.repartition[tour_vacation]["standard"]["sousvac3"]["reste2"];
+				}
+				pc1 = Math.floor(this.pc_vac[vacation]["nbpc"]/3);
+				pc2 = Math.floor((this.pc_vac[vacation]["BV"] + this.pc_vac[vacation]["renfort"] - this.pc_vac[vacation]["nbcds"] - this.pc_vac[vacation]["ROinduit"])/3);
+				sousvacs.forEach(sousvac => {
+					rep[sousvac] = Math.min(pc1 + repart[sousvac], pc2 + repart[sousvac]);
+				})
+				break;
+            default:
+				pc1 = this.pc_vac[vacation]["nbpc"];
+				pc2 = this.pc_vac[vacation]["BV"] + this.pc_vac[vacation]["renfort"] - this.pc_vac[vacation]["nbcds"] - this.pc_vac[vacation]["ROinduit"];
+				rep[sousvacs[0]] = Math.min(pc1, pc2);
+		}
 		return rep;
 	}
 
 	get_repartition (vacation) {
-		const rep = {};
 		let result;
-		switch (vacation){
-			case "JX":
-				result = this.get_default_repartition(vacation);
-				rep.A = result.A;
-				rep.B = result.B;
-				if (this.saison.includes("ete") && this.zone === "est") {
-					rep.B = result.A;
-					rep.A = result.B;
-				}
-				break;
-			case "S1":
-				result = this.get_default_repartition(vacation);
-				rep.A = result.A;
-				rep.B = result.B;
-				if (this.saison.includes("ete") && this.zone === "est") {
-					switch (this.pc["pc_vac"][vacation]["nbpc"]) {
-						case 6:
-							rep.A = 3;
-							rep.B = 3;
-							break;
-						case 7:
-							rep.A = 3;
-							rep.B = 4;
-							break;
-						case 8:
-							rep.A = 3;
-							rep.B = 5;
-							break;
-						case 9:
-							rep.A = 3;
-							rep.B = 6;
-							break;
-						case 10:
-							rep.A = 3;
-							rep.B = 7;
-							break;
-						case 11:
-							rep.A = 4;
-							rep.B = 7;
-							break;
-						case 12:
-							rep.A = 4;
-							rep.B = 8;
-							break;
-						case 13:
-							rep.A = 4;
-							rep.B = 9;
-							break;
-					}
-				}
-				if (this.saison.includes("ete") && this.zone === "ouest") {
-					const dat_jour = new Date(this.day);
-					const jour_sem = dat_jour.getDay(); // 0=dimanche
-					if (jour_sem === 2 || jour_sem === 3 || jour_sem === 4) {
-						rep.A = 0;
-						rep.B = this.pc["pc_vac"][vacation]["nbpc"];
-					} else {
-						switch (this.pc["pc_vac"][vacation]["nbpc"]) {
-							case 6:
-								rep.A = 3;
-								rep.B = 3;
-								break;
-							case 7:
-								rep.A = 3;
-								rep.B = 4;
-								break;
-							case 8:
-								rep.A = 3;
-								rep.B = 5;
-								break;
-							case 9:
-								rep.A = 3;
-								rep.B = 6;
-								break;
-							case 10:
-								rep.A = 3;
-								rep.B = 7;
-								break;
-							case 11:
-								rep.A = 4;
-								rep.B = 7;
-								break;
-							case 12:
-								rep.A = 4;
-								rep.B = 8;
-								break;
-							case 13:
-								rep.A = 4;
-								rep.B = 9;
-								break;
-						}
-					}
-				}
-				break;
-			case "N":
-				result = this.get_default_repartition(vacation);
-				rep.A = result.A;
-				rep.B = result.B;
-				if (this.pc["pc_vac"][vacation]["nbpc"] === 6) {
-					rep.A = 2;
-					rep.B = 4;
-				}
-				break;
-			case "N-1":
-				result = this.get_default_repartition(vacation);
-				rep.A = result.A;
-				rep.B = result.B;
-				if (this.pc["pc_vac"][vacation]["nbpc"] === 6) {
-					rep.A = 2;
-					rep.B = 4;
-				}
-				break;
-			default:
-				result = this.get_default_repartition(vacation);
-				rep.A = result.A;
-				rep.B = result.B;
-		}
-		return rep;
+		let tour_vacation = vacation;
+		if (vacation === "N-1") tour_vacation = "N";
+		const sousvacs = this.pc.all_sv[tour_vacation];
+		const svcle = "sousvac"+sousvacs.length;
+		const d = new Date(this.day);
+		const jours = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+		const weekday = jours[d.getDay()];
+		const pc_cle = "pc"+this.pc_vac[vacation]["nbpc"];
+
+		if (this.repartition[tour_vacation]["type_repartition"] === "fixe") {
+			result = this.repartition[tour_vacation]["fixe"][svcle][weekday][pc_cle];
+		} else {
+			result = this.get_default_repartition(vacation);
+		}	
+		return result;
 	}
 
 	modify_listener() {

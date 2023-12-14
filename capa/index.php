@@ -90,7 +90,7 @@
 
 <?php include("../php/nav.inc.php"); ?>
 
-<h1>FEUILLE CAPA v3.0</h1>
+<h1>FEUILLE CAPA v3.2</h1>
 <div id="help_frame" class="off">
 	<h2>Help</h2>
 	<p><span>Feuille</span> :<br>Cliquez sur ce bouton pour afficher la feuille de capa correspondante à la date et la zone choisie<br>Cliquez sur le nombre de pc dans la colonne PC afin de visualiser les effectifs par équipes. Cette case est surlignée lorsque l'effectif est différent de l'effectif OLAF</p>

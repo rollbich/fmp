@@ -12,6 +12,13 @@ body {
 	scroll-behavior: smooth;
 }
 
+input:invalid {
+	background-color: ivory;
+	border: none;
+	outline: 2px solid red;
+	border-radius: 5px;
+  }
+
 /* sert pour sélectionner les colonnes masquées (ne pas remplacer par .off) */
 .masque {
 	display: none;
@@ -215,7 +222,7 @@ table {
 	margin-left: 10px;
 	margin-right: 10px;
 	margin-bottom: 10px;
-	width:fit-content;
+	/*width:fit-content;*/
 }
 
 table.uceso {
@@ -643,6 +650,10 @@ td.supprime, td.vac_supp, td.vac_tds_delete {
 	cursor: pointer;
 }
 
+td.add_sousvac {
+	background-color: rgb(226, 226, 68);
+}
+
 td.vac_supp:hover, td[data-day]:hover, td.vac_tds_delete:hover, td.add_sousvac:hover {
 	background-color: rgba(226, 157, 68, 0.89);
 	cursor: pointer;
@@ -664,11 +675,14 @@ td.vac_supp:hover, td[data-day]:hover, td.vac_tds_delete:hover, td.add_sousvac:h
     margin: 70px auto;
 	overflow: hidden;
 	width: 250px;
+	
 }
 
 .form-group {
     margin-bottom: 10px;
 	width: 200px;
+	margin-left: 5px;
+	margin-top: 3px;
 }
 
 .form-label {
@@ -690,7 +704,7 @@ label {
     background-color: transparent;
     background-image: none;
     border: 2px solid #0a0909;
-    border-radius: 0;
+    border-radius: 4px;
     box-shadow: none;
     color: #555;
     display: block;
@@ -877,7 +891,7 @@ ul.menu_tds_editor li {
 	border-radius: .15rem;
 	width: 200px;
 	padding: .150rem .75rem;
-	margin: 30px auto;
+	margin: 20px auto;
 	font-family: 'PT Sans', sans-serif;
 	letter-spacing: 2px;
 }
@@ -1013,6 +1027,11 @@ td.delete_supp {
 }
 
 /* ------- weekdays selection -------- */
+.weekDays-selector {
+	width: 480px;
+	margin-left: 20px;
+}
+
 .weekDays-selector input {
 	display: none!important;
   }
@@ -1033,3 +1052,55 @@ td.delete_supp {
 	background: #2AD705;
 	color: #ffffff;
   }
+
+  /* gestion */
+table.gestion {
+	margin-bottom: 20px;
+	margin-left: 10px;
+}
+
+table.gestion th, table.gestion td {
+	width: 150px;
+	border: 1px solid rgb(20, 20, 20);
+	padding: 5px;
+}
+
+table.gestion td:hover, td.save_supp, td.delete_supp {
+	cursor: pointer;
+}
+
+table.gestion th.px80, table.gestion td.px80 {
+	width: 80px;
+}
+
+table.gestion select {
+	margin: 0;
+}
+
+td.gestion_validate {
+	color: greenyellow;
+}
+
+td.gestion_validate:hover {
+	background-color: rgb(189, 189, 133);
+}
+
+td.gestion_supprime {
+	color: rgb(253, 3, 3);
+}
+
+td.gestion_supprime:hover {
+	background-color: rgba(226, 157, 68, 0.89);
+}
+
+table.gestion td.fixe {
+    width: 80px;
+}
+
+.repartition_fixe_save_button {
+	margin-left: 20px;
+}
+
+#sousvacInputName{
+	margin-left: 10px;
+}

@@ -537,7 +537,6 @@ class capa {
 				---------------------------------------------------------------------------------------- */
 			$in15mn[$i] = [0, []];
 			
-			
 			foreach($this->instr as $index=>$elem) {
 				$debut = $elem["debut"];
 				$fin = $elem["fin"];
@@ -694,7 +693,7 @@ class capa {
 		$vacs = $this->get_clean_cycle();
 		$obj = new stdClass();
 		foreach($vacs as $vac) {
-			$obj->$vac = $this->get_sv($vac);
+			$obj->$vac = $this->get_sousvacs($vac);
 		}
 		return $obj;
 	}
@@ -745,128 +744,26 @@ class capa {
 				$pc2 = $this->pc->{$vacation}->BV + $this->pc->{$vacation}->renfort - $this->pc->{$vacation}->nbcds - $this->pc->{$vacation}->ROinduit;
 				$rep->$sousvacs[0] = min($pc1, $pc2);
 		}
-		/*
-		echo "$vacation<br>";
-		var_dump($rep);
-		echo "<br>";
-		*/
+
 		return $rep;
 	}
 
 	public function get_repartition(String $vacation) {
-		$rep = new stdClass();
-		switch ($vacation){
-			case "JX":
-				$result = $this->get_default_repartition($vacation);
-				$rep = $result;
-				break;
-			case "S1":
-				$result = $this->get_default_repartition($vacation);
-				$rep->A = $result->A;
-				$rep->B = $result->B;
-				if (str_contains($this->saison, "ete") && $this->zone === "est") {
-					switch ($this->pc->{$vacation}->nbpc) {
-						case 6:
-							$rep->A = 3;
-							$rep->B = 3;
-							break;
-						case 7:
-							$rep->A = 3;
-							$rep->B = 4;
-							break;
-						case 8:
-							$rep->A = 3;
-							$rep->B = 5;
-							break;
-						case 9:
-							$rep->A = 3;
-							$rep->B = 6;
-							break;
-						case 10:
-							$rep->A = 3;
-							$rep->B = 7;
-							break;
-						case 11:
-							$rep->A = 4;
-							$rep->B = 7;
-							break;
-						case 12:
-							$rep->A = 4;
-							$rep->B = 8;
-							break;
-						case 13:
-							$rep->A = 4;
-							$rep->B = 9;
-							break;
-					}
-				}
-				if ($this->saison === "ete" && $this->zone === "ouest") {
-					$d = new DateTime($this->day);
-					$jour_sem = (int) $d->format("w"); // 0=dimanche
-					if ($jour_sem === 2 || $jour_sem === 3 || $jour_sem === 4) {
-						$rep->A = 0;
-						$rep->B = $this->pc->{$vacation}->nbpc;
-					} else {
-						switch ($this->pc->{$vacation}->nbpc) {
-							case 6:
-								$rep->A = 3;
-								$rep->B = 3;
-								break;
-							case 7:
-								$rep->A = 3;
-								$rep->B = 4;
-								break;
-							case 8:
-								$rep->A = 3;
-								$rep->B = 5;
-								break;
-							case 9:
-								$rep->A = 3;
-								$rep->B = 6;
-								break;
-							case 10:
-								$rep->A = 3;
-								$rep->B = 7;
-								break;
-							case 11:
-								$rep->A = 4;
-								$rep->B = 7;
-								break;
-							case 12:
-								$rep->A = 4;
-								$rep->B = 8;
-								break;
-							case 13:
-								$rep->A = 4;
-								$rep->B = 9;
-								break;
-						}
-					}
-				}
-				break;
-			case "N":
-				$result = $this->get_default_repartition($vacation);
-				$rep->A = $result->A;
-				$rep->B = $result->B;
-				if ($this->pc->{$vacation}->nbpc === 6) {
-					$rep->A = 2;
-					$rep->B = 4;
-				}
-				break;
-			case "N-1":
-				$result = $this->get_default_repartition($vacation);
-				$rep->A = $result->A;
-				$rep->B = $result->B;
-				if ($this->pc->{$vacation}->nbpc === 6) {
-					$rep->A = 2;
-					$rep->B = 4;
-				}
-				break;
-			default:
-				$result = $this->get_default_repartition($vacation);
-				$rep = $result;
-		}
-		return $rep;
+		$tour_vacation = $vacation;
+		if ($vacation === "N-1") $tour_vacation = "N";
+		$sousvacs = $this->get_sv($tour_vacation);
+		$svcle = "sousvac".count($sousvacs);
+		$d = new DateTime($this->day);
+		$jours = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+		$weekday = $jours[$d->format("w")];
+		$pc_cle = "pc".$this->pc->{$vacation}->nbpc;
+
+		if ($this->repartition->{$tour_vacation}->type_repartition === "fixe") {
+			$result = $this->repartition->{$tour_vacation}->fixe->{$svcle}->{$weekday}->{$pc_cle};
+		} else {
+			$result = $this->get_default_repartition($vacation);
+		}	
+		return $result;
 	}
 
     /* ---------------------------------------------------
