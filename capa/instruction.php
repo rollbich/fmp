@@ -17,10 +17,22 @@
             inst("result");
 
             $('button_ajout').addEventListener('click', (event) => {
+                event.preventDefault();
+                const day = $('date_in').value;
+                const debut =  $('debut_in').value;
+                const fin =  $('fin_in').value;
+                console.log(day);
+                console.log(debut);
+                console.log(fin);
+                if ( day === "" || debut === "" || fin === "") {
+                    show_popup("Un des champ est vide", "V&eacute;rifiez les bordures rouges...");
+                    return;
+                }
+                
                 const ajout = { 
-                    "date": $('date_in').value,
-                    "debut": $('debut_in').value,
-                    "fin": $('fin_in').value,
+                    "date": day,
+                    "debut": debut,
+                    "fin": fin,
                     "zone": $('zone_in').value.toLowerCase(),
                     "type": $('type_in').value,
                     "comm": $('com_in').value
@@ -37,6 +49,12 @@
                     } else {
                     }
                 })
+            });
+
+            document.querySelector('#popup-wrap a.popup-close').addEventListener('click', e => {
+                e.preventDefault();
+                document.querySelector('#popup-wrap div.popup-box').classList.remove('transform-in');
+                document.querySelector('#popup-wrap div.popup-box').classList.add('transform-out');
             });
 
         });
@@ -58,18 +76,18 @@
     <div id="result"></div>
     <div id="cont">
     <div class="formu">     
-    <form action="" method="post">                   
+    <form id="instr_form" action="">                   
         <div class="form-group">
             <label class="form-label" for="date_in">Date:</label>
-            <input class="form-control" id="date_in" name="date_in" placeholder="Date" type="date">
+            <input class="form-control" id="date_in" name="date_in" placeholder="Date" type="date" required>
         </div>      
         <div class="form-group">
             <label class="form-label" for="debut_in">Début:</label>
-            <input class="form-control" id="debut_in" name="debut_in" placeholder="Debut" type="time">
+            <input class="form-control" id="debut_in" name="debut_in" placeholder="Debut" type="time" required>
         </div>
         <div class="form-group">
             <label class="form-label" for="fin_in">Fin:</label>
-            <input class="form-control" id="fin_in" name="fin_in" placeholder="Fin" type="time">
+            <input class="form-control" id="fin_in" name="fin_in" placeholder="Fin" type="time" required>
         </div>
         <div class="form-group">
             <label class="form-label" for="zone_in">Zone:</label>
@@ -94,10 +112,18 @@
             <label class="form-label" for="com_in">Comm:</label>
             <input class="form-control" id="com_in" name="com_in" placeholder="Secteur / Commentaire" type="texte" size="22" maxlength="22">
         </div>
-        <button id='button_ajout' type='button' class="btn">Ajouter</button>
+        <button id='button_ajout' type='submit' class="btn">Ajouter</button>
     </form>
     </div>
     </div>
+</div>
+
+<div id="popup-wrap" class="off" >
+  <div class="popup-box">
+    <h2></h2>
+    <h3></h3>
+    <a class="close-btn popup-close" href="#">x</a>
+  </div>
 </div>
 
 </body>

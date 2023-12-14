@@ -349,6 +349,10 @@ class bdd {
         $stmt->execute();
     }
 
+    /*  ---------------------------------------------------------------
+            Répartition
+        --------------------------------------------------------------- */
+
     public function get_all_repartition() {
         $cycle = $this->get_cycle();
         $table = "tds_repartition_$this->zone";
@@ -383,6 +387,18 @@ class bdd {
            }
         }
         return $obj;
+    }
+
+    // @param $saison   - String - "hiver_2024"
+    // @param $vac      - String - "J1"
+    // @param $saison   - Int    - "standard" ou "fixe"
+    public function change_type_repartition(string $saison, string $vac, string $value) {
+        if (strcmp($value, "standard") !== 0 && strcmp($value, "fixe") !== 0) return;
+        $table = "tds_repartition_$this->zone";
+        $req = "UPDATE $table SET $vac = JSON_SET($vac, '$.type_repartition', '$value') WHERE nom_tds = '$saison'";
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        echo "change_type_repartition $saison $vac = $value : OK";
     }
 
     public function set_repartition(string $saison, string $vac, string $json) {
