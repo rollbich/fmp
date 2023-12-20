@@ -77,7 +77,7 @@ class tds_editor {
         </div>
         <div id="plage" class=""></div>
         <div id="result" class=""></div>
-        <div id="result_supp" class=""></div>`;
+        <div id="result_greve" class=""></div>`;
 
         $(this.containerId).innerHTML = html;
 
@@ -122,6 +122,9 @@ class tds_editor {
         let saison = saison_select ?? $('saison').value;
         this.affiche_tds("result", saison);
         this.add_listener_tds_supprime();
+
+        this.affiche_tds("result_greve", saison, true);
+        this.add_listener_tds_supprime(true);
         
     }	
 
@@ -260,13 +263,22 @@ class tds_editor {
         @param {string} saison      - "hiver" "ete" "mi-saison-basse" "mi-saison-haute"
         @param {string} zone        - "est" ou "ouest"
     ------------------------------------------------------------------------------------------ */
-    affiche_vac(vac, saison) {
-        const nb_cds = this.data["tds_local"][saison][vac]["nb_cds"];
-		let res = "";
+    affiche_vac(vac, saison, greve = false) {
+        let res = "";
         let ligne = 1;
-        let nbr_sousvac = Object.keys(this.data["tds_local"][saison][vac]).length - 1;
-        
-        for (const [sousvac, tds] of Object.entries(this.data["tds_local"][saison][vac])) {
+        let g;
+        let type_tds;
+        if (greve === true) {
+            g = "yes";
+            type_tds = "tds_greve";
+        } else {
+            g = "no";
+            type_tds = "tds_local";
+        }
+        const nb_cds = this.data[type_tds][saison][vac]["nb_cds"];
+        const nbr_sousvac = Object.keys(this.data[type_tds][saison][vac]).length - 1;
+
+        for (const [sousvac, tds] of Object.entries(this.data[type_tds][saison][vac])) {
             
             res += '<tr>';
             if (sousvac !== "nb_cds") { // && sousvac !== "cds"
@@ -276,7 +288,7 @@ class tds_editor {
                 if (sousvac !== "cds") {
                     res += `<td class='${cla}'></td><td class='${cla2}'>${sousvac}</td>`;
                 } else {
-                    res += `<td class='${cla} add_sousvac' data-saison='${saison}' data-vac='${vac}' data-nbcds='${nb_cds}'>${vac}</td><td class='pc ${cla2}' data-saison='${saison}' data-nbcds='${nb_cds}' data-vac='${vac}'>cds: ${nb_cds}</td>`;
+                    res += `<td class='${cla} add_sousvac' data-greve='${g}' data-saison='${saison}' data-vac='${vac}' data-nbcds='${nb_cds}'>${vac}</td><td class='pc ${cla2}' data-saison='${saison}' data-nbcds='${nb_cds}' data-vac='${vac}'>cds: ${nb_cds}</td>`;
                 }
                 for(let index=0;index<96;index++) {
                     let case_tds = tds[index];
@@ -285,13 +297,13 @@ class tds_editor {
                     if (index === 95) { cl += " right_2px";}
                     if (index%4 === 0) { cl += " left_2px";}
                     if (ligne > nbr_sousvac) { cl += " bottom_2px";}
-                    res += `<td class='${cl} standard' data-vac='${vac}' data-sousvac='${sousvac}' data-col='${index}' data-saison='${saison}'>${case_tds || ''}</td>`;
+                    res += `<td class='${cl} standard' data-vac='${vac}' data-sousvac='${sousvac}' data-col='${index}' data-saison='${saison}' data-greve='${g}'>${case_tds || ''}</td>`;
                 }
                 let cl = "right_2px";
                 if (ligne > nbr_sousvac) { cl += " bottom_2px";}
                 if (sousvac !== "cds") { 
                     cl += " vac_tds_delete"
-                    res += `<td class='${cl}' data-zone='${this.zone}' data-saison='${saison}' data-vac='${vac}' data-sousvac='${sousvac}'>x</td>`;
+                    res += `<td class='${cl}' data-zone='${this.zone}' data-saison='${saison}' data-vac='${vac}' data-sousvac='${sousvac}' data-greve='${g}'>x</td>`;
                 } else {
                     res += `<td class='${cl}'></td>`;
                 }
@@ -302,10 +314,18 @@ class tds_editor {
         return res;
     }
 
-    affiche_tds(containerId, saison) {
+    affiche_tds(containerId, saison, greve = false) {
         let res = "";
+        let titre = "";
+        let g = "";
+        let bg = "";
+        if (greve === true) {
+            titre = "- Greve";
+            g = "greve_";
+            bg = "#F005";
+        }
         res += `<table class="ouverture">
-        <caption>TDS ${saison} - ${capitalizeFirstLetter(this.zone)}  <button id='button_tds_${saison}' type="button" class="button_tour">Save</button> -  <span style="font-size: 1.3rem; background-color: yellow;">Gestion : clic sur les cases Vac en jaunes</span></caption>
+        <caption style="background-color: ${bg}">TDS ${saison} - ${capitalizeFirstLetter(this.zone)} ${titre} <button id='button_tds_${g}${saison}' type="button" class="button_tour">Save</button> -  <span style="font-size: 1.3rem; background-color: yellow;">Gestion : clic sur les cases Vac en jaunes</span></caption>
         <thead>
             <tr class="titre">
                 <th class="top_2px left_2px right_1px bottom_2px">Vac</th>
@@ -316,14 +336,14 @@ class tds_editor {
         </thead>
         <tbody>`;
         this.data["cycle"].forEach(vac => {
-            if (vac != "") res += `${this.affiche_vac(vac, saison)}`;
+            if (vac != "") res += `${this.affiche_vac(vac, saison, greve)}`;
         })
         res += `<tr class="titre"><td class='bottom_2px left_2px right_1px' colspan="2">Heures loc</td>${this.heure()}`;
         res += '</tbody></table>';
         $(containerId).innerHTML = res;
-        this.add_listener(saison);
-        this.add_create_sousvac_listener();
-        this.add_save_listener(saison);
+        this.add_listener(saison, greve);
+        this.add_create_sousvac_listener(greve);
+        this.add_save_listener(saison, greve);
     }
 
     /*  ------------------------------------------------------------------------
@@ -343,15 +363,24 @@ class tds_editor {
             Ajout la gestion des clicks sur la croix pour supprimer une sousvac d'un tds   
         --------------------------------------------------------------------------------------------- */
 
-    add_listener_tds_supprime() {
-        const cases = document.querySelectorAll(`td.vac_tds_delete`);
+    add_listener_tds_supprime(greve = false) {
+        let cases;
+        let tds;
+        if (greve === true) {
+            cases = document.querySelectorAll(`td.vac_tds_delete[data-greve='yes']`);
+            tds = "tds_greve";
+        } else {
+            cases = document.querySelectorAll(`td.vac_tds_delete[data-greve='no']`);
+            tds = "tds_local";
+        }
+    
         for (const td of cases) {
             td.addEventListener('click', async (e) => { 
                 let zone = td.dataset.zone;	
                 let saison = td.dataset.saison;	
                 let vac = td.dataset.vac;
                 let sousvac = td.dataset.sousvac;	
-                const tour = {"fonction": "delete_sousvac", "zone": zone, "saison": saison, "vac": vac, "sousvac":sousvac}	
+                const tour = {"fonction": "delete_sousvac", "zone": zone, "saison": saison, "greve": greve, "vac": vac, "sousvac":sousvac}	
                 var data = {
                     method: "post",
                     headers: { "Content-Type": "application/json" },
@@ -370,8 +399,15 @@ class tds_editor {
             @param {string} saison      - "hiver-2024" ...
         --------------------------------------------------------------------------------------------- */
 
-    add_listener(saison) {
-        const cases = document.querySelectorAll(`td.standard[data-saison=${saison}]`);
+    add_listener(saison, greve) {
+        let cases, tds;
+        if (greve === true) {
+            cases = document.querySelectorAll(`td.standard[data-saison=${saison}][data-greve='yes']`);
+            tds = "tds_greve";
+        } else {
+            cases = document.querySelectorAll(`td.standard[data-saison=${saison}][data-greve='no']`);
+            tds = "tds_local";
+        }
         for (const td of cases) {
             td.addEventListener('click', (event) => {
                 let sousvac = td.dataset.sousvac;
@@ -380,20 +416,20 @@ class tds_editor {
                 const val = (td.innerHTML === '1') ? 0 : 1;
                 td.innerHTML = (td.innerHTML === '1') ? '' : '1';
                 td.classList.toggle('bg');
-                this.data["tds_local"][saison][vac][sousvac][col] = val;
+                this.data[tds][saison][vac][sousvac][col] = val;
             });
         }
     }
 
-    add_create_sousvac_listener() {
-        const elems = document.querySelectorAll(`td.add_sousvac`);
+    add_create_sousvac_listener(greve = false) {
+    let elems;
+    if (greve === true) elems = document.querySelectorAll(`td.add_sousvac[data-greve='yes']`); else elems = document.querySelectorAll(`td.add_sousvac[data-greve='no']`);
         for (const td of elems) {
             td.addEventListener('click', (event) => {
                 const vac = td.dataset.vac;
                 const saison = td.dataset.saison;
                 const nb_cds = td.dataset.nbcds;
                 const pos = td.getBoundingClientRect();
-                // <input type="text" class="form-control" id="sousvacInputName" placeholder="Nom de la sous-vac">
                 let modal = ` 
                 <div class="modal-dialog" role="document">
                   <div class="modal-content">
@@ -444,7 +480,7 @@ class tds_editor {
                 
                 $('create_sousvac_button').addEventListener('click', async (e) => {
                     const sousvac = $('sousvacInputName').value;
-                    const save_sousvac = { "zone": this.zone, "saison": saison, "vac": vac, "sousvac": sousvac, "fonction": "add_sousvac"}
+                    const save_sousvac = { "zone": this.zone, "saison": saison, "greve": greve, "vac": vac, "sousvac": sousvac, "fonction": "add_sousvac"}
                     const data = {
                         method: "post",
                         headers: { "Content-Type": "application/json" },
@@ -459,7 +495,7 @@ class tds_editor {
 
                 $('change_CDS_button').addEventListener('click', async (e) => {
                     const nbcds = $('cdsInputNumber').value;
-                    const save_cds = { "zone": this.zone, "saison": saison, "vac": vac, "nbcds": nbcds, "fonction": "change_cds"}
+                    const save_cds = { "zone": this.zone, "saison": saison, "greve": greve, "vac": vac, "nbcds": nbcds, "fonction": "change_cds"}
                     const data = {
                         method: "post",
                         headers: { "Content-Type": "application/json" },
@@ -477,9 +513,15 @@ class tds_editor {
     }
 
     // Met en place les listeners des boutons save des différents tds
-    add_save_listener(saison) {
-        const tour = { "zone": this.zone, "saison": saison, "tds": this.data["tds_local"][saison], "fonction": "save_tds"}
-        $(`button_tds_${saison}`).addEventListener('click', async (e) => {
+    add_save_listener(saison, greve = false) {
+        let tds = "tds_local";
+        let g = "";
+        if (greve === true) {
+            tds = "tds_greve";
+            g = "greve_";
+        }
+        const tour = { "zone": this.zone, "saison": saison, "greve": greve, "tds": this.data[tds][saison], "fonction": "save_tds"}
+        $(`button_tds_${g}${saison}`).addEventListener('click', async (e) => {
             var data = {
                 method: "post",
                 headers: { "Content-Type": "application/json" },
@@ -535,7 +577,7 @@ class tds_editor {
                 <form>
                     <div class="form-group">
                     <label for="cree_saison">Saison: </label>
-                    <input type="text" id="cree_saison" name="cree_saison" required minlength="2" maxlength="10" size="10" placeholder="nom du tds"/>
+                    <input type="text" id="cree_saison" name="cree_saison" required minlength="2" maxlength="11" size="11" placeholder="nom du tds"/>
                     </div>
                     <p>Le nom du TDS doit se terminer par un underscore suivi de l'ann&eacute;e</p>
                     <button id="add_TDS_button" type="button" class="btn btn-primary">Ajouter TDS</button>
@@ -571,7 +613,7 @@ class tds_editor {
                         modal += `
                         </select>
                         <label for="duplicate_saison">TDS: </label>
-                        <input type="text" id="duplicate_new_TDS" name="duplicate_saison" required minlength="2" maxlength="10" size="10" placeholder="nouveau nom"/>
+                        <input type="text" id="duplicate_new_TDS" name="duplicate_saison" required minlength="2" maxlength="11" size="11" placeholder="nouveau nom"/>
                     </div>
                     <p>&nbsp;</p>
                     <button id="duplicate_TDS_button" type="button" class="btn btn-primary">Dupliquer TDS</button>

@@ -2,6 +2,9 @@
 require_once("configsql.inc.php");
 require_once("pdo.class.php");
 
+// ex ajout avec json
+// $req = "INSERT INTO $table (JX) VALUES ('$nom', '{\"category\": \"Landmark\", \"lastVisitDate\": \"11/10/2019\"}')";
+
 class bdd {
 
     private $client;
@@ -51,9 +54,10 @@ class bdd {
             }
         -------------------------------------------------------------------------- */
 
-    public function get_tds(string $saison = "") {
+    public function get_tds(string $saison = "", $greve = false) {
         if (strcmp($saison, "") === 0) $saison = $this->saison;
         $table = "tds_$this->zone";
+        if ($greve === true) $table = "tds_greve_$this->zone";
         $req = "SELECT * FROM $table WHERE nom_tds = '$saison'"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
@@ -79,8 +83,9 @@ class bdd {
                 ...
             }
          -------------------------------------------------------------------------- */
-    public function get_all_tds() {
+    public function get_all_tds($greve = false) {
         $table = "tds_$this->zone";
+        if ($greve === true) $table = "tds_greve_$this->zone";
         $req = "SELECT * FROM $table"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
@@ -100,26 +105,41 @@ class bdd {
 
     public function add_tds(string $nom) {
         $table = "tds_$this->zone";
-       // $req = "INSERT INTO $table (JX) VALUES ('$nom', '{\"category\": \"Landmark\", \"lastVisitDate\": \"11/10/2019\"}')";
         $req = "INSERT INTO $table (nom_tds) VALUES ('$nom')"; // simple quote autour de $nom obligatoire
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
+        $table2 = "tds_repartition_$this->zone";
+        $req2 = "INSERT INTO $table2 (nom_tds) VALUES ('$nom')"; // simple quote autour de $nom obligatoire
+        $stmt2 = Mysql::getInstance()->prepare($req2);
+        $stmt2->execute();
+        $table3 = "tds_greve_$this->zone";
+        $req3 = "INSERT INTO $table3 (nom_tds) VALUES ('$nom')"; // simple quote autour de $nom obligatoire
+        $stmt3 = Mysql::getInstance()->prepare($req3);
+        $stmt3->execute();
     }
 
     public function delete_tds(string $nom) {
         $table = "tds_$this->zone";
-       // $req = "INSERT INTO $table (JX) VALUES ('$nom', '{\"category\": \"Landmark\", \"lastVisitDate\": \"11/10/2019\"}')";
         $req = "DELETE FROM $table WHERE nom_tds = '$nom'";
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
+        $table2 = "tds_repartition_$this->zone";
+        $req2 = "DELETE FROM $table2 WHERE nom_tds = '$nom'";
+        $stmt2 = Mysql::getInstance()->prepare($req2);
+        $stmt2->execute();
+        $table3 = "tds_greve_$this->zone";
+        $req3 = "DELETE FROM $table3 WHERE nom_tds = '$nom'";
+        $stmt3 = Mysql::getInstance()->prepare($req3);
+        $stmt3->execute();
     }
 
     /*  ------------------------------------------------------------------------------------------------------------
             sauve une saison avec toutes les vacs
             @param $tds_json - Object { "JX": {"nb_cds": 0, "cds", [...], "A": [...]...}, "J1": ...,...} }
         ------------------------------------------------------------------------------------------------------------ */
-    public function set_tds(string $saison, $tds_obj) {
+    public function set_tds(string $saison, $tds_obj, bool $greve) {
         $table = "tds_$this->zone";
+        if ($greve === true) $table = "tds_greve_$this->zone";
         $vacs = array_keys(get_object_vars($tds_obj)); // array des vacs
         /*
         echo "<pre>";
@@ -128,7 +148,7 @@ class bdd {
         echo "</pre>";
         */
        foreach($vacs as $vac) {
-            $this->set_vac($saison, $vac, $tds_obj);
+            $this->set_vac($saison, $vac, $tds_obj, $greve);
        }
 
     }
@@ -144,9 +164,9 @@ class bdd {
         sauve une vac d'une saison
         @param $tds_json - Object { zone: "est", saison: "hiver_2024", tds_local: {"JX": ..., "J1": ...,...} }
     ------------------------------------------------------------------------------------------------------------ */
-    private function set_vac(string $saison, string $vac, $tds_obj) {
+    private function set_vac(string $saison, string $vac, $tds_obj, bool $greve) {
         $table = "tds_$this->zone";
-        
+        if ($greve === true) $table = "tds_greve_$this->zone";
         // get all keys but "nb_cds" and "cds" => get all sousvacs
         $sousvacs = array_keys(get_object_vars($tds_obj->$vac));
         if (($key = array_search("nb_cds", $sousvacs)) !== false) {
@@ -174,15 +194,17 @@ class bdd {
 
     }
 
-    public function add_sous_vac(string $saison, string $vac, string $nom_sous_vac) {
+    public function add_sous_vac(string $saison, string $vac, string $nom_sous_vac, bool $greve) {
         $table = "tds_$this->zone";
+        if ($greve === true) $table = "tds_greve_$this->zone";
         $req = "UPDATE $table SET $vac = JSON_COMPACT(JSON_INSERT($vac,'$.$nom_sous_vac',JSON_ARRAY(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0))) WHERE nom_tds = '$saison'";
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
     }
 
-    public function remove_sous_vac(string $saison, string $vac, string $nom_sous_vac) {
+    public function remove_sous_vac(string $saison, string $vac, string $nom_sous_vac, bool $greve) {
         $table = "tds_$this->zone";
+        if ($greve === true) $table = "tds_greve_$this->zone";
         $req = "UPDATE $table SET $vac = JSON_REMOVE($vac, '$.$nom_sous_vac') WHERE nom_tds = '$saison'";
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
@@ -190,8 +212,9 @@ class bdd {
 
     // @param $tds_json - Object { zone: "est", saison: "hiver_2024", tds_local: {"JX": ..., "J1": ...,...} }
     //  change only a key whose value is array
-    public function set_sousvac(string $saison, string $vac, string $sousvac, $tds_obj) {
+    public function set_sousvac(string $saison, string $vac, string $sousvac, $tds_obj, bool $greve) {
         $table = "tds_$this->zone";
+        if ($greve === true) $table = "tds_greve_$this->zone";
         $value = implode(', ', $tds_obj->$vac->$sousvac); // string "0,0,1...,0" 96 valeurs
         $req = "UPDATE $table SET $vac = JSON_COMPACT(JSON_SET($vac, '$.$sousvac', JSON_ARRAY($value))) WHERE nom_tds = '$saison'";
         $stmt = Mysql::getInstance()->prepare($req);
@@ -199,8 +222,9 @@ class bdd {
     }
 
     // @return JSON string - {nb_cds: 1}
-    public function get_nb_cds(string $vac) {
+    public function get_nb_cds(string $vac, bool $greve) {
         $table = "tds_$this->zone";
+        if ($greve === true) $table = "tds_greve_$this->zone";
         $req = "SELECT JSON_VALUE($vac, '$.nb_cds') AS nb_cds FROM $table";
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
@@ -212,8 +236,9 @@ class bdd {
     // @param $vac      - String - "J1"
     // @param $saison   - Int    - 0 ou 1
     //  change nb_cds key 
-    public function change_cds(string $saison, string $vac, int $value) {
+    public function change_cds(string $saison, string $vac, int $value, bool $greve) {
         $table = "tds_$this->zone";
+        if ($greve === true) $table = "tds_greve_$this->zone";
         $req = "UPDATE $table SET $vac = JSON_COMPACT(JSON_SET($vac, '$.nb_cds', $value)) WHERE nom_tds = '$saison'";
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
@@ -372,10 +397,11 @@ class bdd {
         return $obj;
     }
     
-    public function get_repartition(string $saison = "") {
+    public function get_repartition(string $saison = "", bool $greve = false) {
         if (strcmp($saison, "") === 0) $saison = $this->saison;
         $cycle = $this->get_cycle();
         $table = "tds_repartition_$this->zone";
+        if ($greve === true) $table = "tds_repartition_greve_$this->zone";
         $req = "SELECT * FROM $table WHERE nom_tds = '$saison'"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();

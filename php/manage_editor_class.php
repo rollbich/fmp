@@ -56,6 +56,7 @@ class editor {
 		$this->current_tds = $this->bdd->get_current_tds();
 		$this->tds_supp_local = $this->bdd->get_all_tds_supp();
 		$this->tds_repartition = $this->bdd->get_all_repartition();
+		$this->tds_greve = $this->bdd->get_all_tds(true);
 	}
 
 	// @return ["JX", "J1", "J3", "S2", "J2", "S1", "N"]
@@ -90,6 +91,7 @@ class editor {
 		$res->repartition = $this->tds_repartition;
 		$res->cycle = $this->cycle;
 		$res->clean_cycle = $this->clean_cycle;
+		$res->tds_greve = $this->tds_greve;
 		return $res;
 
     }

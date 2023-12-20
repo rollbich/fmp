@@ -62,8 +62,38 @@ require_once("config_olaf.php");
 			}
 		},
 		"5-E":
-			{"teamReserve": etc...
+			{"teamReserve": etc...}
+		...
+		headerList: {"J2":{label: "J1"}, ...}
+		Renfort: {...},
+		contextmenutype: {...}
  --------------------------------------------------------- */
+ /* ---------------------------------------------------------
+				Greve
+	---------------------------------------------------------
+	2023-11-20 : {
+		5-E: {...},
+		4-E: {...},
+		...
+		contextmenutype: {
+			323958: {
+				id_renfort: "3947",
+				id_licence: "4000942",
+				label: "Requis1",
+				idagent: "4000942",
+				prenom: "Quentin",
+				nom: "AUBERT"
+			},
+			323959: {
+				...
+				label: "Requis2",
+				prenom: "Sarah",
+				nom: "AMZALLAG"
+			},
+			...
+		}
+	}
+	*/
 
 function get_olaf($zone, $date, $yesterdate) {
 	

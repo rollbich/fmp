@@ -16,7 +16,7 @@ if ($contentType === "application/json") {
     $bdd = new bdd("", $content->zone);
     switch($fonction){
         case "save_tds":
-            $bdd->set_tds($content->saison, $content->tds);
+            $bdd->set_tds($content->saison, $content->tds, (bool) $content->greve);
             break;
         case "add_tds":
             $bdd->add_tds($content->saison);
@@ -28,13 +28,13 @@ if ($contentType === "application/json") {
             $bdd->duplicate_tds($content->tds_to_copy, $content->new_tds_name);
             break;
         case "delete_sousvac":
-            $bdd->remove_sous_vac($content->saison, $content->vac, $content->sousvac);
+            $bdd->remove_sous_vac($content->saison, $content->vac, $content->sousvac, (bool) $content->greve);
             break;
         case "add_sousvac":
-            $bdd->add_sous_vac($content->saison, $content->vac, $content->sousvac);
+            $bdd->add_sous_vac($content->saison, $content->vac, $content->sousvac, (bool) $content->greve);
             break;
         case "change_cds":
-            $bdd->change_cds($content->saison, $content->vac, (int) $content->nbcds);
+            $bdd->change_cds($content->saison, $content->vac, (int) $content->nbcds, (bool) $content->greve);
             break;
         case "save_uceso":
             $bdd->save_uceso($content->day, $content->typejour, (int) $content->i1, $content->uceso, $content->realise, (int) $content->maxsecteurs, $content->tvh, $content->nbpc);
