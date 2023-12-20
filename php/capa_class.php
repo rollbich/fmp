@@ -120,13 +120,16 @@ class capa {
 	public function init() {
 		$this->timeOffset = $this->get_decalage();
 		$this->tour_local = $this->bdd->get_tds();
+		$this->tour_local_greve = $this->bdd->get_tds("", true);
 		$this->saison = $this->bdd->get_current_tds();
 		$this->tour_utc = $this->get_tour_utc();
+		$this->tour_utc_greve = $this->get_tour_utc(true);
 		$this->tds_supp_local = $this->bdd->get_tds_supp();
 		$this->tds_supp_utc = $this->get_tds_supp_utc();
 		$this->instr = $this->bdd_instr->get_creneaux_day($this->day, $this->zone);
 		$this->tab_vac_eq = $this->get_vac_eq();
 		$this->repartition = $this->bdd->get_repartition();
+		$this->repartition_greve = $this->bdd->get_repartition("", true);
 		$yesterday = new DateTime($this->day);
         $yesterday = $yesterday->modify("-1 day");
 		$this->yesterday = $yesterday->format("Y-m-d");
@@ -308,8 +311,10 @@ class capa {
 				$this->pc->{$vac}->ROinduit = (int) $this->effectif->{$jour}->{$p}->teamReserve->roInduction;
 				if ($vac === "N-1") {
 					$this->pc->{$vac}->nbcds = (int) $this->tour_local->N->nb_cds;
+					$this->pc->{$vac}->nbcds_greve = (int) $this->tour_local_greve->N->nb_cds;
 				} else {
 					$this->pc->{$vac}->nbcds = (int) $this->tour_local->{$vac}->nb_cds;
+					$this->pc->{$vac}->nbcds_greve = (int) $this->tour_local_greve->{$vac}->nb_cds;
 				}
 				$this->pc->{$vac}->nbpc = (int) $this->effectif->{$jour}->{$p}->teamReserve->teamQuantity - (int) $this->pc->{$vac}->nbcds; 
 				$this->pc->{$vac}->BV = (int) $this->effectif->{$jour}->{$p}->teamReserve->BV;
@@ -448,15 +453,55 @@ class capa {
 					$this->pc->{$vac}->conge = [];
 				}
 
+				// Récupère les requis
+				/* contextmenutype: {
+					323958: {
+						id_renfort: "3947",
+						id_licence: "4000942",
+						label: "Requis1",
+						idagent: "4000942",
+						prenom: "Quentin",
+						nom: "AUBERT"
+					},...
+				*/
+				$tags = array_keys(get_object_vars($this->effectif->{$this->day}->contextmenutype));
+				$this->pc->{$vac}->requis = [];
+				foreach ($tags as $cle) {
+					$val = $this->effectif->{$this->day}->contextmenutype->$cle;
+					if (str_contains($val->label, "Requis")) {
+						foreach (array_keys(get_object_vars($this->pc->{$vac}->teamToday)) as $key) {
+							$valeur = $this->pc->{$vac}->teamToday->$key;
+							if (strcmp($valeur->nom, $val->nom) === 0 && strcmp($valeur->prenom, $val->prenom) === 0) {
+								$obj = new stdClass();
+								$obj->nom = $valeur->nom;
+								$obj->prenom = $valeur->prenom;
+								array_push($this->pc->{$vac}->requis, $obj);
+							}
+						}
+						foreach (array_keys(get_object_vars($this->pc->{$vac}->renfortAgent)) as $key) {
+							$valeur = $this->pc->{$vac}->renfortAgent->$key;
+							if (strcmp($val->nom, $valeur->nom) === 0 && strcmp($val->prenom, $valeur->prenom) === 0) {
+								$obj = new stdClass();
+								$obj->nom = $valeur->nom;
+								$obj->prenom = $valeur->prenom;
+								array_push($this->pc->{$vac}->requis, $obj);
+							}
+						}
+					}
+				}
+				$this->pc->{$vac}->nb_requis = count($this->pc->{$vac}->requis);
+
 			} else {
 				$this->pc->{$vac}->ROinduit = 0;
 				$this->pc->{$vac}->nbcds = 0;
+				$this->pc->{$vac}->nbcds_greve = 0;
 				$this->pc->{$vac}->nbpc = $nb_jx; 
 				$this->pc->{$vac}->BV = 10;
 				$this->pc->{$vac}->RO = 0;
 				$det = 0; 
 				$this->pc->{$vac}->renfort = $nb_jx_det;
 				$this->pc->{$vac}->renfortAgent = new stdClass();
+				$this->pc->{$vac}->nb_requis = 0;
 			}
 		} 
 
@@ -464,8 +509,10 @@ class capa {
 		// En 24h, il y a 96 créneaux de 15mn.
 		// [ ["hh:mm", nb_pc_dispo], [...], ... ]
 		$nb_pc = 0;
+		$nb_pc_greve = 0;
 		$pcs = []; // total pc hors instr & hors RD bleu supp (les RD Jx sont inclus)
 		$pct = []; // total pc
+		$pct_greve = [];
 		$ucesos = [];
 		$in15mn = []; // nbre de pc instruction par 15 mn
 		// effectif_RD_15mn = {
@@ -481,21 +528,33 @@ class capa {
 		array_push($vacs, "N-1");
 
 		$nb_pc_sousvac = new stdClass();
+		$nb_pc_sousvac_greve = new stdClass();
 		foreach($vacs as $vacation) {
 			$sv = $this->get_sousvacs($vacation);
+			$sv_greve = $this->get_sousvacs($vacation, true);
 			$nb_pc_sousvac->{$vacation} = new StdClass();
+			$nb_pc_sousvac_greve->{$vacation} = new StdClass();
 			$nb_pc_sousvac->{$vacation}->cds = [];
+			$nb_pc_sousvac_greve->{$vacation}->cds = [];
 			foreach($sv as $sousvac) {
 				$nb_pc_sousvac->{$vacation}->$sousvac = [];
+			}
+			foreach($sv_greve as $sousvac) {
+				$nb_pc_sousvac_greve->{$vacation}->$sousvac = [];
 			}
 		}
 
 		for($i=0;$i<96;$i++) {
 			foreach($vacs as $vacation) {
 				$sv = $this->get_sousvacs($vacation);
+				$sv_greve = $this->get_sousvacs($vacation, true);
 				$nb_pc_sousvac->{$vacation}->cds[$i] = 0;
+				$nb_pc_sousvac_greve->{$vacation}->cds[$i] = 0;
 				foreach($sv as $sousvac) {
 					$nb_pc_sousvac->$vacation->{$sousvac}[$i] = 0;
+				}
+				foreach($sv_greve as $sousvac) {
+					$nb_pc_sousvac_greve->$vacation->{$sousvac}[$i] = 0;
 				}
 			}
 		}
@@ -503,9 +562,11 @@ class capa {
 		for($i=0;$i<96;$i++) {
 			foreach($vacs as $vacation) {
 				$sv = $this->get_sousvacs($vacation);
+				$sv_greve = $this->get_sousvacs($vacation, true);
 				$tour_vacation = $vacation;
 				if ($vacation === "N-1") $tour_vacation = "N";
 				$rep = $this->get_repartition($vacation);
+				$rep_greve = $this->get_repartition($vacation, true);
 				
 				$doLoop = true;
 				if ($vacation === "N-1" && $i>48) $doLoop = false;
@@ -517,11 +578,19 @@ class capa {
 						$nb_pc += $this->pc->{$vacation}->nbcds;
 						$nb_pc_sousvac->{$vacation}->cds[$i] = $this->pc->{$vacation}->nbcds;
 					} 
+					if ($this->tour_utc_greve->{$tour_vacation}->cds[$i] === 1) {
+						$nb_pc_greve += $this->pc->{$vacation}->nbcds_greve;
+						$nb_pc_sousvac_greve->{$vacation}->cds[$i] = $this->pc->{$vacation}->nbcds_greve;
+					} 
 					foreach($sv as $sousvac) {
 						// Ajout des sous-vacations
 						if ($this->tour_utc->{$tour_vacation}->{$sousvac}[$i] === 1) {
 							$nb_pc += $rep->$sousvac;
 							$nb_pc_sousvac->{$vacation}->{$sousvac}[$i] = $rep->$sousvac;
+						} 
+						if ($this->tour_utc_greve->{$tour_vacation}->{$sousvac}[$i] === 1) {
+							$nb_pc_greve += $rep_greve->$sousvac;
+							$nb_pc_sousvac_greve->{$vacation}->{$sousvac}[$i] = $rep_greve->$sousvac;
 						} 
 					}
 				}
@@ -530,6 +599,7 @@ class capa {
 
 			$heure = get_time($i);
 			array_push($pcs, [$heure, $nb_pc]);
+			array_push($pct_greve, [$heure, $nb_pc_greve]);
 			
 			
 			/* 	----------------------------------------------------------------------------------------
@@ -579,6 +649,7 @@ class capa {
 			};
 
 			$nb_pc = 0;
+			$nb_pc_greve = 0;
 		}
 
 		for($i=0;$i<96;$i++) {
@@ -629,9 +700,20 @@ class capa {
 		$res->day= $this->day;
 		$res->zone = $this->zone;
 		$res->saison = $this->saison;
-		$res->tour_local = $this->tour_local;
+		$res->cycle = $this->cycle;
+		$res->clean_cycle = $this->clean_cycle;
 		$res->offSetTime = $this->timeOffset;
+		$res->tour_local = $this->tour_local;
+		$res->tour_utc = $this->tour_utc;
+		$res->tour_local_greve = $this->tour_local_greve;
+		$res->tour_utc_greve = $this->tour_utc_greve;
+		$res->workingTeam = $this->tab_vac_eq;
+		$res->all_sv= $this->get_all_sousvacs();
+		$res->repartition = $this->repartition;
+		$res->repartition_greve = $this->repartition_greve;
+		$res->pc_vac = $this->pc;
 		$res->pc_total = $pct;
+		$res->pc_total_greve = $pct_greve;
 		$res->uceso = $ucesos;
 		$res->compacted_uceso = $compacted_ucesos;
 		$res->heures_uceso = new StdClass();
@@ -641,17 +723,12 @@ class capa {
 		$res->pc_total_instr_15mn = $in15mn;
 		$res->pc_RD_15mn = $effectif_RD_15mn;
 		$res->pc_total_RD_15mn = $effectif_total_RD_15mn;
-		$res->pc_vac = $this->pc;
-		$res->workingTeam = $this->tab_vac_eq;
 		$res->RD = $RD;
 		$res->roles = $roles;
 		$res->TDS_Supp = $TDS_Supp;
 		$res->pc_sousvac_15mn = $nb_pc_sousvac;
-		$res->cycle = $this->cycle;
-		$res->clean_cycle = $this->clean_cycle;
-		$res->tour_utc = $this->tour_utc;
-		$res->all_sv= $this->get_all_sousvacs();
-		$res->repartition = $this->repartition;
+		$res->pc_sousvac_15mn_greve = $nb_pc_sousvac_greve;
+		
 		return $res;
 
     }
@@ -665,10 +742,12 @@ class capa {
 
 	// 	retourne les sous-vacs d'une vac
 	// $sv = ["A", "B"]
-	public function get_sv(string $vacation) {
+	public function get_sv(string $vacation, bool $greve = false) {
 		$vac = $vacation;
+		$tour = "tour_local";
+		if ($greve === true) $tour = "tour_local_greve";
 		if ($vacation === "N-1") $vac = "N";
-		$temp_sv = array_keys(get_object_vars($this->tour_local->{$vac}));
+		$temp_sv = array_keys(get_object_vars($this->{$tour}->{$vac}));
 		$sv = array_filter($temp_sv, static function ($element) {
 			return ($element !== "cds" && $element !== "nb_cds");
 		});
@@ -677,10 +756,12 @@ class capa {
 
 	// 	retourne les sous-vacs d'une vac
 	//	return ["A", "B", "C"...]
-	public function get_sousvacs($vacation) {
+	public function get_sousvacs(string $vacation, bool $greve = false) {
 		$vac = $vacation;
+		$tour = "tour_local";
+		if ($greve === true) $tour = "tour_local_greve";
 		if ($vacation === "N-1") $vac = "N";
-		$nb_sousvacs = count(array_keys(get_object_vars($this->tour_local->$vac))) - 2;
+		$nb_sousvacs = count(array_keys(get_object_vars($this->{$tour}->$vac))) - 2;
 		$arr = [];
 		for($i=1;$i<$nb_sousvacs+1;$i++) {
 			array_push($arr, $this->unichr($i+64));
@@ -689,13 +770,60 @@ class capa {
 	}
 
 	// @return {"vac": ["A", "B",...], ...}
-	public function get_all_sousvacs() {
+	public function get_all_sousvacs(bool $greve = false) {
 		$vacs = $this->get_clean_cycle();
 		$obj = new stdClass();
 		foreach($vacs as $vac) {
-			$obj->$vac = $this->get_sousvacs($vac);
+			$obj->$vac = $this->get_sousvacs($vac, $greve);
 		}
 		return $obj;
+	}
+
+	// defaut: 50/50 avec A<B
+	public function get_default_repartition_greve(string $vacation) {
+		$tour_vacation = $vacation;
+		if ($vacation === "N-1") $tour_vacation = "N";
+		$sousvacs = $this->get_sv($tour_vacation, true);
+		$nb_sousvacs = count($sousvacs);
+
+		$rep = new stdClass();
+
+		switch ($nb_sousvacs) {
+            case 2:
+				$reste = ($this->pc->{$vacation}->nb_requis) % 2;
+				if ($reste === 0) {
+					$repart = $this->repartition->$tour_vacation->standard->sousvac2->reste0;
+				}
+				if ($reste === 1) {
+					$repart = $this->repartition->$tour_vacation->standard->sousvac2->reste1;
+				}
+				$pc = floor($this->pc->{$vacation}->nb_requis/2);
+				foreach ($sousvacs as $sousvac) {
+					$rep->$sousvac = min($pc + $repart->$sousvac, $pc + $repart->$sousvac);
+				}
+                break;
+			case 3:
+				$reste = ($this->pc->{$vacation}->nb_requis) % 3;
+				if ($reste === 0) {
+					$repart = $this->repartition->$vacation->standard->sousvac3->reste0;
+				}
+				if ($reste === 1) {
+					$repart = $this->repartition->$vacation->standard->sousvac3->reste1;
+				}
+				if ($reste === 2) {
+					$repart = $this->repartition->$vacation->standard->sousvac3->reste2;
+				}
+				$pc = floor($this->pc->{$vacation}->nb_requis/3);
+				foreach ($sousvacs as $sousvac) {
+					$rep->$sousvac = min($pc + $repart->$sousvac, $pc + $repart->$sousvac);
+				}
+				break;
+            default:
+				$pc = $this->pc->{$vacation}->nb_requis;
+				$rep->$sousvacs[0] = $pc;
+		}
+
+		return $rep;
 	}
 
 	// defaut: 50/50 avec A<B
@@ -748,7 +876,8 @@ class capa {
 		return $rep;
 	}
 
-	public function get_repartition(String $vacation) {
+	public function get_repartition(String $vacation, bool $greve = false) {
+		if ($greve === true) return $this->get_default_repartition_greve($vacation);
 		$tour_vacation = $vacation;
 		if ($vacation === "N-1") $tour_vacation = "N";
 		$sousvacs = $this->get_sv($tour_vacation);
@@ -791,64 +920,55 @@ class capa {
     }
 
 	// objet : passage par référence par défaut
-	private function push_utc($vac, $tour_utc) {
+	private function push_utc($vac, $tour_utc, $greve = false) {
 		$index_deb = $this->timeOffset*4 - 1;	
-		$nb_cds = $this->tour_local->{$vac}->nb_cds;
-		$tour_cds = $this->tour_local->{$vac}->cds;
-		$tour_A = $this->tour_local->{$vac}->A;
-		$tour_B = $this->tour_local->{$vac}->B;
+		$tour = "tour_local";
+		if ($greve === true) $tour = "tour_local_greve";
+		$tour_utc->{$vac}->nb_cds = $this->{$tour}->{$vac}->nb_cds;
+		$tour_utc->{$vac}->cds = $this->{$tour}->{$vac}->cds;
+
+		$sousvacs = $this->get_sv($vac);
+		foreach($sousvacs as $sousvac) {
+			$tour_utc->{$vac}->{$sousvac} = $this->{$tour}->{$vac}->{$sousvac};
+		}
 		
 		if ($this->timeOffset === 2) {
 			for($i=0;$i<4;$i++) {
-				$z = array_shift($tour_cds);
-				array_push($tour_cds, $z);
-				$z = array_shift($tour_A);
-				array_push($tour_A, $z);
-				$z = array_shift($tour_B);
-				array_push($tour_B, $z);
+				$z = array_shift($tour_utc->{$vac}->cds);
+				array_push($tour_utc->{$vac}->cds, $z);
+				foreach($sousvacs as $sousvac) {
+					$z = array_shift($tour_utc->{$vac}->{$sousvac});
+					array_push($tour_utc->{$vac}->{$sousvac}, $z);
+				}
 			}
 		}
 
 		for($i=0;$i<4;$i++) {
-			$z = array_shift($tour_cds);
-			array_push($tour_cds, $z);
-			$z = array_shift($tour_A);
-			array_push($tour_A, $z);
-			$z = array_shift($tour_B);
-			array_push($tour_B, $z);
-		}
-
-		$tour_utc->{$vac}->nb_cds = $nb_cds;
-		$tour_utc->{$vac}->cds = $tour_cds;
-		$tour_utc->{$vac}->A = $tour_A;
-		$tour_utc->{$vac}->B = $tour_B;
+			$z = array_shift($tour_utc->{$vac}->cds);
+			array_push($tour_utc->{$vac}->cds, $z);
+			foreach($sousvacs as $sousvac) {
+				$z = array_shift($tour_utc->{$vac}->{$sousvac});
+				array_push($tour_utc->{$vac}->{$sousvac}, $z);
+			}
+		}		
 
 	}
+	
 
     /* -----------------------------------------------------------------------------------------
         Transformation du tour de service (défini en heure locale) en heure UTC
         @param {object} tour_local 	- le json du tour de service
         @returns {object}  - tour_utc : { [ ["00:00", 0, 1, 1], ["hh:mm", cds, A, B], ... ] }
     ----------------------------------------------------------------------------------------- */	
-    public function get_tour_utc() {
+    public function get_tour_utc($greve = false) {
 
-        $tour_utc = new stdClass();
-		$tour_utc->JX = new stdClass();
-        $tour_utc->J1 = new stdClass();
-        $tour_utc->J3 = new stdClass();
-        $tour_utc->S2 = new stdClass();
-        $tour_utc->J2 = new stdClass();
-        $tour_utc->S1 = new stdClass();
-        $tour_utc->N = new stdClass();
+		$tour_utc = new stdClass();
+
+		foreach($this->clean_cycle as $vac) {
+			$tour_utc->$vac = new stdClass();
+			$this->push_utc($vac, $tour_utc, $greve);
+		}
         
-		$this->push_utc("JX", $tour_utc);
-		$this->push_utc("J1", $tour_utc);
-		$this->push_utc("J3", $tour_utc);
-		$this->push_utc("S2", $tour_utc);
-		$this->push_utc("J2", $tour_utc);
-		$this->push_utc("S1", $tour_utc);
-		$this->push_utc("N", $tour_utc);
-		
         return $tour_utc;
     }
 

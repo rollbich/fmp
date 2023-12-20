@@ -71,6 +71,28 @@
 				});
 			}
 
+			document.getElementById('greve_switch').addEventListener('change', function (e) {
+				if (this.checked) {
+					html = `
+					<div id="greve_div">
+						<select id="greve_select">
+							<option value="0">Hybride J-1</option>
+							<option value="1">Jour J</option>
+							<option value="2">Hybride J+1</option>
+						</select>
+					</div>`;
+					document.body.insertAdjacentHTML('beforeend', html);
+					const gd = $('greve_div');
+					const pos = $('switch3').getBoundingClientRect();
+					gd.style.position = 'absolute';
+					gd.style.left = pos.left + 30 + 'px';
+					gd.style.top = pos.top + 40 + 'px';
+
+				} else {
+					if ($('greve_div')) $('greve_div').remove();
+				}
+			});
+
 			document.addEventListener('keydown', function(event) {
 			if (event.ctrlKey && event.key === 'y') {
 				event.preventDefault();
@@ -105,6 +127,12 @@
 </div>
 <ul class="menu">
 	<li id="bouton_feuille" class="pointer"><span>Feuille</span></li>
+	<li id="switch3">
+		<label class="switch3" >
+			<input id="greve_switch" type="checkbox" />
+			<div></div>
+		</label><br>
+	</li>
 	<?php
 	if ($_SESSION['login_bureau'] === true || $_SESSION['login_encadrement'] === true) {
 		echo '<li id="bouton_simucapa" class="pointer"><span>Simu</span></li>';
@@ -134,6 +162,8 @@
 
 <div id="glob_container">
 	<div id='feuille_capa_tour'>
+	</div>
+	<div id='feuille_capa_greve'>
 	</div>
 	<div id='feuille_capa_simu'>
 	</div>

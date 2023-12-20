@@ -13,6 +13,8 @@ class capa {
 		if (typeof zone !== 'string') throw new Error('Zone value should be a String.');
 		if ((zone !== 'AE') && (zone !== 'AW')) throw new Error('La zone doit etre AE ou AW.');
         this.day = day;
+		this.greve = false;
+		if (document.getElementById('greve_switch').checked === true) this.greve = true;
 		this.zone_schema = zone;
         this.zone_olaf = zone.substring(1,2); // 2è lettre de la zone (E ou W)
 		this.zone = this.zone_olaf === "E" ? "est" : "ouest";
@@ -137,13 +139,16 @@ class feuille_capa extends capa {
 	async init_data() {
 		await this.init();
 		this.pc_15mn = await this.pc_ini["pc_total_horsInstrRD_15mn"];
+		this.pc_15mn_greve = await this.pc_ini["pc_total_greve"];
 		this.pc_instr_15mn = await this.pc_ini["pc_total_instr_15mn"];
 		this.pc_RD_15mn = await this.pc_ini["pc_RD_15mn"];
 		this.pc_total_RD_15mn = await this.pc_ini["pc_total_RD_15mn"];
 		this.pc_vac = await this.pc_ini["pc_vac"];
 		this.pc_sousvac_15mn = await this.pc_ini["pc_sousvac_15mn"];
+		this.pc_sousvac_15mn_greve = await this.pc_ini["pc_sousvac_15mn_greve"];
+		this.pc_total_greve = await this.pc_ini["pc_total_greve"];
 		this.RD = await this.pc_ini["RD"];
-		if (this.show) {this.show_feuille_capa(); return this; } else { return this.get_uceso(); }
+		if (this.show) {this.show_feuille_capa(); this.show_feuille_greve(); return this; } else { return this.get_uceso(); }
 	}
 
 	/*	------------------------------------------
@@ -374,7 +379,130 @@ class feuille_capa extends capa {
 		}
 		return ret;
 	}
+
+	show_feuille_greve() {
 		
+		// Construit le tableau
+		let res = `<table class="uceso">
+					<caption>Gr&egrave;ve du ${reverse_date(this.day)} - Zone ${this.zone}</caption>`;
+		res += `<thead>
+				<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th>`;
+		res += `<th class="top_2px bottom_2px details masque">CDS</th><th class="top_2px bottom_2px details masque">PC</th><th class="top_2px bottom_2px right_1px details masque">det</th><th class="top_2px bottom_2px right_2px details masque">BV</th>`;
+		res += `<th class="top_2px bottom_2px right_2px" colspan="96">...</th></tr>
+				</thead>
+				<tbody>`;
+		
+		const cycle = [...this.clean_cycle];
+		cycle.push("N-1");
+		cycle.forEach(vac => {
+			res += `${this.affiche_vac_greve(vac)}`;
+		})
+		res += `<tr class="titre"><td class='bottom_2px left_2px' colspan="3">Heures UTC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${this.heure()}`;
+		res += `${this.affiche_nbpc_greve()}`;
+		//res += `${this.affiche_demi_uc_greve()}`;
+		//res += `${this.affiche_uceso_greve()}`;
+		res += '</tbody></table>';
+		$('feuille_capa_greve').innerHTML = res;
+
+		/*
+		// ajoute les clicks sur la case du nbre de pc de la vac
+		const td_pc = document.querySelectorAll('.pc');
+		$('popup-wrap').classList.add('popup-modif');
+		$$('.popup-box').classList.add('popup-modif');
+		td_pc.forEach(td_el => {
+			td_el.addEventListener('click', (event) => {
+				let ih = `
+				<div id="modif_eq">
+				${this.add_requis("J1")}
+				${this.add_requis("J3")}
+				${this.add_requis("S2")}
+				${this.add_requis("J2")}
+				${this.add_requis("S1")}
+				${this.add_requis("N")}
+				${this.add_requis("N-1")}`;
+				ih += `</div>`;
+				show_popup("Personnels", ih);
+			});
+		});
+		*/
+	}
+		
+	affiche_vac_greve(vac) {
+		const res = [];
+		// trie le tableau avec cds en premier, puis A, B ...
+		const sousvac = Object.keys(this.pc_sousvac_15mn_greve[vac]).sort(this.compare_tds_name); 
+		sousvac.forEach((sv, index_sv) => {
+			res[index_sv] = "";
+		})
+		// array d'index 0 à 95
+		for (let index=0;index<96;index++) {
+			
+			if (vac != "N" && vac != "N-1") {
+				sousvac.forEach((sv, index_sv) => {
+					let cl="";
+					const nb = this.pc_sousvac_15mn_greve[vac][sv][index];
+					if (nb != 0) cl = "bg";											// class="bg" => background bleu sur le td
+					if (index === 95) { cl += " right_2px"; }						// dernier <td>
+					if (index%4 === 0) { cl = (cl + " left_2px").trimStart(); }		// <td> de l'heure ronde
+					if (index_sv == (sousvac.length-1)) { cl += " bottom_2px"; } 	// ligne de la dernière sousvac
+					res[index_sv] += `<td class='${cl}'>${nb || ''}</td>`;
+				})
+			}
+
+			if (vac === "N") {
+				sousvac.forEach((sv, index_sv) => {
+					let cl="";
+					const nb = this.pc_sousvac_15mn_greve[vac][sv][index];
+					if (nb != 0 && index >= 48) cl = "bg";
+					if (index === 95) { cl += " right_2px"; }
+					if (index%4 === 0) { cl = (cl + " left_2px").trimStart(); }
+					if (index_sv == (sousvac.length-1)) { cl += " bottom_2px"; }
+					// vac de Nuit commençant à 19h30, on affiche que le soir ( 48 = midi)
+					if (index > 48) res[index_sv] += `<td class='${cl}'>${nb || ''}</td>`; else res[index_sv] += `<td class='${cl}'></td>`;
+				})
+			} 
+
+			if (vac === "N-1") {
+				sousvac.forEach((sv, index_sv) => {
+					let cl="";
+					const nb = this.pc_sousvac_15mn_greve[vac][sv][index];
+					if (nb != 0 && index < 48) cl = "bg";
+					if (index === 95) { cl += " right_2px"; }
+					if (index%4 === 0) { cl = (cl + " left_2px").trimStart(); }
+					if (index_sv == (sousvac.length-1)) { cl += " bottom_2px"; }
+					if (index < 48) res[index_sv] += `<td class='${cl}'>${nb || ''}</td>`; else res[index_sv] += `<td class='${cl}'></td>`;
+				})
+			}
+		};	
+		
+		const click_jx = vac === "JX" ? "pc details masque click_jx" : "pc details masque";
+		// sousvac cds et A
+		let ret = `
+		<tr data-vac='${vac}'>
+			<td class='left_2px right_1px'></td><td class='right_1px'></td>
+			<td class='right_1px'>cds</td><td class='details masque'>${this.pc_vac[vac]["nbcds_greve"]}</td>
+			<td class='${click_jx}' data-vac='${vac}'>${this.pc_vac[vac]["nb_requis"]}</td>
+			<td class='right_1px details masque' data-vac='${vac}'>${this.pc_vac[vac]["renfort"]}</td>
+			<td class='right_2px details masque'>${this.pc_vac[vac]["BV"]}</td>${res[0]}
+		</tr>
+		<tr data-vac='${vac}'>
+			<td class='eq left_2px right_1px' data-vac='${vac}'>${this.workingTeam[vac]}</td>
+			<td class='right_1px'>${vac}</td><td class='right_1px'>A</td>
+			<td class='right_1px details masque' colspan="3"></td><td class='right_2px details masque'></td>${res[1]}
+		</tr>`;
+
+		// reste des sousvac au delà de A
+		for(let i=2;i<sousvac.length;i++) {
+			ret += `
+			<tr data-vac='${vac}'>
+				<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
+				<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px details masque' colspan="3"></td>
+				<td class='bottom_2px right_2px details masque'></td>${res[i]}
+			</tr>`;
+		}
+		return ret;
+	}
+
 	// fabrique la ligne du supplément instruction
 	affiche_inst() {
 		let res2 = "";
@@ -435,6 +563,18 @@ class feuille_capa extends capa {
 			if (index%4 === 0) cl = "left_2px";
 			if (index === 95) cl += " right_2px";
 			res += `<td class='${cl} bottom_2px'>${elem[1]+this.pc_instr_15mn[index][0]+this.pc_total_RD_15mn[index]}</td>`;
+		});
+		let result = `<tr><td class='left_2px bottom_2px' colspan="3">Nb PC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res}</tr>`;
+		return result;
+	}
+
+	affiche_nbpc_greve() {
+		let res = "";
+		this.pc_15mn_greve.forEach( (elem, index) => {
+			let cl = "left_1px";
+			if (index%4 === 0) cl = "left_2px";
+			if (index === 95) cl += " right_2px";
+			res += `<td class='${cl} bottom_2px'>${elem[1]}</td>`;
 		});
 		let result = `<tr><td class='left_2px bottom_2px' colspan="3">Nb PC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res}</tr>`;
 		return result;
