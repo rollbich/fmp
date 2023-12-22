@@ -464,10 +464,34 @@ class capa {
 						nom: "AUBERT"
 					},...
 				*/
-				$tags = array_keys(get_object_vars($this->effectif->{$this->day}->contextmenutype));
+				$tags_today = array_keys(get_object_vars($this->effectif->{$this->day}->contextmenutype));
+				$tags_yesterday = array_keys(get_object_vars($this->effectif->{$this->yesterday}->contextmenutype));
 				$this->pc->{$vac}->requis = [];
-				foreach ($tags as $cle) {
+				foreach ($tags_today as $cle) {
 					$val = $this->effectif->{$this->day}->contextmenutype->$cle;
+					if (str_contains($val->label, "Requis")) {
+						foreach (array_keys(get_object_vars($this->pc->{$vac}->teamToday)) as $key) {
+							$valeur = $this->pc->{$vac}->teamToday->$key;
+							if (strcmp($valeur->nom, $val->nom) === 0 && strcmp($valeur->prenom, $val->prenom) === 0) {
+								$obj = new stdClass();
+								$obj->nom = $valeur->nom;
+								$obj->prenom = $valeur->prenom;
+								array_push($this->pc->{$vac}->requis, $obj);
+							}
+						}
+						foreach (array_keys(get_object_vars($this->pc->{$vac}->renfortAgent)) as $key) {
+							$valeur = $this->pc->{$vac}->renfortAgent->$key;
+							if (strcmp($val->nom, $valeur->nom) === 0 && strcmp($val->prenom, $valeur->prenom) === 0) {
+								$obj = new stdClass();
+								$obj->nom = $valeur->nom;
+								$obj->prenom = $valeur->prenom;
+								array_push($this->pc->{$vac}->requis, $obj);
+							}
+						}
+					}
+				}
+				foreach ($tags_yesterday as $cle) {
+					$val = $this->effectif->{$this->yesterday}->contextmenutype->$cle;
 					if (str_contains($val->label, "Requis")) {
 						foreach (array_keys(get_object_vars($this->pc->{$vac}->teamToday)) as $key) {
 							$valeur = $this->pc->{$vac}->teamToday->$key;
