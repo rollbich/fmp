@@ -13,8 +13,6 @@ class capa {
 		if (typeof zone !== 'string') throw new Error('Zone value should be a String.');
 		if ((zone !== 'AE') && (zone !== 'AW')) throw new Error('La zone doit etre AE ou AW.');
         this.day = day;
-		this.greve = false;
-		if (document.getElementById('greve_switch').checked === true) this.greve = true;
 		this.zone_schema = zone;
         this.zone_olaf = zone.substring(1,2); // 2è lettre de la zone (E ou W)
 		this.zone = this.zone_olaf === "E" ? "est" : "ouest";
@@ -129,6 +127,9 @@ class feuille_capa extends capa {
 		super(day, zone);
 		this.containerTour = $(containerIdTour);
 		this.show = show;
+		this.greve = false;
+		//this.init_data();
+		//return this;
 		return this.init_data();
 	}
 
@@ -148,7 +149,12 @@ class feuille_capa extends capa {
 		this.pc_sousvac_15mn_greve = await this.pc_ini["pc_sousvac_15mn_greve"];
 		this.pc_total_greve = await this.pc_ini["pc_total_greve"];
 		this.RD = await this.pc_ini["RD"];
+		if (this.pc_vac[this.clean_cycle[1]]["requis"].length != 0) this.greve = true;
+		console.log("show");
+		console.log(this.show);
 		if (this.show) {this.show_feuille_capa(); this.show_feuille_greve(); return this; } else { return this.get_uceso(); }
+		
+		//this.show_feuille_capa();
 	}
 
 	/*	------------------------------------------
@@ -159,7 +165,16 @@ class feuille_capa extends capa {
 		
 		// Construit le tableau
 		let res = `<table class="uceso">
-					<caption>Journ&eacute;e du ${reverse_date(this.day)} - Zone ${this.zone}</caption>`;
+					<caption>Journ&eacute;e du ${reverse_date(this.day)} - Zone ${this.zone}`;
+		if (this.greve) {
+			res += `<span id="switch3">
+						<label class="switch3" >
+							<input id="greve_switch" type="checkbox" />
+							<div></div>
+						</label><br>
+					</span>`;
+		}
+			res += `</caption>`;
 		res += `<thead>
 				<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th>`;
 		res += `<th class="top_2px bottom_2px details masque">CDS</th><th class="top_2px bottom_2px details masque">PC</th><th class="top_2px bottom_2px right_1px details masque">det</th><th class="top_2px bottom_2px right_2px details masque">BV</th>`;
@@ -352,7 +367,7 @@ class feuille_capa extends capa {
 			}
 		};	
 		
-		const click_jx = vac === "JX" ? "pc details masque click_jx" : "pc details masque";
+		const click_jx = vac === "JX" ? "pc std details masque click_jx" : "pc std details masque";
 		// sousvac cds et A
 		let ret = `
 		<tr data-vac='${vac}'>
@@ -380,6 +395,35 @@ class feuille_capa extends capa {
 		return ret;
 	}
 
+	add_feuille_greve_listener() {
+		document.getElementById('greve_switch').addEventListener('change', function (e) {
+			if (this.checked) {
+				$('feuille_capa_greve').classList.remove("off");
+				$('feuille_capa_greve').scrollIntoView({ 
+					behavior: 'smooth' 
+				});
+				/*
+				html = `
+				<div id="greve_div">
+					<select id="greve_select">
+						<option value="0">Hybride J-1</option>
+						<option value="1">Jour J</option>
+						<option value="2">Hybride J+1</option>
+					</select>
+				</div>`;
+				document.body.insertAdjacentHTML('beforeend', html);
+				const gd = $('greve_div');
+				const pos = $('switch3').getBoundingClientRect();
+				gd.style.position = 'absolute';
+				gd.style.left = pos.left + 30 + 'px';
+				gd.style.top = pos.top + 40 + 'px';
+				*/
+			} else {
+				$('feuille_capa_greve').classList.add("off");
+			}
+		});
+	}
+
 	show_feuille_greve() {
 		
 		// Construit le tableau
@@ -399,32 +443,32 @@ class feuille_capa extends capa {
 		})
 		res += `<tr class="titre"><td class='bottom_2px left_2px' colspan="3">Heures UTC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${this.heure()}`;
 		res += `${this.affiche_nbpc_greve()}`;
-		//res += `${this.affiche_demi_uc_greve()}`;
-		//res += `${this.affiche_uceso_greve()}`;
+		res += `${this.affiche_demi_uc_greve()}`;
+		res += `${this.affiche_uceso_greve()}`;
 		res += '</tbody></table>';
 		$('feuille_capa_greve').innerHTML = res;
 
-		/*
+		
 		// ajoute les clicks sur la case du nbre de pc de la vac
-		const td_pc = document.querySelectorAll('.pc');
+		const td_pc = document.querySelectorAll('.pc.greve');
 		$('popup-wrap').classList.add('popup-modif');
 		$$('.popup-box').classList.add('popup-modif');
 		td_pc.forEach(td_el => {
 			td_el.addEventListener('click', (event) => {
 				let ih = `
 				<div id="modif_eq">
-				${this.add_requis("J1")}
-				${this.add_requis("J3")}
-				${this.add_requis("S2")}
-				${this.add_requis("J2")}
-				${this.add_requis("S1")}
-				${this.add_requis("N")}
-				${this.add_requis("N-1")}`;
+				${this.add_pers_requis("J1")}
+				${this.add_pers_requis("J3")}
+				${this.add_pers_requis("S2")}
+				${this.add_pers_requis("J2")}
+				${this.add_pers_requis("S1")}
+				${this.add_pers_requis("N")}
+				${this.add_pers_requis("N-1")}`;
 				ih += `</div>`;
-				show_popup("Personnels", ih);
+				show_popup("Personnels requis", ih);
 			});
 		});
-		*/
+		this.add_feuille_greve_listener();
 	}
 		
 	affiche_vac_greve(vac) {
@@ -475,7 +519,7 @@ class feuille_capa extends capa {
 			}
 		};	
 		
-		const click_jx = vac === "JX" ? "pc details masque click_jx" : "pc details masque";
+		const click_jx = vac === "JX" ? "pc greve details masque click_jx" : "pc greve details masque";
 		// sousvac cds et A
 		let ret = `
 		<tr data-vac='${vac}'>
@@ -593,15 +637,43 @@ class feuille_capa extends capa {
 		let result = `<tr><td class='left_2px bottom_2px' colspan="3">Demi UC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res}</tr>`;
 		return result;
 	}
+
+	affiche_demi_uc_greve() {
+		let res = "";
+		this.pc_15mn_greve.forEach( (elem, index) => {
+			let cl = "left_1px";
+			if (index%4 === 0) cl = "left_2px";
+			if (index === 95) cl += " right_2px";
+			const demi = (elem[1] % 2 === 0) ? "" : "\u00bd";
+			res += `<td class='${cl} bottom_2px'>${demi}</td>`;
+		});
+		let result = `<tr><td class='left_2px bottom_2px' colspan="3">Demi UC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res}</tr>`;
+		return result;
+	}
 	
 	get_uceso_15mn() {
 		return this.pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + this.pc_instr_15mn[index][0] + this.pc_total_RD_15mn[index]) / 2) ]);
+	}
+
+	get_uceso_15mn_greve() {
+		return this.pc_15mn_greve.map( (elem, index) => [elem[0], Math.floor(elem[1] / 2)]);
 	}
 
 	// fabrique la ligne du nbre d'uceso dispo
 	//	uceso = partie entière nbr_pc/2
 	affiche_uceso() {
 		const uc = this.get_uceso_15mn();
+		let res = "";
+		this.compact(uc).forEach( elem => {
+			let nb_occ = elem[1] - elem[0] + 1;
+			res += `<td class="bordure_uc" colspan="${nb_occ}">${elem[2]}</td>`;
+		});
+		let result = `<tr class="bold"><td class='left_2px bottom_2px' colspan="3">UCESO</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res}</tr>`;
+		return result;
+	}
+
+	affiche_uceso_greve() {
+		const uc = this.get_uceso_15mn_greve();
 		let res = "";
 		this.compact(uc).forEach( elem => {
 			let nb_occ = elem[1] - elem[0] + 1;
@@ -632,6 +704,14 @@ class feuille_capa extends capa {
 		for (let [nom, obj] of Object.entries(this.pc_vac[vac]["renfortAgent"])) {
 			present.push([nom, obj.fonction]);
 		}
+		//console.log("VAC :");
+		//console.log(present);
+	}
+
+	add_requis(vac, present) {
+		this.pc_vac[vac]["requis"].forEach(obj => {
+			present.push([obj.nom, obj.prenom]);
+		})
 		//console.log("VAC :");
 		//console.log(present);
 	}
@@ -670,6 +750,29 @@ class feuille_capa extends capa {
 		const personnel = this.tri_equipe(eq);
 		for (const p of personnel) {
 			let cl = `type${p[1]}`, cl_previous;
+			if (p[1] === "CDS") { cl_previous = 'surligne_cds'; cl += ' surligne_cds'; }
+			if (p[1].includes("PC")) { cl_previous = 'pc_color'; cl += ' pc_color'; }
+			if (p[1] === "stage" || p[1] === "conge") { cl_previous = 'off_color'; cl += ' off_color'; }
+			// nom = p[0];
+			res += `<tr><td class='${cl_previous}'>${p[0]}</td><td class='${cl}' data-vac='${vac}' data-nom='${p[0]}'>${p[1]}</td><tr>`;
+		}
+		res += `</tbody></table>`;
+		return res;
+	}
+
+	add_pers_requis (vac) {
+		let res = `
+		<table>
+			<caption>${vac} - Eq${this.workingTeam[vac]}<span data-vac='${vac}'></span></caption>
+			<thead>
+				<tr><th style="background: #444;">Nom</th><th style="background: #444;">Type</th></tr>
+			</thead>
+			<tbody>`;
+		const eq = [];
+		this.add_requis(vac, eq);
+		console.log(eq);
+		for (const p of eq) {
+			let cl = `type${p[1]}`, cl_previous = '';
 			if (p[1] === "CDS") { cl_previous = 'surligne_cds'; cl += ' surligne_cds'; }
 			if (p[1].includes("PC")) { cl_previous = 'pc_color'; cl += ' pc_color'; }
 			if (p[1] === "stage" || p[1] === "conge") { cl_previous = 'off_color'; cl += ' off_color'; }
