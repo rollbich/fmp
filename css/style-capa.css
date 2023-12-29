@@ -24,23 +24,22 @@ input:invalid {
 	display: none;
 }
 
-#button_details {
-	margin-left: 15px;
-}
-
 h1 {
 	color: var(--main-bg-color);
 }
 
-/* ------- feuille capa ------- */
-
-#feuille_capa_tour {
-	display: flex;
-	overflow: scroll;
+a:link, a:visited {
+	color: var(--main-color);
 }
 
-#feuille_capa_tour th, #feuille_capa_tour th td {
-	color: var(--main-bg-color);
+input {
+	line-height: 20px;
+}
+
+/* ------- feuille capa ------- */
+
+#feuille_capa_tour, #feuille_capa_greve {
+	overflow: scroll;
 }
 
 #feuille_capa_simu{
@@ -52,77 +51,37 @@ h1 {
 	width: 99%;
 }
 
-#left_part {
+#simu_left_part {
 	background-color: white;
 	min-height: 540px;
 }
 
-#right_part {
+#simu_right_part {
 	width: 1280px;
 }
 
-#upd {
+#simu_update_button {
 	margin: 10px;
 }
 
-td.bordure {
-	border: 1px solid #ccc;
-}
-
-td.bordure_heure {
-	border-left: 1px solid #ccc;
-	font-size: 10px;
-}
-
-/* haut | côtés verticaux | bas */
-/* haut | droite | bas | gauche */
-td.bordure_2 {
-	border-style: hidden hidden solid solid;
-	border-bottom-width: 1px;
-	border-color: #ccc;
-}
-
-/* ------- Titre ------- */
-
-header.instr {
-	display: flex;
-}
-
-header.instr span {
-	font-size: 16px;
-	margin-top: 20px;
-}
-
-header.instr h1 {
-	text-align: left;
-	margin: 10px;
-	width: auto;
-	color: var(--main-bg-color);
-	text-shadow: none;
-}
-
-header.instr span a:link, header.instr span a:visited {
+#feuille_capa_tour th, #feuille_capa_tour td, #feuille_capa_greve th, #feuille_capa_greve td {
 	color: var(--main-bg-color);
 }
 
-/* ------- Menu ------- */
+/* ------- Menu TDS editor ------- */
 
-#tds_glob {
+#tds_editor_glob {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: center;
 }
 
-a:link, a:visited {
-	color: var(--main-color);
-}
-
-#tds_glob select {
+#tds_editor_glob select {
 	margin-left: 10px;
 	margin-right: 10px;
 }
 
-#tds_glob button {
+#tds_editor_glob button {
 	margin-left: 10px;
 	margin-right: 10px;
 }
@@ -134,10 +93,6 @@ a:link, a:visited {
 	margin-top: 0;
 	z-index: 1;
 	width: 100px;
-}
-
-input {
-	line-height: 20px;
 }
 
 /* ------- Date Picker ------- */
@@ -174,7 +129,7 @@ input {
 	margin-top: 2px;
 }
 
-/* --------- Boutons +/- ----------- */
+/* --------- Boutons +/- Simu ----------- */
 .minus, .plus{
     height:25px;
     width:25px;
@@ -194,7 +149,7 @@ input {
     margin-right:5px;
 }
 
-.modify {
+.modify_cell {
 	width: 80px;
 }
 
@@ -242,6 +197,7 @@ caption {
 	text-align: left;
 }
 
+/*
 table.uceso tr:nth-child(2n) {
 	background-color: var(--ligne-impaire-color);
 }
@@ -249,9 +205,10 @@ table.uceso tr:nth-child(2n) {
 table.uceso tr:nth-child(6n+1), table.uceso tr:nth-child(6n+2), table.uceso tr:nth-child(6n+3) {
   background-color: var(--ligne-paire-color);
 }
+*/
 
 #table_option {
-	height: 130px;
+	height: 30px;
 	background-color: #eceff1;
 }
 
@@ -266,7 +223,7 @@ table.uceso tr:nth-child(6n+1), table.uceso tr:nth-child(6n+2), table.uceso tr:n
 }
 
 table.uceso td, table.uceso th {
-	min-width: 1rem;
+	min-width: 1.1rem;
 	padding: 1px;
 	text-align: center;
 	font-size: 1.1rem;
@@ -412,6 +369,10 @@ table.plage th, table.plage td {
 	width: 160px;
 	border: 1px solid rgb(20, 20, 20);
 	padding: 5px;
+}
+
+table.plage th {
+	background-color: #00caff;
 }
 
 table.plage td:hover, td.save_supp, td.delete_supp {
@@ -624,6 +585,28 @@ input.date {
 }
 
 /* --------- Instruction ------------- */
+
+header.instr {
+	display: flex;
+}
+
+header.instr span {
+	font-size: 16px;
+	margin-top: 20px;
+}
+
+header.instr h1 {
+	text-align: left;
+	margin: 10px;
+	width: auto;
+	color: var(--main-bg-color);
+	text-shadow: none;
+}
+
+header.instr span a:link, header.instr span a:visited {
+	color: var(--main-bg-color);
+}
+
 .glob {
 	display: flex;
 	flex-wrap: wrap;
@@ -636,6 +619,10 @@ a:link, a:visited {
 
 table.creneaux th, table creneaux td {
 	width: 90px;
+}
+
+table.creneaux th {
+	background-color: #00caff;
 }
 
 table.creneaux tr:nth-child(2n) {
@@ -999,11 +986,11 @@ ul.menu_tds_editor li {
 	margin-left: 5px;
 }
 
-#modal_tds label {
+#modal_tds label, #modal_tds_supp label {
 	margin-left: 15px;
 }
 
-#modal_tds .form-group {
+#modal_tds .form-group, #modal_tds_supp .form-group {
 	display: inline;
 }
 
@@ -1064,6 +1051,10 @@ table.gestion th, table.gestion td {
 	width: 150px;
 	border: 1px solid rgb(20, 20, 20);
 	padding: 5px;
+}
+
+table.gestion th {
+	background-color: #00caff;
 }
 
 table.gestion td:hover, td.save_supp, td.delete_supp {

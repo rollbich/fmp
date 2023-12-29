@@ -49,7 +49,7 @@ if ($contentType === "application/json") {
             $bdd->supprime_plage($content->id);
             break;
         case "add_tds_supp":
-            $bdd->add_tds_supp($content->nom_tds);
+            $bdd->add_tds_supp($content->nom_tds, $content->tds_associe);
             break;
         case "delete_tds_supp":
             $bdd->delete_tds_supp($content->nom_tds);

@@ -22,17 +22,19 @@ class capa {
 	async init() {
 		show_popup("Patientez !", "Chargement en cours...");
 		this.pc_ini = this.pc_ini || await this.get_nbpc_dispo();
-		console.log("pc_ini");
-		console.log(this.pc_ini);
 		await document.querySelector('.popup-close').click();
 		this.saison =  this.pc_ini.saison;
 		this.repartition =  this.pc_ini.repartition;
 		this.clean_cycle = this.pc_ini.clean_cycle;
-		console.log("Saison");
-		console.log(this.saison);
+		console.log("Saison: "+this.saison);
 		this.workingTeam = this.pc_ini.workingTeam;
+		this.details_sv_15mn = this.pc_ini.details_sv_15mn;
 	}
 
+	/*	-----------------------------------------------------------------------------------------
+	 		fonction de tri pour le tableau des sousvacs [B, cds, A, ...] => [cds, A, B, ...]
+				@param a et b : nom du tds (ex : hiver_2024) se terminant par l'année
+		----------------------------------------------------------------------------------------- */
 	compare_tds_name(a, b) {
         const year_a = parseInt(a.slice(-4));
         const year_b = parseInt(b.slice(-4));
@@ -126,10 +128,9 @@ class feuille_capa extends capa {
 	constructor(containerIdTour, day, zone, show = true) {
 		super(day, zone);
 		this.containerTour = $(containerIdTour);
+		this.containerSimu = $('feuille_capa_simu');
 		this.show = show;
 		this.greve = false;
-		//this.init_data();
-		//return this;
 		return this.init_data();
 	}
 
@@ -150,11 +151,11 @@ class feuille_capa extends capa {
 		this.pc_total_greve = await this.pc_ini["pc_total_greve"];
 		this.RD = await this.pc_ini["RD"];
 		if (this.pc_vac[this.clean_cycle[1]]["requis"].length != 0) this.greve = true;
-		console.log("show");
-		console.log(this.show);
-		if (this.show) {this.show_feuille_capa(); this.show_feuille_greve(); return this; } else { return this.get_uceso(); }
-		
-		//this.show_feuille_capa();
+		if (this.show) {
+			this.show_feuille_capa(); 
+			if (this.greve) {this.show_feuille_greve();}
+			return this;
+		} else { return this.get_uceso(); }
 	}
 
 	/*	------------------------------------------
@@ -177,7 +178,7 @@ class feuille_capa extends capa {
 			res += `</caption>`;
 		res += `<thead>
 				<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th>`;
-		res += `<th class="top_2px bottom_2px details masque">CDS</th><th class="top_2px bottom_2px details masque">PC</th><th class="top_2px bottom_2px right_1px details masque">det</th><th class="top_2px bottom_2px right_2px details masque">BV</th>`;
+		res += `<th class="top_2px bottom_2px details masque">CDS</th><th class="top_2px bottom_2px details masque">PC</th><th class="top_2px bottom_2px right_1px details masque">d&eacute;t</th><th class="top_2px bottom_2px right_2px details masque">BU</th>`;
 		res += `<th class="top_2px bottom_2px right_2px" colspan="96">...</th></tr>
 				</thead>
 				<tbody>`;
@@ -218,7 +219,7 @@ class feuille_capa extends capa {
 				el.style.padding = '10px';
 				el.style.width = '200px';
 				let parentDiv = document.getElementById("glob_container");
-				parentDiv.insertBefore(el, $('feuille_capa_tour'));
+				parentDiv.insertBefore(el, this.containerTour);
 				el.innerHTML = det;
 			})
 			td_el.addEventListener('mouseleave', (event) => {
@@ -255,7 +256,7 @@ class feuille_capa extends capa {
 			el.style.padding = '10px';
 			el.style.width = '200px';
 			let parentDiv = document.getElementById("glob_container");
-			parentDiv.insertBefore(el, $('feuille_capa_tour'));
+			parentDiv.insertBefore(el, this.containerTour);
 			el.innerHTML = det;
 		})
 		td_jx.addEventListener('mouseleave', (event) => {
@@ -285,7 +286,7 @@ class feuille_capa extends capa {
 				el.style.padding = '10px';
 				el.style.width = '200px';
 				let parentDiv = document.getElementById("glob_container");
-				parentDiv.insertBefore(el, $('feuille_capa_tour'));
+				parentDiv.insertBefore(el, this.containerTour);
 				el.innerHTML = det;
 			})
 			td_el.addEventListener('mouseleave', (event) => {
@@ -385,21 +386,24 @@ class feuille_capa extends capa {
 
 		// reste des sousvac au delà de A
 		for(let i=2;i<sousvac.length;i++) {
+			let cl = "";
+			if (i == (sousvac.length-1)) { cl += " bottom_2px"; }
 			ret += `
 			<tr data-vac='${vac}'>
-				<td class='left_2px bottom_2px right_1px'></td><td class='bottom_2px right_1px'></td>
-				<td class='bottom_2px right_1px'>B</td><td class='bottom_2px right_1px details masque' colspan="3"></td>
-				<td class='bottom_2px right_2px details masque'></td>${res[i]}
+				<td class='left_2px right_1px ${cl}'></td><td class='right_1px ${cl}'></td>
+				<td class='right_1px ${cl}'>${sousvac[i]}</td><td class='right_1px details masque ${cl}' colspan="3"></td>
+				<td class='right_2px details masque ${cl}'></td>${res[i]}
 			</tr>`;
 		}
 		return ret;
 	}
 
-	add_feuille_greve_listener() {
-		document.getElementById('greve_switch').addEventListener('change', function (e) {
-			if (this.checked) {
-				$('feuille_capa_greve').classList.remove("off");
-				$('feuille_capa_greve').scrollIntoView({ 
+	add_switch_greve_listener() {
+		const greve_switch = document.getElementById('greve_switch');
+		greve_switch.addEventListener('change', (e) => {
+			if (greve_switch.checked) {
+				this.containerGreve.classList.remove("off");
+				this.containerGreve.scrollIntoView({ 
 					behavior: 'smooth' 
 				});
 				/*
@@ -419,19 +423,25 @@ class feuille_capa extends capa {
 				gd.style.top = pos.top + 40 + 'px';
 				*/
 			} else {
-				$('feuille_capa_greve').classList.add("off");
+				this.containerGreve.classList.add("off");
 			}
 		});
 	}
 
 	show_feuille_greve() {
-		
+		const div_greve = document.createElement("div");
+		div_greve.setAttribute('id', 'feuille_capa_greve');
+		div_greve.setAttribute('class', 'off');
+		this.containerTour.insertAdjacentElement('afterend', div_greve);
+		this.containerGreve = $('feuille_capa_greve');
+		console.log("container greve");
+		console.log(this.containerGreve);
 		// Construit le tableau
 		let res = `<table class="uceso">
 					<caption>Gr&egrave;ve du ${reverse_date(this.day)} - Zone ${this.zone}</caption>`;
 		res += `<thead>
 				<tr class="titre"><th class="top_2px left_2px bottom_2px right_1px">Eq</th><th class="top_2px bottom_2px right_1px">Vac</th><th class="top_2px bottom_2px right_1px">Part</th>`;
-		res += `<th class="top_2px bottom_2px details masque">CDS</th><th class="top_2px bottom_2px details masque">PC</th><th class="top_2px bottom_2px right_1px details masque">det</th><th class="top_2px bottom_2px right_2px details masque">BV</th>`;
+		res += `<th class="top_2px bottom_2px details masque">CDS</th><th class="top_2px bottom_2px details masque">Requ</th><th class="top_2px bottom_2px right_1px details masque">Grèv</th><th class="top_2px bottom_2px right_2px details masque">BU</th>`;
 		res += `<th class="top_2px bottom_2px right_2px" colspan="96">...</th></tr>
 				</thead>
 				<tbody>`;
@@ -446,7 +456,7 @@ class feuille_capa extends capa {
 		res += `${this.affiche_demi_uc_greve()}`;
 		res += `${this.affiche_uceso_greve()}`;
 		res += '</tbody></table>';
-		$('feuille_capa_greve').innerHTML = res;
+		this.containerGreve.innerHTML = res;
 
 		
 		// ajoute les clicks sur la case du nbre de pc de la vac
@@ -468,7 +478,7 @@ class feuille_capa extends capa {
 				show_popup("Personnels requis", ih);
 			});
 		});
-		this.add_feuille_greve_listener();
+		this.add_switch_greve_listener();
 	}
 		
 	affiche_vac_greve(vac) {
@@ -860,23 +870,23 @@ class feuille_capa extends capa {
 
 class simu_capa extends capa {
 	/* ----------------------------------------------------------------
-		@param {string} containerIdTour - id du container pour le tour
+		@param {string} containerIdSimu - id du container pour la simu
+			noBV = true : on ne tient pas compte des BV
+			annee_ref : année Y-1
 	   ---------------------------------------------------------------- */
-	constructor(containerIdTour, day, zone) {
+	constructor(containerIdSimu, day, zone) {
 		super(day, zone);
-		this.containerTour = $(containerIdTour);
+		this.containerSimu = $(containerIdSimu);
 		this.noBV = false;
+		this.annee_ref = parseInt(day.substring(0,4)) - 1;
 		this.init_simu();
 	}
 
 	async init_simu() {
 		show_popup("Patientez !", "Chargement en cours...");
 		await this.init();
-		
-		console.log("pc_ini_simu_capa");
-		console.log(this.pc_ini);
 		await document.querySelector('.popup-close').click();
-		this.containerTour.innerHTML = '<div id="left_part"><div id="table_option"></div><div id="table"></div></div><div id="right_part"></div>';
+		this.containerSimu.innerHTML = '<div id="simu_left_part"><div id="table_option"></div><div id="table"></div></div><div id="simu_right_part"></div>';
 		this.pc = structuredClone(this.pc_ini);
 		console.log("this.pc");
 		console.log(this.pc);
@@ -886,21 +896,21 @@ class simu_capa extends capa {
 		
 		// Récupération des schémas réalisés
 		const day7 = addDays_toString(this.day, -7);
-		// récupère la date de 2019 : ex "2019-11-02"
-		let day2019 = get_sameday(this.day, 2019).toISOString().split('T')[0];
+		// récupère la date de l'année de référence : ex "2019-11-02"
+		let dayref = get_sameday(this.day, this.annee_ref).toISOString().split('T')[0];
 		const sch = new schema_rea(this.day, this.zone_schema);
 		this.schema = await sch.read_schema_realise() || "vide";
 		const sch7 = new schema_rea(day7, this.zone_schema);
 		this.schema7 = await sch7.read_schema_realise() || "vide";
-		const sch2019 = new schema_rea(day2019, this.zone_schema);
-		this.schema2019 = await sch2019.read_schema_realise() || "vide";
+		const schref = new schema_rea(dayref, this.zone_schema);
+		this.schemaref = await schref.read_schema_realise() || "vide";
 		/*
 		console.log("Schema");
 		console.log(this.schema);
 		console.log("Schema7");
 		console.log(this.schema7);
-		console.log("Schema2019");
-		console.log(this.schema2019);
+		console.log("SchemaRef");
+		console.log(this.schemaref);
 		*/
 		this.show_simu_capa();
 	}
@@ -912,8 +922,8 @@ class simu_capa extends capa {
 		//show_popup("Patientez !", "Chargement en cours...");
 		this.build_tab();
 		this.modify_listener();
-		show_capa_graph("right_part", this.day, this.zone_schema, this.pc, this.schema, this.schema7, this.schema2019);
-		$('feuille_capa_simu').scrollIntoView({ 
+		show_capa_graph("simu_right_part", this.day, this.zone_schema, this.pc_ini, this.details_sv_15mn, this.schema, this.schema7, this.schemaref, 0);
+		this.containerSimu.scrollIntoView({ 
             behavior: 'smooth' 
         });
 
@@ -939,17 +949,55 @@ class simu_capa extends capa {
 				}
 			})
 		}
-		let result = `
-		<tr data-vac='${vac}'>
-			<td class='eq left_2px right_1px bottom_2px' data-vac='${vac}'>${this.workingTeam[vac]}</td>
-			<td class='right_1px bottom_2px'>${vac}</td><td class='bottom_2px'>${cds}</td>
-			<td class='nbpc bottom_2px' data-vacPC='${vac}'>${nbpc_vac}</td>
-			<td class='nbpc right_1px bottom_2px' data-vacDET='${vac}'>${nbpcdet_vac}</td>
-			<td class='bv right_1px bottom_2px' data-vacBV='${vac}'>${this.pc_vac[vac]["BV"]}</td>
-			<td class='bvini right_1px bottom_2px' data-vacBV='${vac}'>${this.pc_vac[vac]["BV"]}</td>
-			<td class='right_1px bottom_2px'><div class="modify"><button class="minusBV minus" data-vac='${vac}'>-</button><span class="numberPlace" data-vacBV='${vac}'>0</span><button class="plusBV plus" data-vac='${vac}'>+</button></div></td>
-			<td class='right_2px bottom_2px'><div class="modify"><button class="minusPC minus" data-vac='${vac}'>-</button><span class="numberPlace" data-vacPC='${vac}'>0</span><button class="plusPC plus" data-vac='${vac}'>+</button></div></td>
-		</tr>`;
+		let result = "";
+		// trie le tableau [cds, A, B, ...] et enlève cds
+		const sousvac = Object.keys(this.pc_sousvac_15mn[vac]).sort(this.compare_tds_name);
+		sousvac.shift();
+		const rep = this.get_repartition(vac);	
+		for(let i=0;i<sousvac.length;i++) {
+			const s = sousvac[i];
+			let cl = "";
+			let wt = this.workingTeam[vac];
+			if (i === sousvac.length -1) {
+				cl = "bottom_2px";
+				wt = "";
+			}
+			result += `
+			<tr data-vac='${vac}'>
+				<td class='eq left_2px right_1px ${cl}' data-vac='${vac}'>${wt}</td>
+				<td class='right_1px ${cl}'>${vac+':'+s}</td>`;
+				if (i>0) {
+					result += `<td class='right_1px ${cl}'></td>`;
+				} else {
+					result += `<td class='right_1px ${cl}'>${cds}</td>`;
+				}
+				result += `
+				<td class='nbpc ${cl}' data-vacPC='${vac}' data-sv='${s}'>${rep[s]}</td>
+				<td class='right_2px ${cl}'>
+					<div class="modify_cell">
+						<button class="minusPC minus" data-vac='${vac}' data-sv='${s}'>-</button><span class="numberPlace" data-vacPC='${vac}' data-sv='${s}'>0</span>
+						<button class="plusPC plus" data-vac='${vac}' data-sv='${s}'>+</button>
+					</div>
+				</td>`;
+			if (i>0) {
+				result += `
+				<td class='${cl}' data-vacBV='${vac}'></td>
+				<td class='${cl}' data-vacBV='${vac}'></td>
+				<td class='right_1px ${cl}'></td>`;
+			} else	{
+				result += `
+				<td class='bv ${cl}' data-vacBV='${vac}'>${this.pc_vac[vac]["BV"]}</td>
+				<td class='bvini ${cl}' data-vacBV='${vac}'>${this.pc_vac[vac]["BV"]}</td>
+				<td class='right_1px ${cl}'>
+					<div class="modify_cell">
+						<button class="minusBV minus" data-vac='${vac}' data-sv='${s}'>-</button><span class="numberPlace" data-vacBV='${vac}' data-sv='${s}'>0</span>
+						<button class="plusBV plus" data-vac='${vac}' data-sv='${s}'>+</button>
+					</div>
+				</td>`;
+			}
+			result += `
+			</tr>`;
+		}
 		return result;
 	}
 
@@ -957,7 +1005,7 @@ class simu_capa extends capa {
 		// Construit le tableau
 		let to = `<h2>Zone ${this.zone.toUpperCase()} / ${reverse_date(this.day)}</h2>`;
 		/*
-		to += '<input type="checkbox" id="check_nobv" name="check_nobv"><label for="check_nobv">Enlever les BVs pour le calcul des UCESOs</label><div><button id="upd">Update</button></div>';
+		to += '<input type="checkbox" id="check_nobv" name="check_nobv"><label for="check_nobv">Enlever les BVs pour le calcul des UCESOs</label><div><button id="simu_update_button">Update</button></div>';
 		*/
 		$('table_option').innerHTML = to;
 		/*
@@ -968,9 +1016,9 @@ class simu_capa extends capa {
 				this.noBV = false;
 			}
 		})
-		$('upd').addEventListener('click', async () => {
+		$('simu_update_button').addEventListener('click', async () => {
 			//this.pc = await this.get_nbpc_dispo(this.v, this.vBV, this.noBV);
-			//show_capa_graph("right_part", this.day, this.zone_schema, this.pc, this.schema, this.schema7, this.schema2019);
+			//show_capa_graph("simu_right_part", this.day, this.zone_schema, this.pc, this.details_sv_15mn, this.schema, this.schema7, this.schemaref);
 		})
 		*/
 		let res = `<table class="simu">
@@ -978,13 +1026,15 @@ class simu_capa extends capa {
 						<tr class="titre">
 							<th class="top_2px left_2px bottom_2px right_1px">Eq</th>
 							<th class="top_2px bottom_2px right_1px">Vac</th>
-							<th class="top_2px bottom_2px">CDS</th>
+							<th class="top_2px bottom_2px right_1px">CDS</th>
 							<th class="top_2px bottom_2px">PC</th>
+							<th class="top_2px bottom_2px right_2px">Mod PC</th>`;
+							/*
 							<th class="top_2px bottom_2px right_1px">det</th>
-							<th class="top_2px bottom_2px right_1px">BV</th>
-							<th class="top_2px bottom_2px right_1px">BVini</th>
-							<th class="top_2px bottom_2px right_2px">Mod BV</th>
-							<th class="top_2px bottom_2px right_2px">Mod PC</th>
+							*/
+					res += `<th class="top_2px bottom_2px">BU</th>
+							<th class="top_2px bottom_2px">BUini</th>
+							<th class="top_2px bottom_2px right_2px">Mod BU</th>
 						</tr>
 					</thead>
 					<tbody>`;
@@ -1079,25 +1129,15 @@ class simu_capa extends capa {
 		const plusBV = document.querySelectorAll('.plusBV');
 		const moinsPC = document.querySelectorAll('.minusPC');
 		const plusPC = document.querySelectorAll('.plusPC');
-
+		
 		plusBV.forEach(el => {
 			el.addEventListener('click', async (event) => {
 				const vac = el.dataset.vac;
+				const sv = el.dataset.sv;
+				// modifie le chiffre entre - et +
 				$$(`span[data-vacBV='${vac}']`).innerHTML = parseInt($$(`span[data-vacBV='${vac}']`).innerHTML) + 1;
 				this.pc["pc_vac"][vac]["BV"]++;
-				const rep = this.get_repartition(vac);
-				for(let i=0;i<95;i++) {
-					if (this.pc["pc_sousvac_15mn"][vac]["A"][i] != 0) {
-						let temp1 = this.pc["pc_sousvac_15mn"][vac]["A"][i] - rep.A;
-						this.pc["pc_sousvac_15mn"][vac]["A"][i] = rep.A;
-						this.pc["pc_total_horsInstrRD_15mn"][i][1] -= temp1;
-					}
-					if (this.pc["pc_sousvac_15mn"][vac]["B"][i] != 0) {
-						let temp2 = this.pc["pc_sousvac_15mn"][vac]["B"][i] - rep.B;
-						this.pc["pc_sousvac_15mn"][vac]["B"][i] = rep.B;
-						this.pc["pc_total_horsInstrRD_15mn"][i][1] -= temp2;
-					}
-				}	
+				this.pc["uceso"] = this.pc["pc_total"].map( (elem, index) => [elem[0], Math.floor(elem[1] / 2), Math.floor(elem[1]  % 2) ]);
 				const BV_elem = $$(`td.bv[data-vacBV='${vac}']`);
 				BV_elem.innerHTML = parseInt(BV_elem.innerHTML) + 1;
 				if (BV_elem.innerHTML != $$(`td.bvini[data-vacBV='${vac}']`).innerHTML) {
@@ -1105,94 +1145,127 @@ class simu_capa extends capa {
 				} else {
 					BV_elem.classList.remove('bg_red');
 				}
-				show_capa_graph("right_part", this.day, this.zone_schema, this.pc_ini, this.schema, this.schema7, this.schema2019, this.pc);
+				show_capa_graph("simu_right_part", this.day, this.zone_schema, this.pc_ini, this.details_sv_15mn, this.schema, this.schema7, this.schemaref, this.pc);
 			});
 		});
 
 		moinsBV.forEach(el => {
 			el.addEventListener('click', async (event) => {
 				const vac = el.dataset.vac;
-				$$(`span[data-vacBV='${vac}']`).innerHTML = parseInt($$(`span[data-vacBV='${vac}']`).innerHTML) - 1;
-				this.pc["pc_vac"][vac]["BV"]--;
-				const rep = this.get_repartition(vac);
-				for(let i=0;i<95;i++) {
-					if (this.pc["pc_sousvac_15mn"][vac]["A"][i] != 0) {
-						let temp1 = this.pc["pc_sousvac_15mn"][vac]["A"][i] - rep.A;
-						this.pc["pc_sousvac_15mn"][vac]["A"][i] = rep.A;
-						this.pc["pc_total_horsInstrRD_15mn"][i][1] -= temp1;
-					}
-					if (this.pc["pc_sousvac_15mn"][vac]["B"][i] != 0) {
-						let temp2 = this.pc["pc_sousvac_15mn"][vac]["B"][i] - rep.B;
-						this.pc["pc_sousvac_15mn"][vac]["B"][i] = rep.B;
-						this.pc["pc_total_horsInstrRD_15mn"][i][1] -= temp2;
-					}
-				}	
+				const sv = el.dataset.sv;
 				const BV_elem = $$(`td.bv[data-vacBV='${vac}']`);
+				if (parseInt(BV_elem.innerHTML) === this.pc["pc_vac"][vac]["nbpc"]) {
+					show_popup('Action impossible','Nbre PC doit &ecirc;tre < BV');
+					return;
+				}
+				// modifie le chiffre entre - et +
+				$$(`span[data-vacBV='${vac}']`).innerHTML = parseInt($$(`span[data-vacBV='${vac}']`).innerHTML) - 1;
+				this.pc["pc_vac"][vac]["BV"]--;			
 				BV_elem.innerHTML = parseInt(BV_elem.innerHTML) - 1;
 				if (BV_elem.innerHTML != $$(`td.bvini[data-vacBV='${vac}']`).innerHTML) {
 					BV_elem.classList.add('bg_red');
 				} else {
 					BV_elem.classList.remove('bg_red');
 				}
-				show_capa_graph("right_part", this.day, this.zone_schema, this.pc_ini, this.schema, this.schema7, this.schema2019, this.pc);
+				show_capa_graph("simu_right_part", this.day, this.zone_schema, this.pc_ini, this.details_sv_15mn, this.schema, this.schema7, this.schemaref, this.pc);
+				
 			});
 		});
-
+		
 		plusPC.forEach(el => {
 			el.addEventListener('click', async (event) => {
 				const vac = el.dataset.vac;
-				$$(`span[data-vacPC='${vac}']`).innerHTML = parseInt($$(`span[data-vacPC='${vac}']`).innerHTML) + 1;
+				const sv = el.dataset.sv;
+				// on ne peut pas aller au_dessus du BV
+				const BV_elem = $$(`td.bv[data-vacBV='${vac}']`);
+				if (parseInt(BV_elem.innerHTML) === this.pc["pc_vac"][vac]["nbpc"]) {
+					show_popup('Action impossible', 'Nbre PC doit &ecirc;tre < BV');
+					return;
+				}
+				// modifie le chiffre entre - et +
+				$$(`span[data-vacPC='${vac}'][data-sv='${sv}']`).innerHTML = parseInt($$(`span[data-vacPC='${vac}'][data-sv='${sv}']`).innerHTML) + 1;
 				this.pc["pc_vac"][vac]["nbpc"]++;
-				const rep = this.get_repartition(vac);
+				for(let i=0;i<95;i++) {
+					if (this.pc["tour_utc"][vac][sv][i] != 0) {
+						this.pc["pc_sousvac_15mn"][vac][sv][i] = this.pc["pc_sousvac_15mn"][vac][sv][i] + 1;
+						this.pc["pc_total_horsInstrRD_15mn"][i][1] += 1;
+						this.pc["pc_total"][i][1] += 1;
+					}
+				}
+				/*
+				//const rep = this.get_repartition(vac);
 				for(let i=0;i<95;i++) {
 					if (this.pc["pc_sousvac_15mn"][vac]["A"][i] != 0) {
 						let temp1 = this.pc["pc_sousvac_15mn"][vac]["A"][i] - rep.A;
 						this.pc["pc_sousvac_15mn"][vac]["A"][i] = rep.A;
 						this.pc["pc_total_horsInstrRD_15mn"][i][1] -= temp1;
+						this.pc["pc_total"][i][1] -= temp1;
 					}
 					if (this.pc["pc_sousvac_15mn"][vac]["B"][i] != 0) {
 						let temp2 = this.pc["pc_sousvac_15mn"][vac]["B"][i] - rep.B;
 						this.pc["pc_sousvac_15mn"][vac]["B"][i] = rep.B;
 						this.pc["pc_total_horsInstrRD_15mn"][i][1] -= temp2;
+						this.pc["pc_total"][i][1] -= temp2;
 					}
-				}	
-				const PC_elem = $$(`td.nbpc[data-vacPC='${vac}']`);
+				}
+				*/
+				this.pc["uceso"] = this.pc["pc_total"].map( (elem, index) => [elem[0], Math.floor(elem[1] / 2), Math.floor(elem[1]  % 2) ]);	
+				const PC_elem = $$(`td.nbpc[data-vacPC='${vac}'][data-sv='${sv}']`);
 				PC_elem.innerHTML = parseInt(PC_elem.innerHTML) + 1;
-				if ($$(`span[data-vacPC='${vac}']`).innerHTML != 0) {
+				if ($$(`span[data-vacPC='${vac}'][data-sv='${sv}']`).innerHTML != 0) {
 					PC_elem.classList.add('bg_red');
 				} else {
 					PC_elem.classList.remove('bg_red');
 				}
-				show_capa_graph("right_part", this.day, this.zone_schema, this.pc_ini, this.schema, this.schema7, this.schema2019, this.pc);
+				show_capa_graph("simu_right_part", this.day, this.zone_schema, this.pc_ini, this.details_sv_15mn, this.schema, this.schema7, this.schemaref, this.pc);
 			});
 		});
 
 		moinsPC.forEach(el => {
 			el.addEventListener('click', async (event) => {
 				const vac = el.dataset.vac;
-				$$(`span[data-vacPC='${vac}']`).innerHTML = parseInt($$(`span[data-vacPC='${vac}']`).innerHTML) - 1;
+				const sv = el.dataset.sv;
+				const PC_elem = $$(`td.nbpc[data-vacPC='${vac}'][data-sv='${sv}']`);
+				if (parseInt(PC_elem.innerHTML) === 0) {
+					show_popup('Action impossible', 'Nbre PC doit &ecirc;tre > 0');
+					return;
+				}
+				// modifie le chiffre entre - et +
+				$$(`span[data-vacPC='${vac}'][data-sv='${sv}']`).innerHTML = parseInt($$(`span[data-vacPC='${vac}'][data-sv='${sv}']`).innerHTML) - 1;
 				this.pc["pc_vac"][vac]["nbpc"]--;
+				for(let i=0;i<95;i++) {
+					if (this.pc["tour_utc"][vac][sv][i] != 0) {
+						this.pc["pc_sousvac_15mn"][vac][sv][i] -= 1;
+						this.pc["pc_total_horsInstrRD_15mn"][i][1] -= 1;
+						this.pc["pc_total"][i][1] -= 1;
+					}
+				}
+				/*
 				const rep = this.get_repartition(vac);
 				for(let i=0;i<95;i++) {
 					if (this.pc["pc_sousvac_15mn"][vac]["A"][i] != 0) {
 						let temp1 = this.pc["pc_sousvac_15mn"][vac]["A"][i] - rep.A;
 						this.pc["pc_sousvac_15mn"][vac]["A"][i] = rep.A;
 						this.pc["pc_total_horsInstrRD_15mn"][i][1] -= temp1;
+						this.pc["pc_total"][i][1] -= temp1;
 					}
 					if (this.pc["pc_sousvac_15mn"][vac]["B"][i] != 0) {
 						let temp2 = this.pc["pc_sousvac_15mn"][vac]["B"][i] - rep.B;
 						this.pc["pc_sousvac_15mn"][vac]["B"][i] = rep.B;
 						this.pc["pc_total_horsInstrRD_15mn"][i][1] -= temp2;
+						this.pc["pc_total"][i][1] -= temp2;
 					}
-				}	
-				const PC_elem = $$(`td.nbpc[data-vacPC='${vac}']`);
+				}
+				*/
+				this.pc["uceso"] = this.pc["pc_total"].map( (elem, index) => [elem[0], Math.floor(elem[1] / 2), Math.floor(elem[1]  % 2) ]);	
+				
 				PC_elem.innerHTML = parseInt(PC_elem.innerHTML) - 1;
-				if ($$(`span[data-vacPC='${vac}']`).innerHTML != 0) {
+				if ($$(`span[data-vacPC='${vac}'][data-sv='${sv}']`).innerHTML != 0) {
 					PC_elem.classList.add('bg_red');
 				} else {
 					PC_elem.classList.remove('bg_red');
 				}
-				show_capa_graph("right_part", this.day, this.zone_schema, this.pc_ini, this.schema, this.schema7, this.schema2019, this.pc);
+				show_capa_graph("simu_right_part", this.day, this.zone_schema, this.pc_ini, this.details_sv_15mn, this.schema, this.schema7, this.schemaref, this.pc);
 			});
 		});
 
@@ -1202,8 +1275,8 @@ class simu_capa extends capa {
 /* ------------------------------------------------------------------------------------
 		Affiche les graphes :
 		- vert de la capa offerte le jour choisi
-		- orange : les ouvertures réalisées à J-7
-		- bleu	 : les ouvertures réalisées à J-728 (2019)
+		- orange : les ouvertures réalisées à J-7show_capa_graph
+		- bleu	 : les ouvertures réalisées à l'année de réf (Y-1)
 
 		Les 3 derniers paramètres permettent de fournir un objet schema réalisé
 		afin d'éviter un rechargement des fichiers
@@ -1213,20 +1286,15 @@ class simu_capa extends capa {
 		 @param {string} day - "yyyy-mm-jj"
 		 @param {string} zone - "AE" ou "AW"
 		 @param {array} pc - objet d'array des crénaux horaires associés aux pc dispo
+		 @param {array} pc - array des sousvacs par 15mn
 		 @param {objet/string} schema - objet schema rea ou 'no' par défaut
 		 @param {objet/string} schema7 - objet schema rea J-7 ou 'no' par défaut
-		 @param {objet/string} schema2019 - objet schema rea 2019 ou 'no' par défaut
+		 @param {objet/string} schemaref - objet schema rea Y-1 ou 'no' par défaut
 	----------------------------------------------------------------------------------- */
-async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', schema7 = 'no', schema2019 = 'no', pc_simu = 0) {
-	/*
-	console.log("-Schema");
-	console.log(schema);
-	console.log("-Schema7");
-	console.log(schema7);
-	console.log("-Schema2019");
-	console.log(schema2019);
-	*/
+async function show_capa_graph(containerId, day, zone, pc = 0, details_sv, schema = 'no', schema7 = 'no', schemaref = 'no', pc_simu = 0) {
 	const container = $(containerId);
+	// Année de référence = année dernière
+	const year_ref = parseInt(day.substring(0,4)) - 1;
 	container.innerHTML = '<div style="display: flex;"><div id="i1"></div><ul id="date_legend"><li class="bleu"></li><li class="orange"></li><li class="vert"></li></ul></div><div id="uceso"></div>';
 	let chartDom = $("uceso");
 	chartDom.style.height = "400px";
@@ -1234,12 +1302,6 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 	myChart.clear();
 
 	const d = day.split("-");
-	let pc_15mn = null;
-	let pc_instr_15mn = null;
-	let pc_jx_15mn = null;
-	let pc_15mn_simu = null;
-	let pc_instr_15mn_simu = null;
-	let pc_jx_15mn_simu = null;
 	let uceso = null;
 	let uceso_simu = null;
 	let data_series_uceso = null;
@@ -1248,12 +1310,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 		await wait(1000);
 		document.querySelector('.popup-close').click();
 	} else {
-		pc_15mn = pc["pc_total_horsInstrRD_15mn"];
-		pc_instr_15mn = pc["pc_total_instr_15mn"];
-		pc_total_RD_15mn = pc["pc_total_RD_15mn"];
-		uceso = pc_15mn.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn[index][0] + pc_total_RD_15mn[index]) / 2), Math.floor((elem[1] + pc_instr_15mn[index][0] + pc_total_RD_15mn[index]) % 2) ]);
-		//console.log("uceso");
-		//console.log(uceso);
+		uceso = pc["uceso"];
 		data_series_uceso = [];
 		uceso.forEach(row => {
 			let deb = row[0];
@@ -1265,10 +1322,7 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 		data_series_uceso.push([new Date(d[0], d[1]-1, d[2], 23, 59), uceso[uceso.length-1][1]]);
 
 		if (pc_simu !=0 ) {
-			pc_15mn_simu = pc_simu["pc_total_horsInstrRD_15mn"];
-			pc_instr_15mn_simu = pc_simu["pc_total_instr_15mn"];
-			pc_total_RD_15mn_simu = pc_simu["pc_total_RD_15mn"];
-			uceso_simu = pc_15mn_simu.map( (elem, index) => [elem[0], Math.floor((elem[1] + pc_instr_15mn_simu[index][0] + pc_total_RD_15mn_simu[index]) / 2) ]);
+			uceso_simu = pc_simu["uceso"];
 			data_series_uceso_simu = [];
 			uceso_simu.forEach(row => {
 				let deb = row[0];
@@ -1283,9 +1337,9 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 
 	let sch;
 	let sch7;
-	let sch2019;
+	let schref;
 	let day7 = addDays_toString(day, -7);
-	let day2019 = get_sameday(day, 2019).toISOString().split('T')[0];
+	let dayref = get_sameday(day, year_ref).toISOString().split('T')[0];
 
 	// si les 3 derniers params n'existe pas, l'appel ne provient de simu_capa => on lit les schemas
 	if (schema === 'no') {
@@ -1296,27 +1350,20 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 		sch7 = new schema_rea(day7, zone);
 		schema7 = await sch7.read_schema_realise();
 	}
-	if (schema2019 === 'no') {
-		sch2019 = new schema_rea(day2019, zone);
-    	schema2019 = await sch2019.read_schema_realise();
+	if (schemaref === 'no') {
+		schref = new schema_rea(dayref, zone);
+    	schemaref = await schref.read_schema_realise();
 	}
 	
 	// Si on récupère 'vide', c'est que l'appel provient de simu_capa et que le schema n'existe pas
 	// dans ce cas, on le remet à undefined pour ne pas impacter les test qui suivent
 	if (schema === 'vide') schema = undefined;
 	if (schema7 === 'vide') schema7 = undefined;
-	if (schema2019 === 'vide') schema2019 = undefined;
-	/*
-	console.log("*Schema");
-	console.log(schema);
-	console.log("*Schema7");
-	console.log(schema7);
-	console.log("*Schema2019");
-	console.log(schema2019);
-*/
+	if (schemaref === 'vide') schemaref = undefined;
+	
 	data_series = [];
 	data_series7 = [];
-	data_series2019 = [];
+	data_seriesRef = [];
 	data_d = [];
 	
 	// Si le schema du jour J existe, alors on l'affiche
@@ -1339,7 +1386,6 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 		}); 
 		data_d[0][0] = "00:00";
 		data_series.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema.ouverture[schema.ouverture.length-1][3]]);
-		
 	}
 	
 	// Si le schema du jour J n'existe pas mais que J-7 existe, alors on affiche J-7
@@ -1356,42 +1402,39 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 		data_series7.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema7.ouverture[schema7.ouverture.length-1][3]]);
 	}
 	
-	// 2019 existe toujours pour un année >2019
-	// si la date initiale est en 2019, on ne va pas chercher 2019 et schema2019 = null
-	if (schema2019 != null) {
-		schema2019.ouverture.forEach(row => {
+	// si la date initiale est en 2019, on ne va pas chercher 2019 et schemaref = null
+	if (schemaref != null) {
+		schemaref.ouverture.forEach(row => {
 			let deb = row[1];
 			let fin = row[2];
 			let nb_sect = row[3];
 			let f = deb.split(":");
 			let time = new Date(d[0], d[1]-1, d[2], f[0], f[1]);
-			data_series2019.push([time,nb_sect]);
+			data_seriesRef.push([time,nb_sect]);
 		}); 
-		if (typeof schema2019.ouverture[schema2019.ouverture.length-1] != 'undefined') {
-			data_series2019.push([new Date(d[0], d[1]-1, d[2], 23, 59), schema2019.ouverture[schema2019.ouverture.length-1][3]]);
+		if (typeof schemaref.ouverture[schemaref.ouverture.length-1] != 'undefined') {
+			data_seriesRef.push([new Date(d[0], d[1]-1, d[2], 23, 59), schemaref.ouverture[schemaref.ouverture.length-1][3]]);
 		}
 	}
 	
 	const i1 = get_i1(data_series, data_series_uceso);
 	$("i1").innerHTML = 'Indicateur i1: '+i1+'%';
 	const tab_jour=new Array("Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi");
-	const jour2019 = tab_jour[new Date(day2019).getDay()];
+	const jourRef = tab_jour[new Date(dayref).getDay()];
 	const jour7 = tab_jour[new Date(day7).getDay()];
 	const jour = tab_jour[new Date(day).getDay()];
 	const z = (zone === "AE") ? "est" : "ouest";
-	console.log("max secteurs");
-	console.log(schema.max_secteurs);
 	const vacs = Object.keys(pc["pc_vac"]);
 	const nbr = {};
 	vacs.forEach(vac => {
 		nbr[vac] = pc["pc_vac"][vac]["nbpc"];
 	});
-	save_uceso(z, day, jour, i1, uceso, data_d, schema.max_secteurs, schema.tv_h, nbr);
-	$$(".bleu").innerHTML = '2019 : '+jour2019+' '+reverse_date(day2019);
+	if (typeof schema != 'undefined') save_uceso(z, day, jour, i1, uceso, data_d, schema.max_secteurs, schema.tv_h, nbr);
+	$$(".bleu").innerHTML = 'Y-1'+' : '+jourRef+' '+reverse_date(dayref);
 	$$(".orange").innerHTML = 'J-7 : '+jour7+' '+reverse_date(day7);
 	$$(".vert").innerHTML = 'J : '+jour+' '+reverse_date(day);
 	
-	const couleur_bleu = getComputedStyle(document.documentElement).getPropertyValue('--color-2019');
+	const couleur_bleu = getComputedStyle(document.documentElement).getPropertyValue('--color-ref');
 	const couleur_orange = getComputedStyle(document.documentElement).getPropertyValue('--color-j-7');
 	const couleur_vert = getComputedStyle(document.documentElement).getPropertyValue('--color-j');
 
@@ -1401,11 +1444,36 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 		
 	  tooltip: {
 		trigger: 'axis',
+		// The first parameter params is the data that the formatter needs (Object|Array)
+		// When trigger is 'axis', params is the data array of multiple series.
+		// params.seriesIndex : 0 = Realisé, 1 = Réalisé J-7, 2 = Réalisé Y-1, 3 = Simu, 4 = Uceso
+		// params.dataIndex :	pour Uceso, donne l'index de 1/4 d'heure (0 = 00:00, 1 = 00:15, 2 = 00:30, ...)
+		//						pour le reste, dépend du nombre de data => ne peut pas servir
 		formatter: function(params) {
 			params = params[0];
 			let chartdate = echarts.format.formatTime('hh:mm', params.value[0]);
-			let val = '<li style="list-style:none">' + params.marker +
-				params.seriesName + ':&nbsp;&nbsp;' + params.value[1] + '&nbsp;secteurs</li>';
+			let val;
+			let dsv = "";
+			let vacs = Object.keys(details_sv[params.dataIndex]).sort();
+			vacs.forEach(vac => {
+				Object.keys(details_sv[params.dataIndex][vac]).forEach(sv => {
+					let v;
+					if (vac === "N-1") v = "N"; else v = vac;
+					dsv += `${v}${sv} : ${details_sv[params.dataIndex][vac][sv]}<br>`;
+				})
+			})
+			if (params.seriesIndex === 3) {
+				val = `
+				<li style="list-style:none"> 
+					${params.marker} ${params.seriesName} : ${params.value[1]} secteurs<br>
+					${dsv}
+				</li>`;
+			} else {
+				val = `
+				<li style="list-style:none"> 
+					${params.marker} ${params.seriesName} : ${params.value[1]} secteurs
+				</li>`;
+			}
 			return chartdate + val;
 		}
 	  },
@@ -1474,12 +1542,20 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 		  data: data_series7
 		},
 		{
-		  name: 'Réalisé 2019', //2019
+		  name: 'Réalisé '+year_ref, //année de réf
 		  color: couleur_bleu,
 		  type: 'line',
 		  step: 'end',
 		  animation: false,
-		  data: data_series2019
+		  data: data_seriesRef
+		},
+		{
+			name: 'UCESO capa',
+			color: '#ce7777',
+			data: data_series_uceso,
+			type: 'line',
+			animation: false,
+			step: 'end'
 		}
 	  ]
 	};
@@ -1494,18 +1570,6 @@ async function show_capa_graph(containerId, day, zone, pc = 0, schema = 'no', sc
 			step: 'end'
 		});
 	}
-
-	if (pc != 0) {
-		option.series.push({
-			name: 'UCESO capa',
-			color: '#ce7777',
-			data: data_series_uceso,
-			type: 'line',
-			animation: false,
-			step: 'end'
-		});
-	}
-	
 
 	if (option && typeof option === 'object') {
 		myChart.setOption(option);
@@ -1534,7 +1598,6 @@ function get_i1(data_realise, data_uceso) {
 		uce += (get_minutes(data_uceso[i+1][0]) - get_minutes(data_uceso[i][0]))*data_uceso[i][1];
 	}
 	const i1 = Math.round(rea*100/uce);
-	console.log("Minutes réalisées: "+rea);
 	return i1;
 
 }

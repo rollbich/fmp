@@ -206,7 +206,6 @@ const get_sameday = (day, year) => {
 	if (ecart2 < -3) {
 		past_d = past_d.addDays(-7);
 	}
-	console.log("result: "+past_d);
 	return past_d;
 }
 

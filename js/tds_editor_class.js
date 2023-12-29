@@ -43,7 +43,7 @@ class tds_editor {
         let saisons = Object.keys(this.data.tds_local).sort(this.compare_tds_name);
         let html = `
         <header>TDS Editor</header>
-        <div id="tds_glob">
+        <div id="tds_editor_glob">
         <ul class="menu_tds_editor">
             <li>
                 <select id="saison" class="select">`;
@@ -325,7 +325,7 @@ class tds_editor {
             bg = "#F005";
         }
         res += `<table class="ouverture">
-        <caption style="background-color: ${bg}">TDS ${saison} - ${capitalizeFirstLetter(this.zone)} ${titre} <button id='button_tds_${g}${saison}' type="button" class="button_tour">Save</button> -  <span style="font-size: 1.3rem; background-color: yellow;">Gestion : clic sur les cases Vac en jaunes</span></caption>
+        <caption style="background-color: ${bg}">TDS ${saison} - ${capitalizeFirstLetter(this.zone)} ${titre} <button id='button_tds_${g}${saison}' type="button" class="button_tour">Save</button> -  <span style="font-size: 1.3rem; background-color: yellow;">Cliquez sur les cases jaunes pour g&eacute;rer les sous-vac et le cds</span></caption>
         <thead>
             <tr class="titre">
                 <th class="top_2px left_2px right_1px bottom_2px">Vac</th>
@@ -503,7 +503,6 @@ class tds_editor {
                     };
                     
                     await fetch("tds_sql.php", data);
-                    //show_popup(`Changement CDS, vac: ${vac}`, "Op&eacute;ration effectu&eacute;e");
                     $('modal_text_cds').innerHTML = `Vac: ${vac}<br>Changement CDS effectu&eacute;`;
                     $('modal_text_cds').classList.toggle("off");
                     td.nextElementSibling.innerHTML = `cds: ${nbcds}`;
@@ -596,7 +595,7 @@ class tds_editor {
                     modal += `
                     </select>
                     </div>
-                    <p>Attention, cela va supprimer les plages associ&eacute;es</p>
+                    <p>Attention, v&eacute;rifiez les plages contentant ce TDS supprimé</p>
                     <button id="delete_TDS_button" type="button" class="btn btn-primary">Supprimer TDS</button>
                 </form>
                 <div id="modal_text_delete" class="modal_text off"></div>
@@ -631,7 +630,12 @@ class tds_editor {
         })
         $('add_TDS_button').addEventListener('click', (e) => {
             const nom_saison = $('cree_saison').value;
-            this.add_tds(nom_saison);
+            const last4digits = parseInt(nom_tds_supp.slice(-4));
+            if (last4digits > 2022) { 
+                this.add_tds(nom_saison);
+            } else {
+                show_popup('Cr&eacute;ation impossible','les 4 derniers chiffres = ann&eacute;e');
+            }
         })
         $('delete_TDS_button').addEventListener('click', (e) => {
             const nom_saison = $('delete_TDS').value;
@@ -640,7 +644,12 @@ class tds_editor {
         $('duplicate_TDS_button').addEventListener('click', (e) => {
             const tds_to_copy = $('duplicate_old_TDS').value;
             const new_tds_name = $('duplicate_new_TDS').value;
-            this.duplicate_tds(tds_to_copy, new_tds_name);
+            const last4digits = parseInt(new_tds_name.slice(-4));
+            if (last4digits > 2022) { 
+                this.duplicate_tds(tds_to_copy, new_tds_name);
+            } else {
+                show_popup('Cr&eacute;ation impossible','les 4 derniers chiffres = ann&eacute;e');
+            }
         })
     }
 
@@ -648,7 +657,8 @@ class tds_editor {
             Pop-up Gestion du TDS supplémentaire
         ------------------------------------------------------------------ */
 
-    gestion_tds_supp() {         
+    gestion_tds_supp() {  
+        let saisons = Object.keys(this.data.tds_local);       
         let res = `<table class="ouverture">
         <caption>TDS Supp - ${capitalizeFirstLetter(this.zone)}</caption>
         <thead>
@@ -690,13 +700,20 @@ class tds_editor {
         ${res}
         <div class="modif">
             <div class="saison"> 
-                <h2>Cr&eacute;ation d'un TDS suppl&eacute;mentaire</h2>
+                <h2>Cr&eacute;ation d'une ligne de TDS suppl&eacute;mentaire</h2>
                 <form>
                     <div class="form-group">
-                    <label for="cree_tds_supp">TDS :&nbsp;</label>
-                    <input type="text" id="cree_tds_supp" name="cree_tds_supp" required minlength="6" maxlength="18" size="18" placeholder="nom du tds"/>
+                    <label for="cree_tds_supp">Ligne Supp:&nbsp;</label>
+                    <input type="text" id="cree_tds_supp" name="cree_tds_supp" required minlength="6" maxlength="18" size="18" placeholder="nom ligne supp"/>
+                    <label for="associe_tds_supp">TDS associ&eacute;:&nbsp;</label>
+                    <select id="associe_tds_supp" class="select">`;
+                        saisons.forEach(s => {
+                            modal += `<option value="${s}">${s}</option>`;
+                        })
+                        modal += `
+                        </select>
                     </div>
-                    <p>Le nom du TDS doit se terminer par une ann&eacute;e à 4 chiffres</p>
+                    <p>Le nom de la ligne supp doit commencer par RD et se terminer par une ann&eacute;e à 4 chiffres<br>Ex : RD1-2023</p>
                     <button id="add_TDS_supp_button" type="button" class="btn btn-primary">Ajouter TDS</button>
                 </form>
                 <div id="modal_text_create_tds_supp" class="modal_text off"></div>
@@ -717,7 +734,14 @@ class tds_editor {
         })
         $('add_TDS_supp_button').addEventListener('click', async (e) => {
             const nom_tds_supp = $('cree_tds_supp').value;
-            this.add_tds_supp(nom_tds_supp);
+            const tds_associe = $('associe_tds_supp').value;
+            const last4digits = parseInt(nom_tds_supp.slice(-4));
+            const first2digit = nom_tds_supp.slice(0,2);
+            if (last4digits > 2022 && first2digit === "RD") { 
+                this.add_tds_supp(nom_tds_supp, tds_associe);
+            } else {
+                show_popup('Cr&eacute;ation impossible','les 2 premi&egrave;res lettres = RD<br>les 4 derniers chiffres = ann&eacute;e');
+            }
         })
     }
 
@@ -1124,8 +1148,8 @@ class tds_editor {
         this.gestion_tds();
     }
 
-    async add_tds_supp(nom_tds) {
-        const tour = { "zone": this.zone, "nom_tds": nom_tds, "fonction": "add_tds_supp"}
+    async add_tds_supp(nom_tds, tds_associe) {
+        const tour = { "zone": this.zone, "nom_tds": nom_tds, "tds_associe": tds_associe, "fonction": "add_tds_supp"}
         var data = {
             method: "post",
             headers: { "Content-Type": "application/json" },

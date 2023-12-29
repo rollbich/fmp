@@ -345,9 +345,9 @@ class bdd {
         return $obj;
     }
 
-    public function add_tds_supp(string $nom) {
+    public function add_tds_supp(string $nom, string $tds_associe) {
         $table = "tds_supp_$this->zone";
-        $req = "INSERT INTO $table (Renfort) VALUES ('$nom')"; 
+        $req = "INSERT INTO $table (Renfort, nom_tds) VALUES ('$nom', '$tds_associe')"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
     }
