@@ -143,8 +143,9 @@
 				const cap = new capa(day, zone);
 				show_popup("Patientez !", "Chargement en cours...");
 				const pc = await cap.get_nbpc_dispo();
+				const details_sv_15mn = pc.details_sv_15mn;
 				document.querySelector('.popup-close').click();
-				show_capa_graph("feuille_capa_uceso", day, zone, pc);
+				show_capa_graph("feuille_capa_uceso", day, zone, pc, details_sv_15mn);
 			});
 			
 			document.querySelector('.popup-close').addEventListener('click', e => {

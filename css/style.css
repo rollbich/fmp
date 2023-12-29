@@ -18,7 +18,7 @@
   --upload-button-bg-color: #6dd6cc;
   --popup-bg-color: #fff;
   --caption-uceso: #77ce77;
-  --color-2019: #00caff;
+  --color-ref: #00caff;
   --color-j-7: #ffca00;
   --color-j: #77ce77;
   --rect-bg-color: #5fafd0;
@@ -420,7 +420,7 @@ caption {
 }
 
 table thead > tr.titre {
-  background-color: var(--color-2019);
+  background-color: var(--color-ref);
 }
 
 table tr:nth-child(odd) {
@@ -741,7 +741,7 @@ td.supprime:hover {
 }
 
 li.bleu {
-	color: var(--color-2019);
+	color: var(--color-ref);
 }
 
 li.orange {
@@ -831,7 +831,7 @@ body.aide .card {
 }
 
 body.aide .card h2 a:hover {
-	color: var(--color-2019);
+	color: var(--color-ref);
 }
 
 body.aide .card .im {

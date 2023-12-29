@@ -135,8 +135,6 @@
 <div id="glob_container">
 	<div id='feuille_capa_tour'>
 	</div>
-	<div id='feuille_capa_greve' class='off'>
-	</div>
 	<div id='feuille_capa_simu'>
 	</div>
 </div>

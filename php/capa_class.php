@@ -300,6 +300,8 @@ class capa {
 			}
 		}
 		
+		$tds_suppl = new stdClass();
+
 		$this->pc->JX->equipe = $this->tab_vac_eq->JX;
 
 		foreach ($this->tab_vac_eq as $vac => $value) {
@@ -583,8 +585,13 @@ class capa {
 			}
 		}
 		
+		// array des sousvacs concernées par l'horaire par 15mn (96 valeurs)
+		$details_sv_15mn = [];
+
 		for($i=0;$i<96;$i++) {
+			$obj_sv = new stdClass();
 			foreach($vacs as $vacation) {
+				$obj_sv->$vacation = new stdClass();
 				$sv = $this->get_sousvacs($vacation);
 				$sv_greve = $this->get_sousvacs($vacation, true);
 				$tour_vacation = $vacation;
@@ -611,16 +618,19 @@ class capa {
 						if ($this->tour_utc->{$tour_vacation}->{$sousvac}[$i] === 1) {
 							$nb_pc += $rep->$sousvac;
 							$nb_pc_sousvac->{$vacation}->{$sousvac}[$i] = $rep->$sousvac;
+							$obj_sv->$vacation->$sousvac = $rep->$sousvac;
 						} 
+					}
+					foreach($sv_greve as $sousvac) {
 						if ($this->tour_utc_greve->{$tour_vacation}->{$sousvac}[$i] === 1) {
 							$nb_pc_greve += $rep_greve->$sousvac;
 							$nb_pc_sousvac_greve->{$vacation}->{$sousvac}[$i] = $rep_greve->$sousvac;
 						} 
 					}
 				}
-
+				if (!get_object_vars($obj_sv->$vacation)) unset($obj_sv->$vacation);
 			}
-
+			array_push($details_sv_15mn, $obj_sv);
 			$heure = get_time($i);
 			array_push($pcs, [$heure, $nb_pc]);
 			array_push($pct_greve, [$heure, $nb_pc_greve]);
@@ -731,6 +741,8 @@ class capa {
 		$res->tour_utc = $this->tour_utc;
 		$res->tour_local_greve = $this->tour_local_greve;
 		$res->tour_utc_greve = $this->tour_utc_greve;
+		$res->tour_supp_local = $this->tds_supp_local;
+		$res->tour_supp_utc = $this->tds_supp_utc;
 		$res->workingTeam = $this->tab_vac_eq;
 		$res->all_sv= $this->get_all_sousvacs();
 		$res->repartition = $this->repartition;
@@ -752,6 +764,7 @@ class capa {
 		$res->TDS_Supp = $TDS_Supp;
 		$res->pc_sousvac_15mn = $nb_pc_sousvac;
 		$res->pc_sousvac_15mn_greve = $nb_pc_sousvac_greve;
+		$res->details_sv_15mn = $details_sv_15mn;
 		
 		return $res;
 
@@ -951,7 +964,13 @@ class capa {
 		$tour_utc->{$vac}->nb_cds = $this->{$tour}->{$vac}->nb_cds;
 		$tour_utc->{$vac}->cds = $this->{$tour}->{$vac}->cds;
 
-		$sousvacs = $this->get_sv($vac);
+		$sousvacs = $this->get_sv($vac, $greve);
+		/*
+		echo $vac."<br>";
+		if ($greve === false) echo "Pas de grève<br>"; else echo "Grève<br>";
+		var_dump($sousvacs);
+		echo "<br>";
+		*/
 		foreach($sousvacs as $sousvac) {
 			$tour_utc->{$vac}->{$sousvac} = $this->{$tour}->{$vac}->{$sousvac};
 		}

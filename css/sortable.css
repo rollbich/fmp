@@ -24,7 +24,7 @@
 
 .sortable th {
   /*background: #808080;*/
-  background: var(--color-2019);
+  background: var(--color-ref);
   color: #fff;
   cursor: pointer;
   font-weight: normal;
