@@ -176,37 +176,21 @@ const jour_sem = day => {
 	return jours[new Date(day).getDay()];
 }
 
-// Récupère le même jour de la semaine équivalente d'une année passée
-// day : date de depart "2021-03-28"
-// year : année passée où on veut récupérer le jour correspondant
+// Calcule le même jour de l'année donnée
+// ex mercredi 20-12-2023 => pour 2022 mercredi 21-12-2022
 const get_sameday = (day, year) => {
 	const d = new Date(day);
-	const j = d.getDate();
-	const m = d.getMonth();
 	const y = d.getFullYear();
-	const js = d.getDay();
-	// on approxime le jour equivalent
-	let past_d = new Date(day);
-	past_d = d.addDays(-365.25*(y-year));
-	let past_d_js = past_d.getDay();
-	// ecart entre les jours de la semaine de day et past_d
-	const ecart = past_d_js - js;
-	// on corrige pour avoir le même jour de la semaine
-	past_d = past_d.addDays(-ecart);
-	const past_d_month = past_d.getMonth();
-	const past_d_jour = past_d.getDate();
-	// Calcul de l'écart en jour entre les 2 journées (on fixe une année quelconque pour le calcul)
-	const d1 = new Date(year, past_d_month, past_d_jour);
-	const d2 = new Date(year, m, j);
-	const ecart2 = ecart_date(d1, d2);
-	// Si abs(ecart) > 3, ce n'est pas le jour le plus proche, il faut ajouter/enlever 7 jours 
-	if (ecart2 > 3) {
-		past_d = past_d.addDays(7);
+	const nb_week = {};
+	for(let i=2019;i<y;i++) {
+		let nbweek = isoWeeksInYear(i);
+		nb_week[i] = nbweek;
 	}
-	if (ecart2 < -3) {
-		past_d = past_d.addDays(-7);
+	let d_year = new Date(day);
+	for(let i=year;i<y;i++) {
+		d_year.addDays(-7*nb_week[i]);
 	}
-	return past_d;
+	return d_year;
 }
 
 /* For a given date, get the ISO week number
