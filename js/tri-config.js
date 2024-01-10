@@ -53,7 +53,7 @@ const salto_est = {
     "bloc28": ["KK"],
     "bloc29": ["K12", "RAEE1"],
     "bloc30": ["RAEE", "RAES", "SBAM", "BAM"],
-    "bloc31": ["BAM", "MNST", "MN"],
+    "bloc31": ["MNST", "MN"],
     "bloc32": ["BTAJ", "SAB", "BT"],
     "bloc33": ["SBM", "ST"],
     "bloc34": ["AJ"]
