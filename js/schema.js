@@ -215,7 +215,7 @@ class schema_rea {
                     if (m1.length === m2.length) {
                         let ok = true;
                         for(let j=0;j<m1.length-1;j++) {
-                            if (m1['pos_regroup'] != m2['pos_regroup']) {
+                            if (m1[j]['pos_regroup'] != m2[j]['pos_regroup']) {
                                 ok = false;
                                 break;
                             }
@@ -353,7 +353,11 @@ class schema_rea {
                 console.log("TV:  "+key+"  "+temp);
             })
             */
-
+            this.doublon(schema);
+            this.doublon(schema);
+            this.correct_technical_opening(schema);
+            this.correct_technical_opening(schema);
+            this.doublon(schema);
             // enlève les doublons du tableau des TV
             schema.tv = [...new Set(schema.tv)];
             //console.log("Schema");
