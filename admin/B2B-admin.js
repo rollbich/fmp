@@ -47,6 +47,12 @@ class admin {
             </div>`;
         const m = $('modal_change');
         m.innerHTML = modal;
+        this.add_listener_change();
+    }
+
+    add_listener_change() {
+        const m = $('modal_change');
+
         $('arrow_left').addEventListener('click', async e => {
             e.preventDefault();
             $('start').value = addDays_toString($('start').value,-1);
@@ -56,11 +62,13 @@ class admin {
             e.preventDefault();
             $('start').value = addDays_toString($('start').value,1);
         });
+
         $('close_modal').addEventListener('click', (e) => {
             m.innerHTML = "";
         })
+
         $('change_default_button').addEventListener('click', async e => {
-            e.preventDefault();
+            console.log("coco");
             const new_day = $('start').value;
             const save_new_day = { "day": new_day, "fonction": "set_day_MV_OTMV"}
             const data = {
@@ -68,10 +76,11 @@ class admin {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(save_new_day)
             };
-            await fetch("admin_sql.php", data);
+            const result = await fetch("admin_sql.php", data);
             this.current_default_day = new_day;
             show_popup(`Nouvelle date : ${new_day}`, "Op&eacute;ration effectu&eacute;e");
             document.querySelector('.defaut').innerHTML = `D&eacute;faut : ${new_day}`;
+            this.show_modal_change();
         })
     }
 }

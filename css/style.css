@@ -1035,15 +1035,12 @@ body.aide .card div.content footer {
 	border-radius: .15rem;
 	width: 200px;
 	padding: .150rem .75rem;
-	margin: 20px auto;
 	font-family: 'PT Sans', sans-serif;
 	letter-spacing: 2px;
 	cursor: pointer;
 }
   
 .btn-primary {
-	border-color: rgba( 255, 255, 255, 0);
-	background: #f1da36; /* Old browsers */
   	background: linear-gradient(to right, #f1da36 0%,#fca86c 99%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
 }
   
