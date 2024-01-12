@@ -62,7 +62,7 @@
 </div>
 <ul class="menu">
 	<li id="bouton_change_default_date_mv" class="pointer"><span>Change Default Date MV</span></li>
-	<li id="bouton_get_counts_est"><a href="../b2b/counts-yesterday-est.php" target="_blank">H20/Occ D-1 Est</a></li>
+	<!--<li id="bouton_get_counts_est"><a href="../b2b/counts-yesterday-est.php" target="_blank">H20/Occ D-1 Est</a></li>-->
 	<li class="feuille"><button class="help_button">Help</button></li>
 </ul>
 </header>
