@@ -105,7 +105,7 @@ class capa {
 
     // $zone : "est" ou "ouest"
     public function __construct(string $day, string $zone) {
-		$this->bdd = new bdd($day, $zone);
+		$this->bdd = new bdd_tds($day, $zone);
 		$this->bdd_instr = new bdd_instr();
         $this->day = $day;
         $this->zone = $zone;

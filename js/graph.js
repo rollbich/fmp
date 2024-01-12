@@ -165,13 +165,12 @@ async function get_occ_b2b(day, zone, schema = undefined) {
 			@param {integer} mv_ods - valeur de la MV ODS
 			@param {string} tv - nom du TV
 	-------------------------------------------------------------------------- */
-function show_h20_graph(containerId, dataAxis, data, mv, mv_ods, tv, time_visu = "", data_reg = [], data_delay = [], data_reason = []) {
+function show_h20_graph(containerId, dataAxis, data, mv, mv_ods = 0, tv, time_visu = "", data_reg = [], data_delay = [], data_reason = []) {
 	let dataMaxh20 = Math.max(...data);
 	let dataMaxDelay = Math.max(...data_delay);
-	let yh20 = Math.max((Math.floor(dataMaxh20/10)+1)*10, (Math.floor(mv_ods/10)+1)*10);
+	let yh20 = (Math.floor(dataMaxh20/10)+1)*10;
 	if (dataMaxDelay >120) yDelay = dataMaxDelay - 60; else yDelay = 0;
 	let myChart = echarts.init(document.getElementById(containerId));
-	let yMax = mv_ods*1.6;
 	let option;
 	if (time_visu === "") time_visu = "Load vue à minuit UTC"; else time_visu = `Load vue à ${time_visu} UTC`;
 	option = {
@@ -302,22 +301,9 @@ function show_h20_graph(containerId, dataAxis, data, mv, mv_ods, tv, time_visu =
                         width: 1,
                     },
                     data: [
-                        { yAxis: mv_ods, name: 'MV', 
-						  label: { 
-							formatter: `MV ODS: ${mv_ods}`,
-							color: '#ff2',
-							position: 'start',
-							textBorderColor: '#000',
-							textBorderWidth: 2,					
-							fontStyle: 'normal',
-							fontWeight: 'bold',
-							fontSize: 12,
-							fontFamily: 'Helvetica'
-						  } 
-						},
 						{ yAxis: mv, name: 'MV', 
 						  label: { 
-							formatter: `MV 4F : ${mv}`,
+							formatter: `MV : ${mv}`,
 							color: '#6c6',
 							textBorderColor: '#000',
 							textBorderWidth: 2,					

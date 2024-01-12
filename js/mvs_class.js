@@ -25,22 +25,27 @@ class mv {
 	/*  ---------------------------------------------------------------------------------------
 			Récupère les MVs du jour sélectionné existantes en B2B
 
-			Attention pour les confs à un secteur, "item" n'est pas un array mais une valeur
-
 			@return {
-				"known_confs": {
-					"est": [{
-						"key": "E10A2B",
-						"value": {
-							"item": ["LFMMG12", "LFMMG34", "LFMMB12", "LFMMB34", "LFMMY12", "LFMMY34", "LFMMMNST", "LFMMAA", "LFMMBTAJ", "LFMMEK1", "LFMMEK3", "LFMMEK2" ]
-						}
-					},
-					...
-					{...}],
-					"west" : []
-				},
-				"est": [{}, ..., {}],       // conf du jour
-				"ouest": [{}, ..., {}],      // conf du jour
+				"LFMA1": [
+                    {
+                        "applicabilityPeriod": {
+                            "wef": "2024-01-12 00:00", 
+                            "unt": "2024-01-12 14:00"
+                        },
+                        "dataSource": "AIRSPACE",
+                        "capacity": 28
+                    },
+                    {
+                        "applicabilityPeriod": {
+                            "wef": "2024-01-12 14:00", 
+                            "unt": "2024-01-13 00:00"
+                        },
+                        "dataSource": "TACTICAL",
+                        "capacity": 26
+                    }
+                ],
+				"tv": [{}, ..., {}]       
+				...
 			}
 		--------------------------------------------------------------------------------------- */
 
@@ -66,6 +71,43 @@ class mv {
 			console.log('Get MVs existantes Load json error: '+err.message);
 		}
 	}
+
+    /*  ---------------------------------------------------------------------------------------
+			Récupère les OTMVs du jour sélectionné existantes en B2B
+
+			@return {
+				"LFMA1": [
+                    {
+                        "applicabilityPeriod": {
+                            "wef": "2024-01-12 00:00", 
+                            "unt": "2024-01-12 14:00"
+                        },
+                        "dataSource": "AIRSPACE",
+                        "otmv": {
+                            "otmvDuration": "0010",
+                            "trafficVolume": "LFMA1",
+                            "peak" : { "threshold": 12},
+                            "sustained": {"threshold": 8, "crossingOccurences": "99", "elapsed": "0139"}
+                        }
+                    },
+                    {
+                        "applicabilityPeriod": {
+                            "wef": "2024-01-12 14:00", 
+                            "unt": "2024-01-13 00:00"
+                        },
+                        "dataSource": "TACTICAL",
+                        "otmv": {
+                            "otmvDuration": "0010",
+                            "trafficVolume": "LFMA1",
+                            "peak" : { "threshold": 11},
+                            "sustained": {"threshold": 7, "crossingOccurences": "99", "elapsed": "0139"}
+                        }
+                    }
+                ],
+				"tv": [{}, ..., {}]       
+				...
+			}
+		--------------------------------------------------------------------------------------- */
 
     async get_b2b_otmvs() { 
 		try {
@@ -147,7 +189,6 @@ class mv {
         
         Object.keys(this.result).forEach( tv => {
             const obj = this.result[tv]; // array de 1 ou +
-            console.log("TV: "+tv+"  array"+obj);
             const l = obj.length;
             const hor = [];
             const sust = [];

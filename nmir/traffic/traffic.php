@@ -8,7 +8,7 @@
         <meta name="robots" content="noindex">
         <title>Traffic</title>
 		<link rel="icon" href="favicon.ico" />
-		<script type="text/javascript" src="../js/utils.js"></script>
+		<script type="text/javascript" src="../../js/utils.js"></script>
         <script type="text/javascript" src="nmir_traffic_to_json.js"></script>
 		<script>
 			document.addEventListener('DOMContentLoaded', (event) => {

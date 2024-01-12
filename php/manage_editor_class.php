@@ -36,7 +36,7 @@ class editor {
     // $zone : "est" ou "ouest"
     public function __construct(string $zone) {
 		$this->zone = $zone;
-		$this->bdd = new bdd("",  $zone);
+		$this->bdd = new bdd_tds("",  $zone);
         $this->cycle = $this->bdd->get_cycle();   // ["JX","J1","J3","S2","","","J2","S1","N","","",""]; 
 		$this->clean_cycle = $this->get_clean_cycle();
         $this->init();

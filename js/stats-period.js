@@ -36,6 +36,9 @@ class stats_period {
 					"dates_arr": get_dates_array(new Date(start_day2019), new Date(end_day2019))
 				}
 			}
+			console.log("this.period");
+			console.log(this.period);
+			
 			const vols_y = new period_vols(this.start_day, this.end_day, this.zone);
 			const vols_yly = new period_vols(start_day_last_year, end_day_last_year, this.zone);
 			const vols_y2019 = new period_vols(start_day2019, end_day2019, this.zone);
@@ -71,6 +74,7 @@ class stats_period {
 			//this.show_result_vols_par_annee("accueil_bilan");
 			this.show_result_vols("accueil_bilan1");
 			this.show_result_regs("accueil_bilan2");
+			
 		} else {
 			show_popup('Erreur', "L'année de début doit être la même que celle de fin");
 			this.error = true;

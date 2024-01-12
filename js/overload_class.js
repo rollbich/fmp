@@ -49,7 +49,6 @@ class overload {
         this.selected_percent_MV = selected_percent_MV;
         this.selected_percent_peak = selected_percent_peak;
         this.containerId = containerId;
-        this.mv_json = null;
         // dépassement de 5mn mini
         this.peak_threshold_time = 5;
         this.init();
@@ -125,9 +124,6 @@ class overload {
     async get_fichiers() {
         const days = get_dates_array(new Date(this.start_day), new Date(this.end_day));
 
-        const nom_fichier = "../b2b/MV.json";
-        this.mv_json = await loadJson(nom_fichier);
-
         const donnees = {};
         for (let day of days) {
             donnees[day] = {};
@@ -190,7 +186,6 @@ class overload {
 
         for (let day of days) {
             for (var tv in this.data[day]["h20"][day]) {
-                    let mv_ods = parseInt(this.mv_json[`TV-${z}`][tv]["MV"]);
                     const full_tv = "LFM"+tv;
                     let mv_4f = this.data[day]["mvotmv-b2b"]["MV"][full_tv][0]["capacity"];
                     try {
@@ -210,7 +205,8 @@ class overload {
                     }
       
                     catch (err) {
-                        show_popup("Erreur ! ", "Les données du TV: "+tv+" du "+day+" ne sont pas récupérées en B2B ou alors le TV n'est pas défini dans le fichier MV.json<br>MV 4f : "+mv_4f);
+                        show_popup("Erreur ! ", `Les donn&eacute;es du TV: ${tv} du ${day} ne sont pas r&eacute;cup&eacute;r&eacute;es en B2B`);
+                        console.log(err);
                     }
             }
             
@@ -272,9 +268,8 @@ class overload {
                     }
       
                     catch (err) {
-                        console.log("Erreur: "+tv);
-                        console.log( this.result_capa);
-                        show_popup("Erreur ! ", "Les données du TV: "+tv+" du "+day+" ne sont pas récupérées en B2B ou alors le TV n'est pas défini dans le fichier MV.json<br>MV 4f : "+peak_4f);
+                        show_popup("Erreur ! ", `Les donn&eacute;es du TV: ${tv} du ${day} ne sont pas r&eacute;cup&eacute;r&eacute;es en B2B`);
+                        console.log(err);
                     }
             }
             
@@ -334,8 +329,6 @@ class overload {
                         }
                     });	
                     
-                    //let peak = o[dat][dat][tv][0][2];
-                    //let sustain = o[dat][dat][tv][0][3];
                     let full_tv = "LFM"+tv;
                     let peak = this.data[dat]["mvotmv-b2b"]["OTMV"][full_tv][0]["otmv"]["peak"]["threshold"];	
                     let sustain = this.data[dat]["mvotmv-b2b"]["OTMV"][full_tv][0]["otmv"]["sustained"]["threshold"];		
@@ -353,10 +346,9 @@ class overload {
                     } else {
                         document.getElementById('graph-container-h20').classList.remove('off');
                         document.getElementById('graph-container-occ').classList.remove('off');
-                        let z = this.zone === "AE" ? "EST" : "OUEST";
-                        let mv_ods = parseInt(this.mv_json[`TV-${z}`][tv]["MV"]);
                         const full_tv = "LFM"+tv;
                         let mv_4f = this.data[dat]["mvotmv-b2b"]["MV"][full_tv][0]["capacity"];
+                        const mv_ods = 0;
                         show_h20_graph('graph_h20', dataAxis, data, mv_4f, mv_ods, tv);
                         show_occ_graph('graph_occ', dataAxis_occ, data_occ, peak, sustain, tv);
                     }
