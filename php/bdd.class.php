@@ -514,7 +514,7 @@ class bdd_admin {
         $req = "UPDATE $table SET default_day = '$day'"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
-        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $resultat;
     }
 

@@ -74,7 +74,6 @@
 				
 				const url_est =  `../confs-est-supp.json`;	
 				const url_west =  `../confs-west-supp.json`;	
-				//const url = $('zone').value === "AE" ? url_est : url_west;
 				const confs_supp_est = await loadJson(url_est);
 				const confs_supp_ouest = await loadJson(url_west);
 
