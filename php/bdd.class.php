@@ -5,7 +5,7 @@ require_once("pdo.class.php");
 // ex ajout avec json
 // $req = "INSERT INTO $table (JX) VALUES ('$nom', '{\"category\": \"Landmark\", \"lastVisitDate\": \"11/10/2019\"}')";
 
-class bdd {
+class bdd_tds {
 
     private $client;
 
@@ -496,6 +496,28 @@ class bdd_instr {
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $resultat;
     }
+}
+
+class bdd_admin {
+
+    public function get_day_MV_OTMV() {
+        $table = "default_date_mv_otmv";
+        $req = "SELECT default_day FROM $table"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
+        return $resultat;
+    }
+
+    public function set_day_MV_OTMV(string $day) {
+        $table = "default_date_mv_otmv";
+        $req = "UPDATE $table SET default_day = '$day'"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
+        return $resultat;
+    }
+
 }
 
 ?>

@@ -100,6 +100,7 @@ class period_vols {
 		let total_vols_est = 0, total_vols_west = 0, total_vols_cta = 0, total_vols_app = 0; 
 		for (const date of this.dates_arr) {
 			if (this.vols[date] !== 404) {
+				console.log(this.vols[date]);
 				total_vols_est += parseInt(this.vols[date]['LFMMCTAE'][2]);
 				total_vols_west += parseInt(this.vols[date]['LFMMCTAW'][2]);
 				total_vols_cta += parseInt(this.vols[date]['LFMMCTA'][2]);

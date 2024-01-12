@@ -33,6 +33,7 @@
               <div class="dropdown-menu" id="dropdown-menu" role="menu">
                 <div class="dropdown-content">
                   <a class="navbar-item" href="../admin/b2b-admin.php">Admin B2B</a>
+                  <a class="navbar-item" href="../admin/b2b-recovery.php">Recover B2B</a>
                   <a class="navbar-item" href="../admin/confs-admin.php">Admin Confs</a>
                   <a class="navbar-item" href="../info/">Info B2B</a>
                 </div>
