@@ -466,8 +466,24 @@ class capa {
 						nom: "AUBERT"
 					},...
 				*/
-				$tags_today = array_keys(get_object_vars($this->effectif->{$this->day}->contextmenutype));
-				$tags_yesterday = array_keys(get_object_vars($this->effectif->{$this->yesterday}->contextmenutype));
+				/*
+				echo "<pre>";
+				var_dump(get_object_vars($this->effectif->{$this->day}->contextmenutype));
+				var_dump(get_object_vars($this->effectif->{$this->yesterday}->contextmenutype));
+				echo "</pre>";
+				*/
+				// Si c'est un array c'est qu'il n'y a pas de données contextmenutype
+				// normalement, il y a au moins les tags CDS
+				if (is_array($this->effectif->{$this->day}->contextmenutype)) {
+					$tags_today = [];
+				} else {
+					$tags_today = array_keys(get_object_vars($this->effectif->{$this->day}->contextmenutype));
+				}
+				if (is_array($this->effectif->{$this->yesterday}->contextmenutype)) {
+					$tags_yesterday = [];
+				} else {
+					$tags_yesterday = array_keys(get_object_vars($this->effectif->{$this->yesterday}->contextmenutype));
+				}
 				$this->pc->{$vac}->requis = [];
 				foreach ($tags_today as $cle) {
 					$val = $this->effectif->{$this->day}->contextmenutype->$cle;
