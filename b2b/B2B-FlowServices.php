@@ -137,16 +137,17 @@ class FlowServices extends Service {
           @param $wef / $unt  (string) - "YYYY-MM-DD hh:mm"   (ex : gmdate('Y-m-d H:i'))
 		    @return [ ["TV", "yyyy-mm-dd", "hh:mm", MV, H/20], [...], ... ]
 	------------------------------------------------------------------------------------------------ */
-    function get_entry(string $prefix, array $tv_group, $tv_zone_mv, string $wef, string $unt, string $trafficType, string $dataset = 'OPERATIONAL') {
+    function get_entry(string $prefix, array $tv_group, stdClass $tv_zone_mv, string $wef, string $unt, string $trafficType, string $dataset = 'OPERATIONAL') {
         
         $arr = array();
-        
-        if (!is_array($tv_group)) throw new Exception("TV_group doit être un array !");
-        if (!is_array($tv_zone_mv)) throw new Exception("TV_mv doit être un array !");
 
         foreach($tv_group as $tv) {
-            
-            if (isset($tv_zone_mv[$tv]["MV"])) { $tv_mv = $tv_zone_mv[$tv]["MV"]; } else { throw new Exception("Le TV ".$tv." a une MV non defini dans MV.json"); }
+            $full_tv = $prefix.$tv;
+            if (isset($tv_zone_mv->MV->{$full_tv}[0]->capacity)) {
+                $tv_mv = (int) $tv_zone_mv->MV->{$full_tv}[0]->capacity; 
+            } else { 
+                throw new Exception("Le TV ".$tv." a une MV non defini dans le fichier MV_OTMV du jour"); 
+            }
             
             $date = new DateTime($wef);
             $timestamp = $date->getTimestamp();
@@ -177,33 +178,33 @@ class FlowServices extends Service {
         $arr = array();
         
         if (!is_array($tv_group)) throw new Exception("TV_group doit être un array !");
-        if (!is_array($tv_zone_mv)) throw new Exception("TV_mv doit être un array !");
+        //if (!is_array($tv_zone_mv)) throw new Exception("TV_mv doit être un array !");
 
         foreach($tv_group as $tv) {
-            
-            if (isset($tv_zone_mv[$tv]["peak"])) { 
-                $tv_peak = $tv_zone_mv[$tv]["peak"]; 
+            $full_tv = $prefix.$tv;
+            if (isset($tv_zone_mv->OTMV->{$full_tv}[0]->otmv->peak->threshold)) { 
+                $tv_peak = (int) $tv_zone_mv->OTMV->{$full_tv}[0]->otmv->peak->threshold; 
             } else { 
-                $erreur = "Erreur get_occ : Le TV $tv a un peak non defini dans MV.json";
+                $erreur = "Erreur get_occ : Le TV $tv a un peak non defini dans le fichier MV_OTMV du jour";
                 echo $erreur."<br>\n";
                 $this->send_mail($erreur);
-                throw new Exception("Le TV $tv a un peak non defini dans MV.json"); 
+                throw new Exception("Le TV $tv a un peak non defini dans le fichier MV_OTMV du jour"); 
             }
-            if (isset($tv_zone_mv[$tv]["sustain"])) { 
-                $tv_sustain = $tv_zone_mv[$tv]["sustain"]; 
+            if (isset($tv_zone_mv->OTMV->{$full_tv}[0]->otmv->sustained->threshold)) { 
+                $tv_sustain = (int) $tv_zone_mv->OTMV->{$full_tv}[0]->otmv->sustained->threshold; 
             } else { 
-                $erreur = "Erreur get_occ : Le TV $tv a un sustain non defini dans MV.json";
+                $erreur = "Erreur get_occ : Le TV $tv a un sustain non defini dans le fichier MV_OTMV du jour";
                 echo $erreur."<br>\n";
                 $this->send_mail($erreur);
-                throw new Exception("Le TV $tv a un sustain non defini dans MV.json"); 
+                throw new Exception("Le TV $tv a un sustain non defini dans le fichier MV_OTMV du jour"); 
             }
-            if (isset($tv_zone_mv[$tv]["duration"])) { 
-                $tv_duration = str_pad($tv_zone_mv[$tv]["duration"], 4, '0', STR_PAD_LEFT); 
+            if (isset($tv_zone_mv->OTMV->{$full_tv}[0]->otmv->otmvDuration)) { 
+                $tv_duration = $tv_zone_mv->OTMV->{$full_tv}[0]->otmv->otmvDuration; 
             } else { 
-                $erreur = "Erreur get_occ : Le TV $tv a une duration non defini dans MV.json";
+                $erreur = "Erreur get_occ : Le TV $tv a une duration non defini dans le fichier MV_OTMV du jour";
                 echo $erreur."<br>\n";
                 $this->send_mail($erreur);
-                throw new Exception("Le TV a une duration non defini dans MV.json"); 
+                throw new Exception("Le TV a une duration non defini dans le fichier MV_OTMV du jour"); 
             }
             
             $date = new DateTime($wef);

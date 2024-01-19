@@ -13,6 +13,28 @@ $wef=gmdate("Y-m-d H:i", mktime(15, 0, 0, 5, 16, 2021));
 $unt=gmdate("Y-m-d H:i", mktime(17, 0, 0, 5, 16, 2021));
 */
 
+// Lit un fichier dans opt/bitnami/data/json
+function get_data($url) {
+	
+	$ch = curl_init();
+    // prod : DATA_PATH = https://data.lfmm-fmp.fr/json = opt/bitnami/data/json
+	curl_setopt($ch, CURLOPT_URL, DATA_PATH."/$url");
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
+	/*------------------------------------------------------*/
+	// déactiver les 2 lignes suivantes sur le serveur live
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // si pb de certificat SSL force la requête
+	/*------------------------------------------------------*/
+	$result = curl_exec($ch);
+	
+	$status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	//echo "HTTP CODE:: " . $status_code;
+	//echo curl_error($ch);
+	if ($status_code == 404) return 404;
+	unset($ch);   // to use with php >= 8.0 : launch garbage mechanism for $ch
+	return $result;
+}
+
 /*  ------------------------------------------
 		Ecriture du fichier générique json
 		$arr : tableau contenant les données
@@ -50,13 +72,17 @@ $today = gmdate('Y-m-d', strtotime("today"));
 
 // récupère les données MV, duration, sustain, peak des TV LFMM
 // données du fichier MV.json
-// $tve : données de la zone est et $tvw : données west
-$fichier_mv = file_get_contents(dirname(__FILE__)."/MV.json");
-// on transforme le fichier json de MV en array
-$obj = json_decode($fichier_mv, true);
-$tve = $obj["TV-EST"];
+// $mv_file_content : données MV et OTMV de la zone 
 
-echo "Fichier MV.json OK<br>";
+$yesterday = new DateTime('yesterday');
+$yesterday_d = $yesterday->format('d');
+$yesterday_y = $yesterday->format('Y');
+$yesterday_m = $yesterday->format('m');
+
+$url = "$yesterday_y/$yesterday_m/$yesterday_y$yesterday_m$yesterday_d-mv_otmv-est.json";
+$mv_file_content = json_decode(get_data($url));
+
+echo "Fichier $yesterday_y$yesterday_m$yesterday_d-mv_otmv-est.json OK<br>";
 
 // récupère les TV que l'on veut compter en H/20 et Occ
 // données du fichier TV_count.json
@@ -72,13 +98,13 @@ echo "Fichier TV_count.json OK<br>";
 //			LOAD + DEMAND (request DEMAND Adonis)
 // -------------------------------------------------
 
-$occ_est1 = $soapClient->flowServices()->get_occ("LFM", $tvs_est, $tve, $wef_counts, $unt_counts, "LOAD");
-$occ_est2 = $soapClient->flowServices()->get_occ("LFM", $tvs_est, $tve, $wef_counts, $unt_counts, "DEMAND");
+$occ_est1 = $soapClient->flowServices()->get_occ("LFM", $tvs_est, $mv_file_content, $wef_counts, $unt_counts, "LOAD");
+$occ_est2 = $soapClient->flowServices()->get_occ("LFM", $tvs_est, $mv_file_content, $wef_counts, $unt_counts, "DEMAND");
 
 echo "Get Occ OK<br>";
 
-$h20_est1 = $soapClient->flowServices()->get_entry("LFM", $tvs_est, $tve, $wef_counts, $unt_counts, "LOAD");
-$h20_est2 = $soapClient->flowServices()->get_entry("LFM", $tvs_est, $tve, $wef_counts, $unt_counts, "DEMAND");
+$h20_est1 = $soapClient->flowServices()->get_entry("LFM", $tvs_est, $mv_file_content, $wef_counts, $unt_counts, "LOAD");
+$h20_est2 = $soapClient->flowServices()->get_entry("LFM", $tvs_est, $mv_file_content, $wef_counts, $unt_counts, "DEMAND");
 
 echo "Get H20 OK<br>";
 
@@ -86,21 +112,24 @@ echo "Get H20 OK<br>";
 //	 Merger les 2 tableaux de H20
 //	@params (array) : [ ["RAE", "2022-06-07", "05:20", mv, load], [...] ]
 //	@params (array)	: [ ["RAE", "2022-06-07", "05:20", mv, demand], [...] ] 
+
 //  @return	(array)	: [ ["RAE", "2022-06-07", "05:20", mv, load, demand], [...] ]
 // -------------------------------------------------------------------------------------------
+
 $h20_est = array();
 foreach($h20_est1 as $key=>$val) {
 	array_push($val, $h20_est2[$key][4]);
     array_push($h20_est, $val);
 }
 
-
 // ----------------------------------------------------------------------------------------------------
 //	 Merger les 2 tableaux Occ
 //	@params (array) : [ ["RAE", "2022-07-07", "17:48", peak, sustain, load], [...] ]
 //	@params (array)	: [ ["RAE", "2022-07-07", "17:48", peak, sustain, demand], [...] ] 
+
 //  @return	(array)	: [ ["RAE", "2022-06-07", "17:48", peak, sustain, load, demand], [...] ]
 // ----------------------------------------------------------------------------------------------------
+
 $occ_est = array();
 
 foreach($occ_est1 as $key=>$val) {
@@ -111,10 +140,8 @@ foreach($occ_est1 as $key=>$val) {
 echo "Merge occ & H20 OK<br>";
 
 try {	
-	
 	write_json($occ_est, "est", "-Occ-", $wef_counts);
 	write_json($h20_est, "est", "-H20-", $wef_counts);
-	
 }
 
 catch (Exception $e) {
