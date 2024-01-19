@@ -13,6 +13,28 @@ $wef=gmdate("Y-m-d H:i", mktime(15, 0, 0, 5, 16, 2021));
 $unt=gmdate("Y-m-d H:i", mktime(17, 0, 0, 5, 16, 2021));
 */
 
+// Lit un fichier dans opt/bitnami/data/json
+function get_data($url) {
+	
+	$ch = curl_init();
+    // prod : DATA_PATH = https://data.lfmm-fmp.fr/json = opt/bitnami/data/json
+	curl_setopt($ch, CURLOPT_URL, DATA_PATH."/$url");
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
+	/*------------------------------------------------------*/
+	// déactiver les 2 lignes suivantes sur le serveur live
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // si pb de certificat SSL force la requête
+	/*------------------------------------------------------*/
+	$result = curl_exec($ch);
+	
+	$status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	//echo "HTTP CODE:: " . $status_code;
+	//echo curl_error($ch);
+	if ($status_code == 404) return 404;
+	unset($ch);   // to use with php >= 8.0 : launch garbage mechanism for $ch
+	return $result;
+}
+
 /*  ------------------------------------------
 		Ecriture du fichier générique json
 		$arr : tableau contenant les données
@@ -50,13 +72,17 @@ $today = gmdate('Y-m-d', strtotime("today"));
 
 // récupère les données MV, duration, sustain, peak des TV LFMM
 // données du fichier MV.json
-// $tve : données de la zone est et $tvw : données west
-$fichier_mv = file_get_contents(dirname(__FILE__)."/MV.json");
-// on transforme le fichier json de MV en array
-$obj = json_decode($fichier_mv, true);
-$tvw = $obj["TV-OUEST"];
+// $mv_file_content : données MV et OTMV de la zone 
 
-echo "Fichier MV.json OK<br>";
+$yesterday = new DateTime('yesterday');
+$yesterday_d = $yesterday->format('d');
+$yesterday_y = $yesterday->format('Y');
+$yesterday_m = $yesterday->format('m');
+
+$url = "$yesterday_y/$yesterday_m/$yesterday_y$yesterday_m$yesterday_d-mv_otmv-ouest.json";
+$mv_file_content = json_decode(get_data($url));
+
+echo "Fichier $yesterday_y$yesterday_m$yesterday_d-mv_otmv-ouest.json OK<br>";
 
 // récupère les TV que l'on veut compter en H/20 et Occ
 // données du fichier TV_count.json
@@ -72,13 +98,13 @@ echo "Fichier TV_count.json OK<br>";
 //			LOAD + DEMAND (request DEMAND Adonis)
 // -------------------------------------------------
 
-$occ_west1 = $soapClient->flowServices()->get_occ("LFM", $tvs_west, $tvw, $wef_counts, $unt_counts, "LOAD");
-$occ_west2 = $soapClient->flowServices()->get_occ("LFM", $tvs_west, $tvw, $wef_counts, $unt_counts, "DEMAND");
+$occ_west1 = $soapClient->flowServices()->get_occ("LFM", $tvs_west, $mv_file_content, $wef_counts, $unt_counts, "LOAD");
+$occ_west2 = $soapClient->flowServices()->get_occ("LFM", $tvs_west, $mv_file_content, $wef_counts, $unt_counts, "DEMAND");
 
 echo "Get Occ OK<br>";
 
-$h20_west1 = $soapClient->flowServices()->get_entry("LFM", $tvs_west, $tvw, $wef_counts, $unt_counts, "LOAD");
-$h20_west2 = $soapClient->flowServices()->get_entry("LFM", $tvs_west, $tvw, $wef_counts, $unt_counts, "DEMAND");
+$h20_west1 = $soapClient->flowServices()->get_entry("LFM", $tvs_west, $mv_file_content, $wef_counts, $unt_counts, "LOAD");
+$h20_west2 = $soapClient->flowServices()->get_entry("LFM", $tvs_west, $mv_file_content, $wef_counts, $unt_counts, "DEMAND");
 
 echo "Get H20 OK<br>";
 
