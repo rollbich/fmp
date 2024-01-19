@@ -140,25 +140,33 @@ class FlowServices extends Service {
     function get_entry(string $prefix, array $tv_group, stdClass $tv_zone_mv, string $wef, string $unt, string $trafficType, string $dataset = 'OPERATIONAL') {
         
         $arr = array();
+        try {
+            foreach($tv_group as $tv) {
+                $full_tv = $prefix.$tv;
+                if (isset($tv_zone_mv->MV->{$full_tv}[0]->capacity)) {
+                    $tv_mv = (int) $tv_zone_mv->MV->{$full_tv}[0]->capacity; 
+                } else { 
+                    throw new Exception("Le TV ".$tv." a une MV non defini dans le fichier MV_OTMV du jour"); 
+                }
+                
+                $date = new DateTime($wef);
+                $timestamp = $date->getTimestamp();
+                $result = $this->query_entry_count($prefix.$tv, $wef, $unt, $trafficType, $dataset);
 
-        foreach($tv_group as $tv) {
-            $full_tv = $prefix.$tv;
-            if (isset($tv_zone_mv->MV->{$full_tv}[0]->capacity)) {
-                $tv_mv = (int) $tv_zone_mv->MV->{$full_tv}[0]->capacity; 
-            } else { 
-                throw new Exception("Le TV ".$tv." a une MV non defini dans le fichier MV_OTMV du jour"); 
+                for ($i=0; $i<count($result->data->counts->item); $i++) {
+                    $date->setTimestamp($timestamp+$i*60*20);
+                    array_push($arr, array($tv, $date->format('Y-m-d'), $date->format('H:i'), $tv_mv, $result->data->counts->item[$i]->value->item->value->totalCounts));
+                }
             }
-            
-            $date = new DateTime($wef);
-            $timestamp = $date->getTimestamp();
-            $result = $this->query_entry_count($prefix.$tv, $wef, $unt, $trafficType, $dataset);
-
-            for ($i=0; $i<count($result->data->counts->item); $i++) {
-                $date->setTimestamp($timestamp+$i*60*20);
-                array_push($arr, array($tv, $date->format('Y-m-d'), $date->format('H:i'), $tv_mv, $result->data->counts->item[$i]->value->item->value->totalCounts));
-            }
+            return $arr;
         }
-        return $arr;
+
+        catch (Exception $e) {
+            echo 'Exception reçue get_entry: ',  $e->getMessage(), "<br>\n";
+            $erreur = $this->getFullErrorMessage("Erreur get_entry");
+            echo $erreur."<br>\n";
+            $this->send_mail($erreur);
+        }
     }
 
     /*  --------------------------------------------------------------------------------------------------
@@ -171,52 +179,57 @@ class FlowServices extends Service {
             @param $wef / $unt  (string) - "YYYY-MM-DD hh:mm"   (ex : gmdate('Y-m-d H:i'))
                 @return [ ["TV", "yyyy-mm-dd", "hh:mm", peak, sustain, H/20], [...], ... ]
         -------------------------------------------------------------------------------------------------- */
-    function get_occ(string $prefix, array $tv_group, $tv_zone_mv, string $wef, string $unt, string $trafficType, string $dataset = 'OPERATIONAL') {
+    function get_occ(string $prefix, array $tv_group, stdClass $tv_zone_mv, string $wef, string $unt, string $trafficType, string $dataset = 'OPERATIONAL') {
         
         $tv_duration = 0;
-        
         $arr = array();
-        
-        if (!is_array($tv_group)) throw new Exception("TV_group doit être un array !");
-        //if (!is_array($tv_zone_mv)) throw new Exception("TV_mv doit être un array !");
 
-        foreach($tv_group as $tv) {
-            $full_tv = $prefix.$tv;
-            if (isset($tv_zone_mv->OTMV->{$full_tv}[0]->otmv->peak->threshold)) { 
-                $tv_peak = (int) $tv_zone_mv->OTMV->{$full_tv}[0]->otmv->peak->threshold; 
-            } else { 
-                $erreur = "Erreur get_occ : Le TV $tv a un peak non defini dans le fichier MV_OTMV du jour";
-                echo $erreur."<br>\n";
-                $this->send_mail($erreur);
-                throw new Exception("Le TV $tv a un peak non defini dans le fichier MV_OTMV du jour"); 
-            }
-            if (isset($tv_zone_mv->OTMV->{$full_tv}[0]->otmv->sustained->threshold)) { 
-                $tv_sustain = (int) $tv_zone_mv->OTMV->{$full_tv}[0]->otmv->sustained->threshold; 
-            } else { 
-                $erreur = "Erreur get_occ : Le TV $tv a un sustain non defini dans le fichier MV_OTMV du jour";
-                echo $erreur."<br>\n";
-                $this->send_mail($erreur);
-                throw new Exception("Le TV $tv a un sustain non defini dans le fichier MV_OTMV du jour"); 
-            }
-            if (isset($tv_zone_mv->OTMV->{$full_tv}[0]->otmv->otmvDuration)) { 
-                $tv_duration = $tv_zone_mv->OTMV->{$full_tv}[0]->otmv->otmvDuration; 
-            } else { 
-                $erreur = "Erreur get_occ : Le TV $tv a une duration non defini dans le fichier MV_OTMV du jour";
-                echo $erreur."<br>\n";
-                $this->send_mail($erreur);
-                throw new Exception("Le TV a une duration non defini dans le fichier MV_OTMV du jour"); 
-            }
+        try {
+            foreach($tv_group as $tv) {
+                $full_tv = $prefix.$tv;
+                if (isset($tv_zone_mv->OTMV->{$full_tv}[0]->otmv->peak->threshold)) { 
+                    $tv_peak = (int) $tv_zone_mv->OTMV->{$full_tv}[0]->otmv->peak->threshold; 
+                } else { 
+                    $erreur = "Erreur get_occ : Le TV $tv a un peak non defini dans le fichier MV_OTMV du jour";
+                    echo $erreur."<br>\n";
+                    $this->send_mail($erreur);
+                    throw new Exception("Le TV $tv a un peak non defini dans le fichier MV_OTMV du jour"); 
+                }
+                if (isset($tv_zone_mv->OTMV->{$full_tv}[0]->otmv->sustained->threshold)) { 
+                    $tv_sustain = (int) $tv_zone_mv->OTMV->{$full_tv}[0]->otmv->sustained->threshold; 
+                } else { 
+                    $erreur = "Erreur get_occ : Le TV $tv a un sustain non defini dans le fichier MV_OTMV du jour";
+                    echo $erreur."<br>\n";
+                    $this->send_mail($erreur);
+                    throw new Exception("Le TV $tv a un sustain non defini dans le fichier MV_OTMV du jour"); 
+                }
+                if (isset($tv_zone_mv->OTMV->{$full_tv}[0]->otmv->otmvDuration)) { 
+                    $tv_duration = $tv_zone_mv->OTMV->{$full_tv}[0]->otmv->otmvDuration; 
+                } else { 
+                    $erreur = "Erreur get_occ : Le TV $tv a une duration non defini dans le fichier MV_OTMV du jour";
+                    echo $erreur."<br>\n";
+                    $this->send_mail($erreur);
+                    throw new Exception("Le TV a une duration non defini dans le fichier MV_OTMV du jour"); 
+                }
+                
+                $date = new DateTime($wef);
+                $timestamp = $date->getTimestamp();
+                $result = $this->query_occ_count($prefix.$tv, $tv_duration, $wef, $unt, $trafficType, $dataset);
             
-            $date = new DateTime($wef);
-            $timestamp = $date->getTimestamp();
-            $result = $this->query_occ_count($prefix.$tv, $tv_duration, $wef, $unt, $trafficType, $dataset);
-        
-            for ($i=0; $i<count($result->data->counts->item); $i++) {
-                $date->setTimestamp($timestamp+$i*60);
-                array_push($arr, array($tv, $date->format('Y-m-d'), $date->format('H:i'), $tv_peak, $tv_sustain, $result->data->counts->item[$i]->value->item->value->totalCounts));
+                for ($i=0; $i<count($result->data->counts->item); $i++) {
+                    $date->setTimestamp($timestamp+$i*60);
+                    array_push($arr, array($tv, $date->format('Y-m-d'), $date->format('H:i'), $tv_peak, $tv_sustain, $result->data->counts->item[$i]->value->item->value->totalCounts));
+                }
             }
+            return $arr;
         }
-        return $arr;
+
+        catch (Exception $e) {
+            echo 'Exception reçue get_occ: ',  $e->getMessage(), "<br>\n";
+            $erreur = $this->getFullErrorMessage("Erreur get_occ");
+            echo $erreur."<br>\n";
+            $this->send_mail($erreur);
+        }
     }
 
     /*  -----------------------------------------------------------------------------------
