@@ -61,17 +61,31 @@ class Lister {
     }
 
     protected function handleDir($dir) {
-		// attention en local il y a des antislashs => $p = explode("\\", $file);
+		// attention en local il y a des antislashs 
+		$dir = str_replace("\\", "/", $dir);
         $p = explode("/", $dir);
-        // le premier est vide (avant le le 1er / de /opt/bitnami...), on l'enlève
-        array_shift($p);
-        array_shift($p);
-        array_shift($p);
-       
+		// on ne garde qu'à partir de Realise 
+		$ind = array_search('Realise', $p);
+		for($i=0;$i<$ind;$i++) {
+			array_shift($p);
+		}        
+		/* 
+		    $p : array(4) { 
+				[0]=> string(27) "Realise" 
+				[1]=> string(4) "2023" 
+				[2]=> string(2) "12" 
+				[3]=> string(26) "20231208_000000_LFMM-W.xml" 
+			}
+        */
+		/*
+		echo "Dir : ";
+		var_dump($p);
+		echo "<br>";
+		*/
 		$count = count($p);
 		$temp = '$this->arr';
 		
-		for($i=2;$i<$count;$i++) {
+		for($i=1;$i<$count;$i++) {
 			$temp .= '->{$p['.$i.']}';
 		}
 
@@ -87,29 +101,34 @@ class Lister {
 
     protected function handleFile($file) {
 		if (!is_dir($file)) {
-            /* attention en local il y a des antislashs => $p = explode("\\", $file);
-                E:/xampp/htdocs/fmp/Realise\2023\12\20231208_000000_LFMM-W.xml
-                $p : array(4) { 
-                    [0]=> string(27) "E:/xampp/htdocs/fmp/Realise" 
-                    [1]=> string(4) "2023" 
-                    [2]=> string(2) "12" 
-                    [3]=> string(26) "20231208_000000_LFMM-W.xml" 
-			    }
-            */
-			// $file : /opt/bitnami/fmp/Realise/2022
+           
+			// attention en local il y a des antislashs 
+			$file = str_replace("\\", "/", $file);
             $p = explode("/", $file);
-            // le premier est vide (avant le le 1er / de /opt/bitnami...), on l'enlève
-            array_shift($p);
-			// on enlève opt, bitnami et fmp pour avoir en premier Realise
-            array_shift($p);
-            array_shift($p);
-            array_shift($p);
+			// on ne garde qu'à partir de Realise 
+			$ind = array_search('Realise', $p);
+			for($i=0;$i<$ind;$i++) {
+				array_shift($p);
+			} 
+			/*
+			echo "File : ";
+			var_dump($p);
+			echo "<br>";       
+			*/
+			/* 
+				$p : array(4) { 
+					[0]=> string(27) "Realise" 
+					[1]=> string(4) "2023" 
+					[2]=> string(2) "12" 
+					[3]=> string(26) "20231208_000000_LFMM-W.xml" 
+				}
+       		 */
 			$count = count($p);
 			$temp = '$this->arr';
 
             // $p[0] = Realise
             // $p[1] = année
-            // Si c'est l'année, on a que 2 
+            // Si c'est le dossier qui concerne l'année, on a que 2 
 			if ($count === 2) {
 				array_push($this->arr->files, $file);
 			}
