@@ -127,7 +127,7 @@ async function init_dir(containerId) {
 			
 				mois_temp.forEach(mois => {
 					inner += `<li>${mois}<ul>`;
-					data[annee][mois]["files"].forEach(nom => {
+					data[annee][mois]["files"].sort().forEach(nom => {
 						let type, zone, day, z;
 
 						if (nom.indexOf('000000') != -1) {
