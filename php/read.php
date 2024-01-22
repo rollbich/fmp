@@ -111,7 +111,7 @@ class Lister {
 }
 
 $lister = new Lister();
-$lister->listdir($_SERVER['DOCUMENT_ROOT']."/fmp/Realise");
+$lister->listdir($_SERVER['DOCUMENT_ROOT']."/Realise");
 
 $json = json_encode($lister->arr);
 echo $json;
