@@ -111,8 +111,7 @@ class Lister {
 }
 
 $lister = new Lister();
-$lister->listdir($_SERVER['DOCUMENT_ROOT']."/Realise");
-
+$lister->listdir("/opt/bitnami/fmp/Realise");
 $json = json_encode($lister->arr);
 echo $json;
 	
