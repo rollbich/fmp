@@ -56,7 +56,6 @@ function init_upload(formId) {
 		alert("Erreur, verifiez vos fichiers "+error);
 	}
   
-
     // We clean the form
     upForm.reset();
 	
@@ -113,16 +112,22 @@ async function init_dir(containerId) {
 		let inner = '<h2>Fichiers Schémas Réalisés présents</h2>';
 		inner += "<p>Cliquez sur l'année et le mois pour voir les fichiers</p>";
 		inner += '<ul is="expanding-list">';
+
 		for(const annee in data) {
-			const tab = Reflect.ownKeys(data[annee]).sort();
-			inner += `<li>${annee}<ul>`;
-			tab.forEach(elem => {
-			for(const mois in data[annee]) {
-				
-				if (elem == mois) {
-				inner += `<li>${mois}<ul>`;
-					for(const jour in data[annee][mois]) {
-						const nom = data[annee][mois][jour];
+			if (annee !== "files") {
+
+				inner += `<li>${annee}<ul>`;
+				const mois_temp = [];
+
+				// réordonne les mois car ils sont dans le déordre
+				for(const mois in data[annee]) {
+					if (mois !== "files") mois_temp.push(mois);
+				}
+				mois_temp.sort();
+			
+				mois_temp.forEach(mois => {
+					inner += `<li>${mois}<ul>`;
+					data[annee][mois]["files"].forEach(nom => {
 						let type, zone, day, z;
 
 						if (nom.indexOf('000000') != -1) {
@@ -137,15 +142,13 @@ async function init_dir(containerId) {
 							day = get_date_from_courage_file(nom);
 							z = zone === "AE" ? "EST" : "OUEST";
 						}
-						
 						inner += `<li>${day} - ${z} - ${type}</li>`;
-					}
+						
+					})
+					inner += '</ul></li>';
+				});
 				inner += '</ul></li>';
-				}
-				
 			}
-			});
-			inner += '</ul></li>';
 		}
 		inner += '</ul>';
 		document.getElementById('schema_dir').innerHTML = inner;
