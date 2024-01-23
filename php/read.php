@@ -1,4 +1,5 @@
 <?php
+header("Content-type:application/json");
 /*  -------------------------------------------------------------------------------------
 	  Renvoie une liste classée des fichiers presents dans le dossier 
 		return json
@@ -28,9 +29,10 @@ class Lister {
 
 	public $arr;
 
-	public function __construct() {
+	public function __construct(string $dossier) {
 		$this->arr = new stdClass();
 		$this->arr->files = [];
+		$this->dossier = $dossier;
 	}
 
     public function listdir($dir) {
@@ -65,11 +67,11 @@ class Lister {
 		$dir = str_replace("\\", "/", $dir);
         $p = explode("/", $dir);
 		// on ne garde qu'à partir de Realise 
-		$ind = array_search('Realise', $p);
+		$ind = array_search($this->dossier, $p);
 		for($i=0;$i<$ind;$i++) {
 			array_shift($p);
 		}        
-		/* 
+		/* On obtient
 		    $p : array(4) { 
 				[0]=> string(27) "Realise" 
 				[1]=> string(4) "2023" 
@@ -77,11 +79,6 @@ class Lister {
 				[3]=> string(26) "20231208_000000_LFMM-W.xml" 
 			}
         */
-		/*
-		echo "Dir : ";
-		var_dump($p);
-		echo "<br>";
-		*/
 		$count = count($p);
 		$temp = '$this->arr';
 		
@@ -106,16 +103,11 @@ class Lister {
 			$file = str_replace("\\", "/", $file);
             $p = explode("/", $file);
 			// on ne garde qu'à partir de Realise 
-			$ind = array_search('Realise', $p);
+			$ind = array_search($this->dossier, $p);
 			for($i=0;$i<$ind;$i++) {
 				array_shift($p);
 			} 
-			/*
-			echo "File : ";
-			var_dump($p);
-			echo "<br>";       
-			*/
-			/* 
+			/* On obtient
 				$p : array(4) { 
 					[0]=> string(27) "Realise" 
 					[1]=> string(4) "2023" 
@@ -126,9 +118,7 @@ class Lister {
 			$count = count($p);
 			$temp = '$this->arr';
 
-            // $p[0] = Realise
-            // $p[1] = année
-            // Si c'est le dossier qui concerne l'année, on a que 2 
+            // Si $count = 2, c'est le dossier qui concerne l'année
 			if ($count === 2) {
 				array_push($this->arr->files, $file);
 			}
@@ -147,7 +137,7 @@ class Lister {
     }
 }
 
-$lister = new Lister();
+$lister = new Lister("Realise");
 $lister->listdir($_SERVER['DOCUMENT_ROOT']."/Realise");
 $json = json_encode($lister->arr);
 echo $json;
