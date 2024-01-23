@@ -119,7 +119,7 @@ async function init_dir(containerId) {
 				inner += `<li>${annee}<ul>`;
 				const mois_temp = [];
 
-				// réordonne les mois car ils sont dans le déordre
+				// réordonne les mois car ils sont dans le désordre
 				for(const mois in data[annee]) {
 					if (mois !== "files") mois_temp.push(mois);
 				}
