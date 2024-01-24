@@ -19,7 +19,6 @@ function get_data($url) {
 	//echo "HTTP CODE:: " . $status_code;
 	//echo curl_error($ch);
 	if ($status_code == 404) return 404;
-	//curl_close($ch);  //no effect on php >= 8.0
 	unset($ch);   // to use with php >= 8.0 : launch garbage mechanism for $ch
 	return $result;
 }
