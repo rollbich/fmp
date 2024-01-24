@@ -49,9 +49,6 @@ class visu {
             this.o[tt] = await get_visu_occ(this.day, this.zone, tt);
         }
         if (this.h[tt] === 404) this.heures[t] = false;
-        console.log(t);
-        console.log(this.h[tt]);
-        console.log(this.o[tt]);
     }
 
     async show_tvs() {
@@ -111,7 +108,6 @@ class visu {
                 let full_time = document.querySelector(".selected").dataset.heure;
 
                 const time = full_time.replace(/:/g, '');
-                console.log("Time: "+time);
                 const reg = new regul(this.day, this.zone, false);
                 await reg.init();
                 const regbytv = reg.get_regbytv();
@@ -141,8 +137,7 @@ class visu {
                 let data_reg_h20_delay = []; 
                 let data_reg_h20_reason = []; 
                 let data_reg_occ_delay = [];
-                console.log("regreg");
-                console.log(regbytv);
+                
                 try {
                     this.h[time][tv].forEach(value => {
                         dataAxis.push(value[0]);
@@ -153,7 +148,6 @@ class visu {
                             let delay;
                             regbytv[tv].forEach(elem => {
                                 if (time_to_min(elem[0]) > time_to_min("04:00") && time_to_min(elem[1]) < time_to_min("23:59")) {
-                                    console.log(tv);
                                     if (time_to_min(elem[1]) >= time_to_min(value[0]) && time_to_min(elem[0]) <= time_to_min(value[0])) {
                                         r = elem[2]; 
                                         cause=  elem[3];
@@ -167,9 +161,6 @@ class visu {
                         }
                     });
 
-                    console.log(dataAxis);
-                    console.log(data_reg_h20);
-
                     this.o[time][tv].forEach(value => {
                         dataAxis_occ.push(value[0]);
                         data_occ.push(value[1]);
@@ -179,7 +170,6 @@ class visu {
                             let delay;
                             regbytv[tv].forEach(elem => {
                                 if (time_to_min(elem[0]) > time_to_min("04:00") && time_to_min(elem[1]) < time_to_min("23:59")) {
-                                    console.log(tv);
                                     if (time_to_min(elem[1]) >= time_to_min(value[0]) && time_to_min(elem[0]) <= time_to_min(value[0])) {
                                         r = elem[2];   
                                         cause=  elem[3];

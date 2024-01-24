@@ -175,7 +175,7 @@ class mv {
     }
 
 /*  -----------------------------------------------------------
-        Affiche les MVs existantes
+        Affiche les OTMVs existantes
         @param {string} containerId - Id de l'HTML Element container	
     ------------------------------------------------------------------ */
     async show_existing_otmvs(containerId) {

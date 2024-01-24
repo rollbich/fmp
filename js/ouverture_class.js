@@ -276,14 +276,9 @@ class ouverture extends schema_rea {
     async add_ouverture_listener() {
         try {	
             const tds = document.querySelectorAll('.tv');
-            console.log("000");
             const h20 = await get_h20_b2b(this.day, this.zone, this.schema); //  {	date: { tv: [ ["heure:min", load, mv_ods], ... ] } }
-            console.log("111");
             const occ = await get_occ_b2b(this.day, this.zone, this.schema);
-            console.log("222");
             const h = h20[this.day];
-            console.log("H TV");
-            console.log(h);
             const o = occ[this.day];
 
             const reg = new regul(this.day, this.zone, false);
