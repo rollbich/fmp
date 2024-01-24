@@ -570,7 +570,7 @@ function show_occ_graph(containerId, dataAxis, data, peak, sustain, tv, time_vis
 			@param {array} dataAxis - [1, 2, 3, week...]
 			@param {array} data - [load,...]
 	-------------------------------------------------------------------------- */
-function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, data2019, zon) {
+function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, dataRef = null, zon) {
 
 	let chartDom = $(containerId);
 	chartDom.style.height = "350px";
@@ -655,13 +655,15 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 			nameLocation: 'middle'
 		},
 		series: [
+			/*
 			{
 				name: "2019",
 				type: 'line',
 				color : '#339dff',
 				areaStyle: {},
-				data: data2019,
+				data: dataRef,
 			},
+			*/
 			{
 				name: year-1,
 				type: 'line',
@@ -688,7 +690,7 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 			@param {array} dataAxis - [1, 2, 3, month...]
 			@param {array} data - [load,...]
 	-------------------------------------------------------------------------- */
-function show_traffic_graph_mois(containerId, year, listWeek, data, data_lastyear, data2019, zon) {
+function show_traffic_graph_mois(containerId, year, listWeek, data, data_lastyear, dataRef = null, zon) {
 
 	let chartDom = $(containerId);
 	chartDom.style.height = "400px";
@@ -773,13 +775,15 @@ function show_traffic_graph_mois(containerId, year, listWeek, data, data_lastyea
 			nameLocation: 'middle'
 		},
 		series: [
+			/*
 			{
 				name: "2019",
 				type: 'line',
 				color : '#339dff',
 				areaStyle: {},
-				data: data2019
+				data: dataRef
 			},
+			*/
 			{
 				name: year-1,
 				type: 'line',
@@ -806,7 +810,7 @@ function show_traffic_graph_mois(containerId, year, listWeek, data, data_lastyea
 			@param {array} dataAxis - [1, 2, 3, month...]
 			@param {array} data - [load,...]
 	-------------------------------------------------------------------------- */
-function show_traffic_graph_mois_cumule(containerId, year, listMonth, data, data_lastyear, data2019, zon) {
+function show_traffic_graph_mois_cumule(containerId, year, listMonth, data, data_lastyear, dataRef = null, zon) {
 
 	let chartDom = $(containerId);
 	chartDom.style.height = "350px";
@@ -891,13 +895,15 @@ function show_traffic_graph_mois_cumule(containerId, year, listMonth, data, data
 			nameLocation: 'middle'
 		},
 		series: [
+			/*
 			{
 				name: "2019",
 				type: 'line',
 				color : '#339dff',
 				//areaStyle: {},
-				data: data2019,
+				data: dataRef,
 			},
+			*/
 			{
 				name: year-1,
 				type: 'line',
@@ -924,7 +930,7 @@ function show_traffic_graph_mois_cumule(containerId, year, listMonth, data, data
 			@param {array} dataAxis - [1, 2, 3, week...]
 			@param {array} data - [load,...]
 	-------------------------------------------------------------------------- */
-function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data2019, zon) {
+function show_delay_graph(containerId, year, listWeek, data, data_lastyear, dataRef = null, zon) {
 
 	let chartDom = $(containerId);
 	chartDom.style.height = "400px";
@@ -1009,13 +1015,15 @@ function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data
 			nameLocation: 'middle'
 		},
 		series: [
+			/*
 			{
 				name: "2019",
 				type: 'bar',
 				color : '#339dff',
 				areaStyle: {},
-				data: data2019,
+				data: dataRef,
 			},
+			*/
 			{
 				name: year-1,
 				type: 'bar',
@@ -1042,7 +1050,7 @@ function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data
 			@param {array} dataAxis - [1, 2, 3, month...]
 			@param {array} data - [load,...]
 	-------------------------------------------------------------------------- */
-function show_delay_graph_month(containerId, year, listMonth, data, data_lastyear, data2019, zon, maxi) {
+function show_delay_graph_month(containerId, year, listMonth, data, data_lastyear, dataRef = null, zon, maxi) {
 
 	let chartDom = $(containerId);
 	chartDom.style.height = "440px";
@@ -1128,13 +1136,15 @@ function show_delay_graph_month(containerId, year, listMonth, data, data_lastyea
 			max: maxi
 		},
 		series: [
+			/*
 			{
 				name: "2019",
 				type: 'bar',
 				color : '#339dff',
 				areaStyle: {},
-				data: data2019,
+				data: dataRef,
 			},
+			*/
 			{
 				name: year-1,
 				type: 'bar',
@@ -1161,7 +1171,7 @@ function show_delay_graph_month(containerId, year, listMonth, data, data_lastyea
 			@param {array} dataAxis - [1, 2, 3, month...]
 			@param {array} data - [load,...]
 	-------------------------------------------------------------------------- */
-function show_delay_graph_mois_cumule(containerId, year, listMonth, data, data_lastyear, data2019, zon) {
+function show_delay_graph_mois_cumule(containerId, year, listMonth, data, data_lastyear, dataRef = null, zon) {
 
 	let chartDom = $(containerId);
 	chartDom.style.height = "350px";
@@ -1244,13 +1254,15 @@ function show_delay_graph_mois_cumule(containerId, year, listMonth, data, data_l
 			nameLocation: 'middle'
 		},
 		series: [
+			/*
 			{
 				name: "2019",
 				type: 'line',
 				color : '#339dff',
 				//areaStyle: {},
-				data: data2019,
+				data: dataRef,
 			},
+			*/
 			{
 				name: year-1,
 				type: 'line',
@@ -1610,7 +1622,7 @@ function show_delay_graph_week_par_causes(containerId, year, week, data, titre) 
 			@param {string} containerId - Id de l'HTML Element conteneur
 			@param {array} data - [load,...]
 	-------------------------------------------------------------------------- */
-function show_delay_graph_week_cumule(containerId, year, data, data_lastyear, data2019, zon, title = "") {
+function show_delay_graph_week_cumule(containerId, year, data, data_lastyear, dataRef = null, zon, title = "") {
 
 	let chartDom = $(containerId);
 	chartDom.style.height = "350px";
@@ -1697,13 +1709,15 @@ function show_delay_graph_week_cumule(containerId, year, data, data_lastyear, da
 			nameLocation: 'middle'
 		},
 		series: [
+			/*
 			{
 				name: "2019",
 				type: 'line',
 				color : '#339dff',
 				//areaStyle: {},
-				data: data2019,
+				data: dataRef,
 			},
+			*/
 			{
 				name: year-1,
 				type: 'line',
