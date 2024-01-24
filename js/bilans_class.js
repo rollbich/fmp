@@ -22,16 +22,12 @@ class weekly_briefing {
     async init() {
         this.flights = new weekly_vols(this.year);
         this.flights_lastyear = new weekly_vols(this.year-1);
-        this.flights_2019 = new weekly_vols(2019);
         await this.flights.init();
         await this.flights_lastyear.init();
-        await this.flights_2019.init();
         this.reguls = new weekly_regs(this.year);
         this.reguls_lastyear = new weekly_regs(this.year-1);
-        this.reguls_2019 = new weekly_regs(2019);
         await this.reguls.init();
         await this.reguls_lastyear.init();
-        await this.reguls_2019.init();
     }
 
     async init_jour() {
@@ -90,14 +86,14 @@ class weekly_briefing {
         show_delay_graph_week_par_causes("accueil_causes_app", this.year, this.week, this.reguls.cause['app'][this.week-1], "LFMM APP");
         show_delay_graph_week_par_causes("accueil_causes_est", this.year, this.week, this.reguls.cause['est'][this.week-1], "LFMM Est");
         show_delay_graph_week_par_causes("accueil_causes_west", this.year, this.week, this.reguls.cause['west'][this.week-1], "LFMM West");
-        show_delay_graph_week_cumule("accueil_cumule_cta", this.year, this.get_weekly_reg_cumules()['cta'], this.get_weekly_reg_cumules("lastyear")['cta'], this.get_weekly_reg_cumules("2019")['cta'], "LFMM CTA");
-        show_delay_graph_week_cumule("accueil_cumule_app", this.year, this.get_weekly_reg_cumules()['app'], this.get_weekly_reg_cumules("lastyear")['app'], this.get_weekly_reg_cumules("2019")['app'], "LFMM APP");
-        show_delay_graph_week_cumule("accueil_cumule_est", this.year, this.get_weekly_reg_cumules()['est'], this.get_weekly_reg_cumules("lastyear")['est'], this.get_weekly_reg_cumules("2019")['est'], "LFMM Est");
-        show_delay_graph_week_cumule("accueil_cumule_west", this.year, this.get_weekly_reg_cumules()['west'], this.get_weekly_reg_cumules("lastyear")['west'], this.get_weekly_reg_cumules("2019")['west'], "LFMM West");
-        show_delay_graph_week_cumule("accueil_cumule_CRSTMP_cta", this.year, this.get_weekly_CRSTMP_reg_cumules()['cta'], this.get_weekly_CRSTMP_reg_cumules("lastyear")['cta'], this.get_weekly_CRSTMP_reg_cumules("2019")['cta'], "LFMM CTA", "CRSTMP");
-        show_delay_graph_week_cumule("accueil_cumule_CRSTMP_app", this.year, this.get_weekly_CRSTMP_reg_cumules()['app'], this.get_weekly_CRSTMP_reg_cumules("lastyear")['app'], this.get_weekly_CRSTMP_reg_cumules("2019")['app'], "LFMM APP", "CRSTMP");
-        show_delay_graph_week_cumule("accueil_cumule_CRSTMP_est", this.year, this.get_weekly_CRSTMP_reg_cumules()['est'], this.get_weekly_CRSTMP_reg_cumules("lastyear")['est'], this.get_weekly_CRSTMP_reg_cumules("2019")['est'], "LFMM Est", "CRSTMP");
-        show_delay_graph_week_cumule("accueil_cumule_CRSTMP_west", this.year, this.get_weekly_CRSTMP_reg_cumules()['west'], this.get_weekly_CRSTMP_reg_cumules("lastyear")['west'], this.get_weekly_CRSTMP_reg_cumules("2019")['west'], "LFMM West", "CRSTMP");
+        show_delay_graph_week_cumule("accueil_cumule_cta", this.year, this.get_weekly_reg_cumules()['cta'], this.get_weekly_reg_cumules("lastyear")['cta'], null, "LFMM CTA");
+        show_delay_graph_week_cumule("accueil_cumule_app", this.year, this.get_weekly_reg_cumules()['app'], this.get_weekly_reg_cumules("lastyear")['app'], null, "LFMM APP");
+        show_delay_graph_week_cumule("accueil_cumule_est", this.year, this.get_weekly_reg_cumules()['est'], this.get_weekly_reg_cumules("lastyear")['est'], null, "LFMM Est");
+        show_delay_graph_week_cumule("accueil_cumule_west", this.year, this.get_weekly_reg_cumules()['west'], this.get_weekly_reg_cumules("lastyear")['west'], null, "LFMM West");
+        show_delay_graph_week_cumule("accueil_cumule_CRSTMP_cta", this.year, this.get_weekly_CRSTMP_reg_cumules()['cta'], this.get_weekly_CRSTMP_reg_cumules("lastyear")['cta'], null, "LFMM CTA", "CRSTMP");
+        show_delay_graph_week_cumule("accueil_cumule_CRSTMP_app", this.year, this.get_weekly_CRSTMP_reg_cumules()['app'], this.get_weekly_CRSTMP_reg_cumules("lastyear")['app'], null, "LFMM APP", "CRSTMP");
+        show_delay_graph_week_cumule("accueil_cumule_CRSTMP_est", this.year, this.get_weekly_CRSTMP_reg_cumules()['est'], this.get_weekly_CRSTMP_reg_cumules("lastyear")['est'], null, "LFMM Est", "CRSTMP");
+        show_delay_graph_week_cumule("accueil_cumule_CRSTMP_west", this.year, this.get_weekly_CRSTMP_reg_cumules()['west'], this.get_weekly_CRSTMP_reg_cumules("lastyear")['west'], null, "LFMM West", "CRSTMP");
     }
 
     change_week() {
@@ -156,25 +152,25 @@ class weekly_briefing {
         const b = lastweek_flights.nbre_vols['cta'][this.lastweek_week-1];
         let res = `
         <table class="table_bilan sortable">
-            <thead><tr class="titre"><th>Zone</th><th>Vols</th><th>Last Week</th><th>${this.year-1}</th><th>2019</th></tr></thead>
+            <thead><tr class="titre"><th>Zone</th><th>Vols</th><th>Last Week</th><th>${this.year-1}</th></tr></thead>
             <tbody>`;
             res += '<tr>'; 
             res +=`<td>CTA</td><td>${this.flights.nbre_vols['cta'][this.week-1]}</td>
             <td>${MyFormat.format((this.flights.nbre_vols['cta'][this.week-1]/lastweek_flights.nbre_vols['cta'][this.lastweek_week-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.flights.nbre_vols['cta'][this.week-1]/this.flights_lastyear.nbre_vols['cta'][this.week-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.flights.nbre_vols['cta'][this.week-1]/this.flights_2019.nbre_vols['cta'][this.week-1] - 1)*100)} %</td></tr><tr>
+            </tr><tr>
             <td>Est</td><td>${this.flights.nbre_vols['est'][this.week-1]}</td>
             <td>${MyFormat.format((this.flights.nbre_vols['est'][this.week-1]/lastweek_flights.nbre_vols['est'][this.lastweek_week-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.flights.nbre_vols['est'][this.week-1]/this.flights_lastyear.nbre_vols['est'][this.week-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.flights.nbre_vols['est'][this.week-1]/this.flights_2019.nbre_vols['est'][this.week-1] - 1)*100)} %</td></tr><tr>
+            </tr><tr>
             <td>West</td><td>${this.flights.nbre_vols['west'][this.week-1]}</td>
             <td>${MyFormat.format((this.flights.nbre_vols['west'][this.week-1]/lastweek_flights.nbre_vols['west'][this.lastweek_week-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.flights.nbre_vols['west'][this.week-1]/this.flights_lastyear.nbre_vols['west'][this.week-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.flights.nbre_vols['west'][this.week-1]/this.flights_2019.nbre_vols['west'][this.week-1] - 1)*100)} %</td></tr><tr>
+            </tr><tr>
             <td>App</td><td>${this.flights.nbre_vols['app'][this.week-1]}</td>
             <td>${MyFormat.format((this.flights.nbre_vols['app'][this.week-1]/lastweek_flights.nbre_vols['app'][this.lastweek_week-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.flights.nbre_vols['app'][this.week-1]/this.flights_lastyear.nbre_vols['app'][this.week-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.flights.nbre_vols['app'][this.week-1]/this.flights_2019.nbre_vols['app'][this.week-1] - 1)*100)} %</td>`;
+            `;
             res += '</tr>';	
         res += '</tbody></table>';
         
@@ -191,25 +187,25 @@ class weekly_briefing {
         const MyFormat = new SignedFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits:1} )
         let res = `
         <table class="table_bilan sortable">
-            <thead><tr class="titre"><th>Zone</th><th>Delay</th><th>Last Week</th><th>${this.year-1}</th><th>2019</th></tr></thead>
+            <thead><tr class="titre"><th>Zone</th><th>Delay</th><th>Last Week</th><th>${this.year-1}</th></tr></thead>
             <tbody>`;
             res += '<tr>'; 
             res +=`<td>CTA</td><td>${this.reguls.delay['cta'][this.week-1]} min</td>
             <td>${MyFormat.format((this.reguls.delay['cta'][this.week-1]/lastweek_reguls.delay['cta'][this.lastweek_week-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.reguls.delay['cta'][this.week-1]/this.reguls_lastyear.delay['cta'][this.week-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.reguls.delay['cta'][this.week-1]/this.reguls_2019.delay['cta'][this.week-1] - 1)*100)} %</td></tr><tr>
+            </tr><tr>
             <td>Est</td><td>${this.reguls.delay['est'][this.week-1]} min</td>
             <td>${MyFormat.format((this.reguls.delay['est'][this.week-1]/lastweek_reguls.delay['est'][this.lastweek_week-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.reguls.delay['est'][this.week-1]/this.reguls_lastyear.delay['est'][this.week-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.reguls.delay['est'][this.week-1]/this.reguls_2019.delay['est'][this.week-1] - 1)*100)} %</td></tr><tr>
+            </tr><tr>
             <td>West</td><td>${this.reguls.delay['west'][this.week-1]} min</td>
             <td>${MyFormat.format((this.reguls.delay['west'][this.week-1]/lastweek_reguls.delay['west'][this.lastweek_week-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.reguls.delay['west'][this.week-1]/this.reguls_lastyear.delay['west'][this.week-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.reguls.delay['west'][this.week-1]/this.reguls_2019.delay['west'][this.week-1] - 1)*100)} %</td></tr><tr>
+            </tr><tr>
             <td>App</td><td>${this.reguls.delay['app'][this.week-1]} min</td>
             <td>${MyFormat.format((this.reguls.delay['app'][this.week-1]/lastweek_reguls.delay['app'][this.lastweek_week-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.reguls.delay['app'][this.week-1]/this.reguls_lastyear.delay['app'][this.week-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.reguls.delay['app'][this.week-1]/this.reguls_2019.delay['app'][this.week-1] - 1)*100)} %</td>`;
+           `;
             res += '</tr>';	
         res += '</tbody></table>';
         result += "</div>";
@@ -232,25 +228,25 @@ class weekly_briefing {
         const MyFormat = new SignedFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits:1} )
         let res = `
         <table class="table_bilan sortable">
-            <thead><tr class="titre"><th>Zone</th><th>Delay</th><th>Last Week</th><th>${this.year-1}</th><th>2019</th></tr></thead>
+            <thead><tr class="titre"><th>Zone</th><th>Delay</th><th>Last Week</th><th>${this.year-1}</th></tr></thead>
             <tbody>`;
             res += '<tr>'; 
             res +=`<td>CTA</td><td>${this.reguls.CRSTMP['cta'][this.week-1]} min</td>
             <td>${MyFormat.format((this.reguls.CRSTMP['cta'][this.week-1]/lastweek_reguls.CRSTMP['cta'][this.lastweek_week-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.reguls.CRSTMP['cta'][this.week-1]/this.reguls_lastyear.CRSTMP['cta'][this.week-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.reguls.CRSTMP['cta'][this.week-1]/this.reguls_2019.CRSTMP['cta'][this.week-1] - 1)*100)} %</td></tr><tr>
+            </tr><tr>
             <td>Est</td><td>${this.reguls.CRSTMP['est'][this.week-1]} min</td>
             <td>${MyFormat.format((this.reguls.CRSTMP['est'][this.week-1]/lastweek_reguls.CRSTMP['est'][this.lastweek_week-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.reguls.CRSTMP['est'][this.week-1]/this.reguls_lastyear.CRSTMP['est'][this.week-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.reguls.CRSTMP['est'][this.week-1]/this.reguls_2019.CRSTMP['est'][this.week-1] - 1)*100)} %</td></tr><tr>
+            </tr><tr>
             <td>West</td><td>${this.reguls.CRSTMP['west'][this.week-1]} min</td>
             <td>${MyFormat.format((this.reguls.CRSTMP['west'][this.week-1]/lastweek_reguls.CRSTMP['west'][this.lastweek_week-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.reguls.CRSTMP['west'][this.week-1]/this.reguls_lastyear.CRSTMP['west'][this.week-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.reguls.CRSTMP['west'][this.week-1]/this.reguls_2019.CRSTMP['west'][this.week-1] - 1)*100)} %</td></tr><tr>
+            </tr><tr>
             <td>App</td><td>${this.reguls.CRSTMP['app'][this.week-1]} min</td>
             <td>${MyFormat.format((this.reguls.CRSTMP['app'][this.week-1]/lastweek_reguls.CRSTMP['app'][this.lastweek_week-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.reguls.CRSTMP['app'][this.week-1]/this.reguls_lastyear.CRSTMP['app'][this.week-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.reguls.CRSTMP['app'][this.week-1]/this.reguls_2019.delay['app'][this.week-1] - 1)*100)} %</td>`;
+            `;
             res += '</tr>';	
         res += '</tbody></table>';
         result += "</div>";
@@ -476,16 +472,12 @@ class monthly_briefing {
     async init() {
         this.flights = new monthly_vols(this.year);
         this.flights_lastyear = new monthly_vols(this.year-1);
-        this.flights_2019 = new monthly_vols(2019);
         await this.flights.init();
         await this.flights_lastyear.init();
-        await this.flights_2019.init();
         this.reguls = new monthly_regs(this.year);
         this.reguls_lastyear = new monthly_regs(this.year-1);
-        this.reguls_2019 = new monthly_regs(2019);
         await this.reguls.init();
         await this.reguls_lastyear.init();
-        await this.reguls_2019.init();
     }
 
     get_last_month() {
@@ -634,37 +626,33 @@ class monthly_briefing {
         const MyFormat = new SignedFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits:1} );
         let res = `
         <table class="table_bilan sortable">
-            <thead><tr class="titre"><th>Zone</th><th>Vols</th><th>Last Month</th><th>Last year</th><th>2019</th><th>Cumuls</th><th>Cumuls Y-1</th><th>Cumuls 2019</th></tr></thead>
+            <thead><tr class="titre"><th>Zone</th><th>Vols</th><th>Last Month</th><th>Last year</th><th>Cumuls</th><th>Cumuls Y-1</th></tr></thead>
             <tbody>`;
             res += '<tr>'; 
             res +=`<td>CTA</td><td>${this.flights.nbre_vols['cta'][this.month-1]}</td>
             <td>${MyFormat.format((this.flights.nbre_vols['cta'][this.month-1]/lastmonth_flights.nbre_vols['cta'][this.lastmonth_month-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.flights.nbre_vols['cta'][this.month-1]/this.flights_lastyear.nbre_vols['cta'][this.month-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.flights.nbre_vols['cta'][this.month-1]/this.flights_2019.nbre_vols['cta'][this.month-1] - 1)*100)} %</td>
             <td>${this.get_monthly_cumules()['cta'][this.month-1]}</td>
             <td>${MyFormat.format((this.get_monthly_cumules()['cta'][this.month-1]/this.get_monthly_cumules("lastyear")['cta'][this.month-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.get_monthly_cumules()['cta'][this.month-1]/this.get_monthly_cumules("2019")['cta'][this.month-1] - 1)*100)} %</td></tr>
+            </tr>
             <tr><td>Est</td><td>${this.flights.nbre_vols['est'][this.month-1]}</td>
             <td>${MyFormat.format((this.flights.nbre_vols['est'][this.month-1]/lastmonth_flights.nbre_vols['est'][this.lastmonth_month-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.flights.nbre_vols['est'][this.month-1]/this.flights_lastyear.nbre_vols['est'][this.month-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.flights.nbre_vols['est'][this.month-1]/this.flights_2019.nbre_vols['est'][this.month-1] - 1)*100)} %</td>
             <td>${this.get_monthly_cumules()['est'][this.month-1]}</td>
             <td>${MyFormat.format((this.get_monthly_cumules()['est'][this.month-1]/this.get_monthly_cumules("lastyear")['est'][this.month-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.get_monthly_cumules()['est'][this.month-1]/this.get_monthly_cumules("2019")['est'][this.month-1] - 1)*100)} %</td></tr><tr>
+            </tr><tr>
             <td>West</td><td>${this.flights.nbre_vols['west'][this.month-1]}</td>
             <td>${MyFormat.format((this.flights.nbre_vols['west'][this.month-1]/lastmonth_flights.nbre_vols['west'][this.lastmonth_month-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.flights.nbre_vols['west'][this.month-1]/this.flights_lastyear.nbre_vols['west'][this.month-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.flights.nbre_vols['west'][this.month-1]/this.flights_2019.nbre_vols['west'][this.month-1] - 1)*100)} %</td>
             <td>${this.get_monthly_cumules()['west'][this.month-1]}</td>
             <td>${MyFormat.format((this.get_monthly_cumules()['west'][this.month-1]/this.get_monthly_cumules("lastyear")['west'][this.month-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.get_monthly_cumules()['west'][this.month-1]/this.get_monthly_cumules("2019")['west'][this.month-1] - 1)*100)} %</td></tr><tr>
+            </tr><tr>
             <td>App</td><td>${this.flights.nbre_vols['app'][this.month-1]}</td>
             <td>${MyFormat.format((this.flights.nbre_vols['app'][this.month-1]/lastmonth_flights.nbre_vols['app'][this.lastmonth_month-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.flights.nbre_vols['app'][this.month-1]/this.flights_lastyear.nbre_vols['app'][this.month-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.flights.nbre_vols['app'][this.month-1]/this.flights_2019.nbre_vols['app'][this.month-1] - 1)*100)} %</td>
             <td>${this.get_monthly_cumules()['app'][this.month-1]}</td>
             <td>${MyFormat.format((this.get_monthly_cumules()['app'][this.month-1]/this.get_monthly_cumules("lastyear")['app'][this.month-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.get_monthly_cumules()['app'][this.month-1]/this.get_monthly_cumules("2019")['app'][this.month-1] - 1)*100)} %</td>`;
+            `;
             res += '</tr>';	
         res += '</tbody></table>';
         
@@ -681,37 +669,32 @@ class monthly_briefing {
         const MyFormat = new SignedFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits:1} )
         let res = `
         <table class="table_bilan sortable">
-            <thead><tr class="titre"><th>Zone</th><th>Delay</th><th>Last Month</th><th>Last year</th><th>2019</th><th>Cumuls</th><th>Cumuls Y-1</th><th>Cumuls 2019</th></tr></thead>
+            <thead><tr class="titre"><th>Zone</th><th>Delay</th><th>Last Month</th><th>Last year</th><th>Cumuls</th><th>Cumuls Y-1</th></tr></thead>
             <tbody>`;
             res += '<tr>'; 
             res +=`<td>CTA</td><td>${this.reguls.delay['cta'][this.month-1]} min</td>
             <td>${MyFormat.format((this.reguls.delay['cta'][this.month-1]/lastmonth_reguls.delay['cta'][this.lastmonth_month-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.reguls.delay['cta'][this.month-1]/this.reguls_lastyear.delay['cta'][this.month-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.reguls.delay['cta'][this.month-1]/this.reguls_2019.delay['cta'][this.month-1] - 1)*100)} %</td>
             <td>${this.get_monthly_reg_cumules()['cta'][this.month-1]}</td>
             <td>${MyFormat.format((this.get_monthly_reg_cumules()['cta'][this.month-1]/this.get_monthly_reg_cumules("lastyear")['cta'][this.month-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.get_monthly_reg_cumules()['cta'][this.month-1]/this.get_monthly_reg_cumules("2019")['cta'][this.month-1] - 1)*100)} %</td></tr><tr>
+            </tr><tr>
             <td>Est</td><td>${this.reguls.delay['est'][this.month-1]} min</td>
             <td>${MyFormat.format((this.reguls.delay['est'][this.month-1]/lastmonth_reguls.delay['est'][this.lastmonth_month-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.reguls.delay['est'][this.month-1]/this.reguls_lastyear.delay['est'][this.month-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.reguls.delay['est'][this.month-1]/this.reguls_2019.delay['est'][this.month-1] - 1)*100)} %</td>
             <td>${this.get_monthly_reg_cumules()['est'][this.month-1]}</td>
             <td>${MyFormat.format((this.get_monthly_reg_cumules()['est'][this.month-1]/this.get_monthly_reg_cumules("lastyear")['est'][this.month-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.get_monthly_reg_cumules()['est'][this.month-1]/this.get_monthly_reg_cumules("2019")['est'][this.month-1] - 1)*100)} %</td></tr><tr>
+            </tr><tr>
             <td>West</td><td>${this.reguls.delay['west'][this.month-1]} min</td>
             <td>${MyFormat.format((this.reguls.delay['west'][this.month-1]/lastmonth_reguls.delay['west'][this.lastmonth_month-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.reguls.delay['west'][this.month-1]/this.reguls_lastyear.delay['west'][this.month-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.reguls.delay['west'][this.month-1]/this.reguls_2019.delay['west'][this.month-1] - 1)*100)} %</td>
             <td>${this.get_monthly_reg_cumules()['west'][this.month-1]}</td>
             <td>${MyFormat.format((this.get_monthly_reg_cumules()['west'][this.month-1]/this.get_monthly_reg_cumules("lastyear")['west'][this.month-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.get_monthly_reg_cumules()['west'][this.month-1]/this.get_monthly_reg_cumules("2019")['west'][this.month-1] - 1)*100)} %</td></tr><tr>
+            </tr><tr>
             <td>App</td><td>${this.reguls.delay['app'][this.month-1]} min</td>
             <td>${MyFormat.format((this.reguls.delay['app'][this.month-1]/lastmonth_reguls.delay['app'][this.lastmonth_month-1] - 1)*100)} %</td>
             <td>${MyFormat.format((this.reguls.delay['app'][this.month-1]/this.reguls_lastyear.delay['app'][this.month-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.reguls.delay['app'][this.month-1]/this.reguls_2019.delay['app'][this.month-1] - 1)*100)} %</td>
             <td>${this.get_monthly_reg_cumules()['app'][this.month-1]}</td>
-            <td>${MyFormat.format((this.get_monthly_reg_cumules()['app'][this.month-1]/this.get_monthly_reg_cumules("lastyear")['app'][this.month-1] - 1)*100)} %</td>
-            <td>${MyFormat.format((this.get_monthly_reg_cumules()['app'][this.month-1]/this.get_monthly_reg_cumules("2019")['app'][this.month-1] - 1)*100)} %</td>`;
+            <td>${MyFormat.format((this.get_monthly_reg_cumules()['app'][this.month-1]/this.get_monthly_reg_cumules("lastyear")['app'][this.month-1] - 1)*100)} %</td>`;
             res += '</tr>';	
         res += '</tbody></table>';
         
@@ -723,14 +706,14 @@ class monthly_briefing {
     show_data_graphs_annee() {
         const listMonth = [];
         for (let k=1;k<13;k++) { listMonth.push(k);}
-        show_traffic_graph_mois_cumule("accueil_vols", this.year, listMonth, this.get_monthly_cumules()['cta'], this.get_monthly_cumules("lastyear")['cta'], this.get_monthly_cumules("2019")['cta'], "LFMMCTA");
-        show_delay_graph_mois_cumule("accueil_reguls", this.year, listMonth, this.get_monthly_reg_cumules()['cta'], this.get_monthly_reg_cumules("lastyear")['cta'], this.get_monthly_reg_cumules("2019")['cta'], "LFMMCTA");
-        show_delay_graph_mois_cumule("accueil_reguls_cumul_app", this.year, listMonth, this.get_monthly_reg_cumules()['app'], this.get_monthly_reg_cumules("lastyear")['app'], this.get_monthly_reg_cumules("2019")['app'], "Approches");
-        show_traffic_graph_mois_cumule("accueil_trafic_cumul_app", this.year, listMonth, this.get_monthly_cumules()['app'], this.get_monthly_cumules("lastyear")['app'], this.get_monthly_cumules("2019")['app'], "Approches");
-        show_traffic_graph_mois("accueil_trafic_mois_cta", this.year, listMonth, this.flights.nbre_vols['cta'], this.flights_lastyear.nbre_vols['cta'], this.flights_2019.nbre_vols['cta'], "LFMMCTA");
-        show_delay_graph_month("accueil_reguls_mois_cta", this.year, listMonth, this.reguls.delay['cta'], this.reguls_lastyear.delay['cta'], this.reguls_2019.delay['cta'], "LFMMCTA",800000);
-        show_delay_graph_month("accueil_reguls_mois_est", this.year, listMonth, this.reguls.delay['est'], this.reguls_lastyear.delay['est'], this.reguls_2019.delay['est'], "Zone EST",500000);
-        show_delay_graph_month("accueil_reguls_mois_west", this.year, listMonth, this.reguls.delay['west'], this.reguls_lastyear.delay['west'], this.reguls_2019.delay['west'], "Zone WEST",500000);
+        show_traffic_graph_mois_cumule("accueil_vols", this.year, listMonth, this.get_monthly_cumules()['cta'], this.get_monthly_cumules("lastyear")['cta'], null, "LFMMCTA");
+        show_delay_graph_mois_cumule("accueil_reguls", this.year, listMonth, this.get_monthly_reg_cumules()['cta'], this.get_monthly_reg_cumules("lastyear")['cta'], null, "LFMMCTA");
+        show_delay_graph_mois_cumule("accueil_reguls_cumul_app", this.year, listMonth, this.get_monthly_reg_cumules()['app'], this.get_monthly_reg_cumules("lastyear")['app'], null, "Approches");
+        show_traffic_graph_mois_cumule("accueil_trafic_cumul_app", this.year, listMonth, this.get_monthly_cumules()['app'], this.get_monthly_cumules("lastyear")['app'], null, "Approches");
+        show_traffic_graph_mois("accueil_trafic_mois_cta", this.year, listMonth, this.flights.nbre_vols['cta'], this.flights_lastyear.nbre_vols['cta'], null, "LFMMCTA");
+        show_delay_graph_month("accueil_reguls_mois_cta", this.year, listMonth, this.reguls.delay['cta'], this.reguls_lastyear.delay['cta'], null, "LFMMCTA",800000);
+        show_delay_graph_month("accueil_reguls_mois_est", this.year, listMonth, this.reguls.delay['est'], this.reguls_lastyear.delay['est'], null, "Zone EST",500000);
+        show_delay_graph_month("accueil_reguls_mois_west", this.year, listMonth, this.reguls.delay['west'], this.reguls_lastyear.delay['west'], null, "Zone WEST",500000);
     }
 
     show_data_graphs() {
@@ -740,7 +723,7 @@ class monthly_briefing {
         show_delay_graph_mois_par_causes("accueil_causes_est", this.year, this.month, this.reguls.delay_par_cause['est'][this.month-1], "LFMM Est");
         show_delay_graph_mois_par_causes("accueil_causes_west", this.year, this.month, this.reguls.delay_par_cause['west'][this.month-1], "LFMM West");
         show_delay_graph_mois_par_causes("accueil_causes_app", this.year, this.month, this.reguls.delay_par_cause['app'][this.month-1], "Approches");
-        show_traffic_graph_mois("accueil_trafic_mois_app", this.year, listMonth, this.flights.nbre_vols['app'], this.flights_lastyear.nbre_vols['app'], this.flights_2019.nbre_vols['app'], "Approches");
+        show_traffic_graph_mois("accueil_trafic_mois_app", this.year, listMonth, this.flights.nbre_vols['app'], this.flights_lastyear.nbre_vols['app'], null, "Approches");
         show_delay_graph_mois_par_tvs("accueil_tvs_cta", this.year, this.month, this.reguls.delay_par_tvs['cta'][this.month-1], "LFMMCTA");
         show_delay_graph_mois_par_tvs("accueil_tvs_est", this.year, this.month, this.reguls.delay_par_tvs['est'][this.month-1], "Zone EST");
         show_delay_graph_mois_par_tvs("accueil_tvs_west", this.year, this.month, this.reguls.delay_par_tvs['west'][this.month-1], "Zone WEST");
