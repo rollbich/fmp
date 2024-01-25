@@ -1429,7 +1429,6 @@ async function show_capa_graph(containerId, day, zone, pc = 0, details_sv, schem
 	vacs.forEach(vac => {
 		nbr[vac] = pc["pc_vac"][vac]["nbpc"];
 	});
-	if (typeof schema != 'undefined') save_uceso(z, day, jour, i1, uceso, data_d, schema.max_secteurs, schema.tv_h, nbr);
 	$$(".bleu").innerHTML = 'Y-1'+' : '+jourRef+' '+reverse_date(dayref);
 	$$(".orange").innerHTML = 'J-7 : '+jour7+' '+reverse_date(day7);
 	$$(".vert").innerHTML = 'J : '+jour+' '+reverse_date(day);
@@ -1574,6 +1573,8 @@ async function show_capa_graph(containerId, day, zone, pc = 0, details_sv, schem
 	if (option && typeof option === 'object') {
 		myChart.setOption(option);
 	}
+
+	return {"zone": z, "day":day, "jour": jour, "i1": i1, "uceso": uceso, "data_d": data_d, "max_sect": schema.max_secteurs, "tvh": schema.tv_h, "nb_pc": nbr}
 	
 }
 
@@ -1621,6 +1622,6 @@ async function save_uceso(zone, day, jour, i1, uceso, realise, maxsecteurs, tvh,
 		body: JSON.stringify(save)
 	};
 	
-	//await fetch("../capa/tds_sql.php", data);
+	await fetch("../capa/tds_sql.php", data);
 
 }

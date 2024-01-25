@@ -90,6 +90,9 @@
                 <a class="navbar-item" href="../capa/ucesos_export.php">
                 Export XLS Ucesos
                 </a>
+                <a class="navbar-item" href="../capa/save_uceso.php">
+                Save Uceso to BDD
+                </a>
 				      </div>
 			      </div>';
           } else {
