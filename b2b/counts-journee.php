@@ -77,12 +77,19 @@ $soapClient = new B2B();
 // récupère les données MV, duration, sustain, peak des TV LFMM
 // données du fichier MV.json
 // $tve : données de la zone est et $tvw : données west
-$fichier_mv = file_get_contents(dirname(__FILE__)."/MV.json");
-$obj = json_decode($fichier_mv, true);
-$tve = $obj["TV-EST"];
-$tvw = $obj["TV-OUEST"];
 
-echo "Fichier MV.json OK<br>";
+$today = new DateTime('yesterday');
+$today_d = $today->format('d');
+$today_y = $today->format('Y');
+$today_m = $today->format('m');
+
+$url_est = "$today_y/$today_m/$today_y$today_m$today_d-mv_otmv-est.json";
+$mv_file_content_est = json_decode(get_data($url_est));
+echo "Fichier $today_y$today_m$today_d-mv_otmv-est.json OK<br>";
+
+$url_west = "$today_y/$today_m/$today_y$today_m$today_d-mv_otmv-est.json";
+$mv_file_content_west = json_decode(get_data($url_west));
+echo "Fichier $today_y$today_m$today_d-mv_otmv-ouest.json OK<br>";
 
 // récupère les TV que l'on veut compter en H/20 et Occ
 // données du fichier TV_count.json
@@ -98,15 +105,15 @@ echo "Fichier TV_count.json OK<br>";
 // 		récupère les données H20, Occ
 // ---------------------------------------
 
-$h20_est = $soapClient->flowServices()->get_entry("LFM", $tvs_est, $tve, $wef_counts, $unt_counts, "LOAD");
-//$h20_est2 = $soapClient->flowServices()->get_entry("LFM", $tvs_est, $tve, $wef_counts, $unt_counts, "DEMAND");
-$h20_west = $soapClient->flowServices()->get_entry("LFM", $tvs_west, $tvw, $wef_counts, $unt_counts, "LOAD");
-//$h20_west2 = $soapClient->flowServices()->get_entry("LFM", $tvs_west, $tvw, $wef_counts, $unt_counts, "DEMAND");
+$h20_est = $soapClient->flowServices()->get_entry("LFM", $tvs_est, $mv_file_content_est, $wef_counts, $unt_counts, "LOAD");
+//$h20_est2 = $soapClient->flowServices()->get_entry("LFM", $tvs_est, $mv_file_content_est, $wef_counts, $unt_counts, "DEMAND");
+$h20_west = $soapClient->flowServices()->get_entry("LFM", $tvs_west, $mv_file_content_west, $wef_counts, $unt_counts, "LOAD");
+//$h20_west2 = $soapClient->flowServices()->get_entry("LFM", $tvs_west, $mv_file_content_west, $wef_counts, $unt_counts, "DEMAND");
 
-$occ_est = $soapClient->flowServices()->get_occ("LFM", $tvs_est, $tve, $wef_counts, $unt_counts, "LOAD");
-//$occ_est2 = $soapClient->flowServices()->get_occ("LFM", $tvs_est, $tve, $wef_counts, $unt_counts, "DEMAND");
-$occ_west = $soapClient->flowServices()->get_occ("LFM", $tvs_west, $tvw, $wef_counts, $unt_counts, "LOAD");
-//$occ_west2 = $soapClient->flowServices()->get_occ("LFM", $tvs_west, $tvw, $wef_counts, $unt_counts, "DEMAND");
+$occ_est = $soapClient->flowServices()->get_occ("LFM", $tvs_est, $mv_file_content_est, $wef_counts, $unt_counts, "LOAD");
+//$occ_est2 = $soapClient->flowServices()->get_occ("LFM", $tvs_est, $mv_file_content_est, $wef_counts, $unt_counts, "DEMAND");
+$occ_west = $soapClient->flowServices()->get_occ("LFM", $tvs_west, $mv_file_content_west, $wef_counts, $unt_counts, "LOAD");
+//$occ_west2 = $soapClient->flowServices()->get_occ("LFM", $tvs_west, $mv_file_content_west, $wef_counts, $unt_counts, "DEMAND");
 
 /*
 // ------------------------------------------------------------------------------------------
@@ -158,7 +165,7 @@ try {
 catch (Exception $e) {
 	$err = "Erreur, verifier les sauvegardes\n"."Exception reçue : ".$e->getMessage()."\n";
 	echo "Erreur, verifier les sauvegardes\n<br>";
-	echo 'Exception reçue : ',  $e->getMessage(), "\n<br>";
+	echo 'Exception reçue : ',  $e->getMessage(), "\n<br>\n<br>";
 }
 
 
