@@ -54,7 +54,7 @@ class bdd_tds {
             }
         -------------------------------------------------------------------------- */
 
-    public function get_tds(string $saison = "", $greve = false) {
+    public function get_tds(string $saison = "", bool $greve = false) {
         if (strcmp($saison, "") === 0) $saison = $this->saison;
         $table = "tds_$this->zone";
         if ($greve === true) $table = "tds_greve_$this->zone";
@@ -83,7 +83,7 @@ class bdd_tds {
                 ...
             }
          -------------------------------------------------------------------------- */
-    public function get_all_tds($greve = false) {
+    public function get_all_tds(bool $greve = false) {
         $table = "tds_$this->zone";
         if ($greve === true) $table = "tds_greve_$this->zone";
         $req = "SELECT * FROM $table"; 
@@ -137,7 +137,7 @@ class bdd_tds {
             sauve une saison avec toutes les vacs
             @param $tds_json - Object { "JX": {"nb_cds": 0, "cds", [...], "A": [...]...}, "J1": ...,...} }
         ------------------------------------------------------------------------------------------------------------ */
-    public function set_tds(string $saison, $tds_obj, bool $greve) {
+    public function set_tds(string $saison, $tds_obj, bool $greve = false) {
         $table = "tds_$this->zone";
         if ($greve === true) $table = "tds_greve_$this->zone";
         $vacs = array_keys(get_object_vars($tds_obj)); // array des vacs
@@ -155,16 +155,17 @@ class bdd_tds {
 
     public function duplicate_tds(string $nom, string $new_name) {
         $tds = $this->get_tds($nom);
+        $tds_greve = $this->get_tds($nom, true);
         $this->add_tds($new_name);
-        $table = "tds_$this->zone";
         $this->set_tds($new_name, $tds);
+        $this->set_tds($new_name, $tds_greve, true);
     }
 
    /*  ------------------------------------------------------------------------------------------------------------
         sauve une vac d'une saison
         @param $tds_json - Object { zone: "est", saison: "hiver_2024", tds_local: {"JX": ..., "J1": ...,...} }
     ------------------------------------------------------------------------------------------------------------ */
-    private function set_vac(string $saison, string $vac, $tds_obj, bool $greve) {
+    private function set_vac(string $saison, string $vac, $tds_obj, bool $greve = false) {
         $table = "tds_$this->zone";
         if ($greve === true) $table = "tds_greve_$this->zone";
         // get all keys but "nb_cds" and "cds" => get all sousvacs
@@ -194,7 +195,7 @@ class bdd_tds {
 
     }
 
-    public function add_sous_vac(string $saison, string $vac, string $nom_sous_vac, bool $greve) {
+    public function add_sous_vac(string $saison, string $vac, string $nom_sous_vac, bool $greve = false) {
         $table = "tds_$this->zone";
         if ($greve === true) $table = "tds_greve_$this->zone";
         $req = "UPDATE $table SET $vac = JSON_COMPACT(JSON_INSERT($vac,'$.$nom_sous_vac',JSON_ARRAY(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0))) WHERE nom_tds = '$saison'";
@@ -202,7 +203,7 @@ class bdd_tds {
         $stmt->execute();
     }
 
-    public function remove_sous_vac(string $saison, string $vac, string $nom_sous_vac, bool $greve) {
+    public function remove_sous_vac(string $saison, string $vac, string $nom_sous_vac, bool $greve = false) {
         $table = "tds_$this->zone";
         if ($greve === true) $table = "tds_greve_$this->zone";
         $req = "UPDATE $table SET $vac = JSON_REMOVE($vac, '$.$nom_sous_vac') WHERE nom_tds = '$saison'";
@@ -212,7 +213,7 @@ class bdd_tds {
 
     // @param $tds_json - Object { zone: "est", saison: "hiver_2024", tds_local: {"JX": ..., "J1": ...,...} }
     //  change only a key whose value is array
-    public function set_sousvac(string $saison, string $vac, string $sousvac, $tds_obj, bool $greve) {
+    public function set_sousvac(string $saison, string $vac, string $sousvac, $tds_obj, bool $greve = false) {
         $table = "tds_$this->zone";
         if ($greve === true) $table = "tds_greve_$this->zone";
         $value = implode(', ', $tds_obj->$vac->$sousvac); // string "0,0,1...,0" 96 valeurs
@@ -222,7 +223,7 @@ class bdd_tds {
     }
 
     // @return JSON string - {nb_cds: 1}
-    public function get_nb_cds(string $vac, bool $greve) {
+    public function get_nb_cds(string $vac, bool $greve = false) {
         $table = "tds_$this->zone";
         if ($greve === true) $table = "tds_greve_$this->zone";
         $req = "SELECT JSON_VALUE($vac, '$.nb_cds') AS nb_cds FROM $table";
@@ -236,7 +237,7 @@ class bdd_tds {
     // @param $vac      - String - "J1"
     // @param $saison   - Int    - 0 ou 1
     //  change nb_cds key 
-    public function change_cds(string $saison, string $vac, int $value, bool $greve) {
+    public function change_cds(string $saison, string $vac, int $value, bool $greve = false) {
         $table = "tds_$this->zone";
         if ($greve === true) $table = "tds_greve_$this->zone";
         $req = "UPDATE $table SET $vac = JSON_COMPACT(JSON_SET($vac, '$.nb_cds', $value)) WHERE nom_tds = '$saison'";

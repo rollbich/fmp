@@ -630,7 +630,7 @@ class tds_editor {
         })
         $('add_TDS_button').addEventListener('click', (e) => {
             const nom_saison = $('cree_saison').value;
-            const last4digits = parseInt(nom_tds_supp.slice(-4));
+            const last4digits = parseInt(nom_saison.slice(-4));
             if (last4digits > 2022) { 
                 this.add_tds(nom_saison);
             } else {
