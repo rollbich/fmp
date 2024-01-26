@@ -10,10 +10,34 @@ include_once("hour_config".$config."-journee.inc.php");
 include_once("path.inc.php");
 
 /*  ----------------------------------------------------
-		LFMM-FMP.FR : tâche CRON à 05h20, 6h20
-		08h20, 10h20, 12h20, 14h20, 16h20 et 18h20 loc
+		LFMM-FMP.FR : tâche CRON 
+		de 04:00 à 20:00 UTC
     ---------------------------------------------------- */
 
+/*  ----------------------------------------------------
+		Lit un fichier dans opt/bitnami/data/json
+    ---------------------------------------------------- */
+
+function get_data($url) {
+	
+	$ch = curl_init();
+    // prod : DATA_PATH = https://data.lfmm-fmp.fr/json = opt/bitnami/data/json
+	curl_setopt($ch, CURLOPT_URL, DATA_PATH."/$url");
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
+	/*------------------------------------------------------*/
+	// déactiver les 2 lignes suivantes sur le serveur live
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // si pb de certificat SSL force la requête
+	/*------------------------------------------------------*/
+	$result = curl_exec($ch);
+	
+	$status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	//echo "HTTP CODE:: " . $status_code;
+	//echo curl_error($ch);
+	if ($status_code == 404) return 404;
+	unset($ch);   // to use with php >= 8.0 : launch garbage mechanism for $ch
+	return $result;
+}
 
 /*  ------------------------------------------
 		Ecriture du fichier générique json
