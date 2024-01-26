@@ -78,7 +78,7 @@ $soapClient = new B2B();
 // données du fichier MV.json
 // $tve : données de la zone est et $tvw : données west
 
-$today = new DateTime('yesterday');
+$today = new DateTime('today');
 $today_d = $today->format('d');
 $today_y = $today->format('Y');
 $today_m = $today->format('m');
