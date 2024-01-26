@@ -25,20 +25,27 @@ include_once("path.inc.php");
 	------------------------------------------ */
 function write_json($arr, $zone, $type, $wef) {
 	
-	$date = new DateTime($wef);
-	$d = $date->format('Ymd');
-	$y = $date->format('Y');
-	$m = $date->format('m');
-	$h = $date->format('H');
-	$dir = WRITE_PATH."/json/$y/$m/";
-	
-	if (!file_exists($dir)) {
-		mkdir($dir, 0777, true);
+	try {
+		$date = new DateTime($wef);
+		$d = $date->format('Ymd');
+		$y = $date->format('Y');
+		$m = $date->format('m');
+		$h = $date->format('H');
+		$dir = WRITE_PATH."/json/$y/$m/";
+		
+		if (!file_exists($dir)) {
+			mkdir($dir, 0777, true);
+		}
+		
+		$fp = fopen($dir.$d.$type.$zone.$h."20.json", 'w');
+		fwrite($fp, json_encode($arr));
+		fclose($fp);
 	}
-	
-	$fp = fopen($dir.$d.$type.$zone.$h."20.json", 'w');
-	fwrite($fp, json_encode($arr));
-	fclose($fp);
+	catch (Exception $e) {
+		$err = "Erreur counts-reg-journee.php, verifier les sauvegardes\n"."Exception reçue : ".$e->getMessage()."\n";
+		echo "Erreur counts-reg-journee.php, verifier les sauvegardes\n<br>";
+		echo 'Exception reçue : ',  $e->getMessage(), "\n<br>\n<br>";
+	}
 
 }
 /*  ------------------------------------------
