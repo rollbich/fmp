@@ -96,6 +96,8 @@ function write_log($occ_text, $reg_text, $vol_text) {
 /* 						début du programme
 /*  ---------------------------------------------------------- */
 
+try {
+	
 $soapClient = new B2B();
 
 // récupère les données MV, duration, sustain, peak des TV LFMM
@@ -111,7 +113,7 @@ $url_est = "$today_y/$today_m/$today_y$today_m$today_d-mv_otmv-est.json";
 $mv_file_content_est = json_decode(get_data($url_est));
 echo "Fichier $today_y$today_m$today_d-mv_otmv-est.json OK<br>";
 
-$url_west = "$today_y/$today_m/$today_y$today_m$today_d-mv_otmv-est.json";
+$url_west = "$today_y/$today_m/$today_y$today_m$today_d-mv_otmv-ouest.json";
 $mv_file_content_west = json_decode(get_data($url_west));
 echo "Fichier $today_y$today_m$today_d-mv_otmv-ouest.json OK<br>";
 
@@ -175,8 +177,6 @@ foreach($occ_west1 as $key=>$val) {
     array_push($occ_west, $val);
 }
 */
-
-try {	
 	
 	write_json($occ_est, "est", "-Occ-", $wef_counts);
 	write_json($occ_west, "west", "-Occ-", $wef_counts);
