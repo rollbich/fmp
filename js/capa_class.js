@@ -1579,6 +1579,8 @@ async function show_capa_graph(containerId, day, zone, pc = 0, details_sv, schem
 	for(let i=0;i<rl-1;i++) {
 		minutes_ucesa += (get_minutes(data_series[i+1][0]) - get_minutes(data_series[i][0]))*data_series[i][1];
 	}
+	// 2 contrôleurs par position
+	minutes_ucesa *= 2;
 
 	// retourne les données devant être sauvées par save_uceso, ne sert pas sinon
 	return {"zone": z, "day":day, "jour": jour, "i1": i1, "uceso": uceso, "data_d": data_d, "max_sect": schema?.max_secteurs, "tvh": schema?.tv_h, "nb_pc": nbr, "minutes_ucesa": minutes_ucesa}
