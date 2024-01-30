@@ -51,12 +51,10 @@ require("../php/check_ok.inc.php");
 <body>
 <header>
 <?php include("../php/nav.inc.php"); ?>
-<h1>Stats TV</h1>
+<h1>Stats Rea</h1>
 <div id="help_frame" class="off">
 	<h2>Help</h2>
-	<p><span>Origine des données vols</span> :<br>Elles sont récupérées quotidiennement en B2B sur le serveur du NM et stockées sous forme de fichiers.</p>
-	<p><span>Le bouton "Nombre de Vols"</span> :<br>Il affiche le nombre de vols sur la plage sélectionnée</p>
-	<p><span>Le bouton "Graph année"</span> :<br>Il permet d'afficher le nombre de vols semaine sur l'année.</p>
+	<p><span>Le bouton "Ucesa / i1 / Max / PC"</span> :<br>Il affiche les stats sur la plage sélectionnée</p>
 	<button class="help_close_button pointer">Close</button>
 </div>
 <ul class="menu">
