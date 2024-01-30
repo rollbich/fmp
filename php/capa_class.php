@@ -104,11 +104,12 @@ class capa {
 	private $donnees;
 
     // $zone : "est" ou "ouest"
-    public function __construct(string $day, string $zone) {
+    public function __construct(string $day, string $zone, bool $use_bdd = false) {
 		$this->bdd = new bdd_tds($day, $zone);
 		$this->bdd_instr = new bdd_instr();
         $this->day = $day;
         $this->zone = $zone;
+		$this->use_bdd = $use_bdd;
         $this->zone_olaf = ($zone === "ouest") ? 'W' : 'E';
         $this->cycle = $this->bdd->get_cycle();   		// ["JX","J1","J3","S2","","","J2","S1","N","","",""]; 
 		$this->clean_cycle = $this->get_clean_cycle();	// ["JX","J1","J3","S2","J2","S1","N"]; 
