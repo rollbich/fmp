@@ -42,14 +42,21 @@ class stats_rea {
         result += "<div class='delay'>";
       result += `
         <table class="regulation sortable">
-            <thead><tr class="titre"><th class="space">Date</th><th>Jour</th><th>Max secteurs</th><th>i1</th><th>Heures ctrl</th></tr></thead>
+            <thead><tr class="titre"><th class="space">Date</th><th>Jour</th><th>Max secteurs</th><th>i1</th><th>Heures ctrl</th><th>Nb PC</th></tr></thead>
             <tbody>`;
         
         this.data.forEach(obj => {
             result += '<tr>';
             let heures_ucesa = Math.floor(obj.minutes_ucesa/60);
 		    let reste_minutes = obj.minutes_ucesa%60;
-            result +=`<td>${reverse_date(obj.jour)}</td><td>${obj.typejour}</td><td>${obj.maxsecteurs}</td><td>${obj.i1}%</td><td>${obj.minutes_ucesa} min / ${heures_ucesa}h${reste_minutes}</td>`;
+            let nbpc = 0;
+            const pc = JSON.parse(obj.nbpc);
+            Object.keys(pc).forEach(key => {
+                if (key != "N-1") {
+                    nbpc += pc[key];
+                }
+            });
+            result +=`<td>${reverse_date(obj.jour)}</td><td>${obj.typejour}</td><td>${obj.maxsecteurs}</td><td>${obj.i1}%</td><td>${obj.minutes_ucesa} min / ${heures_ucesa}h${reste_minutes}</td><td>${nbpc}</td>`;
             result += '</tr>';	
         }); 
         result += '</tbody></table>';
