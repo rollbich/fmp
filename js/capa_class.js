@@ -1574,7 +1574,14 @@ async function show_capa_graph(containerId, day, zone, pc = 0, details_sv, schem
 		myChart.setOption(option);
 	}
 
-	return {"zone": z, "day":day, "jour": jour, "i1": i1, "uceso": uceso, "data_d": data_d, "max_sect": schema.max_secteurs, "tvh": schema.tv_h, "nb_pc": nbr}
+	let minutes_ucesa = 0;
+	const rl = data_series.length;
+	for(let i=0;i<rl-1;i++) {
+		minutes_ucesa += (get_minutes(data_series[i+1][0]) - get_minutes(data_series[i][0]))*data_series[i][1];
+	}
+
+	// retourne les données devant être sauvées par save_uceso, ne sert pas sinon
+	return {"zone": z, "day":day, "jour": jour, "i1": i1, "uceso": uceso, "data_d": data_d, "max_sect": schema?.max_secteurs, "tvh": schema?.tv_h, "nb_pc": nbr, "minutes_ucesa": minutes_ucesa}
 	
 }
 
@@ -1603,7 +1610,7 @@ function get_i1(data_realise, data_uceso) {
 
 }
 
-async function save_uceso(zone, day, jour, i1, uceso, realise, maxsecteurs, tvh, nbpc) {
+async function save_uceso(zone, day, jour, i1, uceso, realise, maxsecteurs, tvh, nbpc, minutes_ucesa) {
 	const save = {
 		"fonction": "save_uceso", 
 		"zone": zone, 
@@ -1614,7 +1621,8 @@ async function save_uceso(zone, day, jour, i1, uceso, realise, maxsecteurs, tvh,
 		"realise":JSON.stringify(realise),
 		"i1":i1, 
 		"tvh": JSON.stringify(tvh),
-		"nbpc": JSON.stringify(nbpc)	
+		"nbpc": JSON.stringify(nbpc),
+		"minutes_ucesa": minutes_ucesa
 	}	
 	var data = {
 		method: "post",

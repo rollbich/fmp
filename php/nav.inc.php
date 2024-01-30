@@ -65,6 +65,14 @@
           <a class="navbar-item" href="../visu">
             Visu
           </a>
+          <?php
+          if ($_SESSION['login_bureau'] === true) {
+            echo '
+            <a class="navbar-item" href="../stats_rea">
+            Stats TV
+            </a>';
+          }
+          ?>
           <a class="navbar-item" href="../confs">
             Confs
           </a>
