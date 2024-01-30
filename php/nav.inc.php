@@ -69,7 +69,7 @@
           if ($_SESSION['login_bureau'] === true) {
             echo '
             <a class="navbar-item" href="../stats_rea">
-            Stats TV
+            Stats rea
             </a>';
           }
           ?>
