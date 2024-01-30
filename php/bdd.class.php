@@ -368,12 +368,32 @@ class bdd_tds {
         $stmt->execute();
     }
 
-    public function save_uceso(string $day, string $typejour, int $i1, string $uceso, string $realise, int $maxsecteurs, string $tvh, string $nbpc) {
-        $table = "i1_$this->zone";
-        $req = "INSERT IGNORE INTO $table (jour, typejour, uceso, realise, i1, maxsecteurs, tvh, nbpc) VALUES ('$day', '$typejour', JSON_COMPACT('$uceso'), JSON_COMPACT('$realise'), '$i1', '$maxsecteurs', JSON_COMPACT('$tvh'), JSON_COMPACT('$nbpc'))"; 
-        $stmt = Mysql::getInstance()->prepare($req);
-        $stmt->execute();
-    }
+    /*  ---------------------------------------------------------------
+           uceso / Realise / i1
+        --------------------------------------------------------------- */
+
+        public function save_uceso(string $day, string $typejour, int $i1, string $uceso, string $realise, int $maxsecteurs, string $tvh, string $nbpc, int $minutes_ucesa) {
+            $table = "i1_$this->zone";
+            $req = "INSERT IGNORE INTO $table (jour, typejour, uceso, realise, i1, maxsecteurs, tvh, nbpc, minutes_ucesa) VALUES ('$day', '$typejour', JSON_COMPACT('$uceso'), JSON_COMPACT('$realise'), '$i1', '$maxsecteurs', JSON_COMPACT('$tvh'), JSON_COMPACT('$nbpc'), '$minutes_ucesa')"; 
+            $stmt = Mysql::getInstance()->prepare($req);
+            $stmt->execute();
+        }
+    
+        public function get_ucesa(string $start_day, string $end_day) {
+            $table = "i1_$this->zone";
+            $req = "SELECT jour, typejour, realise, i1, maxsecteurs, tvh, nbpc, minutes_ucesa FROM $table WHERE jour <= '$end_day' AND jour >= '$start_day'"; 
+            $stmt = Mysql::getInstance()->prepare($req);
+            $stmt->execute();
+            $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            echo json_encode($resultat);
+        }
+    
+        public function set_minutes_ucesa(string $day, int $minutes) {
+            $table = "i1_$this->zone";
+            $req = "UPDATE $table SET minutes_ucesa = '$minutes' WHERE jour = '$day'"; 
+            $stmt = Mysql::getInstance()->prepare($req);
+            $stmt->execute();
+        }
 
     /*  ---------------------------------------------------------------
             Répartition

@@ -37,9 +37,6 @@ if ($contentType === "application/json") {
             case "change_cds":
                 $bdd->change_cds($content->saison, $content->vac, (int) $content->nbcds, (bool) $content->greve);
                 break;
-            case "save_uceso":
-                $bdd->save_uceso($content->day, $content->typejour, (int) $content->i1, $content->uceso, $content->realise, (int) $content->maxsecteurs, $content->tvh, $content->nbpc);
-                break;
             case "add_plage":
                 $bdd->add_plage($content->debut, $content->fin, $content->tds);
                 break;
@@ -66,6 +63,15 @@ if ($contentType === "application/json") {
                 break;
             case "change_type_repartition":
                 $bdd->change_type_repartition($content->nom_tds, $content->vac, $content->type);
+                break;
+            case "save_uceso":
+                $bdd->save_uceso($content->day, $content->typejour, (int) $content->i1, $content->uceso, $content->realise, (int) $content->maxsecteurs, $content->tvh, $content->nbpc, (int) $content->minutes_ucesa);
+                break;
+            case "get_ucesa":
+                $bdd->get_ucesa($content->start_day, $content->end_day);
+                break;
+            case "set_minutes_ucesa":
+                $bdd->set_minutes_ucesa($content->day, $content->minutes_ucesa);
                 break;
             default: 
                 echo "";
