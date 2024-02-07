@@ -49,7 +49,8 @@ function write_json($arr, $zone, $type, $wef) {
 <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="get" style="display: inline">
 	<input type="date" name="day" id="day" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="2023-01-01" max="2030-12-31">
     <select id="request" name="request" class="select">
-		<option selected value="get AUP chain">Get AUP chain</option>
+		<option selected value="get draft RSA">Get draft RSA</option>
+		<option value="get AUP chain">Get AUP chain</option>
 		<option value="get AUP">Get AUP</option>
 		<option value="get EAUP chain">get EAUP chain</option>
 		<option value="get EAUP rsa">get EAUP rsa</option>
@@ -68,6 +69,11 @@ if (isset($_GET) && !empty($_GET['day'])) {
 	echo "<br><br>Requested date: ".$day."<br>";
 	$soapClient = new B2B();
 	$date = new DateTime($day);
+	if ($request == "get draft RSA") {
+		echo "Request: $request<br><br>";
+		$eaup_rsa = $soapClient->airspaceServices()->get_draft_RSA($date, array('LF*','LI*'));
+		echo json_encode($eaup_rsa);
+	}
 	if ($request == "get AUP chain") {
 		echo "Request: $request<br><br>";
 		//$aup_chain = $soapClient->airspaceServices()->get_AUP_chain($date, array("LFFAZAMC","LIRRZAMC"));

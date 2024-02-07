@@ -13,14 +13,27 @@ function get_aup($day) {
     return $eaup_rsa;
 }
 
+function get_draft($day) {
+    $date = new DateTime($day);
+    $soapClient = new B2B();
+    $eaup_rsa = $soapClient->airspaceServices()->get_draft_RSA($date, array('LF*','LI*'));
+    return $eaup_rsa;
+}
+
 $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
 if ($contentType === "application/json") {
 	$content = trim(file_get_contents("php://input"));
 	$decoded = json_decode($content, true); // array
 	
 	$day = $decoded["day"]; // Y-m-d
+    $type = $decoded["type"]; // "draft" ou "actual"
 
-	$resultat = get_aup($day);
+    if (strcmp($type,"draft") === 0) {
+        $resultat = get_draft($day);
+    } else {
+        $resultat = get_aup($day);
+    }
+	
 	echo json_encode($resultat);
 	
 } else { 
