@@ -41,6 +41,13 @@
 				$("help_frame").classList.remove('off');
 			});
 
+			$('bouton_draft').addEventListener('click', async e => {
+				const day = $('day').value;
+				const tomorrow = addDays_toString(day, 1);
+				const lfmm_aup = new aup(tomorrow);
+				const result = await lfmm_aup.init_draft();
+			});
+
             $('bouton_aup').addEventListener('click', async e => {
 				const day = $('day').value;
 				const lfmm_aup = new aup(day);
@@ -73,6 +80,7 @@
 	<button class="help_close_button pointer">Close</button>
 </div>
 <ul class="menu">
+	<li id="bouton_draft" class="pointer"><span>Draft J+1</span></li>
     <li id="bouton_aup" class="pointer"><span>AUP</span></li>
 	<li id="bouton_uup" class="pointer"><span>Last UUP</span></li>
 	<li class="pointer"><span id="bouton_conf">Date :</span><input type="date" id="day" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="<?php echo date("Y-m-d", strtotime("2023-06-01"));?>" max="<?php echo date("Y-m-d", strtotime("+1 day"));?>"></li>

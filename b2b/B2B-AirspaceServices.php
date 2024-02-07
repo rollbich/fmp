@@ -251,5 +251,88 @@ class AirspaceServices extends Service {
 		return $planned_rsa;
     }
 
+    public function get_draft_EAUP_rsa(DateTime $chainDate, Array $rsaDesignator) {
+        
+        $now = new \DateTime('tomorrow');
+
+        $params = array(
+            'sendTime' => $now->format('Y-m-d H:i:s'),
+            'implicit' => true,
+            'explicit' => true,
+            'rsaDesignators' => $rsaDesignator, // array('LF*') par ex
+            'dayOfOperation' => $chainDate->format('Y-m-d') 
+        );
+                            
+        try {
+            $output = $this->getSoapClient()->__soapCall('retrieveDraftEAUPRSAs', array('parameters'=>$params));
+            if ($output->status !== "OK") {
+                $erreur = $this->getFullErrorMessage("Erreur get_draft_EAUP : ");
+                $this->send_mail($erreur);
+            }
+            return $this->getSoapClient()->__getLastResponse();  // Returns the XML received in the last SOAP response sous forme de string
+        }
+
+        catch (Exception $e) {
+            echo 'Exception reçue get_draft_EAUP: ',  $e->getMessage(), "\n<br>";
+            $erreur = $this->getFullErrorMessage("Erreur : get_draft_EAUP");
+            echo $erreur."\n<br>";
+            $this->send_mail($erreur);
+        }
+    }
+
+    public function get_draft_RSA(DateTime $chainDate, Array $rsaDesignator) {
+               
+        $eaup_rsa = $this->get_draft_EAUP_rsa($chainDate, $rsaDesignator);
+
+        /* sauve le fichier xml pour le voir*/
+        $document = new DOMDocument();    
+        $document->loadXML($eaup_rsa); 
+        $document->save("coucou.xml");
+        /**/
+
+		$xml = new \SimpleXMLElement($eaup_rsa);
+		$aixmNS = "http://www.aixm.aero/schema/5.1.1";
+		$xml->registerXPathNamespace('adrmsg', "http://www.eurocontrol.int/cfmu/b2b/ADRMessage");
+        $xml->registerXPathNamespace('gml', "http://www.opengis.net/gml/3.2");
+        $xml->registerXPathNamespace('aixm', $aixmNS);
+		
+        $airspaces_asXML = [];
+        $other_designators = ["LFT24", "LITSA72", "LIR64", "LID5"];
+        foreach ($other_designators as $design) {
+            array_push($airspaces_asXML, $xml->xpath('//aixm:Airspace//aixm:AirspaceTimeSlice[starts-with(aixm:designator,"' . $design . '")]/../..'));
+        }
+        $LFMM_designators = ["LFR108", "LFT41", "LFT42", "LFT46", "LFD54", "LFT43", "LFT44", "LFR138", "LFR221", "LFR222"];
+        foreach ($LFMM_designators as $design) {
+            array_push($airspaces_asXML, $xml->xpath('//aixm:Airspace//aixm:AirspaceTimeSlice[starts-with(aixm:designator,"' . $design . '")]/../..'));
+        }
+       
+        $airspaces = array();
+		foreach ($airspaces_asXML as $air) {
+            foreach ($air as $a) {
+                $airspaces[] = new Airspace($a);
+            }
+        }
+        
+		$planned_rsa = [];
+		foreach ($airspaces as $air) {
+            $d = $air->getDesignator();
+            if (substr($d, -1) !== "Z") { // supprime les FBZ
+                $rsa = new StdClass();
+                $rsa->designator = $air->getDesignator();
+                $rsa->beginDate = substr($air->getTimeBegin(), 0, 10);
+                $rsa->begin = substr($air->getTimeBegin(), 11, 5);
+                $rsa->endDate = substr($air->getTimeEnd(), 0, 10);
+                $rsa->end = substr($air->getTimeEnd(), 11, 5);
+                $rsa->lowerLimit = $air->getLowerLimit();
+                if ($rsa->lowerLimit !== "GND") $rsa->lowerLimit = "FL".$rsa->lowerLimit;
+                $rsa->upperLimit = $air->getUpperLimit();
+                if ($rsa->upperLimit !== "UNL") $rsa->upperLimit = "FL".$rsa->upperLimit;
+                array_push($planned_rsa, $rsa);
+            }
+		}
+		return $planned_rsa;
+    }
+    
+
 }
 ?>
