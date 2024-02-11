@@ -178,9 +178,19 @@ class ouverture extends schema_rea {
 				el.innerHTML = res2;
                 $('popup-cree-conf').classList.remove('off');
                 $('bouton_creer_conf').addEventListener('click', async (e) => {
-                    const n = $('nom').value;
+                    const n = $('nom').value; // N5H2A
+                    const reste = n.substring(1); // 5H2A
+                    const Ereste = "E" + reste;
+                    if (n.substring(0,1) !== "N") {
+                        show_popup(`${n} non créée`, `Le nom de la conf<br> doit commencer par N`);
+                        return;
+                    }
                     if (confs_name.includes(n)) {
                         show_popup('Add Confs', `Conf non créée<br>Ce nom existe déjà`);
+                        return;
+                    }
+                    if (confs_name.includes(Ereste)) {
+                        show_popup(`${n} non créée`, `La conf NM ${Ereste} existe déjà`);
                         return;
                     }
                     const json = await this.get_bdd_confs(this.z);
