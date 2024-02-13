@@ -307,82 +307,6 @@ class FlowServices extends Service {
         }	
     }
 
-    // PHP par défaut : objets sont passés par référence / array par copie
-    // change for php 8.1 : les paramètres optionnels doivent être placés après les paramètres obligatoires
-    // $reg est un array pour l'export Excel
-    public function get_full_regulations(string $area, string $wef_regs, string $unt_regs, $json_reg, & $reg, $situation_ATFCM = null) {
-        
-        try {
-            $regulations = $this->get_regulations($area, $wef_regs, $unt_regs);
-            if ($situation_ATFCM == null) $situation_ATFCM = $this->get_ATFCM_situation();
-            $situation = $this->get_area_situation($situation_ATFCM, $area);
-            for ($i=0; $i<count($regulations->data->regulations->item); $i++) {
-                $r = $regulations->data->regulations->item[$i];
-                $id = $r->regulationId;
-                $lastUpdateDate = substr($r->lastUpdate->userUpdateEventTime, 0, 10);
-                $lastUpdateTime = substr($r->lastUpdate->userUpdateEventTime, 11, 5);
-                $delay = 0;
-                $nbrImpactedFlight = 0;
-                foreach ($situation as $regul) {
-                    if ($regul[0] == $id) {
-                        $delay = (int) $regul[1];
-                        $nbrImpactedFlight = (int) $regul[2];
-                    }
-                }
-                $tvset = $r->delayTVSet;
-                $c = $r->initialConstraints;
-                if (is_array($c)) {
-                    // pour export Excel
-                    for($j=0; $j<count($c); $j++) {
-                        $date = substr($r->initialConstraints[$j]->constraintPeriod->wef, 0, 10);
-                        $hdeb = substr($r->initialConstraints[$j]->constraintPeriod->wef, -5);
-                        $hfin = substr($r->initialConstraints[$j]->constraintPeriod->unt, -5);
-                        array_push($reg[$tvset], array($r->regulationId, $r->location->id, $date, $hdeb, $hfin, $r->reason, $r->initialConstraints[$j]->normalRate, $r->initialConstraints[$j]->pendingRate, $r->initialConstraints[$j]->equipmentRate, $delay, $nbrImpactedFlight, $r->delayTVSet, $r->lastUpdate->userUpdateType, $lastUpdateDate, $lastUpdateTime));
-                    }
-                    // pour export json
-                    $obj = new stdClass();
-                    $obj->regId = $r->regulationId;
-                    $obj->tv = $r->location->id;
-                    $obj->lastUpdate = $r->lastUpdate;
-                    $obj->applicability = $r->applicability;
-                    $obj->constraints = $r->initialConstraints;
-                    $obj->reason = $r->reason;
-                    $obj->delay = $delay;
-                    $obj->impactedFlights = $nbrImpactedFlight;
-                    $obj->TVSet = $r->delayTVSet;
-                    array_push($json_reg->$tvset, $obj);
-                } else {
-                    // pour export Excel
-                    $init_c = array($r->initialConstraints->constraintPeriod, $r->initialConstraints->normalRate, $r->initialConstraints->pendingRate, $r->initialConstraints->equipmentRate);
-                    $date = substr($r->initialConstraints->constraintPeriod->wef, 0, 10);
-                    $hdeb = substr($r->initialConstraints->constraintPeriod->wef, -5);
-                    $hfin = substr($r->initialConstraints->constraintPeriod->unt, -5);
-                    array_push($reg[$tvset], array($r->regulationId, $r->location->id, $date, $hdeb, $hfin, $r->reason, $r->initialConstraints->normalRate, $r->initialConstraints->pendingRate, $r->initialConstraints->equipmentRate, $delay, $nbrImpactedFlight, $r->delayTVSet, $r->lastUpdate->userUpdateType, $lastUpdateDate, $lastUpdateTime));
-                    // pour export json
-                    $obj = new stdClass();
-                    $obj->regId = $r->regulationId;
-                    $obj->tv = $r->location->id;
-                    $obj->lastUpdate = $r->lastUpdate;
-                    $obj->applicability = $r->applicability;
-                    $obj->constraints = array($r->initialConstraints);
-                    $obj->reason = $r->reason;
-                    $obj->delay = $delay;
-                    $obj->impactedFlights = $nbrImpactedFlight;
-                    $obj->TVSet = $r->delayTVSet;
-                    array_push($json_reg->$tvset, $obj);
-                }
-            }
-        }
-        
-        catch (Exception $e) {
-            echo 'Exception reçue get_full_regulations: ',  $e->getMessage(), "<br>\n";
-            $erreur = $this->getFullErrorMessage("Erreur get_full_regulations");
-            echo $erreur."<br>\n";
-            $this->send_mail($erreur);
-        }
-            
-    }
-
     public function get_full_regulations_json(string $area, string $wef_regs, string $unt_regs, $json_reg, $situation_ATFCM = null) {
         
         try {
@@ -403,6 +327,9 @@ class FlowServices extends Service {
                     }
                 }
                 $tvset = $r->delayTVSet;
+                if (str_contains($tvset, 'APP')) {
+                    $tvset = "LFMMAPP";
+                }
                 $c = $r->initialConstraints;
                 if (is_array($c)) {
                     $obj = new stdClass();
@@ -414,7 +341,7 @@ class FlowServices extends Service {
                     $obj->reason = $r->reason;
                     $obj->delay = $delay;
                     $obj->impactedFlights = $nbrImpactedFlight;
-                    $obj->TVSet = $r->delayTVSet;
+                    $obj->TVSet = $tvset;
                     array_push($json_reg->$tvset, $obj);
                 } else {
                     $obj = new stdClass();
@@ -426,7 +353,7 @@ class FlowServices extends Service {
                     $obj->reason = $r->reason;
                     $obj->delay = $delay;
                     $obj->impactedFlights = $nbrImpactedFlight;
-                    $obj->TVSet = $r->delayTVSet;
+                    $obj->TVSet = $tvset;
                     array_push($json_reg->$tvset, $obj);
                 }
             }
