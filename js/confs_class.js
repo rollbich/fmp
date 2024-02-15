@@ -197,7 +197,7 @@ class conf {
 	}
 
 	/*  --------------------------------------------------------------------------------------------- 
-	        Supprime les confs déjà existantes du fichier confs supplémentaire
+	        Sauve les confs du fichier confs supplémentaire
 			@params {string} "est" ou "ouest"
 	    --------------------------------------------------------------------------------------------- */
 	async clean_conf_file() {

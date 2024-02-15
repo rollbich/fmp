@@ -73,6 +73,48 @@ class ouverture extends schema_rea {
 		fetch(url, data);
 	}
 
+    /*  --------------------------------------------------------------------------------------------- 
+	        Affiche une popup avec les confs NM + confs BDD pour un nombre de TV donné
+			@params {string} nbr_regroup : nombre de TV de la conf
+	    --------------------------------------------------------------------------------------------- */
+    show_popup_conf(nbr_regroup) {
+        // Supprime la popup si elle existe déjà pour permettre la mise à jour sinon 2 id identiques => erreur
+        if ($('popup-cree-conf') != null) $('popup-cree-conf').remove();
+        const el = document.createElement('div');
+        el.setAttribute('id', 'popup-cree-conf');
+        el.setAttribute('class', 'popup-conf1 off');
+        let res2 = `<h2 class="center">Conf - ${nbr_regroup} secteurs</h2>`;
+        res2 += `<div class="popup-conf2">`;
+        res2 += "<div id='add_conf'>";
+        res2 += `
+        <table class="">
+            <thead><tr class="titre"><th>Conf</th><th colspan="15"></th></tr></thead>
+            <tbody>`;
+            for(let conf in this.confs[nbr_regroup]) {
+                let arr_tv = this.confs[nbr_regroup][conf];
+                arr_tv = tri_salto(arr_tv, this.z);
+                res2 += `<tr><td style="background: var(--color-2019);">${conf}</td>`; 
+                arr_tv.forEach(tv => {
+                    res2 +=`<td>${tv}</td>`;
+                })
+                res2 += '</tr>';	
+            }
+        res2 += '</tbody></table>';
+        res2 += '</div><div class="center"><button id="close_creer_conf">Close</button></div>';
+        let parentDiv = document.getElementById("glob_container");
+        parentDiv.insertBefore(el, $('result'));
+        el.innerHTML = res2;
+        $('popup-cree-conf').classList.remove('off');
+        $('close_creer_conf').addEventListener('click', e => {
+            el.remove();
+        })
+        const div = $('add_conf');
+        div.scrollTo({
+            top: div.scrollHeight,
+            behavior: 'smooth'
+      });
+    }
+
 /*  ------------------------------------------------------------------------------
 	  Affiche la table du schema d'ouvertures dans le container
         @params {boolean} bool - false accès de base
@@ -85,9 +127,7 @@ class ouverture extends schema_rea {
                         <tr class="titre"><th>Début</th><th>Fin</th><th>Nb sect.</th><th>Conf</th><th class="colspan">Confs</th></tr>
                     </thead>
                     <tbody>`;                 
-        this.schema.ouverture.forEach(row => {
-            //console.log("Row");
-            //console.log(row); 
+        this.schema.ouverture.forEach(row => { 
             res += '<tr>'; 
             for(let j=1;j<4;j++) { res += `<td>${row[j]}</td>`; }	
             const regroupements = [];
@@ -98,6 +138,7 @@ class ouverture extends schema_rea {
             const nb_regroupements = regroupements.length;
             for(let conf in this.confs[nb_regroupements]) {
                 const arr_tv = this.confs[nb_regroupements][conf];
+                console.log(this.confs);
                 if (regroupements.sort().toString() == arr_tv.sort().toString()) {
                     c = conf;
                     break;
@@ -118,7 +159,6 @@ class ouverture extends schema_rea {
             }
            		
             row[4].forEach(tv => {
-                //console.log("R: "+row[1]+" "+row[2]+"  tv: "+tv[0]);
                 let r = this.get_ouverture_totale(tv[0], time_to_min(row[1]), time_to_min(row[2]));
                 const color = get_group_color(tv[0], this.z);
                 res += `<td title="${tv[1]}" class="tv" data-tv="${tv[0]}" data-deb="${r[0]}" data-fin="${r[1]}" style="background: ${color}">${tv[0]}</td>`;
@@ -134,75 +174,87 @@ class ouverture extends schema_rea {
             this.show_table_ouverture_par_position();
         });
         const td_add = document.querySelectorAll('[data-nbregr]');
-        td_add.forEach(td_el => {
-
-        })
         if (td_add.length === 0) return;
         
 		td_add.forEach(td_el => {
-            td_el.addEventListener('click', (event) => {
+            td_el.addEventListener('click', async (event) => {
                 const exist = $('popup-cree-conf');
                 if (!!exist === true) exist.remove();
                 let nbr_regroup = td_el.dataset.nbregr;
                 let tvs = td_el.dataset.tvs.split(",");
                 tvs = tri_salto(tvs, this.z);
-                const confs_name = [];
-                const el = document.createElement('div');
-				el.setAttribute('id', 'popup-cree-conf');
-                el.setAttribute('class', 'popup-conf1 off');
-                let res2 = `<h2 class="center">Add conf - ${nbr_regroup} secteurs</h2>`;
-                res2 += `<div class="popup-conf2">`;
-                res2 += `<label for="nom" class="">Choisissez un nom : </label>`;
-                res2 += `<input type="text" id="nom" value="" maxlength="6">`;
-                res2 += `<button id="bouton_creer_conf" style="margin-left: 5px; padding-bottom: 2px;">Ok</button>`;
-                res2 += `<div style="margin-bottom: 5px;">${tvs.join("-")}</div>`;
-                res2 += "<div id='add_conf'>";
-                res2 += `
-                <table class="">
-                    <thead><tr class="titre"><th>Conf</th><th colspan="15"></th></tr></thead>
-                    <tbody>`;
-                    for(let conf in this.confs[nbr_regroup]) {
-                        confs_name.push(conf);
-                        let arr_tv = this.confs[nbr_regroup][conf];
-                        arr_tv = tri_salto(arr_tv, this.z);
-                        res2 += `<tr><td style="background: var(--color-2019);">${conf}</td>`; 
-                        arr_tv.forEach(tv => {
-                            res2 +=`<td>${tv}</td>`;
-                        })
-                        res2 += '</tr>';	
+                let confs_name = Object.keys(this.confs[nbr_regroup]);
+                this.show_popup_conf(nbr_regroup); 
+                let fir;
+                let fir2A;
+                let fir3A;
+                if (this.z === "est") {
+                    fir = ["SBAM", "MNST", "BTAJ", "SAB", "BAM", "SBM", "MN", "ST", "AJ", "BT"];
+                    fir2A = ["MNST", "BTAJ"];
+                    fir3A = ["MNST", "BT", "AJ"];
+                } else { 
+                    fir = ["MALY", "LYO", "MOLYO", "LE", "LOLS", "LELS", "LOLE", "LS", "LO", "MO", "ML", "MOML"];
+                    fir2A = ["LYO", "MOML"];
+                    fir3A = ["LOLS", "LE", "MOML"];
+                }
+
+                let nbr_fir = 0;
+                let fir_letter = "B";
+                tvs.forEach(tv => {
+                    if (fir.includes(tv)) nbr_fir++;
+                });
+                if (nbr_fir === 1) fir_letter = "A";
+                if (nbr_fir === 2) {
+                    let ok = true;
+                    fir2A.forEach(tv => {
+                        if (tvs.includes(tv) === false) ok = false;
+                    })
+                    if (ok === true) fir_letter = "A";
+                }
+                if (nbr_fir === 3) {
+                    let ok = true;
+                    fir3A.forEach(tv => {
+                        if (tvs.includes(tv) === false) ok = false;
+                    })
+                    if (ok === true) fir_letter = "A";
+                }
+
+                const nbr_uir = tvs.length - nbr_fir;
+
+                let nbr_char1 = 65; // A=65 Z=90
+                let nbr_char2 = 65; // A=65 Z=90
+                let n;
+                let reste;
+                let Ereste;
+                let ok;
+                do {
+                    ok = true;
+                    let str_char1 = String.fromCharCode(nbr_char1);
+                    let str_char2 = String.fromCharCode(nbr_char2);
+                    if (nbr_fir === 0) n = `N${nbr_uir}${str_char1}${str_char2}`; else n = `N${nbr_uir}${str_char1}${str_char2}${nbr_fir}${fir_letter}`; // N5AA ou N5AA2A
+                    reste = n.substring(1); // N5H2A => 5H2A
+                    Ereste = "E" + reste;
+                    if (nbr_char2 < 90) {
+                        nbr_char2++;
                     }
-                res2 += '</tbody></table>';
-                res2 += '</div><div class="center"><button id="close_creer_conf">Close</button></div>';
-                let parentDiv = document.getElementById("glob_container");
-				parentDiv.insertBefore(el, $('result'));
-				el.innerHTML = res2;
-                $('popup-cree-conf').classList.remove('off');
-                $('bouton_creer_conf').addEventListener('click', async (e) => {
-                    const n = $('nom').value; // N5H2A
-                    const reste = n.substring(1); // 5H2A
-                    const Ereste = "E" + reste;
-                    if (n.substring(0,1) !== "N") {
-                        show_popup(`${n} non créée`, `Le nom de la conf<br> doit commencer par N`);
-                        return;
-                    }
-                    if (confs_name.includes(n)) {
-                        show_popup('Add Confs', `Conf non créée<br>Ce nom existe déjà`);
-                        return;
-                    }
-                    if (confs_name.includes(Ereste)) {
-                        show_popup(`${n} non créée`, `La conf NM ${Ereste} existe déjà`);
-                        return;
-                    }
-                    const json = await this.get_bdd_confs(this.z);
-                    json[nbr_regroup][n] = tvs;
-                    console.log("Creation");
-                    console.log(json);
-                    await this.update_conf_file(json, this.z);
-                    show_popup('Add Confs', `Conf ${n} créée`);
-                })
-                $('close_creer_conf').addEventListener('click', e => {
-                    el.remove();
-                })
+                    if (nbr_char2 === 90 && nbr_char1 < 90) nbr_char1++;
+                    console.log(n);
+                    console.log(confs_name);
+                    if (confs_name.includes(n)) { console.log(n+" existe déjà"); ok = false; }
+                    if (confs_name.includes(Ereste)) ok = false;
+                } while (ok === false)
+                console.log("CONF CHOISIE: "+n);
+
+                const json = await this.get_bdd_confs(this.z);
+                json[nbr_regroup][n] = tvs;
+                this.confs[nbr_regroup][n] = tvs;
+                this.show_popup_conf(nbr_regroup);
+                console.log("Creation");
+                console.log(json);
+                await this.update_conf_file(json, this.z);
+                this.show_ouverture(this.confs, true);
+                show_popup('Add Confs', `Conf ${n} créée`);
+                
             })
         })
     }
@@ -295,9 +347,6 @@ class ouverture extends schema_rea {
 	        await reg.init();
             const tvset = this.zone === "AE" ? "LFMMFMPE" : "LFMMFMPW";
             const regbytv = reg.get_regbytv();
-
-            console.log("regreg");
-            console.log(regbytv);
             
             const dd = this.day.split("-");
             const rd = remove_hyphen_date(this.day);
@@ -317,10 +366,6 @@ class ouverture extends schema_rea {
                 mv_otmv = await get_data(file_name);
                 show_popup(`MV/OTMV du jour indisponibles`, `Date des MV/OTMV : ${default_date_MV}`);
             }
-            console.log("otmv 4f");
-            console.log(mv_otmv["OTMV"]);
-            console.log("MV 4F");
-            console.log(mv_otmv["MV"]);
     
             for (const td of tds) {
                 let deb = td.dataset.deb;
@@ -387,8 +432,6 @@ class ouverture extends schema_rea {
                             }
                         });	
 
-                        //let peak = o[tv][0][2];
-                        //let sustain = o[tv][0][3];
                         let full_tv = "LFM"+tv;
                         let peak = mv_otmv["OTMV"][full_tv][0]["otmv"]["peak"]["threshold"];	
                         let sustain = mv_otmv["OTMV"][full_tv][0]["otmv"]["sustained"]["threshold"];				
@@ -449,15 +492,12 @@ class ouverture extends schema_rea {
         for(let j=0;j<this.schema["tv_h"][tv].length;j++) {
             let Hd = this.schema["tv_h"][tv][j][0]-this.ouv_tech;
             let Hf = this.schema["tv_h"][tv][j][1]+this.ouv_tech;
-            //console.log("deb: "+deb+"   Hd: "+Hd+" / fin: "+fin+"   Hf: "+Hf);
             if (deb >= Hd && fin <= Hf) {
-                //console.log("Trouvé "+tv);
                 datad = min_to_time(this.schema["tv_h"][tv][j][0]);
                 dataf = min_to_time(this.schema["tv_h"][tv][j][1]);
                 break;
             } 																		
         }
-        //console.log("Ouv Tot return: "+datad+" "+dataf);
         return [datad, dataf];
     }
 
