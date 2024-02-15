@@ -63,8 +63,13 @@
 
             $('bouton_save_uceso').addEventListener('click', async e => {
 				console.log(capa_graph);
-				await save_uceso(capa_graph.zone, capa_graph.day, capa_graph.jour, capa_graph.i1, capa_graph.uceso, capa_graph.data_d, capa_graph.max_sect, capa_graph.tvh, capa_graph.nb_pc, capa_graph.minutes_ucesa);
-				show_popup("Sauvegarde effectu&eacute;e!", `Jour : ${capa_graph.day}`);
+				// Si pas de donnée réalisé
+				if (capa_graph.data_d.length === 0) {
+					show_popup("Fichier realis&eacute; absent!", `Jour : ${capa_graph.day}`);
+				} else {
+					await save_uceso(capa_graph.zone, capa_graph.day, capa_graph.jour, capa_graph.i1, capa_graph.uceso, capa_graph.data_d, capa_graph.max_sect, capa_graph.tvh, capa_graph.nb_pc, capa_graph.minutes_ucesa);
+					show_popup("Sauvegarde effectu&eacute;e!", `Jour : ${capa_graph.day}`);
+				}
             });
 			
 		});		
