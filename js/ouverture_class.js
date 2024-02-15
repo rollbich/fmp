@@ -138,7 +138,6 @@ class ouverture extends schema_rea {
             const nb_regroupements = regroupements.length;
             for(let conf in this.confs[nb_regroupements]) {
                 const arr_tv = this.confs[nb_regroupements][conf];
-                console.log(this.confs);
                 if (regroupements.sort().toString() == arr_tv.sort().toString()) {
                     c = conf;
                     break;
