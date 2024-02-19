@@ -92,8 +92,28 @@ class FlightServices extends Service {
                 $obj->requestReceptionTime = $res->requestReceptionTime;
                 $obj->status = $res->status;
             }
+            // Sauve les données des blocs RAE, SBAM, GY, AB, EK
             array_push($obj->LFMMFMPE, array($tv, $date->format('Y-m-d'), count($res->data->flights)));
-            if ($tv == "LFMRAE") $obj->VOLS_RAE = $res->data->flights;
+            // Sauve le détail des vols RAE
+            if ($tv == "LFMRAE") {
+                $result = [];
+                foreach($res->data->flights as $flight) {
+                    $obj_vol = new stdClass();
+                    $obj_vol->aircraftId = $flight->flight->flightId->keys->aircraftId;
+                    $obj_vol->aerodromeOfDeparture = $flight->flight->flightId->keys->aerodromeOfDeparture;
+                    $obj_vol->aerodromeOfDestination = $flight->flight->flightId->keys->aerodromeOfDestination;
+                    $obj_vol->aircraftType = $flight->flight->aircraftType;
+                    if (isset($flight->flight->aircraftOperator)) {
+                        $obj_vol->aircraftOperator = $flight->flight->aircraftOperator;
+                    } else {
+                        $obj_vol->aircraftOperator = "private jet";
+                    }
+                    $obj_vol->actualTakeOffTime = $flight->flight->actualTakeOffTime;
+                    $obj_vol->actualTimeOfArrival = $flight->flight->actualTimeOfArrival;
+                    array_push($result, $obj_vol);
+                }
+                $obj->VOLS_RAE = $result;
+            }
         }
     }
     
@@ -102,14 +122,33 @@ class FlightServices extends Service {
         $date = new DateTime($wef);
         foreach($tv_arr as $tv) {
             $res = $this->get_nb_vols_TV($tv, $wef, $unt);
+            // Sauve les données des blocs RAW, MALY, WW, MF, DZ
             array_push($obj->LFMMFMPW, array($tv, $date->format('Y-m-d'), count($res->data->flights)));
-            if ($tv == "LFMRAW") $obj->VOLS_RAW = $res->data->flights;
+            // Sauve le détail des vols RAW
+            if ($tv == "LFMRAW") {
+                $result = [];
+                foreach($res->data->flights as $flight) {
+                    $obj_vol = new stdClass();
+                    $obj_vol->aircraftId = $flight->flight->flightId->keys->aircraftId;
+                    $obj_vol->aerodromeOfDeparture = $flight->flight->flightId->keys->aerodromeOfDeparture;
+                    $obj_vol->aerodromeOfDestination = $flight->flight->flightId->keys->aerodromeOfDestination;
+                    $obj_vol->aircraftType = $flight->flight->aircraftType;
+                    if (isset($flight->flight->aircraftOperator)) {
+                        $obj_vol->aircraftOperator = $flight->flight->aircraftOperator;
+                    } else {
+                        $obj_vol->aircraftOperator = "private jet";
+                    }
+                    $obj_vol->actualTakeOffTime = $flight->flight->actualTakeOffTime;
+                    $obj_vol->actualTimeOfArrival = $flight->flight->actualTimeOfArrival;
+                    array_push($result, $obj_vol);
+                }
+                $obj->VOLS_RAW = $result;
+            }
         }
     }
     
     public function get_vols_App($obj, $tv_arr, $tv_arr2, $wef, $unt) {
         $obj->LFMMAPP = new stdClass();
-        $obj->VOLS_APP = new stdClass();
         $date = new DateTime($wef);
         $total_app = 0;
         foreach($tv_arr as $tv) {
@@ -121,26 +160,16 @@ class FlightServices extends Service {
                     // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
                     if (is_array($res->data->flights)) {
                         $nb_flight = count($res->data->flights);
-                        $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), count($res->data->flights));
+                        $obj->LFMMAPP->$tv = count($res->data->flights);
                     } else {
                         $nb_flight = 1;
-                        $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 1);
+                        $obj->LFMMAPP->$tv = 1;
                     }
                 } else {
                     $nb_flight = 0;
-                    $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 0);
+                    $obj->LFMMAPP->$tv = 0;
                 }
                 $total_app += $nb_flight;
-                if (property_exists($res->data, "flights")) {
-                    // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
-                    if (is_array($res->data->flights)) {
-                        $obj->VOLS_APP->$tv = $res->data->flights;
-                    } else {
-                        $obj->VOLS_APP->$tv = $res->data->flights;
-                    }
-                } else {
-                    $obj->VOLS_APP->$tv = new stdClass();
-                }
             }
         }
         foreach($tv_arr2 as $tv) {
@@ -162,16 +191,6 @@ class FlightServices extends Service {
                     $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 0);
                 }
                 $total_app += $nb_flight;
-                if (property_exists($res->data, "flights")) {
-                    // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
-                    if (is_array($res->data->flights)) {
-                        $obj->VOLS_APP->$tv = $res->data->flights;
-                    } else {
-                        $obj->VOLS_APP->$tv = $res->data->flights;
-                    }
-                } else {
-                    $obj->VOLS_APP->$tv = new stdClass();
-                }
             }
         }
         $obj->LFMMAPP->flights = $total_app;

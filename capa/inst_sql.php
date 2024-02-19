@@ -3,8 +3,7 @@
 require_once("../php/bdd.class.php");
 
 /*  --------------------------------------------------------------
-		sauvegarde le fichier json du tds
-			@param {object} $json - objet json à sauver
+		gère le tds instruction dans la BDD SQL
 	--------------------------------------------------------------  */
 
 $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
@@ -20,12 +19,6 @@ if ($contentType === "application/json") {
             break;
         case "delete":
             $bdd_instr->delete_creneau_supp($content->id);
-            break;
-        case "get_day":
-            echo '$x stocke la valeur 3';
-            break;
-        case 4:
-            echo '$x stocke la valeur 4';
             break;
         default: // get_all
             echo json_encode($bdd_instr->get_creneaux_supp($content->zone));
