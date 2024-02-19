@@ -8,6 +8,7 @@ require_once("B2B-FlowServices.php");
 include_once("config.inc.php");
 include_once("hour_config".$config.".inc.php");
 include_once("path.inc.php");
+include_once("../php/bdd.class.php");
 /* 16 mai 2021 15h
 $wef=gmdate("Y-m-d H:i", mktime(15, 0, 0, 5, 16, 2021));
 $unt=gmdate("Y-m-d H:i", mktime(17, 0, 0, 5, 16, 2021));
@@ -144,9 +145,12 @@ $soapClient->flightServices()->get_vols_App($flights, $tab_TVAPP, $tab_ADAPP, $w
 echo "get vols App OK<br>";
 
 try {	
-	
+	// Maria Db : LONGTEXT (=JSON type)
+	// A TEXT column with a maximum length of 4,294,967,295 characters.
 	write_json($flights, "", "-vols", $wef_counts);
-	
+	$bdd = new bdd();
+	$bdd->set_vols_crna($today, $counts_LFMMCTA_REGDEMAND, $counts_LFMMCTA_LOAD, $counts_LFMMCTA_DEMAND, $counts_LFMMCTAE_REGDEMAND, $counts_LFMMCTAE_LOAD, $counts_LFMMCTAE_DEMAND, $counts_LFMMCTAW_REGDEMAND, $counts_LFMMCTAW_LOAD, $counts_LFMMCTAW_DEMAND, $flights->LFMMFMPE[0][2], $flights->LFMMFMPE[1][2], $flights->LFMMFMPE[2][2], $flights->LFMMFMPE[3][2], $flights->LFMMFMPE[4][2], $flights->LFMMFMPW[0][2], $flights->LFMMFMPW[1][2], $flights->LFMMFMPW[2][2], $flights->LFMMFMPW[3][2], $flights->LFMMFMPW[4][2],json_encode($flights->VOLS_RAE), json_encode($flights->VOLS_RAW));
+	$bdd->set_vols_app($today, $flights->LFMMAPP);
 }
 
 catch (Exception $e) {

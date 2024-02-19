@@ -369,33 +369,6 @@ class bdd_tds {
     }
 
     /*  ---------------------------------------------------------------
-           uceso / Realise / i1
-        --------------------------------------------------------------- */
-
-        public function save_uceso(string $day, string $typejour, int $i1, string $uceso, string $realise, int $maxsecteurs, string $tvh, string $nbpc, int $minutes_ucesa) {
-            $table = "i1_$this->zone";
-            $req = "INSERT IGNORE INTO $table (jour, typejour, uceso, realise, i1, maxsecteurs, tvh, nbpc, minutes_ucesa) VALUES ('$day', '$typejour', JSON_COMPACT('$uceso'), JSON_COMPACT('$realise'), '$i1', '$maxsecteurs', JSON_COMPACT('$tvh'), JSON_COMPACT('$nbpc'), '$minutes_ucesa')"; 
-            $stmt = Mysql::getInstance()->prepare($req);
-            $stmt->execute();
-        }
-    
-        public function get_ucesa(string $start_day, string $end_day) {
-            $table = "i1_$this->zone";
-            $req = "SELECT jour, typejour, realise, i1, maxsecteurs, tvh, nbpc, minutes_ucesa FROM $table WHERE jour <= '$end_day' AND jour >= '$start_day'"; 
-            $stmt = Mysql::getInstance()->prepare($req);
-            $stmt->execute();
-            $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            echo json_encode($resultat);
-        }
-    
-        public function set_minutes_ucesa(string $day, int $minutes) {
-            $table = "i1_$this->zone";
-            $req = "UPDATE $table SET minutes_ucesa = '$minutes' WHERE jour = '$day'"; 
-            $stmt = Mysql::getInstance()->prepare($req);
-            $stmt->execute();
-        }
-
-    /*  ---------------------------------------------------------------
             Répartition
         --------------------------------------------------------------- */
 
@@ -461,6 +434,43 @@ class bdd_tds {
         $req = "INSERT IGNORE INTO $table (nom_tds) VALUES ('$saison')"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
+    }
+
+    /*  ---------------------------------------------------------------
+           uceso / Realise / i1
+        --------------------------------------------------------------- */
+
+    public function save_uceso(string $day, string $typejour, int $i1, string $uceso, string $realise, int $maxsecteurs, string $tvh, string $nbpc, int $minutes_ucesa) {
+        $table = "i1_$this->zone";
+        $req = "INSERT IGNORE INTO $table (jour, typejour, uceso, realise, i1, maxsecteurs, tvh, nbpc, minutes_ucesa) VALUES ('$day', '$typejour', JSON_COMPACT('$uceso'), JSON_COMPACT('$realise'), '$i1', '$maxsecteurs', JSON_COMPACT('$tvh'), JSON_COMPACT('$nbpc'), '$minutes_ucesa')"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+    }
+
+    public function get_ucesa(string $start_day, string $end_day) {
+        $table = "i1_$this->zone";
+        $req = "SELECT jour, typejour, realise, i1, maxsecteurs, tvh, nbpc, minutes_ucesa FROM $table WHERE jour <= '$end_day' AND jour >= '$start_day'"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($resultat);
+    }
+
+    public function set_minutes_ucesa(string $day, int $minutes) {
+        $table = "i1_$this->zone";
+        $req = "UPDATE $table SET minutes_ucesa = '$minutes' WHERE jour = '$day'"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+    }
+
+    // pour Laurent Martinelli
+    public function get_ucesa_daily(string $day) {
+        $table = "i1_$this->zone";
+        $req = "SELECT jour, realise, nbpc, minutes_ucesa FROM $table WHERE jour = '$day'"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($resultat);
     }
 
 }
@@ -537,6 +547,66 @@ class bdd_admin {
         $stmt->execute();
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $resultat;
+    }
+
+}
+
+class bdd {
+
+    public function get_vols_crna(string $start_day = "", $end_day = "") {
+        if (strcmp($start_day, "") === 0 || strcmp($end_day, "") === 0) {
+            return null;
+        }
+        $table = "vols_crna";
+        $req = "SELECT * FROM $table"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
+        return $resultat;
+    }
+
+    public function get_vols_app(string $start_day = "", $end_day = "") {
+        if (strcmp($start_day, "") === 0 || strcmp($end_day, "") === 0) {
+            return null;
+        }
+        $table = "vols_app";
+        $req = "SELECT * FROM $table"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
+        return $resultat;
+    }
+
+    public function set_vols_crna(string $day, int $LFMMCTA_regdemand, int $LFMMCTA_load, int $LFMMCTA_demand, int $LFMMCTAE_regdemand, int $LFMMCTAE_load, int $LFMMCTAE_demand, int $LFMMCTAW_regdemand, int $LFMMCTAW_load, int $LFMMCTAW_demand, int $RAE, int $SBAM, int $EK, int $AB, int $GY, int $RAW, int $MALY, int $WW, int $MF, int $DZ, string $vols_RAE, string $vols_RAW) {
+        $date = new DateTime($day);
+        $js = $date->format('w');
+        $tab_jour = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+        $jour_semaine = $tab_jour[$js];
+        $table = "vols_crna";
+        $req = "INSERT INTO $table VALUES ('$day', '$jour_semaine', '$LFMMCTA_regdemand', '$LFMMCTA_load', '$LFMMCTA_demand', '$LFMMCTAE_regdemand', '$LFMMCTAE_load', '$LFMMCTAE_demand', '$LFMMCTAW_regdemand', '$LFMMCTAW_load', '$LFMMCTAW_demand', '$RAE', '$SBAM', '$EK', '$AB', '$GY', '$RAW', '$MALY', '$WW', '$MF', '$DZ', JSON_COMPACT('$vols_RAE'), JSON_COMPACT('$vols_RAW'))"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+    }
+
+    // $LFMMAPP = {"flights": nb_total_vol_app, "LFKJ": vols, "ad": nb, ...}
+    public function set_vols_app(string $day, stdClass $LFMMAPP) {
+        $date = new DateTime($day);
+        $js = $date->format('w');
+        $tab_jour = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+        $jour_semaine = $tab_jour[$js];
+        $table = "vols_app";
+        $keys = array_keys(get_object_vars($LFMMAPP));
+        $nb_flights = $LFMMAPP->flights;
+        $req = "INSERT INTO $table VALUES ('$day', '$jour_semaine', '$nb_flights'";
+        foreach($keys as $ad) {
+            if ($ad != "flights") {
+                $data = $LFMMAPP->{$ad};
+                $req .= ", '$data'";
+            } 
+        }
+        $req .= ")";
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
     }
 
 }
