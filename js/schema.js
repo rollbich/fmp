@@ -253,6 +253,8 @@ class schema_rea {
                 mapping_obj.pos.forEach( el => {
                     let sub_tv = el.pos_regroup;
                     if (sub_tv === "RAEE12") sub_tv = "REE12";
+                    if (sub_tv === "LSMOML") sub_tv = "LSMOL";
+                    if (sub_tv === "LOLSMOML") sub_tv = "OSMOL";
                     let pos = el.pos_name;
                     // remplit les heures ouverts pour chaque TV et chaque position
                     if (!(schema["tv_h"].hasOwnProperty(sub_tv))) { 
