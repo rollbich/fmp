@@ -99,17 +99,17 @@ class FlightServices extends Service {
                 $result = [];
                 foreach($res->data->flights as $flight) {
                     $obj_vol = new stdClass();
-                    $obj_vol->aircraftId = $flight->flight->flightId->keys->aircraftId;
-                    $obj_vol->aerodromeOfDeparture = $flight->flight->flightId->keys->aerodromeOfDeparture;
-                    $obj_vol->aerodromeOfDestination = $flight->flight->flightId->keys->aerodromeOfDestination;
-                    $obj_vol->aircraftType = $flight->flight->aircraftType;
+                    $obj_vol->id = $flight->flight->flightId->keys->aircraftId;
+                    $obj_vol->dep = $flight->flight->flightId->keys->aerodromeOfDeparture;
+                    $obj_vol->arr = $flight->flight->flightId->keys->aerodromeOfDestination;
+                    $obj_vol->type = $flight->flight->aircraftType;
                     if (isset($flight->flight->aircraftOperator)) {
-                        $obj_vol->aircraftOperator = $flight->flight->aircraftOperator;
+                        $obj_vol->operator = $flight->flight->aircraftOperator;
                     } else {
-                        $obj_vol->aircraftOperator = "private jet";
+                        $obj_vol->operator = "private";
                     }
-                    $obj_vol->actualTakeOffTime = $flight->flight->actualTakeOffTime;
-                    $obj_vol->actualTimeOfArrival = $flight->flight->actualTimeOfArrival;
+                    $obj_vol->depTime = $flight->flight->actualTakeOffTime;
+                    $obj_vol->arrTime = $flight->flight->actualTimeOfArrival;
                     array_push($result, $obj_vol);
                 }
                 $obj->VOLS_RAE = $result;
@@ -129,17 +129,17 @@ class FlightServices extends Service {
                 $result = [];
                 foreach($res->data->flights as $flight) {
                     $obj_vol = new stdClass();
-                    $obj_vol->aircraftId = $flight->flight->flightId->keys->aircraftId;
-                    $obj_vol->aerodromeOfDeparture = $flight->flight->flightId->keys->aerodromeOfDeparture;
-                    $obj_vol->aerodromeOfDestination = $flight->flight->flightId->keys->aerodromeOfDestination;
-                    $obj_vol->aircraftType = $flight->flight->aircraftType;
+                    $obj_vol->id = $flight->flight->flightId->keys->aircraftId;
+                    $obj_vol->dep = $flight->flight->flightId->keys->aerodromeOfDeparture;
+                    $obj_vol->arr = $flight->flight->flightId->keys->aerodromeOfDestination;
+                    $obj_vol->type = $flight->flight->aircraftType;
                     if (isset($flight->flight->aircraftOperator)) {
-                        $obj_vol->aircraftOperator = $flight->flight->aircraftOperator;
+                        $obj_vol->operator = $flight->flight->aircraftOperator;
                     } else {
-                        $obj_vol->aircraftOperator = "private jet";
+                        $obj_vol->operator = "private";
                     }
-                    $obj_vol->actualTakeOffTime = $flight->flight->actualTakeOffTime;
-                    $obj_vol->actualTimeOfArrival = $flight->flight->actualTimeOfArrival;
+                    $obj_vol->depTime = $flight->flight->actualTakeOffTime;
+                    $obj_vol->arrTime = $flight->flight->actualTimeOfArrival;
                     array_push($result, $obj_vol);
                 }
                 $obj->VOLS_RAW = $result;

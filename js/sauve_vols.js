@@ -98,24 +98,24 @@ class sauve_vols {
             })
             obj["VOLS_RAE"].forEach(obj_vol => {
                 const temp = {};
-                temp["aircraftId"] = obj_vol["flight"]["flightId"]["keys"]["aircraftId"];
-                temp["aerodromeOfDeparture"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDeparture"];
-                temp["aerodromeOfDestination"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDestination"];
-                temp["aircraftType"] = obj_vol["flight"]["aircraftType"];
-                temp["aircraftOperator"] = obj_vol["flight"]["aircraftOperator"];
-                temp["actualTakeOffTime"] = obj_vol["flight"]["actualTakeOffTime"];
-                temp["aircraftTimeOfArrival"] = obj_vol["flight"]["aircraftTimeOfArrival"];
+                temp["id"] = obj_vol["flight"]["flightId"]["keys"]["aircraftId"];
+                temp["dep"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDeparture"];
+                temp["arr"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDestination"];
+                temp["type"] = obj_vol["flight"]["aircraftType"];
+                if (typeof obj_vol["flight"]["aircraftOperator"] != 'undefined') temp["operator"] = obj_vol["flight"]["aircraftOperator"]; else temp["operator"] = "private";
+                temp["depTime"] = obj_vol["flight"]["actualTakeOffTime"];
+                temp["arrTime"] = obj_vol["flight"]["actualTimeOfArrival"];
                 vols_RAE.push(temp);
             });
             obj["VOLS_RAW"].forEach(obj_vol => {
                 const temp = {};
-                temp["aircraftId"] = obj_vol["flight"]["flightId"]["keys"]["aircraftId"];
-                temp["aerodromeOfDeparture"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDeparture"];
-                temp["aerodromeOfDestination"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDestination"];
-                temp["aircraftType"] = obj_vol["flight"]["aircraftType"];
-                temp["aircraftOperator"] = obj_vol["flight"]["aircraftOperator"];
-                temp["actualTakeOffTime"] = obj_vol["flight"]["actualTakeOffTime"];
-                temp["aircraftTimeOfArrival"] = obj_vol["flight"]["aircraftTimeOfArrival"];
+                temp["id"] = obj_vol["flight"]["flightId"]["keys"]["aircraftId"];
+                temp["dep"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDeparture"];
+                temp["arr"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDestination"];
+                temp["type"] = obj_vol["flight"]["aircraftType"];
+                if (typeof obj_vol["flight"]["aircraftOperator"] != 'undefined') temp["operator"] = obj_vol["flight"]["aircraftOperator"]; else temp["operator"] = "private";
+                temp["depTime"] = obj_vol["flight"]["actualTakeOffTime"];
+                temp["arrTime"] = obj_vol["flight"]["actualTimeOfArrival"];
                 vols_RAW.push(temp);
             });
             await this.set_vols_crna(day, CTA_reg_demand, CTA_load, CTA_demand, CTAE_reg_demand, CTAE_load, CTAE_demand, CTAW_reg_demand, CTAW_load, CTAW_demand, RAE_load, SBAM_load, EK_load, AB_load, GY_load, RAW_load, MALY_load, WW_load, MF_load, DZ_load, vols_RAE, vols_RAW);
