@@ -181,14 +181,14 @@ class FlightServices extends Service {
                     // S'il n'y a qu'un vol alors $res->data->flights n'est pas un array
                     if (is_array($res->data->flights)) {
                         $nb_flight = count($res->data->flights);
-                        $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), count($res->data->flights));
+                        $obj->LFMMAPP->$tv = count($res->data->flights);
                     } else {
                         $nb_flight = 1;
-                        $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 1);
+                        $obj->LFMMAPP->$tv = 1;
                     }
                 } else {
                     $nb_flight = 0;
-                    $obj->LFMMAPP->$tv = array($date->format('Y-m-d'), 0);
+                    $obj->LFMMAPP->$tv = 0;
                 }
                 $total_app += $nb_flight;
             }
