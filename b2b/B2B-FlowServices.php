@@ -327,7 +327,7 @@ class FlowServices extends Service {
                     }
                 }
                 $tvset = $r->delayTVSet;
-                if (str_contains($tvset, 'APP')) {
+                if (str_contains($tvset, 'LFMMAPP')) {
                     $tvset = "LFMMAPP";
                 }
                 $c = $r->initialConstraints;
