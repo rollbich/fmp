@@ -5,6 +5,7 @@ use PHPMailer\PHPMailer\Exception;
 
 require("/opt/bitnami/smtp/PHPMailer/PHPMailer.php");
 require("/opt/bitnami/smtp/PHPMailer/SMTP.php");
+require("/opt/bitnami/smtp/PHPMailer/Exception.php");
 require("/opt/bitnami/smtp/email-config.inc.php");
 
 /* -----------------------------------------------------------------
