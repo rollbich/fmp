@@ -29,7 +29,7 @@ class B2B {
 	public function __construct() {
 		$this->Location_MM = "https://www.b2b.nm.eurocontrol.int/B2B_OPS/gateway/spec/".$this->version;
 		//Certificat OPS LFMM
-		$this->local_cert_MM = __DIR__."/B2B/certif2021.pem";
+		$this->local_cert_MM = __DIR__."/B2B/certif-salto-1622_003.pem";
 		$this->params = array(
 			'cache_wsdl'   => WSDL_CACHE_NONE,
 			'wsdl_cache' => 0,
