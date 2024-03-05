@@ -15,7 +15,9 @@ class AirspaceServices extends Service {
         try {
             $output = $this->getSoapClient()->__soapCall('retrieveAUPChain', array('parameters'=>$params));
             if ($output->status !== "OK") {
-                $erreur = $this->getFullErrorMessage("Erreur get_AUP : ".$output->reason);
+                $reason = 'status not OK, but no $output->reason';
+                if (isset($output->reason)) $reason = $output->reason;
+                $erreur = $this->getFullErrorMessage("Erreur get_AUP : ".$reason);
                 echo $erreur."\n<br>";
                 $this->send_mail($erreur);
             }
@@ -75,7 +77,9 @@ class AirspaceServices extends Service {
                 );
                 $output = $this->getSoapClient()->__soapCall('retrieveAUP', array('parameters'=>$params));
                 if ($output->status !== "OK") {
-                    $erreur = $this->getFullErrorMessage("Erreur get_AUP : ".$output->reason);
+                    $reason = 'status not OK, but no $output->reason';
+                    if (isset($output->reason)) $reason = $output->reason;
+                    $erreur = $this->getFullErrorMessage("Erreur get_AUP : ".$reason);
                     echo $erreur."\n<br>";
                     $this->send_mail($erreur);
                 }
@@ -104,7 +108,9 @@ class AirspaceServices extends Service {
         try {
             $output = $this->getSoapClient()->__soapCall('retrieveEAUPChain', array('parameters'=>$params));
             if ($output->status !== "OK") {
-                $erreur = $this->getFullErrorMessage("Erreur get_AUP : ".$output->reason);
+                $reason = 'status not OK, but no $output->reason';
+                if (isset($output->reason)) $reason = $output->reason;
+                $erreur = $this->getFullErrorMessage("Erreur get_AUP : ".$reason);
                 echo $erreur."\n<br>";
                 $this->send_mail($erreur);
             }
@@ -150,7 +156,9 @@ class AirspaceServices extends Service {
             echo "<br>Ok<br>";
             $output = $this->getSoapClient()->__soapCall('retrieveEAUPRSAs', array('parameters'=>$params));
             if ($output->status !== "OK") {
-                $erreur = $this->getFullErrorMessage("Erreur get_EAUP : ".$output->reason);
+                $reason = 'status not OK, but no $output->reason';
+                if (isset($output->reason)) $reason = $output->reason;
+                $erreur = $this->getFullErrorMessage("Erreur get_EAUP : ".$reason);
                 echo $erreur."\n<br>";
                 $this->send_mail($erreur);
             }
@@ -183,7 +191,9 @@ class AirspaceServices extends Service {
         try {
             $output = $this->getSoapClient()->__soapCall('retrieveEAUPRSAs', array('parameters'=>$params));
             if ($output->status !== "OK") {
-                $erreur = $this->getFullErrorMessage("Erreur get_EAUP : ".$output->reason);
+                $reason = 'status not OK, but no $output->reason';
+                if (isset($output->reason)) $reason = $output->reason;
+                $erreur = $this->getFullErrorMessage("Erreur get_EAUP : ".$reason);
                 echo $erreur."\n<br>";
                 $this->send_mail($erreur);
             }
