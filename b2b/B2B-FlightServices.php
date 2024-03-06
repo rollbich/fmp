@@ -83,6 +83,10 @@ class FlightServices extends Service {
         }
     }
 
+    /*  -------------------------------------------------------------------------------------------------------------
+            Si décollage d'un AD non OACI alors flight->flightId->keys->aerodromeOfDeparture n'existe pas
+            Si atterrissage sur un AD non OACI alors flight->flightId->keys->aerodromeOfDestination n'existe pas
+        ------------------------------------------------------------------------------------------------------------- */
     public function get_vols_Est($obj, $tv_arr, $wef, $unt) {
         $obj->LFMMFMPE = array();
         $date = new DateTime($wef);
@@ -100,16 +104,36 @@ class FlightServices extends Service {
                 foreach($res->data->flights as $flight) {
                     $obj_vol = new stdClass();
                     $obj_vol->id = $flight->flight->flightId->keys->aircraftId;
-                    $obj_vol->dep = $flight->flight->flightId->keys->aerodromeOfDeparture;
-                    $obj_vol->arr = $flight->flight->flightId->keys->aerodromeOfDestination;
-                    $obj_vol->type = $flight->flight->aircraftType;
+                    if (isset($flight->flight->flightId->keys->aerodromeOfDeparture)) { 
+                        $obj_vol->dep = $flight->flight->flightId->keys->aerodromeOfDeparture;
+                    } else {
+                        $obj_vol->dep = "unknown";
+                    }
+                    if (isset($flight->flight->flightId->keys->aerodromeOfDestination)) { 
+                        $obj_vol->arr = $flight->flight->flightId->keys->aerodromeOfDestination;
+                    } else {
+                        $obj_vol->arr = "unknown";
+                    }
+                    if (isset($flight->flight->aircraftType)) { 
+                        $obj_vol->type = $flight->flight->aircraftType;
+                    } else {
+                        $obj_vol->type = "unknown";
+                    }
                     if (isset($flight->flight->aircraftOperator)) {
                         $obj_vol->operator = $flight->flight->aircraftOperator;
                     } else {
                         $obj_vol->operator = "private";
                     }
-                    $obj_vol->depTime = $flight->flight->actualTakeOffTime;
-                    $obj_vol->arrTime = $flight->flight->actualTimeOfArrival;
+                    if (isset($flight->flight->actualTakeOffTime)) {
+                        $obj_vol->depTime = $flight->flight->actualTakeOffTime;
+                    } else {
+                        $obj_vol->depTime = "unknown";
+                    }
+                    if (isset($flight->flight->actualTimeOfArrival)) {
+                        $obj_vol->arrTime = $flight->flight->actualTimeOfArrival;
+                    } else {
+                        $obj_vol->arrTime = "unknown";
+                    }
                     array_push($result, $obj_vol);
                 }
                 $obj->VOLS_RAE = $result;
@@ -130,16 +154,36 @@ class FlightServices extends Service {
                 foreach($res->data->flights as $flight) {
                     $obj_vol = new stdClass();
                     $obj_vol->id = $flight->flight->flightId->keys->aircraftId;
-                    $obj_vol->dep = $flight->flight->flightId->keys->aerodromeOfDeparture;
-                    $obj_vol->arr = $flight->flight->flightId->keys->aerodromeOfDestination;
-                    $obj_vol->type = $flight->flight->aircraftType;
+                    if (isset($flight->flight->flightId->keys->aerodromeOfDeparture)) { 
+                        $obj_vol->dep = $flight->flight->flightId->keys->aerodromeOfDeparture;
+                    } else {
+                        $obj_vol->dep = "unknown"; 
+                    }
+                    if (isset($flight->flight->flightId->keys->aerodromeOfDestination)) { 
+                        $obj_vol->arr = $flight->flight->flightId->keys->aerodromeOfDestination;
+                    } else {
+                        $obj_vol->arr = "unknown";
+                    }
+                    if (isset($flight->flight->aircraftType)) { 
+                        $obj_vol->type = $flight->flight->aircraftType;
+                    } else {
+                        $obj_vol->type = "unknown";
+                    }
                     if (isset($flight->flight->aircraftOperator)) {
                         $obj_vol->operator = $flight->flight->aircraftOperator;
                     } else {
                         $obj_vol->operator = "private";
                     }
-                    $obj_vol->depTime = $flight->flight->actualTakeOffTime;
-                    $obj_vol->arrTime = $flight->flight->actualTimeOfArrival;
+                    if (isset($flight->flight->actualTakeOffTime)) {
+                        $obj_vol->depTime = $flight->flight->actualTakeOffTime;
+                    } else {
+                        $obj_vol->depTime = "unknown";
+                    }
+                    if (isset($flight->flight->actualTimeOfArrival)) {
+                        $obj_vol->arrTime = $flight->flight->actualTimeOfArrival;
+                    } else {
+                        $obj_vol->arrTime = "unknown";
+                    }
                     array_push($result, $obj_vol);
                 }
                 $obj->VOLS_RAW = $result;
