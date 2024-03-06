@@ -33,30 +33,14 @@ class sauve_vols {
                         ...
                     },
                     "VOLS_RAE": [{
-                        "flight": {
-                            "actualTakeOffTime": "2023-08-01 20:33",
-                            "actualTimeOfArrival": "2023-08-01 22:10",
-                            "aircraftOperator": "CTM",
-                            "aircraftType": "A400",
-                            "flightId": {
-                                "id": "AA9545125",
-                                "keys": {
-                                    aerodromeOfDeparture: "OLBA",
-                                    ​​​​​​​​aerodromeOfDestination: "LFOJ"​​​,
-                                    airFiled: false​​​​​​​​,
-                                    aircraftId: "CTM2034"​​​​​​​​,
-                                    estimatedOffBlockTime: "2023-12-31 20:15"​​​​​​​​,
-                                    nonICAOAerodromeOfDeparture: false​​​​​​​​,
-                                    nonICAOAerodromeOfDestination: false 
-                                }
-                            },
-                            timeAtReferenceLocationEntry: {
-                                dateTime: "2024-01-01 00:14:45",​​​​​​
-                                model: "LOAD"
-                            }
-                        },
-                        ...
-                    }],
+                        "id": "WZZ1EB",
+                        "dep": "LEAL",
+                        "arr": "EPGD",
+                        "type": "A21N",
+                        "operator": "WZZ",
+                        "depTime": "2024-02-19 22:53",
+                        "arrTime": "2024-02-20 02:15"
+                        }, ..., {}],
                     "VOLS_RAW": [],
                     "VOLS_APP": {
                         pas utilisé
@@ -89,18 +73,28 @@ class sauve_vols {
             const DZ_load = obj["LFMMFMPW"][4][2];
             const vols_RAE = [];
             const vols_RAW = [];
-            // l'ordre doit être respecté
+            // l'ordre doit être respecté d'où l'array même si
             const tab_TVAPP = ["LFKJ","LFKF","LFKB","LFKC","LFMN","LFMD","LFTZ","LFTH","LFML","LFMV","LFMQ","LFLL","LFLY","LFLS","LFLB","LFLP","LFLC","LFMT","LFTW","LFMP","LFMU","LFLV","LFLN","LFLU","LFMI","LFMH","LFMA","LFLI","LFMC","LFKS","LFMY","LFMO","LFKA","LFKO","LFMS","LFMZ","LFMF","LFTF","LFLE","LFLG","LFLJ","LFLM","LFLO","LFNA","LFNB","LFNG","LFNH","LFXA"];
             const LFMMAPP = {};
             LFMMAPP["flights"] = obj["LFMMAPP"]["flights"];
             tab_TVAPP.forEach(ad => {
                 LFMMAPP[ad] = obj["LFMMAPP"][ad][1];
+                //LFMMAPP[ad] = obj["LFMMAPP"][ad];
             })
+            
             obj["VOLS_RAE"].forEach(obj_vol => {
                 const temp = {};
                 temp["id"] = obj_vol["flight"]["flightId"]["keys"]["aircraftId"];
-                temp["dep"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDeparture"];
-                temp["arr"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDestination"];
+                if (typeof obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDeparture"] == 'undefined') {
+                    temp["dep"] = "unknown";
+                } else {
+                    temp["dep"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDeparture"];
+                }
+                if (typeof obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDestination"] == 'undefined') {
+                    temp["arr"] = "unknown";
+                } else {
+                    temp["arr"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDestination"];
+                }
                 temp["type"] = obj_vol["flight"]["aircraftType"];
                 if (typeof obj_vol["flight"]["aircraftOperator"] != 'undefined') temp["operator"] = obj_vol["flight"]["aircraftOperator"]; else temp["operator"] = "private";
                 temp["depTime"] = obj_vol["flight"]["actualTakeOffTime"];
@@ -110,16 +104,25 @@ class sauve_vols {
             obj["VOLS_RAW"].forEach(obj_vol => {
                 const temp = {};
                 temp["id"] = obj_vol["flight"]["flightId"]["keys"]["aircraftId"];
-                temp["dep"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDeparture"];
-                temp["arr"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDestination"];
+                if (typeof obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDeparture"] == 'undefined') {
+                    temp["dep"] = "unknown";
+                } else {
+                    temp["dep"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDeparture"];
+                }
+                if (typeof obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDestination"] == 'undefined') {
+                    temp["arr"] = "unknown";
+                } else {
+                    temp["arr"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDestination"];
+                }
                 temp["type"] = obj_vol["flight"]["aircraftType"];
                 if (typeof obj_vol["flight"]["aircraftOperator"] != 'undefined') temp["operator"] = obj_vol["flight"]["aircraftOperator"]; else temp["operator"] = "private";
                 temp["depTime"] = obj_vol["flight"]["actualTakeOffTime"];
                 temp["arrTime"] = obj_vol["flight"]["actualTimeOfArrival"];
                 vols_RAW.push(temp);
             });
+            
             await this.set_vols_crna(day, CTA_reg_demand, CTA_load, CTA_demand, CTAE_reg_demand, CTAE_load, CTAE_demand, CTAW_reg_demand, CTAW_load, CTAW_demand, RAE_load, SBAM_load, EK_load, AB_load, GY_load, RAW_load, MALY_load, WW_load, MF_load, DZ_load, vols_RAE, vols_RAW);
-            await this.set_vols_app(day, LFMMAPP);
+            //await this.set_vols_app(day, LFMMAPP);
         }
     }
 
