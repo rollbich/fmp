@@ -17,7 +17,7 @@ class sauve_vols {
     }
 
 /*  ---------------------------------------------------------------------
-            Remplissage bdd avec les données vols ancien format
+            Remplissage bdd avec les données vols nouveau format
             this.data.vols: {
                 "2024-01-01": {
                     "LFMMCTA": ["LFMMCTA", "2023-08-01", regdemand, load, demand],
@@ -32,28 +32,14 @@ class sauve_vols {
                         "LFKJ": ["2023-08-01", nb],
                         ...
                     },
-                    "VOLS_RAE":[
-                        {"flight":{
-                            "flightId":{
-                                "id":"AA56125113",
-                                "keys":{
-                                    "aircraftId":"MSR986",
-                                    "aerodromeOfDeparture":"KJFK",
-                                    "nonICAOAerodromeOfDeparture":false,
-                                    "airFiled":false,
-                                    "aerodromeOfDestination":"HECA",
-                                    "nonICAOAerodromeOfDestination":false,
-                                    "estimatedOffBlockTime":"2024-02-14 17:00"
-                                }
-                            },
-                            "aircraftType":"B77W",
-                            "actualTakeOffTime":"2024-02-14 17:22",
-                            "actualTimeOfArrival":"2024-02-15 03:14",
-                            "aircraftOperator":"MSR",
-                            "timeAtReferenceLocationEntry":{
-                                "model":"LOAD",
-                                "dateTime":"2024-02-15 00:05:13"
-                            }
+                    "VOLS_RAE": [{
+                        "id": "WZZ1EB",
+                        "dep": "LEAL",
+                        "arr": "EPGD",
+                        "type": "A21N",
+                        "operator": "WZZ",
+                        "depTime": "2024-02-19 22:53",
+                        "arrTime": "2024-02-20 02:15"
                         }, ..., {}],
                     "VOLS_RAW": [],
                     "VOLS_APP": {
@@ -92,51 +78,56 @@ class sauve_vols {
             const LFMMAPP = {};
             LFMMAPP["flights"] = obj["LFMMAPP"]["flights"];
             tab_TVAPP.forEach(ad => {
-                LFMMAPP[ad] = obj["LFMMAPP"][ad][1];
-                //LFMMAPP[ad] = obj["LFMMAPP"][ad];
+                //LFMMAPP[ad] = obj["LFMMAPP"][ad][1];
+                LFMMAPP[ad] = obj["LFMMAPP"][ad];
             })
             
             obj["VOLS_RAE"].forEach(obj_vol => {
+                
                 const temp = {};
-                temp["id"] = obj_vol["flight"]["flightId"]["keys"]["aircraftId"];
-                if (typeof obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDeparture"] == 'undefined') {
+                temp["id"] = obj_vol["id"];
+                if (obj_vol["dep"] == null) {
                     temp["dep"] = "unknown";
                 } else {
-                    temp["dep"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDeparture"];
+                    temp["dep"] = obj_vol["dep"];
                 }
-                if (typeof obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDestination"] == 'undefined') {
+                if (obj_vol["arr"] == null) {
                     temp["arr"] = "unknown";
                 } else {
-                    temp["arr"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDestination"];
+                    temp["arr"] = obj_vol["arr"];
                 }
-                temp["type"] = obj_vol["flight"]["aircraftType"];
-                if (typeof obj_vol["flight"]["aircraftOperator"] != 'undefined') temp["operator"] = obj_vol["flight"]["aircraftOperator"]; else temp["operator"] = "private";
-                temp["depTime"] = obj_vol["flight"]["actualTakeOffTime"];
-                temp["arrTime"] = obj_vol["flight"]["actualTimeOfArrival"];
+                temp["type"] = obj_vol["type"];
+                temp["operator"] = obj_vol["operator"];
+                temp["depTime"] = obj_vol["depTime"];
+                temp["arrTime"] = obj_vol["arrTime"];
                 vols_RAE.push(temp);
+                
             });
             obj["VOLS_RAW"].forEach(obj_vol => {
+                
                 const temp = {};
-                temp["id"] = obj_vol["flight"]["flightId"]["keys"]["aircraftId"];
-                if (typeof obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDeparture"] == 'undefined') {
+                temp["id"] = obj_vol["id"];
+                if (obj_vol["dep"] == null) {
                     temp["dep"] = "unknown";
                 } else {
-                    temp["dep"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDeparture"];
+                    temp["dep"] = obj_vol["dep"];
                 }
-                if (typeof obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDestination"] == 'undefined') {
+                if (obj_vol["arr"] == null) {
                     temp["arr"] = "unknown";
                 } else {
-                    temp["arr"] = obj_vol["flight"]["flightId"]["keys"]["aerodromeOfDestination"];
+                    temp["arr"] = obj_vol["arr"];
                 }
-                temp["type"] = obj_vol["flight"]["aircraftType"];
-                if (typeof obj_vol["flight"]["aircraftOperator"] != 'undefined') temp["operator"] = obj_vol["flight"]["aircraftOperator"]; else temp["operator"] = "private";
-                temp["depTime"] = obj_vol["flight"]["actualTakeOffTime"];
-                temp["arrTime"] = obj_vol["flight"]["actualTimeOfArrival"];
+                temp["type"] = obj_vol["type"];
+                temp["operator"] = obj_vol["operator"];
+                temp["depTime"] = obj_vol["depTime"];
+                temp["arrTime"] = obj_vol["arrTime"];
                 vols_RAW.push(temp);
+                
             });
             
+           
             await this.set_vols_crna(day, CTA_reg_demand, CTA_load, CTA_demand, CTAE_reg_demand, CTAE_load, CTAE_demand, CTAW_reg_demand, CTAW_load, CTAW_demand, RAE_load, SBAM_load, EK_load, AB_load, GY_load, RAW_load, MALY_load, WW_load, MF_load, DZ_load, vols_RAE, vols_RAW);
-            //await this.set_vols_app(day, LFMMAPP);
+            await this.set_vols_app(day, LFMMAPP);
         }
     }
 
