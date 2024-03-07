@@ -8,7 +8,7 @@ require_once("B2B-FlowServices.php");
 include_once("config.inc.php");
 include_once("hour_config".$config.".inc.php");
 include_once("path.inc.php");
-include_once("../php/bdd.class.php");
+include_once(__DIR__."/../php/bdd.class.php");
 /* 16 mai 2021 15h
 $wef=gmdate("Y-m-d H:i", mktime(15, 0, 0, 5, 16, 2021));
 $unt=gmdate("Y-m-d H:i", mktime(17, 0, 0, 5, 16, 2021));
