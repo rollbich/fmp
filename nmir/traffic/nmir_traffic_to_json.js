@@ -6,6 +6,12 @@ class nmir_traffic {
 
 /*  ----------------------------------------------------------------------------------------------------------------
 	Parse fichiers count de l'airspace LFMMCTA et des tv NMIR LFMRAE et LFMRAW: 
+	NMIR Traffic & Delay - Hourly Monitoring of traffic - choisir per Airspace ou Traffic Volume
+	Entry Day : 1er jour
+	Number of days : xx
+	Slice duration : 60
+	Time window 00-23
+
 		Traffic-CTA.csv
 		Traffic-RAE.csv
 		Traffic-RAW.csv
@@ -92,7 +98,7 @@ class nmir_traffic {
 	console.log(counts);
 	
 	for (let [key, value] of Object.entries(counts)) {
-		vols = {};
+		let vols = {};
 		vols["LFMMFMPE"] = [];
 		vols["LFMMFMPW"] = [];
 		vols["LFMMCTA"] = ["LFMMCTA", key, value["LFMMCTA"]];
