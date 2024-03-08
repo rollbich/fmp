@@ -8,6 +8,7 @@ require_once("B2B-FlowServices.php");
 include_once("config.inc.php");
 include_once("hour_config".$config.".inc.php");
 include_once("path.inc.php");
+include_once(__DIR__."/../php/bdd.class.php");
 
 /*  ------------------------------------------
 		Ecriture du fichier générique json
@@ -156,10 +157,14 @@ $atc_confs->ouest = $plan_w->data->plan->nmSchedule->item;
 //$atc_confs->known_confs->ouest = $plan_w->data->plan->knownConfigurations->item;
 
 try {	
-	
+	$day = substr($wef_counts, 0, 10);
 	write_json($json_reg, "", "-reg", $wef_regs);
 	write_json($json_atfcm_reg->data, "", "-atfcm-reg", $wef_regs);
 	write_json($atc_confs, "", "-confs", $wef_regs);
+	$bdd = new bdd();
+	$bdd->set_reguls($day, $json_reg, "LFMMFMPE");
+	$bdd->set_reguls($day, $json_reg, "LFMMFMPW");
+	$bdd->set_reguls($day, $json_reg, "LFMMAPP");
 	
 }
 
