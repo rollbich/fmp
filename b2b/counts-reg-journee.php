@@ -9,6 +9,7 @@ require_once("B2B-FlowServices.php");
 include_once("config.inc.php");
 include_once("hour_config".$config."-journee.inc.php");
 include_once("path.inc.php");
+include_once(__DIR__."/../php/bdd.class.php");
 
 /*  ----------------------------------------------------
 		LFMM-FMP.FR : tâche CRON à 05h20, 6h20
@@ -99,21 +100,6 @@ $json_reg->LFRRFMP = array();
 $json_reg->LFRRAPP = array();
 $json_reg->LFDSNA = array();
 
-$reg = [];
-$reg["LFMMFMPE"] = array();
-$reg["LFMMFMPW"] = array();
-$reg["LFMMAPP"] = array();
-$reg["LFBBFMP"] = array();
-$reg["LFBBAPP"] = array();
-$reg["LFEEFMP"] = array();
-$reg["LFEEAPP"] = array();
-$reg["LFFFFMPE"] = array();
-$reg["LFFFFMPW"] = array();
-$reg["LFFFAD"] = array();
-$reg["LFRRFMP"] = array();
-$reg["LFRRAPP"] = array();
-$reg["LFDSNA"] = array();
-
 // objet contenant les reguls Europe
 $json_atfcm_reg = $soapClient->flowServices()->get_ATFCM_situation();
 
@@ -130,9 +116,12 @@ echo "get regulation OK<br>\n";
 // Envoi d'un email en cas d'erreur
 
 try {	
-	
+	$day = substr($wef_counts, 0, 10);
 	write_json($json_reg, "", "-reg", $wef_counts);
-	echo "<br>Recup reg OK<br>\n";
+	$bdd = new bdd();
+	$bdd->set_reguls($day, $json_reg, "LFMMFMPE");
+	$bdd->set_reguls($day, $json_reg, "LFMMFMPW");
+	$bdd->set_reguls($day, $json_reg, "LFMMAPP");
 	
 }
 catch (Exception $e) {
