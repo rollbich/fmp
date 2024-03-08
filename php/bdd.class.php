@@ -678,6 +678,7 @@ class bdd {
     // JSON_COMPACT(json_string)
     // $tvset : LFMMFMPE, LFMMFMPW, LFMMAPP, LFMMAPPE, LFMMAPPW ??
     public function set_reguls(string $jour, stdClass $reguls, string $tvset = "LFMMAPP") {
+        echo $jour." : ".$tvset."<br>";
         if ($tvset === "LFMMFMPE") $table = "reguls_est";
         if ($tvset === "LFMMFMPW") $table = "reguls_west";
         if ($tvset === "LFMMAPP") $table = "reguls_app";
@@ -698,8 +699,8 @@ class bdd {
             $impactedFlights = $reg->impactedFlights;
             $constraints = $reg->constraints;
             $last_update = $reg->lastUpdate->userUpdateType;
-            $last_update_time = $reg->lastUpdate->userUpdateEventTime;
-
+            $last_update_time = substr($reg->lastUpdate->userUpdateEventTime,0,16);
+            echo $regId."<br>";
             $rates = [];
             foreach($constraints as $constraint) {
                 $rate = new stdClass();
