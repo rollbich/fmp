@@ -33,11 +33,20 @@ class bdd_tds {
 
     // @return string - "nom de la saison" actuelle
     public function get_current_tds() {
-        $req = "SELECT nom_tds FROM `dates_saisons_$this->zone` WHERE debut <= '$this->day' AND fin >= '$this->day'"; 
-        $stmt = Mysql::getInstance()->prepare($req);
-        $stmt->execute();
-        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return $resultat[0]["nom_tds"];
+        try {
+            $req = "SELECT nom_tds FROM `dates_saisons_$this->zone` WHERE debut <= '$this->day' AND fin >= '$this->day'"; 
+            $stmt = Mysql::getInstance()->prepare($req);
+            $stmt->execute();
+            $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $resultat[0]["nom_tds"];
+        }
+        catch(Exception $e){
+            echo "Day: $this->day<br>";
+            echo "Resultat:<br>";
+            var_dump($resultat[0]);
+            echo "<br>";
+            print_r($e);
+        }
     }
 
     /*  --------------------------------------------------------------------------
@@ -672,16 +681,7 @@ class bdd {
         if ($tvset === "LFMMFMPE") $table = "reguls_est";
         if ($tvset === "LFMMFMPW") $table = "reguls_west";
         if ($tvset === "LFMMAPP") $table = "reguls_app";
-        /*
-        echo "<pre>";
-        var_dump($reguls);
-        echo "</pre>";
-        */
-        //$keys = array_keys(get_object_vars($reguls));
-        $table_reg = $this->get_reguls($jour); // [ ["id"=>nb, ...], ..., ["id"=>nb, ...] ]
-        echo "table_reg<br><pre>";
-        var_dump($table_reg);
-        echo "</pre>";
+        $table_reg = $this->get_reguls($jour, $tvset); // [ ["id"=>nb, ...], ..., ["id"=>nb, ...] ]
         foreach($reguls->$tvset as $reg) {
             $exist_in_bdd = false;
             $day = substr($reg->applicability->wef, 0, 10);
@@ -708,17 +708,13 @@ class bdd {
                 $rate->rate = $constraint->normalRate + $constraint->pendingRate + $constraint->equipmentRate;
                 array_push($rates, $rate);
             }
-            echo "<pre>";
-            var_dump($rates);
-            echo "</pre><br>";
+
             $rates_str = json_encode($rates);
-            echo "json_encode $rates_str<br><br>";
             $id = null;
             // la regul existe-t-elle dans la BDD
             foreach($table_reg as $treg) {
-                //echo $treg["regId"]." - ".$regId."<br><br>";
+                // regul trouvée
                 if ($treg["regId"] === $regId) {
-                    //echo "trouve $regId<br>";
                     $exist_in_bdd = true;
                     $id = $treg["id"];
                     $update_obj = $treg["updates"]; 
@@ -739,24 +735,22 @@ class bdd {
             if ($exist_in_bdd) {
                 // la regul peut exister et le fichier 1h après est toujours une CREATION sauf que les delay, vols impactés, taux, doivent être mis à jour
                 if ($last_update === "CREATION") {
-                    echo "old creation<br>";
+                    //echo "old creation<br>";
                     $deletion_time = $last_update_time;
                     $req = "UPDATE $table SET debut = '$debut', fin= '$fin', rates = JSON_COMPACT('$rates_str'), delay = '$delay', impactedFlights = '$impactedFlights' WHERE id = '$id'";
-                    //echo $req."<br>";
                     $stmt = Mysql::getInstance()->prepare($req);
                     $stmt->execute();
                 }
                 if ($last_update === "DELETION") {
-                    echo "old deletion<br>";
+                    //echo "old deletion<br>";
                     $deletion_time = $last_update_time;
                     $req = "UPDATE $table SET debut = '$debut', fin= '$fin', deletion = '$deletion_time', rates = JSON_COMPACT('$rates_str'), delay = '$delay', impactedFlights = '$impactedFlights' WHERE id = '$id'";
-                    //echo $req."<br>";
                     $stmt = Mysql::getInstance()->prepare($req);
                     $stmt->execute();
                 }
                 // pour un UPDATE, les heures de debut et de fin peuvent avoir été modifiées en plus du reste
                 if ($last_update === "UPDATE") {
-                    echo "old update $regId<br>";
+                    //echo "old update $regId<br>";
                     $upd = json_decode($update_obj); // array d'objets : update_obj de la BDD 
                     $trouve = false;
                     foreach($upd as $up) {
@@ -766,7 +760,6 @@ class bdd {
                     }
                     // Si nouvel update
                     if ($trouve === false) {
-                        //echo "ID: $id<br>";
                         $new_obj = new stdClass();
                         $new_obj->time = $last_update_time;
                         $new_obj->debut = $debut;
@@ -774,41 +767,36 @@ class bdd {
                         $new_obj->rates = $rates;
                         array_push($upd, $new_obj);
                         $obj_upd = json_encode($upd);
-                        //echo "json_encode obj_upd<br>$obj_upd<br><br>";
                         $req = "UPDATE $table SET debut = '$debut', fin= '$fin', rates = JSON_COMPACT('$rates_str'), updates = JSON_COMPACT('$obj_upd'), delay = '$delay', impactedFlights = '$impactedFlights' WHERE id = '$id'";
-                        //echo $req."<br><br>";
                         $stmt = Mysql::getInstance()->prepare($req);
                         $stmt->execute();
                     }  
                 }
             } else {
                 if ($last_update === "CREATION") {
-                    echo "new creation<br>";
+                    //echo "new creation<br>";
                     $creation_time = '[{"time":"'.$last_update_time.'","debut":"'.$debut.'","fin":"'.$fin.'","rates":'.$rates_str.'}]';
                     $update_obj = '[]';
                     $deletion_time = '';
                     $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'))";
-                    //echo "<br>".$req."<br>";
                     $stmt = Mysql::getInstance()->prepare($req);
                     $stmt->execute();
                 }
                 if ($last_update === "DELETION") {
-                    echo "new deletion<br>";
+                    //echo "new deletion<br>";
                     $deletion_time = $last_update_time;
                     $update_obj = '[]';
                     $creation_time = '{}';
                     $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'))";
-                    //echo "<br>".$req."<br>";
                     $stmt = Mysql::getInstance()->prepare($req);
                     $stmt->execute();
                 }
                 if ($last_update === "UPDATE") {
-                    echo "new update<br>";
+                    //echo "new update<br>";
                     $deletion_time = '';
                     $update_obj = '[{"time":"'.$last_update_time.'","debut":"'.$debut.'","fin":"'.$fin.'","rates":'.$rates_str.'}]';
                     $creation_time = '{}';
                     $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'))";
-                    //echo "<br>".$req."<br>";
                     $stmt = Mysql::getInstance()->prepare($req);
                     $stmt->execute();
                 }
