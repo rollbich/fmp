@@ -10,7 +10,7 @@ const bloc_est = {
 }
 
 const bloc_west = {
-    "bloc1": ["RAW", "RAWM", "RAWN", "RAWS", "WLMO", "MALY", "LYO", "MOLYO", "MML", "LE", "LOLS", "LELS", "LOLE", "LS", "LO", "MO", "ML", "MOML", "LSMOL", "OSMOL", "MALYM"],
+    "bloc1": ["RAW", "RAWM", "RAWN", "RAWS", "WLMO", "MALY", "LYO", "MOLYO", "MML", "LE", "LOLS", "LELS", "LOLE", "LS", "LO", "MO", "ML", "MOML", "LSMOL", "OSMOL", "MALYM", "WLYO"],
     "bloc2": ["W1", "W23", "W12", "W2", "W3", "WM", "WW", "WMF"],
     "bloc3": ["MF", "MF1", "MF2", "MF3", "MF4", "MM", "M12", "M1", "M123", "M34", "M234", "M2", "M3", "M4", "FF", "F12", "F1", "F2", "MF12", "F123", "MF34", "F234", "F34", "F3", "F4"],
     "bloc4": ["DZ", "DD", "ZZ", "DH", "ZH", "DL", "DZL", "DZH"]
@@ -62,7 +62,7 @@ const salto_est = {
 const salto_west = {
     "bloc01": ["RAW", "RAWM", "RAWN"],
     "bloc02": ["MALY", "MOML", "LSMOL", "OSMOL", "MALYM"],
-    "bloc03": ["MOLYO", "LYO", "LO", "LOLS"],
+    "bloc03": ["MOLYO", "LYO", "LO", "LOLS", "WLYO"],
     "bloc04": ["LELS", "LE"],
     "bloc05": ["LOLE", "LS"],
     "bloc06": ["MO", "ML"],
