@@ -16,7 +16,7 @@
 	<script type="text/javascript" src="../js/list-component.js"></script>
 	<script type="text/javascript" src="../js/graph.js"></script>
 	<script type="text/javascript" src="../js/upload.js"></script>
-	<script type="text/javascript" src="../js/vols_class.js"></script>
+	<script type="text/javascript" src="../js/vols_bdd_class.js"></script>
 	<script src="../js/dragger.js"></script>
 	<script src="../js/echarts.min.js"></script>
 	<script src="../js/sortable.min.js"></script>
@@ -61,12 +61,14 @@
 			document.getElementById('bouton_vols').addEventListener('click', async e => {
 				let start_day = document.getElementById('start').value; // yyyy-mm-dd
 				let end_day = document.getElementById('end').value; // yyyy-mm-dd
-				const r = new period_vols(start_day, end_day);
+				let zone = document.getElementById('zone').value;
+				const r = new period_vols_bdd(start_day, end_day, zone);
 				await r.init();
-				r.show_result_vols("result");
+				r.show_result_vols("result", zone);
 				$('glob_container').classList.remove('off');
 			});
 			
+			/*
 			document.getElementById('bouton_year_vols').addEventListener('click', async e => {
 				let day = document.getElementById('start').value; // yyyy-mm-dd
 				let zone = document.getElementById('zone').value;
@@ -93,7 +95,7 @@
 				show_traffic_graph("res", year, listWeek, data_year.nbre_vols[zon], data_lastyear.nbre_vols[zon], data_2019.nbre_vols[zon], "LFMM-"+zon);
 				$('glob_container').classList.remove('off');
 			});
-
+			*/
 			document.querySelector('.popup-close').addEventListener('click', e => {
 				document.querySelector('.popup-box').classList.remove('transform-in');
 				document.querySelector('.popup-box').classList.add('transform-out');
@@ -112,12 +114,12 @@
 	<h2>Help</h2>
 	<p><span>Origine des données vols</span> :<br>Elles sont récupérées quotidiennement en B2B sur le serveur du NM et stockées sous forme de fichiers.</p>
 	<p><span>Le bouton "Nombre de Vols"</span> :<br>Il affiche le nombre de vols sur la plage sélectionnée</p>
-	<p><span>Le bouton "Graph année"</span> :<br>Il permet d'afficher le nombre de vols semaine sur l'année.</p>
+	<!-- <p><span>Le bouton "Graph année"</span> :<br>Il permet d'afficher le nombre de vols semaine sur l'année.</p> -->
 	<button class="help_close_button pointer">Close</button>
 </div>
 <ul class="menu">
 	<li id="bouton_vols" class="pointer"><span>Nombre de Vols</span></li>
-	<li id="bouton_year_vols" class="pointer"><span>Graph Année</span></li>
+	<!-- <li id="bouton_year_vols" class="pointer"><span>Graph Année</span></li> -->
 	<li><button class="help_button">Help</button></li>
 </ul>
 <div id="dates">
@@ -127,8 +129,8 @@
 	<input type="date" id="end" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2018-12-31">
 	<span>
 	  <select id="zone" class="select">
-		<option selected value="AE">Zone EST</option>
-		<option value="AW">Zone WEST</option>
+	  	<option selected value="crna">CRNA</option>
+		<option value="app">Approche</option>
 	  </select>
 	</span>
 </div>
