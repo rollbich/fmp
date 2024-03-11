@@ -21,6 +21,12 @@ if ($contentType === "application/json") {
             case "set_vols_app":
                 $bdd->set_vols_app($content->day, $content->LFMMAPP);
                 break;
+            case "get_vols_crna":
+                $bdd->get_vols_crna($content->start_day, $content->end_day, $content->zone);
+                break;
+            case "get_vols_app":
+                $bdd->get_vols_app($content->start_day, $content->end_day);
+                break;
             default: 
                 echo "default";
         }
