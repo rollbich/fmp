@@ -2,6 +2,7 @@
 require_once("configsql.inc.php");
 require_once("pdo.class.php");
 
+// JSON_COMPACT(json_string)
 // ex ajout avec json
 // $req = "INSERT INTO $table (JX) VALUES ('$nom', '{\"category\": \"Landmark\", \"lastVisitDate\": \"11/10/2019\"}')";
 
@@ -150,12 +151,6 @@ class bdd_tds {
         $table = "tds_$this->zone";
         if ($greve === true) $table = "tds_greve_$this->zone";
         $vacs = array_keys(get_object_vars($tds_obj)); // array des vacs
-        /*
-        echo "<pre>";
-        var_dump($vacs);
-        var_dump($tds_obj);
-        echo "</pre>";
-        */
        foreach($vacs as $vac) {
             $this->set_vac($saison, $vac, $tds_obj, $greve);
        }
@@ -198,7 +193,6 @@ class bdd_tds {
         $j .= '}';
         
         $req = "UPDATE $table SET $vac = JSON_COMPACT('$j') WHERE nom_tds = '$saison'";
-        echo "$req<br>";
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
 
@@ -427,7 +421,6 @@ class bdd_tds {
         $req = "UPDATE $table SET $vac = JSON_SET($vac, '$.type_repartition', '$value') WHERE nom_tds = '$saison'";
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
-        echo "change_type_repartition $saison $vac = $value : OK";
     }
 
     public function set_repartition(string $saison, string $vac, string $json) {
@@ -562,16 +555,30 @@ class bdd_admin {
 
 class bdd {
 
-    public function get_vols_crna(string $start_day = "", $end_day = "") {
+    public function get_vols_crna(string $start_day = "", $end_day = "", $zone = "crna", $vols = false) {
         if (strcmp($start_day, "") === 0 || strcmp($end_day, "") === 0) {
             return null;
         }
         $table = "vols_crna";
-        $req = "SELECT * FROM $table"; 
+        if ($zone === "crna") {
+            $req = "SELECT jour, typejour, LFMMCTA_regdemand, LFMMCTAE_regdemand, RAE, SBAM, GY, AB ,EK , LFMMCTAW_regdemand, RAW, MALY, WW, MF, DZ";
+            if ($vols === true) $req .= ", vols_RAE, vols_RAW";
+            $req .= " FROM $table WHERE jour >= '$start_day' && jour <= '$end_day'"; 
+        }
+        if ($zone === "est") {
+            $req = "SELECT jour, typejour, LFMMCTAE_regdemand, RAE, SBAM, GY, AB ,EK";
+            if ($vols === true) $req .= ", vols_RAE";
+            $req .= " FROM $table WHERE jour >= '$start_day' && jour <= '$end_day'"; 
+        }
+        if ($zone === "ouest") {
+            $req = "SELECT jour, typejour, LFMMCTAW_regdemand, RAW, MALY, WW, MF, DZ";
+            if ($vols === true) $req .= ", vols_RAW";
+            $req .= " FROM $table WHERE jour >= '$start_day' && jour <= '$end_day'"; 
+        }
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
-        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
-        return $resultat;
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($resultat);
     }
 
     public function get_vols_app(string $start_day = "", $end_day = "") {
@@ -579,11 +586,11 @@ class bdd {
             return null;
         }
         $table = "vols_app";
-        $req = "SELECT * FROM $table"; 
+        $req = "SELECT * FROM $table WHERE jour >= '$start_day' && jour <= '$end_day'"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
-        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
-        return $resultat;
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($resultat);
     }
 
     public function set_vols_crna(string $day, int $LFMMCTA_regdemand, int $LFMMCTA_load, int $LFMMCTA_demand, int $LFMMCTAE_regdemand, int $LFMMCTAE_load, int $LFMMCTAE_demand, int $LFMMCTAW_regdemand, int $LFMMCTAW_load, int $LFMMCTAW_demand, int $RAE, int $SBAM, int $EK, int $AB, int $GY, int $RAW, int $MALY, int $WW, int $MF, int $DZ, string $vols_RAE, string $vols_RAW) {
@@ -618,51 +625,6 @@ class bdd {
         $stmt->execute();
     }
 
-    /* $reguls
-    {
-        "LFMMFMPE": [
-            {
-                "regId": "MAB3423A",
-                "tv": "LFMAB34",
-                "lastUpdate": {
-                    "eventTime": "2023-08-23 14:39:00",
-                    "userUpdateEventTime": "2023-08-23 14:39:00",
-                    "userUpdateType": "UPDATE",
-                    "userId": "F3BBT"
-                },
-                "applicability": { "wef": "2023-08-23 14:00", "unt": "2023-08-23 20:40" },
-                "constraints": [
-                    {
-                    "constraintPeriod": {
-                        "wef": "2023-08-23 14:00",
-                        "unt": "2023-08-23 14:40"
-                    },
-                    "normalRate": 34,
-                    "pendingRate": 2,
-                    "equipmentRate": 0
-                    },
-                    {
-                    "constraintPeriod": {
-                        "wef": "2023-08-23 14:40",
-                        "unt": "2023-08-23 20:40"
-                    },
-                    "normalRate": 30,
-                    "pendingRate": 1,
-                    "equipmentRate": 0
-                    }
-                ],
-                "reason": "ATC_STAFFING",
-                "delay": 2320,
-                "impactedFlights": 203,
-                "TVSet": "LFMMFMPE"
-            }, {...}, ... ],
-        "LFMMFMPW": [{...}, ...],
-        "LFMMAPP": [ {...}, ...],
-        "LFBBFMP": ...
-        ...
-        }
-    */
-
     // $tvset : LFMMFMPE, LFMMFMPW, LFMMAPP, (LFMMAPPE, LFMMAPPW ??)
     public function get_reguls(string $day, string $tvset = "LFMMAPP") {
         if ($tvset === "LFMMFMPE") $table = "reguls_est";
@@ -675,13 +637,85 @@ class bdd {
         return $resultat;
     }
 
-    // JSON_COMPACT(json_string)
-    // $tvset : LFMMFMPE, LFMMFMPW, LFMMAPP, LFMMAPPE, LFMMAPPW ??
+    /*  ----------------------------------------------------------------------------------------------------------------
+            Sauve/met à jour les reguls récupérées en B2B
+          @param (string) $jour : "2024-02-28" 
+          @param (stdClass) $reguls : 
+            {
+                "LFMMFMPE": [
+                    {
+                        "regId": "MAB3423A",
+                        "tv": "LFMAB34",
+                        "lastUpdate": {
+                            "eventTime": "2023-08-23 14:39:00",
+                            "userUpdateEventTime": "2023-08-23 14:39:00",
+                            "userUpdateType": "UPDATE",
+                            "userId": "F3BBT"
+                        },
+                        "applicability": { "wef": "2023-08-23 14:00", "unt": "2023-08-23 20:40" },
+                        "constraints": [
+                            {
+                            "constraintPeriod": {
+                                "wef": "2023-08-23 14:00",
+                                "unt": "2023-08-23 14:40"
+                            },
+                            "normalRate": 34,
+                            "pendingRate": 2,
+                            "equipmentRate": 0
+                            },
+                            {
+                            "constraintPeriod": {
+                                "wef": "2023-08-23 14:40",
+                                "unt": "2023-08-23 20:40"
+                            },
+                            "normalRate": 30,
+                            "pendingRate": 1,
+                            "equipmentRate": 0
+                            }
+                        ],
+                        "reason": "ATC_STAFFING",
+                        "delay": 2320,
+                        "impactedFlights": 203,
+                        "TVSet": "LFMMFMPE"
+                    }, {...}, ... ],
+                "LFMMFMPW": [{...}, ...],
+                "LFMMAPP": [ {...}, ...],
+                "LFBBFMP": ...
+                ...
+            }
+          @param (string) $tvset : LFMMFMPE, LFMMFMPW, LFMMAPP, (LFMMAPPE, LFMMAPPW sont forcés en amont en LFMMAPP)
+               
+            (array) $update_obj de la BDD
+                [ 
+                    {
+                        "time" : "hh:mm", 
+                        "rates": [{"start": .., "end": .., "rate": ..}, ..., {}], 
+                        "debut": .., 
+                        "fin": .. 
+                    },
+                    ...
+                    {}
+                ]
+
+            Attention : lorsque les reguls sont à cheval sur 2 jours, le delay est imputée au 1er jour et le 2è jour
+            la régul est notée avec un delay de 0 => pas de mise à jour de regul si elle a commencé la veille
+        ---------------------------------------------------------------------------------------------------------------- */
+    
     public function set_reguls(string $jour, stdClass $reguls, string $tvset = "LFMMAPP") {
         if ($tvset === "LFMMFMPE") $table = "reguls_est";
         if ($tvset === "LFMMFMPW") $table = "reguls_west";
         if ($tvset === "LFMMAPP") $table = "reguls_app";
-        $table_reg = $this->get_reguls($jour, $tvset); // [ ["id"=>nb, ...], ..., ["id"=>nb, ...] ]
+
+        $yesterday = new DateTime($jour);
+        $yesterday->modify('-1 day');
+        $veille = $yesterday->format('Y-m-d');
+        
+        $table_reg_jour = $this->get_reguls($jour, $tvset); // [ ["id"=>nb, ...], ..., ["id"=>nb, ...] ]
+        $table_reg_veille = $this->get_reguls($veille, $tvset);
+
+        // array des reguls existantes dans la BDD jour J et la veille
+        $table_reg = array_merge($table_reg_jour, $table_reg_veille);
+
         foreach($reguls->$tvset as $reg) {
             $exist_in_bdd = false;
             $day = substr($reg->applicability->wef, 0, 10);
@@ -699,6 +733,7 @@ class bdd {
             $constraints = $reg->constraints;
             $last_update = $reg->lastUpdate->userUpdateType;
             $last_update_time = substr($reg->lastUpdate->userUpdateEventTime,0,16);
+            
             $rates = [];
             foreach($constraints as $constraint) {
                 $rate = new stdClass();
@@ -707,8 +742,8 @@ class bdd {
                 $rate->rate = $constraint->normalRate + $constraint->pendingRate + $constraint->equipmentRate;
                 array_push($rates, $rate);
             }
-
             $rates_str = json_encode($rates);
+
             $id = null;
             // la regul existe-t-elle dans la BDD
             foreach($table_reg as $treg) {
@@ -718,62 +753,72 @@ class bdd {
                     $id = $treg["id"];
                     $update_obj = $treg["updates"]; 
                 } 
-            }
-
-            /* voir si update_obj peut indiquer le type de changement : 
-            [ 
-                {
-                    "time" : "hh:mm", 
-                    "rates": [{"start": .., "end": .., "rate": ..}, ..., {}], 
-                    "debut": .., 
-                    "fin": .. 
-                }
-            ]
-            */
+            }  
 
             if ($exist_in_bdd) {
-                // la regul peut exister et le fichier 1h après est toujours une CREATION sauf que les delay, vols impactés, taux, doivent être mis à jour
+                // la regul peut exister et les données récupérées indiquent toujours une CREATION, donc les données sont identiques sauf que les delay et vols impactés, doivent être mis à jour
                 if ($last_update === "CREATION") {
-                    //echo "old creation<br>";
-                    $deletion_time = $last_update_time;
-                    $req = "UPDATE $table SET debut = '$debut', fin= '$fin', rates = JSON_COMPACT('$rates_str'), delay = '$delay', impactedFlights = '$impactedFlights' WHERE id = '$id'";
-                    $stmt = Mysql::getInstance()->prepare($req);
-                    $stmt->execute();
+                    // Vérif que la regul est bien du jour et non de la veille (Si c'est une regul débutant la veille, il ne faut pas mettre à jour les delay et les vols impactés)
+                    if ($jour === $day) {
+                        $req = "UPDATE $table SET debut = '$debut', fin= '$fin', rates = JSON_COMPACT('$rates_str'), delay = '$delay', impactedFlights = '$impactedFlights' WHERE id = '$id'";
+                        $stmt = Mysql::getInstance()->prepare($req);
+                        $stmt->execute();
+                    } 
                 }
                 if ($last_update === "DELETION") {
-                    //echo "old deletion<br>";
-                    $deletion_time = $last_update_time;
-                    $req = "UPDATE $table SET debut = '$debut', fin= '$fin', deletion = '$deletion_time', rates = JSON_COMPACT('$rates_str'), delay = '$delay', impactedFlights = '$impactedFlights' WHERE id = '$id'";
-                    $stmt = Mysql::getInstance()->prepare($req);
-                    $stmt->execute();
+                    // Vérif que la regul est bien du jour et non de la veille. Si c'est une regul débutant la veille, il ne faut pas mettre à jour les délais
+                    if ($jour === $day) {
+                        $deletion_time = $last_update_time;
+                        $req = "UPDATE $table SET debut = '$debut', fin= '$fin', deletion = '$deletion_time', rates = JSON_COMPACT('$rates_str'), delay = '$delay', impactedFlights = '$impactedFlights' WHERE id = '$id'";
+                        $stmt = Mysql::getInstance()->prepare($req);
+                        $stmt->execute();
+                    } else {
+                        $deletion_time = $last_update_time;
+                        $req = "UPDATE $table SET debut = '$debut', fin= '$fin', deletion = '$deletion_time', rates = JSON_COMPACT('$rates_str') WHERE id = '$id'";
+                        $stmt = Mysql::getInstance()->prepare($req);
+                        $stmt->execute();
+                    }
                 }
                 // pour un UPDATE, les heures de debut et de fin peuvent avoir été modifiées en plus du reste
                 if ($last_update === "UPDATE") {
-                    //echo "old update $regId<br>";
                     $upd = json_decode($update_obj); // array d'objets : update_obj de la BDD 
                     $trouve = false;
                     foreach($upd as $up) {
+                        // last update time identique au précédent : c'est le même update que la fois d'avant
                         if ($last_update_time === $up->time) {
                             $trouve = true;
                         }
                     }
-                    // Si nouvel update
-                    if ($trouve === false) {
-                        $new_obj = new stdClass();
-                        $new_obj->time = $last_update_time;
-                        $new_obj->debut = $debut;
-                        $new_obj->fin = $fin;
-                        $new_obj->rates = $rates;
-                        array_push($upd, $new_obj);
-                        $obj_upd = json_encode($upd);
-                        $req = "UPDATE $table SET debut = '$debut', fin= '$fin', rates = JSON_COMPACT('$rates_str'), updates = JSON_COMPACT('$obj_upd'), delay = '$delay', impactedFlights = '$impactedFlights' WHERE id = '$id'";
-                        $stmt = Mysql::getInstance()->prepare($req);
-                        $stmt->execute();
-                    }  
-                }
+                    // Vérif que la regul est bien du jour et non de la veille. Si c'est une regul débutant la veille, on ne met rien à jour car de toute façon NM impute delay et vols impactés à la veille (et ne met plus à jour) et ces données ont été récupérées à 23h58 UTC.
+                    if ($jour === $day) {
+                        // Si c'est un premier update
+                        if ($trouve === false) {
+                            $new_obj = new stdClass();
+                            $new_obj->time = $last_update_time;
+                            $new_obj->debut = $debut;
+                            $new_obj->fin = $fin;
+                            $new_obj->rates = $rates;
+                            array_push($upd, $new_obj);
+                            $obj_upd = json_encode($upd);
+                            $req = "UPDATE $table SET debut = '$debut', fin= '$fin', rates = JSON_COMPACT('$rates_str'), updates = JSON_COMPACT('$obj_upd'), delay = '$delay', impactedFlights = '$impactedFlights' WHERE id = '$id'";
+                            $stmt = Mysql::getInstance()->prepare($req);
+                            $stmt->execute();
+                        }  else { // un update identique existait déjà dans la BDD, on ne met à jour que les delay et les vols impactés
+                            $new_obj = new stdClass();
+                            $new_obj->time = $last_update_time;
+                            $new_obj->debut = $debut;
+                            $new_obj->fin = $fin;
+                            $new_obj->rates = $rates;
+                            array_push($upd, $new_obj);
+                            $obj_upd = json_encode($upd);
+                            $req = "UPDATE $table SET delay = '$delay', impactedFlights = '$impactedFlights' WHERE id = '$id'";
+                            $stmt = Mysql::getInstance()->prepare($req);
+                            $stmt->execute();
+                        }
+                    } 
+                } 
             } else {
                 if ($last_update === "CREATION") {
-                    //echo "new creation<br>";
                     $creation_time = '[{"time":"'.$last_update_time.'","debut":"'.$debut.'","fin":"'.$fin.'","rates":'.$rates_str.'}]';
                     $update_obj = '[]';
                     $deletion_time = '';
@@ -782,7 +827,6 @@ class bdd {
                     $stmt->execute();
                 }
                 if ($last_update === "DELETION") {
-                    //echo "new deletion<br>";
                     $deletion_time = $last_update_time;
                     $update_obj = '[]';
                     $creation_time = '{}';
@@ -791,7 +835,6 @@ class bdd {
                     $stmt->execute();
                 }
                 if ($last_update === "UPDATE") {
-                    //echo "new update<br>";
                     $deletion_time = '';
                     $update_obj = '[{"time":"'.$last_update_time.'","debut":"'.$debut.'","fin":"'.$fin.'","rates":'.$rates_str.'}]';
                     $creation_time = '{}';
