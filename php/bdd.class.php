@@ -119,13 +119,17 @@ class bdd_tds {
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
         $table2 = "tds_repartition_$this->zone";
-        $req2 = "INSERT INTO $table2 (nom_tds) VALUES ('$nom')"; // simple quote autour de $nom obligatoire
+        $req2 = "INSERT INTO $table2 (nom_tds) VALUES ('$nom')"; 
         $stmt2 = Mysql::getInstance()->prepare($req2);
         $stmt2->execute();
         $table3 = "tds_greve_$this->zone";
-        $req3 = "INSERT INTO $table3 (nom_tds) VALUES ('$nom')"; // simple quote autour de $nom obligatoire
+        $req3 = "INSERT INTO $table3 (nom_tds) VALUES ('$nom')"; 
         $stmt3 = Mysql::getInstance()->prepare($req3);
         $stmt3->execute();
+        $table4 = "tds_repartition_greve_$this->zone";
+        $req4 = "INSERT INTO $table4 (nom_tds) VALUES ('$nom')"; 
+        $stmt4 = Mysql::getInstance()->prepare($req4);
+        $stmt4->execute();
     }
 
     public function delete_tds(string $nom) {
@@ -141,6 +145,10 @@ class bdd_tds {
         $req3 = "DELETE FROM $table3 WHERE nom_tds = '$nom'";
         $stmt3 = Mysql::getInstance()->prepare($req3);
         $stmt3->execute();
+        $table4 = "tds_repartition_greve_$this->zone";
+        $req4 = "DELETE FROM $table4 WHERE nom_tds = '$nom'"; 
+        $stmt4 = Mysql::getInstance()->prepare($req4);
+        $stmt4->execute();
     }
 
     /*  ------------------------------------------------------------------------------------------------------------
@@ -394,6 +402,31 @@ class bdd_tds {
         return $obj;
     }
     
+    /*  ----------------------------------------------------------------------------------------
+        @return array(8) {
+            ["nom_tds"]=> string(10) "mshxp_2024",
+            ["JX"]=> string(4654) "{
+                "type_repartition":"standard",
+                "standard":{
+                    "sousvac2":{"reste0":{"A":0,"B":0},"reste1":{"A":0,"B":1}},
+                    "sousvac3":{"reste0":{"A":0,"B":0,"C":0},"reste1":{"A":0,"B":0,"C":1},"reste2":{"A":0,"B":1,"C":1}}
+                },
+                "fixe":{
+                    "sousvac2":{
+                        "dimanche":{"pc2":{"A":0,"B":2},"pc3":{"A":0,"B":3},"pc4":{"A":2,"B":2},"pc5":{"A":2,"B":3},"pc6":{"A":3,"B":3},"pc7":{"A":3,"B":4},"pc8":{"A":4,"B":4},"pc9":{"A":4,"B":5},"pc10":{"A":5,"B":5},"pc11":{"A":5,"B":6},"pc12":{"A":6,"B":6},"pc13":{"A":6,"B":7},"pc14":{"A":7,"B":7}},
+                        "lundi":{...},...
+                    },
+                    "sousvac3":{
+                        "dimanche":{"pc2":{"A":2,"B":0,"C":0},"pc3":{"A":3,"B":0,"C":0},"pc4":{"A":2,"B":2,"C":0},"pc5":{"A":2,"B":3,"C":0},"pc6":{"A":2,"B":2,"C":2},"pc7":{"A":2,"B":2,"C":3},"pc8":{"A":2,"B":3,"C":3},"pc9":{"A":3,"B":3,"C":3},"pc10":{"A":3,"B":3,"C":4},"pc11":{"A":3,"B":4,"C":4},"pc12":{"A":4,"B":4,"C":4},"pc13":{"A":4,"B":4,"C":5},"pc14":{"A":4,"B":5,"C":5}},
+                        "lundi":{...},...
+                    }
+                }
+            },
+            ["J1]=> "{...}",
+            ...
+        }
+        ------------------------------------------------------------------------------------------- */
+
     public function get_repartition(string $saison = "", bool $greve = false) {
         if (strcmp($saison, "") === 0) $saison = $this->saison;
         $cycle = $this->get_cycle();
