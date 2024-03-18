@@ -262,11 +262,12 @@ td.typePC:hover, td.typePC-DET:hover, td.typePC-RPL:hover {
 }
 
 .surligne_cds {
-	background-color: #59d0ee;
+	/*background-color: #59d0ee;*/
+	color: red;
 }
 
 .pc_color {
-	color: #0ac0f2;
+	color: #0aa4cf;
 }
 
 .off_color {
@@ -506,18 +507,35 @@ input.date {
 #modif_eq {
 	display: flex;
 	flex-direction: row;
+	flex-wrap: wrap;
 }
 
 #modif_eq table {
-	width: 320px;
+	width: 280px;
+	display: inline-block;
 }
 
 #modif_eq table thead {
 	background-color: var(--table-titre-color);
+	height: 24px;
+}
+
+#modif_eq table th {
+	font-size: 1rem;
+	text-align: left;
+}
+
+#modif_eq thead th:nth-child(1), #modif_eq thead td:nth-child(1) {
+	width: 200px;
+}
+	  
+#modif_eq thead th:nth-child(2), #modif_eq thead td:nth-child(1) {
+	width: 80px;
 }
 
 #modif_eq table td {
-	font-size: 0.9rem;
+	font-size: 1rem;
+	text-align: left;
 }
 
 .popup-box h2 {

@@ -113,8 +113,6 @@ class capa {
         $this->zone_olaf = ($zone === "ouest") ? 'W' : 'E';
         $this->cycle = $this->bdd->get_cycle();   		// ["JX","J1","J3","S2","","","J2","S1","N","","",""]; 
 		$this->clean_cycle = $this->get_clean_cycle();	// ["JX","J1","J3","S2","J2","S1","N"]; 
-        $this->dep = new DateTime('2021-01-13'); // 13 janv 2021
-        $this->eq_dep = 9; // équipe 9 en JX
         $this->init();
     }
 
@@ -123,12 +121,8 @@ class capa {
 		$this->tour_local = $this->bdd->get_tds();
 		$this->tour_local_greve = $this->bdd->get_tds("", true);
 		$this->saison = $this->bdd->get_current_tds();
-		$this->tour_utc = $this->get_tour_utc();
-		$this->tour_utc_greve = $this->get_tour_utc(true);
 		$this->tds_supp_local = $this->bdd->get_tds_supp();
-		$this->tds_supp_utc = $this->get_tds_supp_utc();
 		$this->instr = $this->bdd_instr->get_creneaux_day($this->day, $this->zone);
-		$this->tab_vac_eq = $this->get_vac_eq();
 		$this->repartition = $this->bdd->get_repartition();
 		$this->repartition_greve = $this->bdd->get_repartition("", true);
 		$yesterday = new DateTime($this->day);
@@ -139,8 +133,8 @@ class capa {
 	// @return ["JX", "J1", "J3", "S2", "J2", "S1", "N"]
 	public function get_clean_cycle() {
 		$clean_vacs = [];
-		$vacs = $this->cycle;
-		foreach ($vacs as $value) {
+		$vacations = $this->cycle;
+		foreach ($vacations as $value) {
 			if ($value !== "") array_push($clean_vacs, $value);
 		}
 		return $clean_vacs;
@@ -195,13 +189,27 @@ class capa {
 		$effectif = get_olaf($this->zone_olaf, $this->day, $this->yesterday);
         // convert to stdClass
 		$this->effectif = json_decode($effectif);
+		// Récupère les couples vacations/equipe sortis par OLAF avec le 'N-1'
+		$this->tab_vac_eq = $this->get_vac_eq_olaf();
+		// Récupère les vacations sortis par OLAF
+		$this->workingVacs = array_keys(get_object_vars($this->tab_vac_eq));
+		$workingVacsArrayObject = new ArrayObject($this->workingVacs);
+		// Vacations OLAF sans le 'N-1'
+		$this->workingCycle = $workingVacsArrayObject->getArrayCopy();
+		if(($key = array_search("N-1", $this->workingCycle)) !== false) {
+			unset($this->workingCycle[$key]);
+		}
+
+		$this->tour_utc = $this->get_tour_utc();
+		$this->tour_utc_greve = $this->get_tour_utc(true);
+		$this->tds_supp_utc = $this->get_tds_supp_utc();
+
 		// Calcul du nombre de pc à afficher 
 		// On récupère l'effectif total, donc on doit enlever le cds sur les vacations qui en ont 1	
 		$this->pc = new stdClass();
-		foreach($this->clean_cycle as $vac) {
-			$this->pc->$vac = new stdClass();
+		foreach($this->workingVacs as $vac) {
+			$this->pc->{$vac} = new stdClass();
 		}
-		$this->pc->{'N-1'} = new stdClass();
 
 		/*  -------------------------------------------------
 			pc["JX"] contient les JX mais aussi les RD bleus
@@ -220,7 +228,7 @@ class capa {
 		}
 		-----------------------------------------------------  */
 
-		// Dans OLAF, Renfort contient les JX + les RD bleus
+		// Dans OLAF, Renfort contient les tours supplémentaires
 		$Renfort = $this->effectif->{$this->day}->Renfort;
 		// Renfort hors JX
 		$RD_names_horsJX = [];
@@ -303,13 +311,39 @@ class capa {
 		
 		$tds_suppl = new stdClass();
 
-		$this->pc->JX->equipe = $this->tab_vac_eq->JX;
+		//$this->pc->JX->equipe = $this->tab_vac_eq->JX;
+
+		/*	-----------------------------------------------------------------------
+					Get contextmenutype = tagged people
+				contextmenutype: {
+					"xxxxxx": {
+						"id_licence": "4000889",
+						"idagent": "4000889",
+						"label": "JX",
+						"prenom": "Coco",
+						"nom": "LAPIN"
+					},
+					...
+				}
+			----------------------------------------------------------------------- */
+		if (is_array($this->effectif->{$this->day}->contextmenutype)) {
+			$contextmenu_today = [];
+		} else {
+			$contextmenu_today = array_keys(get_object_vars($this->effectif->{$this->day}->contextmenutype));
+		}
+		if (is_array($this->effectif->{$this->yesterday}->contextmenutype)) {
+			$contextmenu_yesterday = [];
+		} else {
+			$contextmenu_yesterday = array_keys(get_object_vars($this->effectif->{$this->yesterday}->contextmenutype));
+		}
+
 
 		foreach ($this->tab_vac_eq as $vac => $value) {
 			$p = $value."-".$this->zone_olaf;
 			$jour = $this->day;
 			if ($vac === "N-1") $jour = $this->yesterday;
-			if ($vac !== "JX") {
+			// lorsque la colonne JX d'OLAF n'existe pas, $p n'existe pas
+			if (isset($this->effectif->{$jour}->{$p})) {
 				// Le RO induit apparait si detachés > 1 et plus que 1 n'est pas Expert Ops, ACDS ou Assistant sub
 				$this->pc->{$vac}->ROinduit = (int) $this->effectif->{$jour}->{$p}->teamReserve->roInduction;
 				if ($vac === "N-1") {
@@ -327,11 +361,11 @@ class capa {
 				$userList = $this->effectif->{$jour}->{$p}->userList;
 				$this->pc->{$vac}->teamNominalList = new stdClass();
 				$this->pc->{$vac}->teamNominalList->agentsList = [];
-				foreach ( $userList as $key=>$value ) {
+				foreach ( $userList as $idagent=>$value ) {
 					if (!(is_array($value->role))) { // soit array vide, soit objet que l'on convertit en array
 						$value->role = explode(",", $value->role);
 					}
-					if (!(in_array(14, $value->role) || in_array(37, $value->role))) { // 14 = détaché 37 = assistant sub ne sont pas mis (OLAF les compte)
+					if (!(in_array(14, $value->role) || in_array(37, $value->role))) { // 14 = détaché 37 = assistant sub, on ne les prend pas en compte (OLAF les compte)
 						$nc = $value->prenom." ".$value->nom;
 						$this->pc->{$vac}->teamNominalList->{$nc} = new stdClass();
 						$this->pc->{$vac}->teamNominalList->{$nc}->nom = $value->nom;
@@ -366,35 +400,57 @@ class capa {
 								$this->pc->{$vac}->RO += 1;
 							} 
 							if ($ro === false) {
-								
-								$this->pc->{$vac}->teamToday->{$nc} = new stdClass();
-								$this->pc->{$vac}->teamToday->{$nc}->prenom = $pers->agent->prenom;
-								$this->pc->{$vac}->teamToday->{$nc}->nom = $pers->agent->nom;
-								$this->pc->{$vac}->teamToday->{$nc}->nomComplet = $nc;
-								$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC";
-								$this->pc->{$vac}->teamToday->{$nc}->hasCDSCapability = false; 
-								$this->pc->{$vac}->teamToday->{$nc}->hasACDSCapability = false; 
+								//echo "$vac<br>";
+								if ($vac !== "JX") {
+									$this->pc->{$vac}->teamToday->{$nc} = new stdClass();
+									$this->pc->{$vac}->teamToday->{$nc}->prenom = $pers->agent->prenom;
+									$this->pc->{$vac}->teamToday->{$nc}->nom = $pers->agent->nom;
+									$this->pc->{$vac}->teamToday->{$nc}->nomComplet = $nc;
+									$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC";
+									$this->pc->{$vac}->teamToday->{$nc}->hasCDSCapability = false; 
+									$this->pc->{$vac}->teamToday->{$nc}->hasACDSCapability = false; 
 
-								if (isset($pers->agent->role)) {
-									if (is_array($pers->agent->role)) {
-										$this->pc->{$vac}->teamToday->{$nc}->role = $pers->agent->role;
-									}else {
-										$this->pc->{$vac}->teamToday->{$nc}->role = explode(",", $pers->agent->role);
+									if (isset($pers->agent->role)) {
+										if (is_array($pers->agent->role)) {
+											$this->pc->{$vac}->teamToday->{$nc}->role = $pers->agent->role;
+										}else {
+											$this->pc->{$vac}->teamToday->{$nc}->role = explode(",", $pers->agent->role);
+										}
+										
+										if (in_array(82, $this->pc->{$vac}->teamToday->{$nc}->role)) {
+											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-CDS";
+											$this->pc->{$vac}->teamToday->{$nc}->hasCDSCapability = true; 
+										}
+										if (in_array(80, $this->pc->{$vac}->teamToday->{$nc}->role)) {
+											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-ACDS";
+											$this->pc->{$vac}->teamToday->{$nc}->hasACDSCapability = true;
+										} 
+									} else {
+										$this->pc->{$vac}->teamToday->{$nc}->role = [];
 									}
-									
-									if (in_array(82, $this->pc->{$vac}->teamToday->{$nc}->role)) {
-										$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-CDS";
-										$this->pc->{$vac}->teamToday->{$nc}->hasCDSCapability = true; 
-									}
-									if (in_array(80, $this->pc->{$vac}->teamToday->{$nc}->role)) {
-										$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-ACDS";
-										$this->pc->{$vac}->teamToday->{$nc}->hasACDSCapability = true;
-									} 
+									if ($cds) $this->pc->{$vac}->teamToday->{$nc}->fonction = "CDS";
+									if (in_array(10, $this->pc->{$vac}->teamToday->{$nc}->role)) $this->pc->{$vac}->teamToday->{$nc}->fonction = "stagiaire";
 								} else {
-									$this->pc->{$vac}->teamToday->{$nc}->role = [];
+									foreach($contextmenu_today as $key) {
+										/*
+										echo "\nKey\n";
+										echo $key;
+										echo "\n$nc\n";
+										echo $pers->agent->id."\n";
+										echo $this->effectif->{$this->day}->contextmenutype->{$key}->idagent."\n";
+										*/
+										if ($this->effectif->{$this->day}->contextmenutype->{$key}->idagent == $pers->agent->id) { // == car un est un int et l'autre string
+											//echo "$p - $vac - ".$nc."<br>";
+											$this->pc->{$vac}->teamToday->{$nc} = new stdClass();
+											$this->pc->{$vac}->teamToday->{$nc}->prenom = $pers->agent->prenom;
+											$this->pc->{$vac}->teamToday->{$nc}->nom = $pers->agent->nom;
+											$this->pc->{$vac}->teamToday->{$nc}->nomComplet = $nc;
+											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC";
+											$this->pc->{$vac}->teamToday->{$nc}->hasCDSCapability = false; 
+											$this->pc->{$vac}->teamToday->{$nc}->hasACDSCapability = false;
+										}
+									}
 								}
-								if ($cds) $this->pc->{$vac}->teamToday->{$nc}->fonction = "CDS";
-								if (in_array(10, $this->pc->{$vac}->teamToday->{$nc}->role)) $this->pc->{$vac}->teamToday->{$nc}->fonction = "stagiaire";
 							}
 						}
 					}
@@ -538,14 +594,23 @@ class capa {
 				$this->pc->{$vac}->ROinduit = 0;
 				$this->pc->{$vac}->nbcds = 0;
 				$this->pc->{$vac}->nbcds_greve = 0;
-				$this->pc->{$vac}->nbpc = $nb_jx; 
+				$this->pc->{$vac}->nbpc = 0; 
 				$this->pc->{$vac}->BV = 10;
 				$this->pc->{$vac}->RO = 0;
+				$this->pc->{$vac}->RoList = [];
+				$this->pc->{$vac}->stage = [];
+				$this->pc->{$vac}->requis = [];
+				$this->pc->{$vac}->conge = [];
 				$det = 0; 
-				$this->pc->{$vac}->renfort = $nb_jx_det;
+				$this->pc->{$vac}->renfort = 0;
 				$this->pc->{$vac}->renfortAgent = new stdClass();
+				$this->pc->{$vac}->RPL = new stdClass();
 				$this->pc->{$vac}->nb_requis = 0;
+				$this->pc->{$vac}->teamToday = new StdClass();
+				$this->pc->{$vac}->teamNominalList = new stdClass();
+				$this->pc->{$vac}->teamNominalList->agentsList = [];
 			}
+			
 		} 
 
 		// array du nombre de pc dispo associé au créneau horaire du tour de service
@@ -566,13 +631,9 @@ class capa {
 		$effectif_total_RD_15mn = [];
 		$effectif_RD_15mn = new stdClass();
 
-		// vacs = ["JX","J1", "J3", "S2", "J2", "S1", "N", "N-1"]  avec le "N-1"
-		$vacs = $this->clean_cycle;
-		array_push($vacs, "N-1");
-
 		$nb_pc_sousvac = new stdClass();
 		$nb_pc_sousvac_greve = new stdClass();
-		foreach($vacs as $vacation) {
+		foreach($this->workingVacs as $vacation) {
 			$sv = $this->get_sousvacs($vacation);
 			$sv_greve = $this->get_sousvacs($vacation, true);
 			$nb_pc_sousvac->{$vacation} = new StdClass();
@@ -588,7 +649,7 @@ class capa {
 		}
 
 		for($i=0;$i<96;$i++) {
-			foreach($vacs as $vacation) {
+			foreach($this->workingVacs as $vacation) {
 				$sv = $this->get_sousvacs($vacation);
 				$sv_greve = $this->get_sousvacs($vacation, true);
 				$nb_pc_sousvac->{$vacation}->cds[$i] = 0;
@@ -607,7 +668,7 @@ class capa {
 
 		for($i=0;$i<96;$i++) {
 			$obj_sv = new stdClass();
-			foreach($vacs as $vacation) {
+			foreach($this->workingVacs as $vacation) {
 				$obj_sv->$vacation = new stdClass();
 				$sv = $this->get_sousvacs($vacation);
 				$sv_greve = $this->get_sousvacs($vacation, true);
@@ -657,7 +718,11 @@ class capa {
 					in15mn[i] = [nb_pc_supp, { "type": "Inst ou Eleve ....", "comm": "commentaire"}]
 				---------------------------------------------------------------------------------------- */
 			$in15mn[$i] = [0, []];
-			
+			/*
+			echo "<pre>";
+			var_dump($this->instr);
+			echo "</pre>";
+			*/
 			foreach($this->instr as $index=>$elem) {
 				$debut = $elem["debut"];
 				$fin = $elem["fin"];
@@ -667,6 +732,14 @@ class capa {
 				$comm = $elem["comment"];
 				$t = get_time($i);
 				if ($d === $this->day && strtolower($zone) === $this->zone) {
+					if ($i === 95 && $fin === "23:59:00") { 
+						$in15mn[$i][0] -= 1; 
+						$nb_pc -= 1; 
+						$z = new stdClass();
+						$z->type = $type;
+						$z->comm = $comm;
+						array_push($in15mn[$i][1], $z); 
+					}
 					if ($t >= $debut && $t< $fin) {
 						$z = new stdClass();
 						$z->type = $type;
@@ -761,6 +834,7 @@ class capa {
 		$res->tour_supp_local = $this->tds_supp_local;
 		$res->tour_supp_utc = $this->tds_supp_utc;
 		$res->workingTeam = $this->tab_vac_eq;
+		$res->workingVacs = $this->workingVacs;
 		$res->all_sv= $this->get_all_sousvacs();
 		$res->repartition = $this->repartition;
 		$res->repartition_greve = $this->repartition_greve;
@@ -782,6 +856,7 @@ class capa {
 		$res->pc_sousvac_15mn = $nb_pc_sousvac;
 		$res->pc_sousvac_15mn_greve = $nb_pc_sousvac_greve;
 		$res->details_sv_15mn = $details_sv_15mn;
+		$res->instr = $this->instr;
 		
 		return $res;
 
@@ -825,9 +900,8 @@ class capa {
 
 	// @return {"vac": ["A", "B",...], ...}
 	public function get_all_sousvacs(bool $greve = false) {
-		$vacs = $this->get_clean_cycle();
 		$obj = new stdClass();
-		foreach($vacs as $vac) {
+		foreach($this->workingCycle as $vac) {
 			$obj->$vac = $this->get_sousvacs($vac, $greve);
 		}
 		return $obj;
@@ -951,15 +1025,16 @@ class capa {
 
     /* ---------------------------------------------------
         Calcule les équipes qui travaillent et leur vac
-        Paramètres
-            @param {string} day - yyyy-mm-jj
+			2021-01-13 :  13 janv 2021, equipe 9 en JX
             @returns {object} { "J1": 5, "vac": n°eq ... }
     ---------------------------------------------------- */
     public function get_vac_eq () {
-        $ecartj = $this->dep->diff(new DateTime($this->day))->days;
+		$dep = new DateTime('2021-01-13');
+        $eq_dep = 9;
+        $ecartj = $dep->diff(new DateTime($this->day))->days;
         $tab = new stdClass();
         for ($eq=1;$eq<13;$eq++) {
-            $debvac = ($ecartj - $eq + $this->eq_dep) % 12;
+            $debvac = ($ecartj - $eq + $eq_dep) % 12;
 			$z = $this->cycle[$debvac];
             if ($z !== "" && $z !== "N") {
 				$tab->$z = $eq;
@@ -970,6 +1045,31 @@ class capa {
                 $tab->{'N-1'} = $eqN1; 
             }
         }
+        return $tab;
+    }
+
+	/* -----------------------------------------------------------------
+        Récupère les équipes qui travaillent depuis OLAF avec le 'N-1'
+            @returns {object} { "J1": 5, "vac": n°eq ... }
+    -------------------------------------------------------------------- */
+    public function get_vac_eq_olaf () {
+		$tab = new stdClass();
+        $keys = array_keys(get_object_vars($this->effectif->{$this->day}));
+		foreach($keys as $eq) {
+			// si "-E" ou "-W" est dans la chaine
+			if(strpos($eq, "-E") !== false || strpos($eq, "-W") !== false){
+				$numero = (int) explode("-", $eq)[0];
+				// 2è test, on vérifie si c'est un nombre
+				if (is_numeric($numero)) {
+					$vac = $this->effectif->{$this->day}->{$eq}->vacation->label;
+					$tab->{$vac} = $numero;
+					if ($vac === "N") {
+						$eqN1 = $numero === 1 ? 12 : $numero - 1; // equipe de nuit de la veille
+						$tab->{'N-1'} = $eqN1;
+					}
+				}
+			}
+		}
         return $tab;
     }
 
@@ -1023,8 +1123,8 @@ class capa {
     public function get_tour_utc($greve = false) {
 
 		$tour_utc = new stdClass();
-
-		foreach($this->clean_cycle as $vac) {
+		
+		foreach($this->workingCycle as $vac) {
 			$tour_utc->$vac = new stdClass();
 			$this->push_utc($vac, $tour_utc, $greve);
 		}
