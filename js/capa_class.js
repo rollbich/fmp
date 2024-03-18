@@ -28,6 +28,7 @@ class capa {
 		this.clean_cycle = this.pc_ini.clean_cycle;
 		console.log("Saison: "+this.saison);
 		this.workingTeam = this.pc_ini.workingTeam;
+		this.workingVacs = this.pc_ini.workingVacs;
 		this.details_sv_15mn = this.pc_ini.details_sv_15mn;
 	}
 
@@ -96,23 +97,6 @@ class capa {
 		
 		// si pas de donnée on retourne 0
 		if (this.effectif == 0) return 0;
-		
-		/*  -------------------------------------------------
-			pc["JX"] contient les JX mais aussi les RD bleus
-			pc["JX"] = {
-				"JXA": {
-					"nombre": 2,
-					"agent": {
-						"Jean Coco": "détaché",
-						"Moustache": "salle"
-					}
-				},
-				"RDJ3b-ms": {
-					...
-				}
-				...
-		}
-		-----------------------------------------------------  */
 
 		return this.effectif;
     }
@@ -183,9 +167,7 @@ class feuille_capa extends capa {
 				</thead>
 				<tbody>`;
 		
-		const cycle = [...this.clean_cycle];
-		cycle.push("N-1");
-		cycle.forEach(vac => {
+		this.workingVacs.forEach(vac => {
 			res += `${this.affiche_vac(vac)}`;
 		})
 		res += `${this.affiche_RD()}`;
@@ -227,42 +209,6 @@ class feuille_capa extends capa {
 			})
 		})
 
-		// ajoute le hover sur la case Jx
-		const td_jx = document.querySelector(".click_jx");
-		let jx_types = Object.keys(this.pc_vac["JX"]).filter(word => word.includes("JX"));
-		const names = [];
-		jx_types.forEach(elem => {
-			let detail = this.pc_vac["JX"][elem]["agent"];
-			const noms = Object.keys(detail);
-			noms.forEach(nom => {
-				const detache = detail[nom] === "détaché" ? " (RD)" : "";
-				const aff = nom + detache;
-				names.push(aff);
-			})
-		})
-		td_jx.addEventListener('mouseover', (event) => {
-			const el = document.createElement('div');
-			el.setAttribute('id', 'popinstr');
-			let det = '<div style="float:left;width:90%;">';
-			names.forEach(agent => {
-				det += `${agent}<br>`;
-			})
-			det += '</div>';
-			const pos = td_jx.getBoundingClientRect();
-			el.style.position = 'absolute';
-			el.style.left = pos.left + 60 + 'px';
-			el.style.top = pos.top + window.scrollY + 'px';
-			el.style.backgroundColor = '#fbb';
-			el.style.padding = '10px';
-			el.style.width = '200px';
-			let parentDiv = document.getElementById("glob_container");
-			parentDiv.insertBefore(el, this.containerTour);
-			el.innerHTML = det;
-		})
-		td_jx.addEventListener('mouseleave', (event) => {
-			$('popinstr').remove();
-		})
-
 		// ajoute le hover sur la case RD hors JX
 		const td_RD = document.querySelectorAll(".click_RD");
 		td_RD.forEach(td_el => {
@@ -301,14 +247,10 @@ class feuille_capa extends capa {
 		td_pc.forEach(td_el => {
 			td_el.addEventListener('click', (event) => {
 				let ih = `
-				<div id="modif_eq">
-				${this.add_pers("J1")}
-				${this.add_pers("J3")}
-				${this.add_pers("S2")}
-				${this.add_pers("J2")}
-				${this.add_pers("S1")}
-				${this.add_pers("N")}
-				${this.add_pers("N-1")}`;
+				<div id="modif_eq">`;
+				this.workingVacs.forEach(vac => {
+					ih += `${this.add_pers(vac)}`;
+				})
 				ih += `</div>`;
 				show_popup("Personnels", ih);
 			});
@@ -368,13 +310,12 @@ class feuille_capa extends capa {
 			}
 		};	
 		
-		const click_jx = vac === "JX" ? "pc std details masque click_jx" : "pc std details masque";
 		// sousvac cds et A
 		let ret = `
 		<tr data-vac='${vac}'>
 			<td class='left_2px right_1px'></td><td class='right_1px'></td>
 			<td class='right_1px'>cds</td><td class='details masque'>${this.pc_vac[vac]["nbcds"]}</td>
-			<td class='${click_jx}' data-vac='${vac}'>${this.pc_vac[vac]["nbpc"]}</td>
+			<td class='pc std details masque' data-vac='${vac}'>${this.pc_vac[vac]["nbpc"]}</td>
 			<td class='right_1px details masque' data-vac='${vac}'>${this.pc_vac[vac]["renfort"]}</td>
 			<td class='right_2px details masque'>${this.pc_vac[vac]["BV"]}</td>${res[0]}
 		</tr>
@@ -446,11 +387,10 @@ class feuille_capa extends capa {
 				</thead>
 				<tbody>`;
 		
-		const cycle = [...this.clean_cycle];
-		cycle.push("N-1");
-		cycle.forEach(vac => {
+		this.workingVacs.forEach(vac => {
 			res += `${this.affiche_vac_greve(vac)}`;
 		})
+
 		res += `<tr class="titre"><td class='bottom_2px left_2px' colspan="3">Heures UTC</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${this.heure()}`;
 		res += `${this.affiche_nbpc_greve()}`;
 		res += `${this.affiche_demi_uc_greve()}`;
@@ -466,14 +406,10 @@ class feuille_capa extends capa {
 		td_pc.forEach(td_el => {
 			td_el.addEventListener('click', (event) => {
 				let ih = `
-				<div id="modif_eq">
-				${this.add_pers_requis("J1")}
-				${this.add_pers_requis("J3")}
-				${this.add_pers_requis("S2")}
-				${this.add_pers_requis("J2")}
-				${this.add_pers_requis("S1")}
-				${this.add_pers_requis("N")}
-				${this.add_pers_requis("N-1")}`;
+				<div id="modif_eq">`;
+				this.workingVacs.forEach(vac => {
+					ih += `${this.add_pers_requis(vac)}`;
+				})
 				ih += `</div>`;
 				show_popup("Personnels requis", ih);
 			});
@@ -529,13 +465,12 @@ class feuille_capa extends capa {
 			}
 		};	
 		
-		const click_jx = vac === "JX" ? "pc greve details masque click_jx" : "pc greve details masque";
 		// sousvac cds et A
 		let ret = `
 		<tr data-vac='${vac}'>
 			<td class='left_2px right_1px'></td><td class='right_1px'></td>
 			<td class='right_1px'>cds</td><td class='details masque'>${this.pc_vac[vac]["nbcds_greve"]}</td>
-			<td class='${click_jx}' data-vac='${vac}'>${this.pc_vac[vac]["nb_requis"]}</td>
+			<td class='pc greve details masque' data-vac='${vac}'>${this.pc_vac[vac]["nb_requis"]}</td>
 			<td class='right_1px details masque' data-vac='${vac}'>${this.pc_vac[vac]["renfort"]}</td>
 			<td class='right_2px details masque'>${this.pc_vac[vac]["BV"]}</td>${res[0]}
 		</tr>
@@ -560,8 +495,17 @@ class feuille_capa extends capa {
 	// fabrique la ligne du supplément instruction
 	affiche_inst() {
 		let res2 = "";
-		res2 += `<td class='left_2px bottom_2px'></td>`; // border left à 2px pour la case 0
-		for(let i=1;i<95;i++) {	
+		if (this.pc_instr_15mn[0][1].length !== 0) {
+			let d = "data-instr='";
+			// val = { ""}
+			this.pc_instr_15mn[0][1].forEach(val => {
+				d += val.type + ":" + val.comm+"$";
+			})
+			d += "'";
+			d = d.trimEnd();
+			res2 += `<td class='bg left_2px bottom_2px' ${d}>${this.pc_instr_15mn[0][0]}</td>`;
+		}
+		for(let i=1;i<96;i++) {	
 			if (this.pc_instr_15mn[i][1].length !== 0) {
 				let d = "data-instr='";
 				// val = { ""}
@@ -570,11 +514,16 @@ class feuille_capa extends capa {
 				})
 				d += "'";
 				d = d.trimEnd();
-				res2 += `<td class='bg bottom_2px' ${d}>${this.pc_instr_15mn[i][0]}</td>`;
+				if (i === 95) {
+					res2 += `<td class='bg bottom_2px right_2px' ${d}>${this.pc_instr_15mn[i][0]}</td>`;
+				} else {
+					res2 += `<td class='bg bottom_2px' ${d}>${this.pc_instr_15mn[i][0]}</td>`;
+				}
 			}
-			else res2 += `<td class='bottom_2px'></td>`;
+			else {
+				if (i === 95) res2 += `<td class='bottom_2px right_2px'></td>`; else res2 += `<td class='bottom_2px'></td>`;
+			}
 		} 
-		res2 += `<td class='bottom_2px right_2px'></td>`;
 		let res = `<tr><td class='left_2px bottom_2px' colspan="3">Instru/Asa</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
 		return res;
 	}
@@ -888,7 +837,7 @@ class simu_capa extends capa {
 		await document.querySelector('.popup-close').click();
 		this.containerSimu.innerHTML = '<div id="simu_left_part"><div id="table_option"></div><div id="table"></div></div><div id="simu_right_part"></div>';
 		this.pc = structuredClone(this.pc_ini);
-		console.log("this.pc");
+		console.log("simu this.pc");
 		console.log(this.pc);
 		this.pc_vac = this.pc["pc_vac"];
 		this.RD = this.pc["RD"];
@@ -1038,14 +987,9 @@ class simu_capa extends capa {
 						</tr>
 					</thead>
 					<tbody>`;
-		res += `${this.affiche_vac("JX")}`;
-		res += `${this.affiche_vac("J1")}`;
-		res += `${this.affiche_vac("J3")}`;
-		res += `${this.affiche_vac("S2")}`;
-		res += `${this.affiche_vac("J2")}`;
-		res += `${this.affiche_vac("S1")}`;
-		res += `${this.affiche_vac("N")}`;
-		res += `${this.affiche_vac("N-1")}`;
+		this.workingVacs.forEach(vac => {
+			res += `${this.affiche_vac(vac)}`;
+		})
 		res += '</tbody></table>';
 		$('table').innerHTML = res;
 	}
