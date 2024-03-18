@@ -265,6 +265,7 @@ class feuille_capa extends capa {
 	affiche_vac(vac) {
 		const res = [];
 		// trie le tableau avec cds en premier, puis A, B ...
+		console.log(vac);
 		const sousvac = Object.keys(this.pc_sousvac_15mn[vac]).sort(this.compare_tds_name); 
 		sousvac.forEach((sv, index_sv) => {
 			res[index_sv] = "";
@@ -504,6 +505,8 @@ class feuille_capa extends capa {
 			d += "'";
 			d = d.trimEnd();
 			res2 += `<td class='bg left_2px bottom_2px' ${d}>${this.pc_instr_15mn[0][0]}</td>`;
+		} else {
+			res2 += `<td class='left_2px bottom_2px'></td>`; // border left à 2px pour la case 0
 		}
 		for(let i=1;i<96;i++) {	
 			if (this.pc_instr_15mn[i][1].length !== 0) {
