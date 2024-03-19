@@ -255,6 +255,7 @@ class schema_rea {
                     if (sub_tv === "RAEE12") sub_tv = "REE12";
                     if (sub_tv === "LSMOML") sub_tv = "LSMOL";
                     if (sub_tv === "LOLSMOML") sub_tv = "OSMOL";
+                    if (el.pos_resps === "LE LO LS ML MO W1") sub_tv = "RAWM1";
                     let pos = el.pos_name;
                     // remplit les heures ouverts pour chaque TV et chaque position
                     if (!(schema["tv_h"].hasOwnProperty(sub_tv))) { 
