@@ -203,7 +203,7 @@ class capa {
 		$this->tour_utc = $this->get_tour_utc();
 		$this->tour_utc_greve = $this->get_tour_utc(true);
 		$this->tds_supp_utc = $this->get_tds_supp_utc();
-
+		
 		// Calcul du nombre de pc à afficher 
 		// On récupère l'effectif total, donc on doit enlever le cds sur les vacations qui en ont 1	
 		$this->pc = new stdClass();
@@ -230,88 +230,37 @@ class capa {
 
 		// Dans OLAF, Renfort contient les tours supplémentaires
 		$Renfort = $this->effectif->{$this->day}->Renfort;
-		// Renfort hors JX
-		$RD_names_horsJX = [];
-		$nb_jx = 0;
-		$nb_jx_det = 0;
+		// Renfort hors vacation d'équipe
+		$RD_names = [];
 		$RD = new stdClass();
-		$TDS_Supp = new stdClass();
 		foreach ($Renfort as $renf1 => $value1) {
 			foreach ($value1 as $cle => $obj) {
+				// "RD-bureau1-2024" - "RD-bureau1-2024"
 				$label = $obj->contextmenutype->label;
-				$jx_type = "";
 				$rd_type = "";
 				$type_renfort = "";
-				// JXA & JXB salle 2023
-				// "RD bleu JXa-ms" - "RD bleu J1-ms" - "RD bleu J3b-ms" + Est only "RD bleu S1b-ms" + West only "RD bleu S1a-ms"
-				// "RD bleu J3a-ete" - "RD bleu S1b-ete" - "RD bleu J1-ete" + Est only "RD bleu JXb-ete" + West only "RD bleu J3b-ete" 
 				$nb_det = 0;
-				if (str_contains($label, "JX")) {
-					$type_vac = "JX";
-					if (str_contains($label, "RD bleu")) { // RD
-						$type_renfort = "RD";
-						$rd_type = substr($label, 8); // ex : JXa-ms
-						$jx_type = $rd_type;
-						$nb_det++;
-						$nb_jx_det++;
-					} else { // JX salle
-						$type_renfort = "JX";
-						$jx_type = $label;
-					}
-					$nb_jx++;
-				} else { // RD non JX
-					$type_vac = "Supp";
-					$type_renfort = "RD";
-					$rd_type = substr($label, 8);
-					$jx_type = "RD$rd_type";
-					array_push($RD_names_horsJX, $jx_type);
-					$nb_det++;
-				}		
+				$type_vac = "Supp";
+				array_push($RD_names, $label);
+				$nb_det++;	
 				
 				$agent = $obj->agent->nomComplet;
-				$agent_type = (str_contains($label, "det") || str_contains($label, "RD")) ? "détaché" : "salle";
+				$agent_type = "détaché";
 
-				if ($type_vac === "JX") {
-					if (property_exists($this->pc->JX, $jx_type) === false) { 
-						$this->pc->JX->{$jx_type} = new stdClass();
-						$this->pc->JX->{$jx_type}->nombre = 0;
-						$this->pc->JX->{$jx_type}->nombre_det = 0; 
-						$this->pc->JX->{$jx_type}->agent = new stdClass();
-					}
-					$this->pc->JX->{$jx_type}->agent->{$agent} = $agent_type;
-					$this->pc->JX->{$jx_type}->nombre++;
-					$this->pc->JX->{$jx_type}->nombre_det += $nb_det;
-				} 
-				if ($type_renfort === "RD") {
-					if (property_exists($RD, $jx_type) === false) { 
-						$RD->{$jx_type} = new stdClass();
-						$RD->{$jx_type}->nombre = 0;
-						$RD->{$jx_type}->nombre_det = 0; 
-						$RD->{$jx_type}->agent = new stdClass();
-					}
-					$RD->{$jx_type}->agent->{$agent} = $agent_type;
-					$RD->{$jx_type}->nombre++;
-					$RD->{$jx_type}->nombre_det += $nb_det;
+				if (property_exists($RD, $label) === false) { 
+					$RD->{$label} = new stdClass();
+					$RD->{$label}->nombre = 0;
+					$RD->{$label}->nombre_det = 0; 
+					$RD->{$label}->agent = new stdClass();
 				}
-
-				if ($type_vac === "Supp") {
-					if (property_exists($TDS_Supp, $jx_type) === false) { 
-						$TDS_Supp->{$jx_type} = new stdClass();
-						$TDS_Supp->{$jx_type}->nombre = 0;
-						$TDS_Supp->{$jx_type}->nombre_det = 0; 
-						$TDS_Supp->{$jx_type}->agent = new stdClass();
-					}
-					$TDS_Supp->{$jx_type}->agent->{$agent} = $agent_type;
-					$TDS_Supp->{$jx_type}->nombre++;
-					$TDS_Supp->{$jx_type}->nombre_det += $nb_det;
-				}
+				$RD->{$label}->agent->{$agent} = $agent_type;
+				$RD->{$label}->nombre++;
+				$RD->{$label}->nombre_det += $nb_det;
 				
 			}
 		}
 		
 		$tds_suppl = new stdClass();
-
-		//$this->pc->JX->equipe = $this->tab_vac_eq->JX;
 
 		/*	-----------------------------------------------------------------------
 					Get contextmenutype = tagged people
@@ -432,15 +381,7 @@ class capa {
 									if (in_array(10, $this->pc->{$vac}->teamToday->{$nc}->role)) $this->pc->{$vac}->teamToday->{$nc}->fonction = "stagiaire";
 								} else {
 									foreach($contextmenu_today as $key) {
-										/*
-										echo "\nKey\n";
-										echo $key;
-										echo "\n$nc\n";
-										echo $pers->agent->id."\n";
-										echo $this->effectif->{$this->day}->contextmenutype->{$key}->idagent."\n";
-										*/
 										if ($this->effectif->{$this->day}->contextmenutype->{$key}->idagent == $pers->agent->id) { // == car un est un int et l'autre string
-											//echo "$p - $vac - ".$nc."<br>";
 											$this->pc->{$vac}->teamToday->{$nc} = new stdClass();
 											$this->pc->{$vac}->teamToday->{$nc}->prenom = $pers->agent->prenom;
 											$this->pc->{$vac}->teamToday->{$nc}->nom = $pers->agent->nom;
@@ -758,12 +699,12 @@ class capa {
 			
 			// s'il y a un Jx ce jour là
 			// on ne créé que les vac_jx existantes ce jour là
-			foreach($RD_names_horsJX as $vac_jx) {
+			foreach($RD_names as $vac_jx) {
 				if (property_exists($effectif_RD_15mn, $vac_jx) === false) $effectif_RD_15mn->{$vac_jx} = [];
 				$effectif_RD_15mn->{$vac_jx}[$i] = 0;
 			}
 			
-			foreach($RD_names_horsJX as $vac_jx) {
+			foreach($RD_names as $vac_jx) {
 				if ($vac_jx != "nbcds") {
 					$nb2 = $RD->{$vac_jx}->nombre;
 					if ($this->tds_supp_utc->{$vac_jx}[$i] === 1) {
@@ -852,7 +793,6 @@ class capa {
 		$res->pc_total_RD_15mn = $effectif_total_RD_15mn;
 		$res->RD = $RD;
 		$res->roles = $roles;
-		$res->TDS_Supp = $TDS_Supp;
 		$res->pc_sousvac_15mn = $nb_pc_sousvac;
 		$res->pc_sousvac_15mn_greve = $nb_pc_sousvac_greve;
 		$res->details_sv_15mn = $details_sv_15mn;

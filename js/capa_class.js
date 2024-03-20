@@ -56,17 +56,6 @@ class capa {
         *Calcul du nbre de PC total dispo par pas de 15mn à la date choisie
             @returns {object} : 
 			  { "pc_vac": {
-					"JX" : {
-						"JXA-ete": {"nombre": nb, "nombre_det": nb, "agent": { "nom1" : "détaché", "nom2": "salle"}}, 
-						"JXB-ete": {...}, 
-						"RDxxx": {...},
-						"nbpc": nbre_pc,
-						"nbcds": nbre_cds,
-						"renfort": nbre_renfort,
-						"BV": BV,
-						"RO": nbre_RO,
-						"RO induit": nbre_induit,
-					},
 					"vac": { // inclu "N-1"
 						"nbpc": nbre_pc,
 						"nbcds": nbre_cds,
@@ -82,7 +71,7 @@ class capa {
 					...
 				}, 
                 "pc_total_horsInstrRD_15mn": [ ["hh:mm", nb_pc_dispo], [...], ... ],
-				"pc_total_RD_15mn": [ ["hh:mm", nb_pc_dispo], [...], ... ],
+				"pc_total_RD_15mn": [ nb_pc_dispo, nb_pc_dispo, ... ],
 				"pc_instru_15mn": [ ["hh:mm", nb_pc_dispo], [...], ... ]
 			  }
     ------------------------------------------------------------------------------------------------------------------- */
@@ -127,7 +116,9 @@ class feuille_capa extends capa {
 		this.pc_15mn = await this.pc_ini["pc_total_horsInstrRD_15mn"];
 		this.pc_15mn_greve = await this.pc_ini["pc_total_greve"];
 		this.pc_instr_15mn = await this.pc_ini["pc_total_instr_15mn"];
+		// RD_15mn = {"RD-bureau1-2024": [ 0, 0, 0, … ], "RD-bureau2-2024": [ 0, 0, ...]}
 		this.pc_RD_15mn = await this.pc_ini["pc_RD_15mn"];
+		// total_RD_15mn = [ 0, 0, 2, ...] = somme des arrays de RD_15mn
 		this.pc_total_RD_15mn = await this.pc_ini["pc_total_RD_15mn"];
 		this.pc_vac = await this.pc_ini["pc_vac"];
 		this.pc_sousvac_15mn = await this.pc_ini["pc_sousvac_15mn"];
@@ -209,7 +200,7 @@ class feuille_capa extends capa {
 			})
 		})
 
-		// ajoute le hover sur la case RD hors JX
+		// ajoute le hover sur la case RD
 		const td_RD = document.querySelectorAll(".click_RD");
 		td_RD.forEach(td_el => {
 			let RD_type = td_el.dataset.vac;
@@ -220,7 +211,6 @@ class feuille_capa extends capa {
 				let det = '<div style="float:left;width:90%;">';
 				for (const agent in detail) {
 					let affich = agent+" ";
-					if (detail[agent] === "détaché") affich += "(RD)";
 					det += `${affich}<br>`;
 				}
 				det += '</div>';
@@ -265,7 +255,6 @@ class feuille_capa extends capa {
 	affiche_vac(vac) {
 		const res = [];
 		// trie le tableau avec cds en premier, puis A, B ...
-		console.log(vac);
 		const sousvac = Object.keys(this.pc_sousvac_15mn[vac]).sort(this.compare_tds_name); 
 		sousvac.forEach((sv, index_sv) => {
 			res[index_sv] = "";
@@ -531,13 +520,12 @@ class feuille_capa extends capa {
 		return res;
 	}
 
-	// fabrique la ligne du supplément RD hors JX
+	// fabrique la ligne du supplément RD 
 	affiche_RD() {
+		// tableau du nom des vacations [RD-bureau1-2024, RD-bureau2-2024,...]
 		const vac_RD_tab = Object.keys(this.pc_RD_15mn);
 		let res = "";
 		vac_RD_tab.forEach( vac_RD => {
-			let vac_RD_affiche = vac_RD.substring(2);
-			vac_RD_affiche = vac_RD_affiche.split("-")[0] + " RD bleu";
 			let res2 = "";
 			if (this.pc_RD_15mn[vac_RD][0] === 0) {
 				res2 += `<td class='left_2px bottom_2px'></td>`; // border left à 2px pour la case 0
@@ -556,7 +544,7 @@ class feuille_capa extends capa {
 			} else {
 				res2 += `<td class='bg bottom_2px'>${this.pc_RD_15mn[vac_RD][95]}</td>`;
 			}
-			res += `<tr><td data-vac='${vac_RD}' class='left_2px bottom_2px click_RD' colspan="3">${vac_RD_affiche}</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
+			res += `<tr><td data-vac='${vac_RD}' class='left_2px bottom_2px click_RD' colspan="3">${vac_RD}</td><td class='bottom_2px right_2px details masque' colspan="4"></td>${res2}</tr>`;
 		})
 		return res;
 	}
