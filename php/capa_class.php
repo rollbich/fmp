@@ -154,17 +154,6 @@ class capa {
         *Calcul du nbre de PC total dispo par pas de 15mn à la date choisie
             @returns {object} : 
 			  { "pc_vac": {
-					"JX" : {
-						"JXA-ete": {"nombre": nb, "nombre_det": nb, "agent": { "nom1" : "détaché", "nom2": "salle"}}, 
-						"JXB-ete": {...}, 
-						"RDxxx": {...},
-						"nbpc": nbre_pc,
-						"nbcds": nbre_cds,
-						"renfort": nbre_renfort,
-						"BV": BV,
-						"RO": nbre_RO,
-						"RO induit": nbre_induit,
-					},
 					"vac": { // inclus "N-1"
 						"nbpc": nbre_pc,
 						"nbcds": nbre_cds,
@@ -211,23 +200,6 @@ class capa {
 			$this->pc->{$vac} = new stdClass();
 		}
 
-		/*  -------------------------------------------------
-			pc["JX"] contient les JX mais aussi les RD bleus
-			pc["JX"] = {
-				"JXA-2023": {
-					"nombre": 2,
-					"agent": {
-						"Jean Coco": "détaché",
-						"Moustache": "salle"
-					}
-				},
-				"RDJ3b-ms-2023": {
-					...
-				}
-				...
-		}
-		-----------------------------------------------------  */
-
 		// Dans OLAF, Renfort contient les tours supplémentaires
 		$Renfort = $this->effectif->{$this->day}->Renfort;
 		// Renfort hors vacation d'équipe
@@ -239,10 +211,8 @@ class capa {
 				$label = $obj->contextmenutype->label;
 				$rd_type = "";
 				$type_renfort = "";
-				$nb_det = 0;
 				$type_vac = "Supp";
-				array_push($RD_names, $label);
-				$nb_det++;	
+				array_push($RD_names, $label);	
 				
 				$agent = $obj->agent->nomComplet;
 				$agent_type = "détaché";
@@ -250,12 +220,10 @@ class capa {
 				if (property_exists($RD, $label) === false) { 
 					$RD->{$label} = new stdClass();
 					$RD->{$label}->nombre = 0;
-					$RD->{$label}->nombre_det = 0; 
 					$RD->{$label}->agent = new stdClass();
 				}
 				$RD->{$label}->agent->{$agent} = $agent_type;
 				$RD->{$label}->nombre++;
-				$RD->{$label}->nombre_det += $nb_det;
 				
 			}
 		}
@@ -1076,7 +1044,7 @@ class capa {
         Transformation du tour supp (défini en heure locale) en heure UTC
         @tds_supp_local {object} - le json du tour supp
 			object(stdClass)#26 (3) {
-                "RDJ1-msh-2023": [ 0, 0, 1, 1, 0, 0 ... ],   96 valeurs
+                "RD-bureau1-2024": [ 0, 0, 1, 1, 0, 0 ... ],   96 valeurs
                 ...
             }
         @returns {object}  - tour_utc (sans la zone) 
@@ -1090,10 +1058,10 @@ class capa {
        
         $tour_utc_supp = new stdClass();
 
-		// RD_vac_hors_Jx = ["RD...","RD...",...]
-		$RD_vac_hors_Jx = array_keys(get_object_vars($this->tds_supp_local));
+		// RD_vac = ["RD...","RD...",...]
+		$RD_vac = array_keys(get_object_vars($this->tds_supp_local));
 
-        foreach ($RD_vac_hors_Jx as $vac) {
+        foreach ($RD_vac as $vac) {
 			$tour_utc_supp->{$vac} = $this->tds_supp_local->{$vac};
 			if ($this->timeOffset === 2) {
 				for($i=0;$i<4;$i++) {

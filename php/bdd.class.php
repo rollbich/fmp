@@ -32,10 +32,11 @@ class bdd_tds {
         return $arr;
     }
 
+    // @param string $type - "normal" ou "greve"
     // @return string - "nom de la saison" actuelle
-    public function get_current_tds() {
+    public function get_current_tds(string $type = "normal") {
         try {
-            $req = "SELECT nom_tds FROM `dates_saisons_$this->zone` WHERE debut <= '$this->day' AND fin >= '$this->day'"; 
+            $req = "SELECT nom_tds FROM `dates_saisons_$this->zone` WHERE debut <= '$this->day' AND fin >= '$this->day' AND type = '$type'"; 
             $stmt = Mysql::getInstance()->prepare($req);
             $stmt->execute();
             $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -256,14 +257,6 @@ class bdd_tds {
         $stmt->execute();
     }
 
-    /*  --------------------------------------------------------------------------
-            @return  :
-            object(stdClass)#26 (3) {
-                "RDJ1-ms-2023": [ 0, 0, 1, 1, 0, 0 ... ],   96 valeurs
-                ...
-            }
-        -------------------------------------------------------------------------- */
-
     public function add_vac(string $vac) {
         $table = "tds_$this->zone";
         $req = "ALTER TABLE $table ADD $vac JSON NOT NULL DEFAULT '{}' CHECK (json_valid('$vac'))";
@@ -341,25 +334,23 @@ class bdd_tds {
         return $obj;
     }
     
-    // pour sélecter un tds supp associé à une saison
-    public function get_tds_supp(string $saison = "") {
-        if (strcmp($saison, "") === 0) $saison = $this->saison;
+    // pour sélecter les tds supp inclus dans la plage de date
+    public function get_tds_supp() {
         $table = "tds_supp_$this->zone";
-        $req = "SELECT * FROM $table WHERE nom_tds = '$saison'"; 
+        $req = "SELECT * FROM $table WHERE debut <= '$this->day' AND fin >= '$this->day'"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $obj = new stdClass();
         foreach($resultat as $value) {
-            //$prop = substr($value["Renfort"], 0, -5); // pour enlever -2023
             $obj->{$value["Renfort"]} = json_decode($value["tds"]);
         }
         return $obj;
     }
 
-    public function add_tds_supp(string $nom, string $tds_associe) {
+    public function add_tds_supp(string $nom, string $debut, string $fin) {
         $table = "tds_supp_$this->zone";
-        $req = "INSERT INTO $table (Renfort, nom_tds) VALUES ('$nom', '$tds_associe')"; 
+        $req = "INSERT INTO $table (Renfort, debut, fin) VALUES ('$nom', '$debut', '$fin')"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
     }
