@@ -647,40 +647,40 @@ class feuille_capa extends capa {
 	// @param {string} vac - "J1"
 	// @param {array} present - [] 
 	
-	add_travailleurs(vac, present) {
+	add_travailleurs(vac, personnel) {
 		for (let [nom, obj] of Object.entries(this.pc_vac[vac]["teamToday"])) {
-			present.push([nom, obj.fonction]);
+			personnel.push([nom, obj.fonction]);
 		}
 		for (let [nom, obj] of Object.entries(this.pc_vac[vac]["renfortAgent"])) {
-			present.push([nom, obj.fonction]);
+			personnel.push([nom, obj.fonction]);
 		}
 		//console.log("VAC :");
-		//console.log(present);
+		//console.log(personnel);
 	}
 
-	add_requis(vac, present) {
+	add_requis(vac, personnel) {
 		this.pc_vac[vac]["requis"].forEach(obj => {
-			present.push([obj.nom, obj.prenom]);
+			personnel.push([obj.nom, obj.prenom]);
 		})
 		//console.log("VAC :");
-		//console.log(present);
+		//console.log(personnel);
 	}
 
-	add_RO(vac, present) {
+	add_RO(vac, personnel) {
 		this.pc_vac[vac]["RoList"].forEach (nom => {
-			present.push([nom, "RO"]);
+			personnel.push([nom, "RO"]);
 		})
 	}
 
-	add_stage(vac, present) {
+	add_stage(vac, personnel) {
 		this.pc_vac[vac]["stage"].forEach (nom => {
-			present.push([nom, "stage"]);
+			personnel.push([nom, "stage"]);
 		})
 	}
 
 	add_conge(vac, present) {
 		this.pc_vac[vac]["conge"].forEach (nom => {
-			present.push([nom, "conge"]);
+			personnel.push([nom, "conge"]);
 		})
 	}
 
@@ -692,16 +692,16 @@ class feuille_capa extends capa {
 				<tr><th style="background: #444;">Nom</th><th style="background: #444;">Type</th></tr>
 			</thead>
 			<tbody>`;
-		const eq = [];
-		this.add_travailleurs(vac, eq);
-		this.add_RO(vac, eq);
-		this.add_stage(vac, eq);
-		this.add_conge(vac, eq);
-		const personnel = this.tri_equipe(eq);
+		const arr = [];
+		this.add_travailleurs(vac, arr);
+		this.add_RO(vac, arr);
+		this.add_stage(vac, arr);
+		this.add_conge(vac, arr);
+		const personnel = this.tri_equipe(arr);
 		for (const p of personnel) {
 			let cl = `type${p[1]}`, cl_previous;
 			if (p[1] === "CDS") { cl_previous = 'surligne_cds'; cl += ' surligne_cds'; }
-			if (p[1].includes("PC")) { cl_previous = 'pc_color'; cl += ' pc_color'; }
+			if (p[1].includes("PC") || p[1].includes("RD")) { cl_previous = 'pc_color'; cl += ' pc_color'; }
 			if (p[1] === "stage" || p[1] === "conge") { cl_previous = 'off_color'; cl += ' off_color'; }
 			// nom = p[0];
 			res += `<tr><td class='${cl_previous}'>${p[0]}</td><td class='${cl}' data-vac='${vac}' data-nom='${p[0]}'>${p[1]}</td><tr>`;
@@ -735,7 +735,7 @@ class feuille_capa extends capa {
 
 	// Tri dans l'ordre du tableau de valeurs
 	tri_equipe(arr_eq) {
-		const tab_valeurs = ["CDS", "PC-CDS", "PC-ACDS", "PC", "PC-RPL", "PC-DET", "stagiaire", "RO", "stage", "conge"];
+		const tab_valeurs = ["CDS", "PC-CDS", "PC-ACDS", "PC", "PC-RPL", "RD bleu", "RD jaune", "RD rouge", "RD vert", "PC-DET", "stagiaire", "RO", "stage", "conge"];
 		let arr = [];
         tab_valeurs.forEach(valeur => {
             arr_eq.forEach(t => {
