@@ -200,7 +200,10 @@ class capa {
 			$this->pc->{$vac} = new stdClass();
 		}
 
-		// Dans OLAF, Renfort contient les tours supplémentaires
+	/*  -------------------------------------------------------------------
+				Gestion TDS Supp
+				Dans OLAF, Renfort contient les tours supplémentaires
+		------------------------------------------------------------------- */
 		$Renfort = $this->effectif->{$this->day}->Renfort;
 		// Renfort hors vacation d'équipe
 		$RD_names = [];
@@ -364,6 +367,8 @@ class capa {
 						}
 					}
 				}
+
+				//	Recyclage en équipes
 				$this->pc->{$vac}->renfortAgent = new stdClass();
 				if (property_exists($aTeamComposition, "lesrenforts") === false) {
 					$this->pc->{$vac}->renfort = 0;
@@ -376,7 +381,13 @@ class capa {
 						$this->pc->{$vac}->renfortAgent->{$nomComplet}->nom = $renf->agent->nom;
 						$this->pc->{$vac}->renfortAgent->{$nomComplet}->prenom = $renf->agent->prenom;
 						$this->pc->{$vac}->renfortAgent->{$nomComplet}->nomComplet = $nomComplet;
-						$this->pc->{$vac}->renfortAgent->{$nomComplet}->fonction = "PC-DET";
+						$pc_RD = "PC-DET";
+						$label_RD = strtolower($renf->contextmenuType->label);
+						if (str_contains($label_RD, "bleu")) $pc_RD = "RD bleu";
+						if (str_contains($label_RD, "jaune")) $pc_RD = "RD jaune";
+						if (str_contains($label_RD, "vert")) $pc_RD = "RD vert";
+						if (str_contains($label_RD, "rouge")) $pc_RD = "RD rouge";
+						$this->pc->{$vac}->renfortAgent->{$nomComplet}->fonction = $pc_RD;
 					}
 				}
 
@@ -527,7 +538,7 @@ class capa {
 		// [ ["hh:mm", nb_pc_dispo], [...], ... ]
 		$nb_pc = 0;
 		$nb_pc_greve = 0;
-		$pcs = []; // total pc hors instr & hors RD bleu supp (les RD Jx sont inclus)
+		$pcs = []; // total pc hors instr & hors TDS supp 
 		$pct = []; // total pc
 		$pct_greve = [];
 		$ucesos = [];
@@ -755,7 +766,7 @@ class capa {
 		$res->heures_uceso = new StdClass();
 		$res->heures_uceso->min = $minutes_ucesos;
 		$res->heures_uceso->hmin = $heures_ucesos."h".$reste_minutes;
-		$res->pc_total_horsInstrRD_15mn = $pcs; // total pc hors instr & hors RD bleu supp (les RD Jx sont inclus)
+		$res->pc_total_horsInstrRD_15mn = $pcs; // total pc hors instr & hors TDS supp (les RD Jx sont inclus)
 		$res->pc_total_instr_15mn = $in15mn;
 		$res->pc_RD_15mn = $effectif_RD_15mn;
 		$res->pc_total_RD_15mn = $effectif_total_RD_15mn;
