@@ -564,6 +564,9 @@ function show_occ_graph(containerId, dataAxis, data, peak, sustain, tv, time_vis
 	document.querySelector('#graph-container-occ').classList.remove('off');;
 }
 
+// ---------------------------------------------------------------------------
+//								STATS
+// ---------------------------------------------------------------------------
 /*	--------------------------------------------------------------------------
 	 	Affiche le graph Traffic Year
 			@param {string} containerId - Id de l'HTML Element conteneur

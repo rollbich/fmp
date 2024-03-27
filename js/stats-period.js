@@ -206,11 +206,11 @@ class stats_period {
 /*	--------------------------------------------------------------------------
 	 	Affiche le graph Stats-period journalier
 			@param {string} containerId - Id de l'HTML Element conteneur
-			@param {array} dataAxis - ["date",...]
-			@param {array} data - [nbre vols,...]
+			@param {array} dataAxis - ["date1","date2",...]
+			@param {array} data - [nbre vols1, nbre vols2,...]
 			@param {string} airspace - "LFMMCTA"
 	-------------------------------------------------------------------------- */
-function show_vols_period(containerId, dataAxis, data, data_lastyear, data2019, airspace) {
+function show_vols_period(containerId, dataAxis, data, data_lastyear, dataRef = null, airspace) {
 	//let myChart = echarts.init(document.getElementById(containerId));
 	let chartDom = $(containerId);
 	chartDom.style.height = "400px";
@@ -296,13 +296,15 @@ function show_vols_period(containerId, dataAxis, data, data_lastyear, data2019, 
 			nameLocation: 'middle'
 		},
 		series: [
+			/*
 			{
 				name: "2019",
 				type: 'line',
 				color : '#339dff',
 				areaStyle: {},
-				data: data2019,
+				data: dataRef,
 			},
+			*/
 			{
 				name: year-1,
 				type: 'line',
