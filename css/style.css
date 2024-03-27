@@ -360,7 +360,7 @@ select, option {
 
 span.rect {
 	font-family: 'Sansation';
-	font-size: 24px;
+	font-size: 18px;
 	margin: 10px;
 	padding: 10px;
 	background : var(--ligne-impaire-color);
@@ -387,6 +387,10 @@ span.rect {
 	margin-right: 20px;
 	margin-left: 10px;
 	min-width:480px;
+}
+
+#result p {
+	margin-left: 10px;
 }
 
 #result div.result {
@@ -494,8 +498,12 @@ table.conf th, table.conf td {
 
 /* ------- Graphes ------- */
 
-#graph-container{
+#graph-container, #graph-container2, #graph-container3 {
 	display: block;
+}
+
+#graph-container.off, #graph-container2.off, #graph-container3.off {
+	display: none;
 }
 
 #graph-container-h20, #graph-container-occ {
@@ -1047,4 +1055,75 @@ body.aide .card div.content footer {
 .btn-primary:hover {
 	border-color: rgba( 255, 255, 255, 0);
 }
+
+/* AD selector */
+
+.aero_list {
+	display: block;
+	background-color: #ccc;
+	border-radius: 10px;
+	margin: 15px;
+	padding: 15px;
+	color: black;
+}
+
+.crna_menu {
+	display: flex;
+	justify-content: center;
+	background-color: #ccc;
+	border-radius: 10px;
+	margin: 15px;
+	padding: 15px;
+	color: black;
+	min-width: 800px;
+}
+
+.crna_menu button {
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+.aero_div {
+	display: flex;
+	justify-content: center;
+}
+
+.aero_div select {
+	margin-left: 5px;
+}
+
+.ad-selector {
+	width: 480px;
+	margin-left: 20px;
+}
+
+.airport_block {
+	margin-bottom: 4px;
+}
+
+.airport_block button {
+	margin-left: 15px;
+}
+
+.ad-selector input {
+	display: none!important;
+}
+  
+.ad-selector input[type=checkbox] + label {
+	display: inline-block;
+	border-radius: 6px;
+	background: #dddddd;
+	height: 40px;
+	width: 34px;
+	margin-right: 3px;
+	line-height: 40px;
+	text-align: center;
+	cursor: pointer;
+}
+  
+.ad-selector input[type=checkbox]:checked + label {
+	background: #2AD705;
+	color: #ffffff;
+}
+
   
