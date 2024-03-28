@@ -4,6 +4,8 @@ class sauve_h20_occ {
     constructor(containerId, zone, start_day, end_day) {
         this.containerId = containerId;
         this.zone = zone;
+        this.zone_fichier = zone;
+        if (zone === "ouest") this.zone_fichier = "west";
         this.start_day = start_day;
         this.end_day = end_day;
         this.init();
@@ -12,8 +14,8 @@ class sauve_h20_occ {
     async init() {
         this.dates = get_dates_array(new Date(this.start_day), new Date(this.end_day));
         for (const day of this.dates) {
-            const h20 = await this.get_h20(day, this.zone);
-            const occ = await this.get_occ(day, this.zone);
+            const h20 = await this.get_h20(day, this.zone_fichier);
+            const occ = await this.get_occ(day, this.zone_fichier);
             await this.set_h20_occ_crna(day, h20, occ);
         }
     }
@@ -23,7 +25,7 @@ class sauve_h20_occ {
         const date = day.replace(/-/g, ''); // yyyymmdd
         const year = day.substring(0,4);
         const month = date.substring(4,6);
-        const url = `${year}/${month}/${date}-H20-${this.zone}.json`;	
+        const url = `${year}/${month}/${date}-H20-${this.zone_fichier}.json`;	
         const resp = await loadJsonB2B(url, "H20", zone);
         let result; 
         if (resp !== 404) {
