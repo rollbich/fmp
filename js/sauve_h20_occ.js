@@ -42,7 +42,7 @@ class sauve_h20_occ {
         const date = day.replace(/-/g, ''); // yyyymmdd
         const year = day.substring(0,4);
         const month = date.substring(4,6);
-        const url = `${year}/${month}/${date}-Occ-${this.zone}.json`;	
+        const url = `${year}/${month}/${date}-Occ-${this.zone_fichier}.json`;	
         const resp = await loadJsonB2B(url, "OCC", zone);
         let result;
         if (resp !== 404) {
