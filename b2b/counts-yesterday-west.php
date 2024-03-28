@@ -71,7 +71,7 @@ $soapClient = new B2B();
 $today = gmdate('Y-m-d', strtotime("today"));
 
 // récupère les données MV, duration, sustain, peak des TV LFMM
-// données du fichier MV.json
+// données du fichier écrit suite à appel B2B mv_otmv-ouest.json
 // $mv_file_content : données MV et OTMV de la zone 
 
 $yesterday = new DateTime('yesterday');
