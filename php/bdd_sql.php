@@ -27,6 +27,9 @@ if ($contentType === "application/json") {
             case "get_vols_app":
                 $bdd->get_vols_app($content->start_day, $content->end_day);
                 break;
+            case "set_h20_occ_crna":
+                $bdd->set_h20_occ_crna($content->zone, $content->jour, $content->h20, $content->occ);
+                break;
             default: 
                 echo "default";
         }
