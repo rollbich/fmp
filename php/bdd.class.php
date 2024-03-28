@@ -870,6 +870,14 @@ class bdd {
            
         }
     }
+
+    public function set_h20_occ_crna(string $zone, string $jour, string $h20, string $occ) {
+        $table = "h20_occ_$zone";
+        $req = "INSERT INTO $table VALUES ('$jour', '$h20', '$occ')"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+    }
+
 }
 
 ?>

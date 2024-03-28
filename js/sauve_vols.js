@@ -13,7 +13,7 @@ class sauve_vols {
         this.data = new period_vols(this.start_day, this.end_day, this.zone2);
         await this.data.init();
         console.log(this.data.vols);
-        this.sauv_vols();
+        this.sauv_vols_new();
     }
 
 /*  ---------------------------------------------------------------------
@@ -137,6 +137,67 @@ class sauve_vols {
             
             await this.set_vols_crna(day, CTA_reg_demand, CTA_load, CTA_demand, CTAE_reg_demand, CTAE_load, CTAE_demand, CTAW_reg_demand, CTAW_load, CTAW_demand, RAE_load, SBAM_load, EK_load, AB_load, GY_load, RAW_load, MALY_load, WW_load, MF_load, DZ_load, vols_RAE, vols_RAW);
             //await this.set_vols_app(day, LFMMAPP);
+        }
+    }
+
+    //Remplissage bdd avec les données vols ancien format
+    async sauv_vols_new() {
+        
+        for (const [day, obj] of Object.entries(this.data.vols)) {
+            const CTA_reg_demand = obj["LFMMCTA"][2];
+            const CTA_load = obj["LFMMCTA"][3];
+            const CTA_demand = obj["LFMMCTA"][4];
+            const CTAE_reg_demand = obj["LFMMCTAE"][2];
+            const CTAE_load = obj["LFMMCTAE"][3];
+            const CTAE_demand = obj["LFMMCTAE"][4];
+            const CTAW_reg_demand = obj["LFMMCTAW"][2];
+            const CTAW_load = obj["LFMMCTAW"][3];
+            const CTAW_demand = obj["LFMMCTAW"][4];
+            const RAE_load = obj["LFMMFMPE"][0][2];
+            const SBAM_load = obj["LFMMFMPE"][1][2];
+            const EK_load = obj["LFMMFMPE"][2][2];
+            const AB_load = obj["LFMMFMPE"][3][2];
+            const GY_load = obj["LFMMFMPE"][4][2];
+            const RAW_load = obj["LFMMFMPW"][0][2];
+            const MALY_load = obj["LFMMFMPW"][1][2];
+            const WW_load = obj["LFMMFMPW"][2][2];
+            const MF_load = obj["LFMMFMPW"][3][2];
+            const DZ_load = obj["LFMMFMPW"][4][2];
+            const vols_RAE = [];
+            const vols_RAW = [];
+            // l'ordre doit être respecté d'où l'array même si
+            const tab_TVAPP = ["LFKJ","LFKF","LFKB","LFKC","LFMN","LFMD","LFTZ","LFTH","LFML","LFMV","LFMQ","LFLL","LFLY","LFLS","LFLB","LFLP","LFLC","LFMT","LFTW","LFMP","LFMU","LFLV","LFLN","LFLU","LFMI","LFMH","LFMA","LFLI","LFMC","LFKS","LFMY","LFMO","LFKA","LFKO","LFMS","LFMZ","LFMF","LFTF","LFLE","LFLG","LFLJ","LFLM","LFLO","LFNA","LFNB","LFNG","LFNH","LFXA"];
+            const LFMMAPP = {};
+            LFMMAPP["flights"] = obj["LFMMAPP"]["flights"];
+            tab_TVAPP.forEach(ad => {
+                LFMMAPP[ad] = obj["LFMMAPP"][ad];
+            })
+            
+            obj["VOLS_RAE"].forEach(obj_vol => {
+                const temp = {};
+                temp["id"] = obj_vol["id"];
+                temp["dep"] = obj_vol["dep"];
+                temp["arr"] = obj_vol["arr"];
+                temp["type"] = obj_vol["type"];
+                temp["operator"] = obj_vol["operator"];
+                temp["depTime"] = obj_vol["depTime"];
+                temp["arrTime"] = obj_vol["arrTime"];
+                vols_RAE.push(temp);
+            });
+            obj["VOLS_RAW"].forEach(obj_vol => {
+                const temp = {};
+                temp["id"] = obj_vol["id"];
+                temp["dep"] = obj_vol["dep"];
+                temp["arr"] = obj_vol["arr"];
+                temp["type"] = obj_vol["type"];
+                temp["operator"] = obj_vol["operator"];
+                temp["depTime"] = obj_vol["depTime"];
+                temp["arrTime"] = obj_vol["arrTime"];
+                vols_RAW.push(temp);
+            });
+            
+            //await this.set_vols_crna(day, CTA_reg_demand, CTA_load, CTA_demand, CTAE_reg_demand, CTAE_load, CTAE_demand, CTAW_reg_demand, CTAW_load, CTAW_demand, RAE_load, SBAM_load, EK_load, AB_load, GY_load, RAW_load, MALY_load, WW_load, MF_load, DZ_load, vols_RAE, vols_RAW);
+            await this.set_vols_app(day, LFMMAPP);
         }
     }
 
