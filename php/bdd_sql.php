@@ -12,6 +12,7 @@ if ($contentType === "application/json") {
 	$content = trim(file_get_contents("php://input"));
     $content = json_decode($content);
     $fonction = $content->fonction;
+    
     $bdd = new bdd();
     try {
         switch($fonction){
@@ -29,6 +30,24 @@ if ($contentType === "application/json") {
                 break;
             case "set_h20_occ_crna":
                 $bdd->set_h20_occ_crna($content->zone, $content->jour, $content->h20, $content->occ);
+                break;
+            case "get_reguls":
+                $bdd->get_reguls($content->zone, $content->start_day, $content->end_day);
+                break;
+            case "update_week":
+                $bdd->update_week($content->day, $content->year, $content->week);
+                break;
+            case "get_vols_app_by_week":
+                $bdd->get_vols_app_by_week($content->year);
+                break;
+            case "get_vols_crna_by_week":
+                $bdd->get_vols_crna_by_week($content->year);
+                break;
+            case "get_reguls_by_week_reason":
+                $bdd->get_reguls_by_week_reason($content->zone, $content->year);
+                break;
+            case "get_reguls_by_week":
+                $bdd->get_reguls_by_week($content->zone, $content->year);
                 break;
             default: 
                 echo "default";

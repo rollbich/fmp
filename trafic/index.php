@@ -17,7 +17,6 @@
 	<script type="text/javascript" src="../js/graph.js"></script>
 	<script type="text/javascript" src="../js/upload.js"></script>
 	<script type="text/javascript" src="../js/vols_bdd_class.js"></script>
-	<script type="text/javascript" src="../js/trafic_class.js"></script>
 	<script type="text/javascript" src="../js/stats-period.js"></script>
 	<script src="../js/dragger.js"></script>
 	<script src="../js/echarts.min.js"></script>
@@ -56,8 +55,8 @@
 				document.querySelector('.popup-box').classList.add('transform-out');
 				e.preventDefault();
 			});
-
-			new period_vols_bdd();
+			const zone = document.getElementById('zone').value;
+			new period_vols(zone);
 			
 		});		
 	</script>
@@ -76,7 +75,7 @@
 </div>
 <ul class="menu">
 	<li><label for="start" class="dates">D&eacute;but:</label>
-	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2024-01-01"></li>
+	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2023-01-01"></li>
 	<li><label for="end" class="dates">Fin:</label>
 	<input type="date" id="end" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>"></li>
 	<li>

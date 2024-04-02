@@ -572,6 +572,7 @@ function show_occ_graph(containerId, dataAxis, data, peak, sustain, tv, time_vis
 			@param {string} containerId - Id de l'HTML Element conteneur
 			@param {array} dataAxis - [1, 2, 3, week...]
 			@param {array} data - [load,...]
+			@param {string} zon - "nom du titre de la zone" (ex : LFMMCTA)
 	-------------------------------------------------------------------------- */
 function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, dataRef = null, zon) {
 
@@ -692,6 +693,7 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 			@param {string} containerId - Id de l'HTML Element conteneur
 			@param {array} dataAxis - [1, 2, 3, month...]
 			@param {array} data - [load,...]
+			@param {string} zon - "nom du titre de la zone" (ex : LFMMCTA)
 	-------------------------------------------------------------------------- */
 function show_traffic_graph_mois(containerId, year, listWeek, data, data_lastyear, dataRef = null, zon) {
 
@@ -812,6 +814,7 @@ function show_traffic_graph_mois(containerId, year, listWeek, data, data_lastyea
 			@param {string} containerId - Id de l'HTML Element conteneur
 			@param {array} dataAxis - [1, 2, 3, month...]
 			@param {array} data - [load,...]
+			@param {string} zon - "nom du titre de la zone" (ex : LFMMCTA)
 	-------------------------------------------------------------------------- */
 function show_traffic_graph_mois_cumule(containerId, year, listMonth, data, data_lastyear, dataRef = null, zon) {
 
@@ -932,6 +935,7 @@ function show_traffic_graph_mois_cumule(containerId, year, listMonth, data, data
 			@param {string} containerId - Id de l'HTML Element conteneur
 			@param {array} dataAxis - [1, 2, 3, week...]
 			@param {array} data - [load,...]
+			@param {string} zon - "nom du titre de la zone" (ex : LFMMCTA)
 	-------------------------------------------------------------------------- */
 function show_delay_graph(containerId, year, listWeek, data, data_lastyear, dataRef = null, zon) {
 
@@ -1052,6 +1056,7 @@ function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data
 			@param {string} containerId - Id de l'HTML Element conteneur
 			@param {array} dataAxis - [1, 2, 3, month...]
 			@param {array} data - [load,...]
+			@param {string} zon - "nom du titre de la zone" (ex : LFMMCTAE)
 	-------------------------------------------------------------------------- */
 function show_delay_graph_month(containerId, year, listMonth, data, data_lastyear, dataRef = null, zon, maxi) {
 
@@ -1173,6 +1178,7 @@ function show_delay_graph_month(containerId, year, listMonth, data, data_lastyea
 			@param {string} containerId - Id de l'HTML Element conteneur
 			@param {array} dataAxis - [1, 2, 3, month...]
 			@param {array} data - [load,...]
+			@param {string} zon - "nom du titre de la zone" (ex : LFMMCTA)
 	-------------------------------------------------------------------------- */
 function show_delay_graph_mois_cumule(containerId, year, listMonth, data, data_lastyear, dataRef = null, zon) {
 
@@ -1291,6 +1297,7 @@ function show_delay_graph_mois_cumule(containerId, year, listMonth, data, data_l
 			@param {string} containerId - Id de l'HTML Element conteneur
 			@param {array} month - numéro du mois
 			@param {array} data - [...]
+			@param {string} titre - "nom du titre de la zone"
 	-------------------------------------------------------------------------- */
 function show_delay_graph_mois_par_causes(containerId, year, month, data, titre) {
 	const nom_mois = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
@@ -1403,6 +1410,7 @@ function show_delay_graph_mois_par_causes(containerId, year, month, data, titre)
 			@param {string} containerId - Id de l'HTML Element conteneur
 			@param {array} month - numéro du mois
 			@param {array} data - [...]
+			@param {string} titre - "nom du titre de la zone"
 	-------------------------------------------------------------------------- */
 function show_delay_graph_mois_par_tvs(containerId, year, month, data, titre) {
 	const nom_mois = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
@@ -1515,6 +1523,7 @@ function show_delay_graph_mois_par_tvs(containerId, year, month, data, titre) {
 			@param {string} containerId - Id de l'HTML Element conteneur
 			@param {array} week - numéro de la semaine
 			@param {array} data - [{ value: 1048, name: 'Search Engine' }, ..., { value: 300, name: 'Video Ads' } ]
+			@param {string} titre - "nom du titre de la zone"
       ]
 	-------------------------------------------------------------------------- */
 function show_delay_graph_week_par_causes(containerId, year, week, data, titre) {
@@ -1624,6 +1633,7 @@ function show_delay_graph_week_par_causes(containerId, year, week, data, titre) 
 	 	Affiche le graph Delay Cumulé Year par mois
 			@param {string} containerId - Id de l'HTML Element conteneur
 			@param {array} data - [load,...]
+			@param {string} zon - "nom du titre de la zone"
 	-------------------------------------------------------------------------- */
 function show_delay_graph_week_cumule(containerId, year, data, data_lastyear, dataRef = null, zon, title = "") {
 

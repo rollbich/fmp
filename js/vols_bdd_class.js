@@ -1,4 +1,128 @@
 class period_vols_bdd {
+
+    constructor(zone, start_day, end_day) {
+        this.zone = zone;
+        this.start_day = start_day;
+        this.end_day = end_day;
+	}
+
+    /*  -------------------------------------------------------------
+		Lit la bdd
+			@param {string} start_day - "yyyy-mm-dd"
+            @param {string} end_day - "yyyy-mm-dd"
+			@param {string} zone - "est" ou "ouest"
+            @returns {date1: objet_vol, date2: objet_vol,...}
+	----------------------------------------------------------------- */
+    async init() {
+
+        if (this.zone === "app") {
+            this.vols = await this.get_vols_app(this.start_day, this.end_day);
+        } else {
+            this.vols = await this.get_vols_crna(this.start_day, this.end_day);
+        }
+        this.check_dates();
+        console.log("zone : "+ this.zone);
+        console.log("this.vols");
+        console.log(this.vols);
+	}
+
+    // Vérifie que toutes les dates existent bien pour faire la stat
+    check_dates() {
+        const dates = get_dates_array(new Date(this.start_day), new Date(this.end_day));
+        const vols_dates = this.vols.map(obj => obj.jour);
+        dates.forEach(day => {
+            if (vols_dates.includes(day) === false) alert(`La stat totale est fausse. Il manque la date ${day} dans la bdd`);
+        });
+    }
+
+	async get_vols_crna(start_day, end_day) {
+        const cles = {
+            "start_day": start_day, 
+            "end_day": end_day,
+            "zone": "crna",
+            "fonction": "get_vols_crna"
+        }	
+        var data = {
+            method: "post",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(cles)
+        };
+        try {
+            const response = await fetch("../php/bdd_sql.php", data);
+            if (!response.ok) { // pas entre 200 et 300
+                throw new Error("Network response was not OK");
+            }
+            return await response.json();
+        }
+        catch (err) {
+            console.error(err);
+            alert(err);
+        }
+	}
+
+    async get_vols_app(start_day, end_day) {
+        const cles = {
+            "start_day": start_day, 
+            "end_day": end_day,
+            "fonction": "get_vols_app"
+        }	
+        var data = {
+            method: "post",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(cles)
+        };
+        try {
+            const response = await fetch("../php/bdd_sql.php", data);
+            if (!response.ok) { // pas entre 200 et 300
+                throw new Error("Network response was not OK");
+            }
+            return await response.json();
+        }
+        catch (err) {
+            console.error(err);
+            alert(err);
+        }
+	}
+
+    get_period_vols_crna() { 
+		const vols = {};
+		let total_vols_est = 0, total_vols_west = 0, total_vols_cta = 0; 
+		for (const obj of this.vols) {	
+            total_vols_est += parseInt(obj['LFMMCTAE_regdemand']);
+            total_vols_west += parseInt(obj['LFMMCTAW_regdemand']);
+            total_vols_cta += parseInt(obj['LFMMCTA_regdemand']);
+        }
+		vols['est'] = total_vols_est;
+		vols['west'] = total_vols_west;
+		vols['cta'] = total_vols_cta;
+		return vols;
+	}
+
+	get_period_vols_app() { 
+        let total_vols = {};
+		total_vols['app'] = 0;
+        const filtre_app = ["LFMN", "LFML", "LFLL", "LFMT", "LFMD", "LFTZ", "LFTH", "LFKB", "LFKC", "LFKJ", "LFKF", "LFTW", "LFMP", "LFLS", "LFLY", "LFLB", "LFLP", "LFLC","LFMV","LFMQ","LFMU","LFLV","LFLN","LFLU","LFMI","LFMH","LFMA","LFLI","LFMC","LFKS","LFMY","LFMO","LFKA","LFKO","LFMS","LFMZ","LFMF","LFTF","LFLE",
+        "LFLG","LFLJ","LFLM","LFLO","LFNA","LFNB","LFNG","LFNH","LFXA"];
+
+		filtre_app.forEach(approche => {
+			total_vols[approche] = 0;
+		})
+        
+        for (const obj of this.vols) {
+            filtre_app.forEach(approche => {
+                total_vols[approche] += obj[approche];
+            })
+            total_vols['app'] += obj['flights'];
+        }
+        console.log("total_vols");
+        console.log(total_vols);
+		return total_vols;
+	}
+
+}
+
+class period_vols {
+
 	/*  ------------------------------------------------------------------	
 			@param {string} start_day - "yyyy-mm-dd"
 			@param {string} end_day - "yyyy-mm-dd"
@@ -19,8 +143,8 @@ class period_vols_bdd {
     #reste_ad = ["LFMQ","LFMU","LFLV","LFLN","LFLU","LFMI","LFMH","LFMA","LFLI","LFMC","LFKS","LFMY","LFMO","LFKA","LFKO","LFMS","LFMZ","LFMF","LFTF","LFLE",
     "LFLG","LFLJ","LFLM","LFLO","LFNA","LFNB","LFNG","LFNH","LFXA"];
 
-	constructor() {
-        this.zone = document.getElementById('zone').value;
+	constructor(zone) {
+        this.zone = zone;
         this.show_zone_menu();
         this.zone_button_listener();
 	}
@@ -91,32 +215,35 @@ class period_vols_bdd {
 
     button_crna_listener() {
         document.getElementById('show_crna_vols_button').addEventListener('click', async e => {
-            await this.init();
-            this.show_result_vols("result");
+            const start_day = document.getElementById('start').value;
+            const end_day = document.getElementById('end').value;
+            const vols_year = new period_vols_bdd(this.zone, start_day, end_day);
+            await vols_year.init();
+            this.show_result_vols("result", vols_year);
             $('glob_container').classList.remove('off');
         });
     }
 
     button_crna_graph_listener() {
         document.getElementById('show_crna_graph_button').addEventListener('click', async e => {
-            await this.init();
-            this.show_result_vols_crna("result");
-    
-            const sd_year = parseInt(new Date(this.start_day).getFullYear());
-            const start_day_lastyear = convertDate(get_sameday(this.start_day, sd_year - 1));
-            const ed_year = parseInt(new Date(this.end_day).getFullYear());
-            const end_day_lastyear = convertDate(get_sameday(this.end_day, ed_year - 1));
+            const start_day = document.getElementById('start').value;
+            const end_day = document.getElementById('end').value;
+                
+            const start_day_year = parseInt(new Date(start_day).getFullYear());
+            const end_day_year = parseInt(new Date(end_day).getFullYear());
+            const vols_year = new period_vols_bdd(this.zone, start_day, end_day);
+            await vols_year.init();
+
+            const start_day_lastyear = convertDate(get_sameday(start_day, start_day_year - 1));
+            const end_day_lastyear = convertDate(get_sameday(this.end_day, end_day_year - 1));
+            const vols_lastyear = new period_vols_bdd(this.zone, start_day_lastyear, end_day_lastyear);
+            await vols_lastyear.init();
+            
+            this.show_result_vols("result", vols_year);
 
             document.getElementById('graph-container').classList.remove('off');
             document.getElementById('graph-container2').classList.remove('off');
             document.getElementById('graph-container3').classList.remove('off');
-            
-            const traffic_year = this.vols;
-            const traffic_lastyear = await this.get_vols_crna(start_day_lastyear, end_day_lastyear);
-            console.log("traffic crna year");
-            console.log(traffic_year);
-            console.log("traffic crna last year");
-            console.log(traffic_lastyear);
             
             const dataAxis = [];
             const data_CTA = [];
@@ -125,13 +252,13 @@ class period_vols_bdd {
             const data_CTAE_lastyear = [];
             const data_CTAW = [];
             const data_CTAW_lastyear = [];
-            traffic_year.forEach( elem => {
+            vols_year.vols.forEach( elem => {
                 dataAxis.push(elem.jour);
                 data_CTA.push(elem.LFMMCTA_regdemand);
                 data_CTAE.push(elem.LFMMCTAE_regdemand);
                 data_CTAW.push(elem.LFMMCTAW_regdemand);
             })
-            traffic_lastyear.forEach( elem => {
+            vols_lastyear.vols.forEach( elem => {
                 data_CTA_lastyear.push(elem.LFMMCTA_regdemand);
                 data_CTAE_lastyear.push(elem.LFMMCTAE_regdemand);
                 data_CTAW_lastyear.push(elem.LFMMCTAW_regdemand);
@@ -161,8 +288,12 @@ class period_vols_bdd {
         })
 
         document.getElementById("show_ad_vols_button").addEventListener('click', async e => {
-            await this.init();
-            this.show_result_vols("result");
+            const start_day = document.getElementById('start').value;
+            const end_day = document.getElementById('end').value;
+                
+            const vols_year = new period_vols_bdd(this.zone, start_day, end_day);
+            await vols_year.init();
+            this.show_result_vols("result", vols_year);
 
             const checked_ad = this.checked_AD();
             if (checked_ad.length === 1) { 
@@ -192,13 +323,19 @@ class period_vols_bdd {
             /*  ---------------------------------------------------------------------------------
                                         Graph plage de date
                 --------------------------------------------------------------------------------- */
-            await this.init();
-            this.show_result_vols_app("result");
+            const start_day = document.getElementById('start').value;
+            const end_day = document.getElementById('end').value;
+            const vols_year = new period_vols_bdd(this.zone, start_day, end_day);
+            await vols_year.init();
+            this.show_result_vols("result", vols_year);
     
-            const sd_year = parseInt(new Date(this.start_day).getFullYear());
-            const start_day_lastyear = convertDate(get_sameday(this.start_day, sd_year - 1));
-            const ed_year = parseInt(new Date(this.end_day).getFullYear());
-            const end_day_lastyear = convertDate(get_sameday(this.end_day, ed_year - 1));
+            const start_day_year = parseInt(new Date(start_day).getFullYear());
+            const end_day_year = parseInt(new Date(end_day).getFullYear());
+
+            const start_day_lastyear = convertDate(get_sameday(start_day, start_day_year - 1));
+            const end_day_lastyear = convertDate(get_sameday(end_day, end_day_year - 1));
+            const vols_lastyear = new period_vols_bdd(this.zone, start_day_lastyear, end_day_lastyear);
+            await vols_lastyear.init();
             
             const checked_AD = this.checked_AD();
     
@@ -208,246 +345,81 @@ class period_vols_bdd {
                 return; 
             } else {
                 airport = checked_AD; 
-                console.log("Airport: "+airport);
             }
 
             document.getElementById('graph-container').classList.remove('off');
             document.getElementById('graph-container2').classList.remove('off');
             
-            const traffic_year = this.vols;
-            const traffic_lastyear = await this.get_vols_app(start_day_lastyear, end_day_lastyear);
-            console.log("traffic year");
-            console.log(traffic_year);
-            console.log("traffic last year");
-            console.log(traffic_lastyear);
-            
             const dataAxis = [];
-            const data = [];
+            const data_year = [];
             const data_lastyear = [];
-            traffic_year.forEach( elem => {
+            vols_year.vols.forEach( elem => {
                 dataAxis.push(elem.jour);
-                data.push(elem[airport]);
+                data_year.push(elem[airport]);
             })
-            traffic_lastyear.forEach( elem => {
+            vols_lastyear.vols.forEach( elem => {
                 data_lastyear.push(elem[airport]);
             })
 
             /*  ---------------------------------------------------------------------------------
                                         Graph semaine sur l'année
                 --------------------------------------------------------------------------------- */
-            const year = parseInt(new Date().getFullYear());
-            const last_year = year-1;
-    
-            //const nb_week = weeksInYear(year);
-            // ATTENTION : à corriger si semaine 1
-            const nb_week = getPreviousWeekNumber(new Date())[1];
-            const nb_week_lastyear = weeksInYear(last_year);
-        
-            const nb = Math.max(nb_week, nb_week_lastyear);
+            const data = yearly_dates_semaine(convertDate(new Date()));
+            
+            const nb = Math.max(data.nb_week_year_until_now, data.nb_week_lastyear);
             const listWeek = [];
             for (let k=1;k<nb+1;k++) { listWeek.push(k);}
     
             const week_arr_year = [];
             const week_arr_lastyear = []; 
-
-            const first_day_of_lastyear = convertDate(weekDateToDate(last_year, 1, 1)); // 1er lundi du week 1
-            console.log("first day of last year");
-            console.log(first_day_of_lastyear);
-            const last_day_of_lastyear = convertDate(weekDateToDate(last_year, nb_week_lastyear, 7));
-            console.log("last day of last year");
-            console.log(last_day_of_lastyear);
-
-            const first_day_of_year = convertDate(weekDateToDate(year, 1, 1)); // 1er lundi du week 1
-            const previousWN = getPreviousWeekNumber(new Date());
-            const last_day_of_year = convertDate(weekDateToDate(previousWN[0], previousWN[1], 7)); // Dimanche de la semaine dernière
-
-            const yearly_traffic_year = await this.get_vols_app(first_day_of_year, last_day_of_year);
-            console.log('yearly_traffic_year');
-            console.log(yearly_traffic_year);
-            const yearly_traffic_lastyear = await this.get_vols_app(first_day_of_lastyear, last_day_of_lastyear); 
-            console.log('yearly_traffic_lastyear');
-            console.log(yearly_traffic_lastyear); 
-
-            for (let k=1;k<nb_week_lastyear+1;k++) { 
-                const start = weekDateToDate(last_year, k, 1); // Obj Date du lundi 
-                const end = weekDateToDate(last_year, k, 7); // Obj Date du dimanche
-                let index_start = ecart_date(new Date(first_day_of_lastyear), new Date(start));
+    
+            const yearly_traffic_year = new period_vols_bdd(this.zone, data.monday_of_week1_year, data.sunday_of_lastweek_year);
+            await yearly_traffic_year.init();
+            const yearly_traffic_lastyear = new period_vols_bdd(this.zone, data.monday_of_week1_lastyear, data.sunday_of_lastweek_lastyear);
+            await yearly_traffic_lastyear.init();
+    
+            for (let k=1;k<data.nb_week_lastyear+1;k++) { 
+                const start = weekDateToDate(data.last_year, k, 1); // Obj Date du lundi 
+                const end = weekDateToDate(data.last_year, k, 7); // Obj Date du dimanche
+                let index_start = ecart_date(new Date(data.monday_of_week1_lastyear), new Date(start));
                 const arr_days = get_dates_array(start, end);
                 let vols = 0;
                 arr_days.forEach( day => {
-                    vols += yearly_traffic_lastyear[index_start][airport];
+                    vols += yearly_traffic_lastyear.vols[index_start][airport];
                     index_start++;
                 })
                 week_arr_lastyear.push(vols);
             }
-            for (let k=1;k<nb_week+1;k++) { 
-                const start = weekDateToDate(year, k, 1); // Obj Date du lundi 
-                const end = weekDateToDate(year, k, 7); // Obj Date du dimanche
-                let index_start = ecart_date(new Date(first_day_of_year), new Date(start));
+            for (let k=1;k<data.nb_week_year_until_now+1;k++) { 
+                const start = weekDateToDate(data.last_week_year, k, 1); // Obj Date du lundi 
+                const end = weekDateToDate(data.last_week_year, k, 7); // Obj Date du dimanche
+                let index_start = ecart_date(new Date(data.monday_of_week1_year), new Date(start));
                 const arr_days = get_dates_array(start, end);
                 let vols = 0;
                 arr_days.forEach( day => {
-                    vols += yearly_traffic_year[index_start][airport];
+                    vols += yearly_traffic_year.vols[index_start][airport];
                     index_start++;
                 })
                 week_arr_year.push(vols);
             }
-    
+
             $('glob_container').classList.remove('off');
             show_traffic_graph("graph-container2", year, listWeek, week_arr_year, week_arr_lastyear, null, airport);
-            show_vols_period("graph-container", dataAxis, data, data_lastyear, null, airport);
+            show_vols_period("graph-container", dataAxis, data_year, data_lastyear, null, airport);
     
         });
     }
-	
-    /*  -------------------------------------------------------------
-		Lit la bdd
-			@param {string} start_day - "yyyy-mm-dd"
-            @param {string} end_day - "yyyy-mm-dd"
-			@param {string} zone - "est" ou "ouest"
-            @returns {date1: objet_vol, date2: objet_vol,...}
-	----------------------------------------------------------------- */
-    async init() {
-        this.start_day = document.getElementById('start').value; // yyyy-mm-dd
-        this.end_day = document.getElementById('end').value; // yyyy-mm-dd
-        this.zone = document.getElementById('zone').value;
-        if (this.zone === "app") {
-            this.vols = await this.get_vols_app(this.start_day, this.end_day);
-            let checked_list = document.querySelectorAll("input.ad_input:checked");
-            checked_list = Array.from(checked_list);
-            this.checked_ad = checked_list.map(el => el.dataset.ad);
-            console.log(this.checked_ad);
-        } else {
-            this.vols = await this.get_vols_crna(this.start_day, this.end_day);
-        }
-        this.check_dates();
-        console.log(this.vols);
-	}
 
-    // Vérifie que toutes les dates existent bien pour faire la stat
-    check_dates() {
-        const dates = get_dates_array(new Date(this.start_day), new Date(this.end_day));
-        const vols_dates = this.vols.map(obj => obj.jour);
-        dates.forEach(day => {
-            if (vols_dates.includes(day) === false) alert(`La stat totale est fausse. Il manque la date ${day} dans la bdd`);
-        });
-    }
-
-	async get_vols_crna(start_day, end_day) {
-        const cles = {
-            "start_day": start_day, 
-            "end_day": end_day,
-            "zone": "crna",
-            "fonction": "get_vols_crna"
-        }	
-        var data = {
-            method: "post",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(cles)
-        };
-        try {
-            const response = await fetch("../php/bdd_sql.php", data);
-            if (!response.ok) { // pas entre 200 et 300
-                throw new Error("Network response was not OK");
-            }
-            return await response.json();
-        }
-        catch (err) {
-            console.error(err);
-            alert(err);
-        }
-	}
-
-    async get_vols_app(start_day, end_day) {
-        const cles = {
-            "start_day": start_day, 
-            "end_day": end_day,
-            "fonction": "get_vols_app"
-        }	
-        var data = {
-            method: "post",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(cles)
-        };
-        try {
-            const response = await fetch("../php/bdd_sql.php", data);
-            if (!response.ok) { // pas entre 200 et 300
-                throw new Error("Network response was not OK");
-            }
-            return await response.json();
-        }
-        catch (err) {
-            console.error(err);
-            alert(err);
-        }
-	}
-
-    async get_vols_airport(airport) {
-        const cles = {
-            "start_day": this.start_day, 
-            "end_day": this.end_day,
-            "airport": airport,
-            "fonction": "get_vols_app"
-        }	
-        var data = {
-            method: "post",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(cles)
-        };
-        try {
-            const response = await fetch("../php/bdd_sql.php", data);
-            if (!response.ok) { // pas entre 200 et 300
-                throw new Error("Network response was not OK");
-            }
-            return await response.json();
-        }
-        catch (err) {
-            console.error(err);
-            alert(err);
-        }
-	}
-
-	get_period_vols_crna() { 
-		const vols = {};
-		let total_vols_est = 0, total_vols_west = 0, total_vols_cta = 0; 
-		for (const obj of this.vols) {	
-            total_vols_est += parseInt(obj['LFMMCTAE_regdemand']);
-            total_vols_west += parseInt(obj['LFMMCTAW_regdemand']);
-            total_vols_cta += parseInt(obj['LFMMCTA_regdemand']);
-        }
-		vols['est'] = total_vols_est;
-		vols['west'] = total_vols_west;
-		vols['cta'] = total_vols_cta;
-		return vols;
-	}
-
-	get_period_vols_app() { 
-        let total_vols = {};
-		total_vols['app'] = 0;
-
-		this.filtre_app.forEach(approche => {
-			total_vols[approche] = 0;
-		})
-        
-        for (const obj of this.vols) {
-            this.filtre_app.forEach(approche => {
-                total_vols[approche] += obj[approche];
-            })
-            total_vols['app'] += obj['flights'];
-        }
-		return total_vols;
-	}
-
-    async show_result_vols(containerId) {
-        if (this.zone === "app") this.show_result_vols_app(containerId); else this.show_result_vols_crna(containerId);
+    async show_result_vols(containerId, data) {
+        if (this.zone === "app") this.show_result_vols_app(containerId, data); else this.show_result_vols_crna(containerId, data);
     }
 
 	/*  ------------------------------------------------------------------	
 		 @param {string} containerId - Id de l'HTML Element container 
 		------------------------------------------------------------------ */	 
         
-	async show_result_vols_crna(containerId) {
-		let result_vols = `<h2>Nombre de vols : ${reverse_date(this.start_day)} au ${reverse_date(this.end_day)}</h2><br>`;
+	async show_result_vols_crna(containerId, data) {
+		let result_vols = `<h2>Nombre de vols : ${reverse_date(data.start_day)} au ${reverse_date(data.end_day)}</h2><br>`;
 		result_vols += "<div class='delay'>";
 		let res = `
 		<table class="regulation sortable">
@@ -455,7 +427,7 @@ class period_vols_bdd {
 			<tbody>`;
 		let total_vols_est = 0, total_vols_west = 0, total_vols_cta = 0; 
         
-        for (const obj of this.vols) {
+        for (const obj of data.vols) {
             res += '<tr>'; 
             res +=`<td>${reverse_date(obj.jour)}</td><td>${obj.typejour}</td><td>${obj['LFMMCTA_regdemand']}</td><td>${obj['LFMMCTAE_regdemand']}</td><td>${obj['LFMMCTAW_regdemand']}</td>`;
             res += '</tr>';	
@@ -472,25 +444,25 @@ class period_vols_bdd {
 		
 	}
 
-    async show_result_vols_app(containerId) {
+    async show_result_vols_app(containerId, data) {
         let total_vols_app = 0;
         let total_vols = {};
-		let result_vols = `<h2>Nombre de vols : ${reverse_date(this.start_day)} au ${reverse_date(this.end_day)}</h2>`;
+		let result_vols = `<h2>Nombre de vols : ${reverse_date(data.start_day)} au ${reverse_date(data.end_day)}</h2>`;
         result_vols += `<p>La colonne APP et LFMM APP indiquent le total de tous les AD m&ecirc;me non coch&eacute;s</p><br>`;
 		result_vols += "<div class='delay'>";
 		let res = `
 		<table class="regulation sortable">
 			<thead><tr class="titre"><th class="space">Date</th><th>Jour</th><th>APP</th>`;
-            this.checked_ad.forEach(approche => {
+            this.checked_AD().forEach(approche => {
                 res += `<th>${approche}</th>`;
                 total_vols[approche] = 0;
             })
             res += '</tr></thead><tbody>';
         
-        for (const obj of this.vols) {
+        for (const obj of data.vols) {
             res += '<tr>'; 
             res +=`<td>${reverse_date(obj.jour)}</td><td>${obj.typejour}</td><td>${obj['flights']}</td>`;
-            this.checked_ad.forEach(approche => {
+            this.checked_AD().forEach(approche => {
                 res += `<td>${obj[approche]}</td>`;
                 total_vols[approche] += obj[approche];
             })
