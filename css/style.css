@@ -358,12 +358,22 @@ select, option {
 	display: flex;
 }
 
+.block {
+	display: block;
+}
+
 span.rect {
 	font-family: 'Sansation';
 	font-size: 18px;
 	margin: 10px;
 	padding: 10px;
 	background : var(--ligne-impaire-color);
+}
+
+div.cause {
+	background: var(--ligne-impaire-color);
+  	margin: 3px 10px 3px 10px;
+  	padding: 8px;
 }
 
 #glob_container {

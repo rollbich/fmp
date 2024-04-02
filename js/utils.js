@@ -309,6 +309,58 @@ const get_dates_array = (start_date, end_date) => {
 	return arr;
 }
 
+/*  ----------------------------------------------------------------------------
+		renvoie les dates utiles par rapport à un jour donné
+		lastweek_year = week de la semaine passée (pas la dernière de l'année)
+		@param day (string) - "2024-02-05"
+		@return {
+			"last_week_year": 2024,
+			"last_year": 2023,
+			"nb_week_year_until_now": 12,  = numéro semaine dernière
+			"nb_week_lastyear": 52,
+			"monday_of_week1_lastyear": "2023-01-02",
+			"sunday_of_lastweek_lastyear": "2023-12-31",
+			"monday_of_week1_year": "2024-01-01",
+			"monday_of_lastweek_year": "2024-03-18",
+			"sunday_of_lastweek_year": "2024-03-24",
+			"equi_monday_of_lastweek_lastyear": "2023-03-20",
+			"equi_sunday_of_lastweek_lastyear": "2023-03-26"
+		}
+	--------------------------------------------------------------------------- */
+const yearly_dates_semaine = (day) => {
+	const obj = {};
+
+	const lastw = getPreviousWeekNumber(new Date(day));
+	obj.today_year = parseInt(new Date(day).getFullYear());
+	obj.today_week_number = getWeekNumber(new Date(day))[1];
+	obj.monday_this_week = convertDate(weekDateToDate(obj.today_year, obj.today_week_number, 1)); // lundi de la semaine du jour
+	obj.sunday_this_week = convertDate(weekDateToDate(obj.today_year, obj.today_week_number, 7)); // dimanche de la semaine du jour
+	const year_of_monday_this_week = parseInt(new Date(obj.monday_this_week).getFullYear());
+    const year_of_sunday_this_week = parseInt(new Date(obj.sunday_this_week).getFullYear());
+    obj.equi_monday_of_this_week_lastyear = convertDate(get_sameday(obj.monday_this_week, year_of_monday_this_week - 1));
+    obj.equi_sunday_of_this_week_lastyear = convertDate(get_sameday(obj.sunday_this_week, year_of_sunday_this_week - 1));
+
+	obj.last_week_year = lastw[0];
+	obj.nb_week_year_until_now = lastw[1];
+	obj.last_year = obj.last_week_year - 1;
+	obj.nb_week_lastyear = weeksInYear(obj.last_year);
+
+	obj.monday_of_week1_lastyear = convertDate(weekDateToDate(obj.last_year, 1, 1)); // lundi du week 1
+	obj.sunday_of_lastweek_lastyear = convertDate(weekDateToDate(obj.last_year, obj.nb_week_lastyear, 7)); // dimanche de la dernière semaine lastyear
+	
+	obj.monday_of_week1_year = convertDate(weekDateToDate(obj.last_week_year, 1, 1)); // lundi du week 1
+	obj.monday_of_lastweek_year = convertDate(weekDateToDate(lastw[0], lastw[1], 1)); // Lundi de la semaine dernière
+	obj.sunday_of_lastweek_year = convertDate(weekDateToDate(lastw[0], lastw[1], 7)); // Dimanche de la semaine dernière
+
+	const year_of_monday_lastweek = parseInt(new Date(obj.monday_of_lastweek_year).getFullYear());
+    const year_of_sunday_lastweek = parseInt(new Date(obj.sunday_of_lastweek_year).getFullYear());
+    obj.equi_monday_of_lastweek_lastyear = convertDate(get_sameday(obj.monday_of_lastweek_year, year_of_monday_lastweek - 1));
+    obj.equi_sunday_of_lastweek_lastyear = convertDate(get_sameday(obj.sunday_of_lastweek_year, year_of_sunday_lastweek - 1));
+
+	console.log(obj);
+	return obj;
+}
+
 //  utils dates regulations
 /*  -----------------------------------------------------------
 	 extrait l'heure d'un string du type "2021-07-17 11:40" 

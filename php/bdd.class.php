@@ -587,17 +587,17 @@ class bdd {
         if ($zone === "crna") {
             $req = "SELECT jour, typejour, LFMMCTA_regdemand, LFMMCTAE_regdemand, RAE, SBAM, GY, AB ,EK , LFMMCTAW_regdemand, RAW, MALY, WW, MF, DZ";
             if ($vols === true) $req .= ", vols_RAE, vols_RAW";
-            $req .= " FROM $table WHERE jour >= '$start_day' && jour <= '$end_day'"; 
+            $req .= " FROM $table WHERE jour >= '$start_day' AND jour <= '$end_day'"; 
         }
         if ($zone === "est") {
             $req = "SELECT jour, typejour, LFMMCTAE_regdemand, RAE, SBAM, GY, AB ,EK";
             if ($vols === true) $req .= ", vols_RAE";
-            $req .= " FROM $table WHERE jour >= '$start_day' && jour <= '$end_day'"; 
+            $req .= " FROM $table WHERE jour >= '$start_day' AND jour <= '$end_day'"; 
         }
         if ($zone === "ouest") {
             $req = "SELECT jour, typejour, LFMMCTAW_regdemand, RAW, MALY, WW, MF, DZ";
             if ($vols === true) $req .= ", vols_RAW";
-            $req .= " FROM $table WHERE jour >= '$start_day' && jour <= '$end_day'"; 
+            $req .= " FROM $table WHERE jour >= '$start_day' AND jour <= '$end_day'"; 
         }
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
@@ -610,7 +610,25 @@ class bdd {
             return null;
         }
         $table = "vols_app";
-        $req = "SELECT * FROM $table WHERE jour >= '$start_day' && jour <= '$end_day'"; 
+        $req = "SELECT * FROM $table WHERE jour >= '$start_day' AND jour <= '$end_day'"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($resultat);
+    }
+
+    public function get_vols_app_by_week(string $year) {
+        $table = "vols_app";
+        $req = "SELECT week, SUM(flights) AS total_flights, SUM(LFKJ) AS total_LFKJ, SUM(LFKF) AS total_LFKF, SUM(LFKB) AS total_LFKB, SUM(LFKC) AS total_LFKC, SUM(LFMN) AS total_LFMN, SUM(LFMD) AS total_LFMD, SUM(LFTZ) AS total_LFTZ, SUM(LFTH) AS total_LFTH, SUM(LFML) AS total_LFML, SUM(LFMV) AS total_LFMV, SUM(LFMQ) AS total_LFMQ, SUM(LFLL) AS total_LFLL, SUM(LFLY) AS total_LFLY, SUM(LFLS) AS total_LFLS, SUM(LFLB) AS total_LFLB, SUM(LFLP) AS total_LFLP, SUM(LFLC) AS total_LFLC, SUM(LFMT) AS total_LFMT, SUM(LFTW) AS total_LFTW, SUM(LFMP) AS total_LFMP, SUM(LFMU) AS total_LFMU, SUM(LFLV) AS total_LFLV, SUM(LFLN) AS total_LFLN, SUM(LFLU) AS total_LFLU, SUM(LFMI) AS total_LFMI, SUM(LFMH) AS total_LFMH, SUM(LFMA) AS total_LFMA, SUM(LFLI) AS total_LFLI, SUM(LFMC) AS total_LFMC, SUM(LFKS) AS total_LFKS, SUM(LFMY) AS total_LFMY, SUM(LFMO) AS total_LFMO, SUM(LFKA) AS total_LFKA, SUM(LFKO) AS total_LFKO, SUM(LFMS) AS total_LFMS, SUM(LFMZ) AS total_LFMZ, SUM(LFMF) AS total_LFMF, SUM(LFTF) AS total_LFTF, SUM(LFLE) AS total_LFLE, SUM(LFLG) AS total_LFLG, SUM(LFLJ) AS total_LFLJ, SUM(LFLM) AS total_LFLM, SUM(LFLO) AS total_LFLO, SUM(LFNA) AS total_LFNA, SUM(LFNB) AS total_LFNB, SUM(LFNG) AS total_LFNG, SUM(LFNH) AS total_LFNH, SUM(LFXA) AS total_LFXA FROM $table WHERE week_year = '$year' GROUP BY week"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($resultat);
+    }
+
+    public function get_vols_crna_by_week(string $year) {
+        $table = "vols_crna";
+        $req = "SELECT week, SUM(LFMMCTA_regdemand) AS total_LFMMCTA_regdemand, SUM(LFMMCTA_load) AS total_LFMMCTA_load, SUM(LFMMCTA_demand) AS total_LFMMCTA_demand, SUM(LFMMCTAE_regdemand) AS total_LFMMCTAE_regdemand, SUM(LFMMCTAE_load) AS total_LFMMCTAE_load, SUM(LFMMCTAE_demand) AS total_LFMMCTAE_demand, SUM(LFMMCTAW_regdemand) AS total_LFMMCTAW_regdemand, SUM(LFMMCTAW_load) AS total_LFMMCTAW_load, SUM(LFMMCTAW_demand) AS total_LFMMCTAW_demand, SUM(RAE) AS total_RAE, SUM(SBAM) AS total_SBAM, SUM(GY) AS total_GY, SUM(AB) AS total_AB, SUM(EK) AS total_EK, SUM(RAW) AS total_RAW, SUM(MALY) AS total_MALY, SUM(WW) AS total_WW, SUM(MF) AS total_MF, SUM(DZ) AS total_DZ FROM $table WHERE week_year = '$year' GROUP BY week"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -649,8 +667,86 @@ class bdd {
         $stmt->execute();
     }
 
-    // $tvset : LFMMFMPE, LFMMFMPW, LFMMAPP, (LFMMAPPE, LFMMAPPW ??)
-    public function get_reguls(string $day, string $tvset = "LFMMAPP") {
+    /*  ----------------------------------------------------------------------------
+            @param $zone (string) - "est", "west" ou "app"
+            @return [{
+                "id": 2139,
+                "jour": "2023-09-01",
+                "typejour": "Vendredi",
+                "regId": "ME301",
+                "tv": "LFME3",
+                "debut": "2023-09-01 07:20",
+                "fin": "2023-09-01 11:40",
+                "delay": 201,
+                "reason": "ATC_CAPACITY",
+                "impactedFlights": 103,
+                "creation": "[{\"time\":\"2023-09-01 04:56\",\"debut\":\"2023-09-01 07:20\",\"fin\":\"2023-09-01 11:40\",\"rates\":[{\"start\":\"2023-09-01 07:20\",\"end\":\"2023-09-01 11:40\",\"rate\":32}]}]",
+                "updates": "[]",
+                "deletion": "",
+                "rates": "[{\"start\":\"2023-09-01 07:20\",\"end\":\"2023-09-01 11:40\",\"rate\":32}]"
+                }, {...}]
+        ---------------------------------------------------------------------------- */
+    public function get_reguls(string $zone, string $start_day, string $end_day) {
+        $table = "reguls_$zone";
+        $req = "SELECT * FROM $table WHERE jour >= '$start_day' AND jour <= '$end_day'"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($resultat);
+    }
+
+    /*  ----------------------------------------------------------------------------
+            @param $zone (string) - "est", "west" ou "app"
+            trie par week puis par reason
+            @return [
+                {"week": 1, "reason": "ATC_CAPACITY", "total_delay": 398 },
+                {"week": 1, "reason": "ATC_STAFFING", "total_delay": 402 },
+                {"week": 2, "reason": "WEATHER", "total_delay": 100 },
+                {"week": 2, "reason": "ATC_STAFFING", "total_delay": 200 },
+                }, {...}]
+        ---------------------------------------------------------------------------- */
+    public function get_reguls_by_week_reason(string $zone, string $year) {
+        $table = "reguls_$zone";
+        $req = "SELECT week, reason, SUM(delay) AS total_delay FROM $table WHERE week_year = '$year' GROUP BY week, reason"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $response = new stdClass();
+        foreach($resultat as $res) {
+            if (isset($response->{$res["week"]})) {
+                if (isset($response->{$res["reason"]})) {
+                    $response->{$res["week"]}->{$res["reason"]} += (int) $res["total_delay"];
+                } else {
+                    $response->{$res["week"]}->{$res["reason"]} = (int) $res["total_delay"];
+                }
+
+            } else {
+                $response->{$res["week"]} = new stdClass();
+                $response->{$res["week"]}->{$res["reason"]} = (int) $res["total_delay"];
+            }
+            
+        }
+        echo json_encode($response);
+    }
+
+    public function get_reguls_by_week(string $zone, string $year) {
+        $table = "reguls_$zone";
+        $req = "SELECT week, SUM(delay) AS total_delay FROM $table WHERE week_year = '$year' GROUP BY week"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $response = new stdClass();
+        foreach($resultat as $res) {
+            $response->{$res["week"]} = (int) $res["total_delay"];
+        }
+        echo json_encode($response);
+    }
+
+    /*  --------------------------------------------------------------------------
+            Utilisé par set_reguls pour remplir la BDD en automatique
+            $tvset : LFMMFMPE, LFMMFMPW, LFMMAPP, (LFMMAPPE, LFMMAPPW ??)
+        -------------------------------------------------------------------------- */
+    public function get_reguls_b2b(string $day, string $tvset = "LFMMAPP") {
         if ($tvset === "LFMMFMPE") $table = "reguls_est";
         if ($tvset === "LFMMFMPW") $table = "reguls_west";
         if ($tvset === "LFMMAPP") $table = "reguls_app";
@@ -734,8 +830,8 @@ class bdd {
         $yesterday->modify('-1 day');
         $veille = $yesterday->format('Y-m-d');
         
-        $table_reg_jour = $this->get_reguls($jour, $tvset); // [ ["id"=>nb, ...], ..., ["id"=>nb, ...] ]
-        $table_reg_veille = $this->get_reguls($veille, $tvset);
+        $table_reg_jour = $this->get_reguls_b2b($jour, $tvset); // [ ["id"=>nb, ...], ..., ["id"=>nb, ...] ]
+        $table_reg_veille = $this->get_reguls_b2b($veille, $tvset);
 
         // array des reguls existantes dans la BDD jour J et la veille
         $table_reg = array_merge($table_reg_jour, $table_reg_veille);
@@ -874,6 +970,13 @@ class bdd {
     public function set_h20_occ_crna(string $zone, string $jour, string $h20, string $occ) {
         $table = "h20_occ_$zone";
         $req = "INSERT INTO $table VALUES ('$jour', '$h20', '$occ')"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+    }
+
+    public function update_week(string $day, string $year, string $week) {
+        $table = "reguls_app";
+        $req = "UPDATE $table SET week_year = '$year', week = '$week' WHERE jour = '$day'"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
     }
