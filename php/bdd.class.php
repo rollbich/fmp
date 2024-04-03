@@ -993,9 +993,8 @@ class bdd {
         $stmt->execute();
     }
 
-    public function update_week(string $day, string $year, string $week) {
-        $table = "reguls_app";
-        $req = "UPDATE $table SET week_year = '$year', week = '$week' WHERE jour = '$day'"; 
+    public function update_week(string $day, string $year, string $week, string $month, string $table) {
+        $req = "UPDATE $table SET week_year = '$year', week = '$week', month = '$month' WHERE jour = '$day'"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
     }
