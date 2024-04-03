@@ -35,7 +35,7 @@ if ($contentType === "application/json") {
                 $bdd->get_reguls($content->zone, $content->start_day, $content->end_day);
                 break;
             case "update_week":
-                $bdd->update_week($content->day, $content->year, $content->week);
+                $bdd->update_week($content->day, $content->year, $content->week, $content->month, $content->table);
                 break;
             case "get_vols_app_by_week":
                 $bdd->get_vols_app_by_week($content->year);
