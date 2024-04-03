@@ -678,7 +678,7 @@ class feuille_capa extends capa {
 		})
 	}
 
-	add_conge(vac, present) {
+	add_conge(vac, personnel) {
 		this.pc_vac[vac]["conge"].forEach (nom => {
 			personnel.push([nom, "conge"]);
 		})
