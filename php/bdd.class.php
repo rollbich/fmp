@@ -637,11 +637,14 @@ class bdd {
 
     public function set_vols_crna(string $day, int $LFMMCTA_regdemand, int $LFMMCTA_load, int $LFMMCTA_demand, int $LFMMCTAE_regdemand, int $LFMMCTAE_load, int $LFMMCTAE_demand, int $LFMMCTAW_regdemand, int $LFMMCTAW_load, int $LFMMCTAW_demand, int $RAE, int $SBAM, int $EK, int $AB, int $GY, int $RAW, int $MALY, int $WW, int $MF, int $DZ, string $vols_RAE, string $vols_RAW) {
         $date = new DateTime($day);
+        $week_number = intval($date->format("W")); // sinon on a un string avec un éventuel 0 devant le numéro
+        $week_year = $date->format('o'); // année correspondant à la semaine (peut être différent de l'année en cours => des jours de la semaine 53 de 2023 peuvent être en 2024)
+        $month = intval($date->format('m'));
         $js = $date->format('w');
         $tab_jour = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
         $jour_semaine = $tab_jour[$js];
         $table = "vols_crna";
-        $req = "INSERT INTO $table VALUES ('$day', '$jour_semaine', '$LFMMCTA_regdemand', '$LFMMCTA_load', '$LFMMCTA_demand', '$LFMMCTAE_regdemand', '$LFMMCTAE_load', '$LFMMCTAE_demand', '$LFMMCTAW_regdemand', '$LFMMCTAW_load', '$LFMMCTAW_demand', '$RAE', '$SBAM', '$EK', '$AB', '$GY', '$RAW', '$MALY', '$WW', '$MF', '$DZ', JSON_COMPACT('$vols_RAE'), JSON_COMPACT('$vols_RAW'))"; 
+        $req = "INSERT INTO $table VALUES ('$day', '$jour_semaine', '$week_year', '$week_number', '$month', '$LFMMCTA_regdemand', '$LFMMCTA_load', '$LFMMCTA_demand', '$LFMMCTAE_regdemand', '$LFMMCTAE_load', '$LFMMCTAE_demand', '$LFMMCTAW_regdemand', '$LFMMCTAW_load', '$LFMMCTAW_demand', '$RAE', '$SBAM', '$EK', '$AB', '$GY', '$RAW', '$MALY', '$WW', '$MF', '$DZ', JSON_COMPACT('$vols_RAE'), JSON_COMPACT('$vols_RAW'))"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
     }
@@ -649,13 +652,16 @@ class bdd {
     // $LFMMAPP = {"flights": nb_total_vol_app, "LFKJ": vols, "ad": nb, ...}
     public function set_vols_app(string $day, stdClass $LFMMAPP) {
         $date = new DateTime($day);
+        $week_number = intval($date->format("W")); // sinon on a un string avec un éventuel 0 devant le numéro
+        $week_year = $date->format('o'); // année correspondant à la semaine (peut être différent de l'année en cours => des jours de la semaine 53 de 2023 peuvent être en 2024)
+        $month = intval($date->format('m'));
         $js = $date->format('w');
         $tab_jour = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
         $jour_semaine = $tab_jour[$js];
         $table = "vols_app";
         $keys = array_keys(get_object_vars($LFMMAPP));
         $nb_flights = $LFMMAPP->flights;
-        $req = "INSERT INTO $table VALUES ('$day', '$jour_semaine', '$nb_flights'";
+        $req = "INSERT INTO $table VALUES ('$day', '$jour_semaine', '$week_year', '$week_number', '$month', '$nb_flights'";
         foreach($keys as $ad) {
             if ($ad != "flights") {
                 $data = $LFMMAPP->{$ad};
@@ -819,9 +825,22 @@ class bdd {
 
             Attention : lorsque les reguls sont à cheval sur 2 jours, le delay est imputée au 1er jour et le 2è jour
             la régul est notée avec un delay de 0 => pas de mise à jour de regul si elle a commencé la veille
+
+            start of the week as a dateTime : 
+            $date = new DateTime('midnight'); 
+            $date->setISODate($year, $week);
+
+            nombre de semaines dans l'année : idate('W', mktime(0, 0, 0, 12, 28, $year)).
+            This is based on the fact that the last week of the year always includes 28 December.
         ---------------------------------------------------------------------------------------------------------------- */
     
     public function set_reguls(string $jour, stdClass $reguls, string $tvset = "LFMMAPP") {
+
+        $date = new DateTime($jour);
+        $week_number = intval($date->format("W")); // sinon on a un string avec un éventuel 0 devant le numéro
+        $week_year = $date->format('o'); // année correspondant à la semaine (peut être différent de l'année en cours => des jours de la semaine 53 de 2023 peuvent être en 2024)
+        $month = intval($date->format('m'));
+
         if ($tvset === "LFMMFMPE") $table = "reguls_est";
         if ($tvset === "LFMMFMPW") $table = "reguls_west";
         if ($tvset === "LFMMAPP") $table = "reguls_app";
@@ -942,7 +961,7 @@ class bdd {
                     $creation_time = '[{"time":"'.$last_update_time.'","debut":"'.$debut.'","fin":"'.$fin.'","rates":'.$rates_str.'}]';
                     $update_obj = '[]';
                     $deletion_time = '';
-                    $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'))";
+                    $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$week_year', '$week_number', '$month', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'))";
                     $stmt = Mysql::getInstance()->prepare($req);
                     $stmt->execute();
                 }
@@ -950,7 +969,7 @@ class bdd {
                     $deletion_time = $last_update_time;
                     $update_obj = '[]';
                     $creation_time = '{}';
-                    $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'))";
+                    $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$week_year', '$week_number', '$month', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'))";
                     $stmt = Mysql::getInstance()->prepare($req);
                     $stmt->execute();
                 }
@@ -958,7 +977,7 @@ class bdd {
                     $deletion_time = '';
                     $update_obj = '[{"time":"'.$last_update_time.'","debut":"'.$debut.'","fin":"'.$fin.'","rates":'.$rates_str.'}]';
                     $creation_time = '{}';
-                    $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'))";
+                    $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$week_year', '$week_number', '$month', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'))";
                     $stmt = Mysql::getInstance()->prepare($req);
                     $stmt->execute();
                 }
