@@ -126,6 +126,11 @@ nav.navbar{
 	overflow-x: scroll;
 }
 
+#validate_week {
+	margin-left: 30px;
+	width: 60px;
+}
+
 #accueil_vols {
 	margin-top: 3rem;
 }
@@ -178,6 +183,13 @@ table.table_bilan tr:nth-child(odd) {
   
 table.table_bilan tr:nth-child(even) {
 	background-color: transparent;
+}
+
+#bilan_causes_CRSTMP {
+	display: block;
+	width: 800px;
+	margin-left:auto;
+	margin-right: auto;
 }
 
 /* ------- Stats Mensuelles ------ */
@@ -506,7 +518,7 @@ table.conf th, table.conf td {
 	padding-right: 10px;
 }
 
-/* ------- Graphes ------- */
+/* ------- Graphs ------- */
 
 #graph-container, #graph-container2, #graph-container3 {
 	display: block;

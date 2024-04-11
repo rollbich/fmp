@@ -695,7 +695,7 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 			@param {array} data - [load,...]
 			@param {string} zon - "nom du titre de la zone" (ex : LFMMCTA)
 	-------------------------------------------------------------------------- */
-function show_traffic_graph_mois(containerId, year, listWeek, data, data_lastyear, dataRef = null, zon) {
+function show_traffic_graph_mois(containerId, year, listMonth, data, data_lastyear, dataRef = null, zon) {
 
 	let chartDom = $(containerId);
 	chartDom.style.height = "400px";
@@ -763,7 +763,7 @@ function show_traffic_graph_mois(containerId, year, listWeek, data, data_lastyea
 				color: '#fff',
 				fontSize: '1.2rem'
 			},
-			data: listWeek
+			data: listMonth
 		},
 		yAxis: {
 			type: 'value',
@@ -1408,6 +1408,117 @@ function show_delay_graph_mois_par_causes(containerId, year, month, data, titre)
 /*	--------------------------------------------------------------------------
 	 	Affiche le graph Delay par causes du mois 
 			@param {string} containerId - Id de l'HTML Element conteneur
+			@param {array} week - numéro de la semaine
+			@param {array} data - [...]
+			@param {string} titre - "nom du titre de la zone"
+	-------------------------------------------------------------------------- */
+function show_delay_graph_week_par_tvs(containerId, year, week, data, titre) {
+	console.log(data);
+	let chartDom = $(containerId);
+	chartDom.style.height = "400px";
+	chartDom.style.width = "870px";
+	let myChart = echarts.init(chartDom);
+	let total = 0;
+	let option;
+	const result = [];
+	for(let [tv, delay] of Object.entries(data)) {
+		let obj = {};
+		obj["value"] = delay;
+		total += delay;
+		obj["name"] = tv;
+		result.push(obj);
+	}
+	
+	option = {
+		// Global palette:
+		color: [
+			'#d66',
+			'#6b6',
+			'lightblue',
+			'orange',
+			'pink',
+			'yellow',
+			'white',
+			'#bda29a',
+			'#6e7074',
+			'#546570',
+			'#c4ccd3'
+			],
+		title: {
+			text: `Délai par TVs - Week ${week} - ${year} - ${titre}`,
+			textStyle: {
+				fontSize: '1.5rem',
+				color: '#FFF'
+			},
+			x: 'center',
+			y: 'top',
+			padding: 10
+		},
+		tooltip: {
+			trigger: 'item'
+		},
+		legend: {
+			top: 'center',
+			left: 'left',
+			textStyle: {
+			fontSize: '1.2rem',
+			color: '#eee'
+			},
+			orient: 'vertical'
+		},
+		series: [
+			{
+			name: 'TVs',
+			type: 'pie',
+			radius: ['60%', '90%'],
+			avoidLabelOverlap: false,
+			itemStyle : {
+				borderRadius: 10,
+				borderColor: '#eee',
+					borderWidth: 2,
+				normal : {
+						label : {
+						show: true, position: 'inner',
+						formatter : function (params){
+							var val = ((parseInt(params.value)/parseInt(total))*100).toFixed(1);
+							return  val.toString() + '%\n'
+						},
+						textStyle : {
+							color: 'black'
+						}
+					},
+					labelLine : {
+						show : false
+					}
+				}
+			},
+			top: '20%',
+			label: {
+				show: false,
+				position: 'center'
+			},
+			emphasis: {
+				label: {
+				show: true,
+				fontSize: '20',
+				fontWeight: 'bold'
+				}
+			},
+			labelLine: {
+				show: false
+			},
+			data: result
+			}
+		]
+	};
+	
+	myChart.setOption(option);
+	
+}
+
+/*	--------------------------------------------------------------------------
+	 	Affiche le graph Delay par causes du mois 
+			@param {string} containerId - Id de l'HTML Element conteneur
 			@param {array} month - numéro du mois
 			@param {array} data - [...]
 			@param {string} titre - "nom du titre de la zone"
@@ -1522,11 +1633,19 @@ function show_delay_graph_mois_par_tvs(containerId, year, month, data, titre) {
 	 	Affiche le graph Delay par causes de la semaine 
 			@param {string} containerId - Id de l'HTML Element conteneur
 			@param {array} week - numéro de la semaine
-			@param {array} data - [{ value: 1048, name: 'Search Engine' }, ..., { value: 300, name: 'Video Ads' } ]
+			@param {array} data - [{
+				"ATC_STAFFING":1953,
+				"SPECIAL_EVENT":311,
+				"ATC_INDUSTRIAL_ACTION":2000,
+				"cause": delai
+				}, 
+				{idem semaine i}, ...] ]
 			@param {string} titre - "nom du titre de la zone"
       ]
 	-------------------------------------------------------------------------- */
+
 function show_delay_graph_week_par_causes(containerId, year, week, data, titre) {
+	if (typeof data === 'undefined') return;
 	let chartDom = $(containerId);
 	chartDom.style.height = "400px";
 	chartDom.style.width = "870px";
@@ -1534,14 +1653,15 @@ function show_delay_graph_week_par_causes(containerId, year, week, data, titre) 
 	let total = 0;
 	let option;
 	const result = [];
+
 	Object.keys(data).forEach(cause => {
-			let obj = {};
-			obj["value"] = data[cause];
-			total += data[cause];
-			obj["name"] = cause;
-			result.push(obj);
+		let obj = {};
+		obj["value"] = data[cause];
+		total += data[cause];
+		obj["name"] = cause;
+		result.push(obj);
 	}) 
-	
+
 	option = {
 		// Global palette:
 		color: [
