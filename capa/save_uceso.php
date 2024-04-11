@@ -104,6 +104,9 @@
 <div id='feuille_capa_uceso'>
 </div>
 
+<div id="glob_container">
+</div>
+
 <div id="popup-wrap" class="off" >
     <div class="popup-box">
       <h2></h2>
