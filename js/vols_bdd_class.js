@@ -10,7 +10,7 @@ class period_vols_bdd {
 		Lit la bdd
 			@param {string} start_day - "yyyy-mm-dd"
             @param {string} end_day - "yyyy-mm-dd"
-			@param {string} zone - "est" ou "ouest"
+			@param {string} zone - "est" ou "ouest" ou "app"
             @returns {date1: objet_vol, date2: objet_vol,...}
 	----------------------------------------------------------------- */
     async init() {
@@ -20,10 +20,8 @@ class period_vols_bdd {
         } else {
             this.vols = await this.get_vols_crna(this.start_day, this.end_day);
         }
+        this.vols_by_day = this.get_vols_by_day();
         this.check_dates();
-        console.log("zone : "+ this.zone);
-        console.log("this.vols");
-        console.log(this.vols);
 	}
 
     // Vérifie que toutes les dates existent bien pour faire la stat
@@ -84,6 +82,21 @@ class period_vols_bdd {
         }
 	}
 
+    /*  --------------------------------------------------------------------------------------
+        classé par date
+        @return {
+            "jour1": {vol1}
+            "jour2": ...
+        }
+    ------------------------------------------------------------------------------------------ */
+	get_vols_by_day() {
+		const result = {};
+		for (let vol of this.vols) {
+			result[vol.jour] = vol;
+		}
+		return result;
+	}
+
     get_period_vols_crna() { 
 		const vols = {};
 		let total_vols_est = 0, total_vols_west = 0, total_vols_cta = 0; 
@@ -114,8 +127,8 @@ class period_vols_bdd {
             })
             total_vols['app'] += obj['flights'];
         }
-        console.log("total_vols");
-        console.log(total_vols);
+        //console.log("total_vols");
+        //console.log(total_vols);
 		return total_vols;
 	}
 
