@@ -59,9 +59,6 @@
 				const details_sv_15mn = pc.details_sv_15mn;
 				document.querySelector('.popup-close').click();
 				capa_graph = await show_capa_graph("feuille_capa_uceso", day, zone, pc, details_sv_15mn);
-			});
-
-            $('bouton_save_uceso').addEventListener('click', async e => {
 				console.log(capa_graph);
 				// Si pas de donnée réalisé
 				if (capa_graph.data_d.length === 0) {
@@ -70,7 +67,8 @@
 					await save_uceso(capa_graph.zone, capa_graph.day, capa_graph.jour, capa_graph.i1, capa_graph.uceso, capa_graph.data_d, capa_graph.max_sect, capa_graph.tvh, capa_graph.nb_pc, capa_graph.minutes_ucesa);
 					show_popup("Sauvegarde effectu&eacute;e!", `Jour : ${capa_graph.day}`);
 				}
-            });
+			});
+
 			
 		});		
 	</script>
@@ -84,12 +82,11 @@
 <h1>Save Uceso to BDD</h1>
 <div id="help_frame" class="off">
 	<h2>Help</h2>
-	<p><span>Save Uceso</span> :<br>Cliquez sur ce bouton pour sauver les ucesos, le i1 et le r&eacute;alis&eacute; d'une journ&eacute;e pass&eacute;e</p>
+	<p><span>Show and Save</span> :<br>Cliquez sur ce bouton pour sauver les ucesos, le i1 et le r&eacute;alis&eacute; d'une journ&eacute;e pass&eacute;e</p>
 	<button class="help_close_button pointer">Close</button>
 </div>
 <ul class="menu">
-	<li id="bouton_show_uceso" class="pointer"><span>Show</span></li>
-    <li id="bouton_save_uceso" class="pointer"><span>Save</span></li>
+	<li id="bouton_show_uceso" class="pointer"><span>Show & Save</span></li>
 	<li>
 	<label for="start" class="dates">Date:</label>
 	<input type="date" id="start" value="<?php echo date("Y-m-d", strtotime("today"));  ?>" min="2023-01-01">
@@ -105,6 +102,9 @@
 </header>
 
 <div id='feuille_capa_uceso'>
+</div>
+
+<div id="glob_container">
 </div>
 
 <div id="popup-wrap" class="off" >
