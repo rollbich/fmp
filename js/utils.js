@@ -130,6 +130,13 @@ const addDays_toString = (day, nb_day) => {
 	return new Date(day).addDays(nb_day).toISOString().split('T')[0];
 }
 
+// return 28, 29, 30 ou 31
+const lastDayOfMonth = function(y, m){
+    // Create a new Date object representing the last day of the specified month
+    // By passing m + 1 as the month parameter and 0 as the day parameter, it represents the last day of the specified month
+    return new Date(y, m + 1, 0).getDate();
+}
+
 const jplus1 = day => {
 	return new Date(day).addDays(1).toISOString().split('T')[0];
 }
@@ -229,7 +236,7 @@ function getPreviousWeekNumber(d) {
 }
 
 function getPreviousMonthNumber(d) {
-	let m = d.getMonth();
+	let m = d.getMonth()+1; // mois entre 0 et 11 => +1
 	let y = d.getFullYear();
 	return m === 1 ? [y-1, 12] : [y, m-1];
 }
@@ -329,8 +336,8 @@ const get_dates_array = (start_date, end_date) => {
 	--------------------------------------------------------------------------- */
 const yearly_dates_semaine = (day) => {
 	const obj = {};
-
 	const lastw = getPreviousWeekNumber(new Date(day));
+	const lastm = getPreviousMonthNumber(new Date(day));
 	obj.today_year = parseInt(new Date(day).getFullYear());
 	obj.today_week_number = getWeekNumber(new Date(day))[1];
 	obj.monday_this_week = convertDate(weekDateToDate(obj.today_year, obj.today_week_number, 1)); // lundi de la semaine du jour
@@ -341,7 +348,9 @@ const yearly_dates_semaine = (day) => {
     obj.equi_sunday_of_this_week_lastyear = convertDate(get_sameday(obj.sunday_this_week, year_of_sunday_this_week - 1));
 
 	obj.last_week_year = lastw[0];
+	obj.last_month_year = lastm[0];
 	obj.nb_week_year_until_now = lastw[1];
+	obj.nb_month_year_until_now = lastm[1];
 	obj.last_year = obj.last_week_year - 1;
 	obj.nb_week_lastyear = weeksInYear(obj.last_year);
 
