@@ -157,7 +157,7 @@ $atc_confs->ouest = $plan_w->data->plan->nmSchedule->item;
 //$atc_confs->known_confs->ouest = $plan_w->data->plan->knownConfigurations->item;
 
 try {	
-	$day = substr($wef_counts, 0, 10);
+	$day = date('Y-m-d', strtotime("now"));
 	write_json($json_reg, "", "-reg", $wef_regs);
 	write_json($json_atfcm_reg->data, "", "-atfcm-reg", $wef_regs);
 	write_json($atc_confs, "", "-confs", $wef_regs);
