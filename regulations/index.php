@@ -15,7 +15,7 @@
 	<script type="text/javascript" src="../js/list-component.js"></script>
 	<script type="text/javascript" src="../js/graph.js"></script>
 	<script type="text/javascript" src="../js/upload.js"></script>
-	<script type="text/javascript" src="../js/regulations_class.js"></script>
+	<script type="text/javascript" src="../js/regulations_bdd_class.js"></script>
 	<script src="../js/dragger.js"></script>
 	<script src="../js/echarts.min.js"></script>
 	<script src="../js/sortable.min.js"></script>
@@ -60,16 +60,15 @@
 				let zone = document.getElementById('zone').value;
 				let start_day = document.getElementById('start').value; // yyyy-mm-dd
 				let end_day = document.getElementById('end').value; // yyyy-mm-dd
-				const r = new period_regul(start_day, end_day, zone, true);
-				await r.init();
-				r.show_result_reg("result");
+				const reg = new period_regul_bdd(zone, start_day, end_day);
+				await reg.init();
+				reg.show_result_reg("result");
 				$('glob_container').classList.remove('off');
 			});
 			
 			document.getElementById('bouton_year_regul').addEventListener('click', async e => {
 				let day = document.getElementById('start').value; // yyyy-mm-dd
 				let zone = document.getElementById('zone').value;
-				const zon = zone === "AE" ? "est" : "west";
 				const data = {};
 				const year = parseInt(new Date(day).getFullYear());
 				const lastyear = parseInt(new Date(day).getFullYear()) - 1;
@@ -126,8 +125,9 @@
 	<input type="date" id="end" value="<?php echo date("Y-m-d", strtotime("yesterday"));  ?>" min="2018-12-31">
 	<span>
 	  <select id="zone" class="select">
-		<option selected value="AE">Zone EST</option>
-		<option value="AW">Zone WEST</option>
+		<option selected value="est">Zone EST</option>
+		<option value="west">Zone WEST</option>
+        <option value="app">Approches</option>
 	  </select>
 	</span>
 </div>
