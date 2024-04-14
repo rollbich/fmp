@@ -6,6 +6,22 @@ require_once("pdo.class.php");
 // ex ajout avec json
 // $req = "INSERT INTO $table (JX) VALUES ('$nom', '{\"category\": \"Landmark\", \"lastVisitDate\": \"11/10/2019\"}')";
 
+function getBetweenDates($startDate, $endDate) {
+    $array = array();
+    $interval = new DateInterval('P1D');
+ 
+    $realEnd = new DateTime($endDate);
+    $realEnd->add($interval);
+ 
+    $period = new DatePeriod(new DateTime($startDate), $interval, $realEnd);
+ 
+    foreach($period as $date) {
+        $array[] = $date->format('Y-m-d');
+    }
+ 
+    return $array;
+}
+
 class bdd_tds {
 
     private $client;
@@ -626,9 +642,27 @@ class bdd {
         echo json_encode($resultat);
     }
 
-    public function get_vols_crna_by_week(string $year) {
+    public function get_vols_crna_by_week(string $year, int $week_max=53) {
         $table = "vols_crna";
-        $req = "SELECT week, SUM(LFMMCTA_regdemand) AS total_LFMMCTA_regdemand, SUM(LFMMCTA_load) AS total_LFMMCTA_load, SUM(LFMMCTA_demand) AS total_LFMMCTA_demand, SUM(LFMMCTAE_regdemand) AS total_LFMMCTAE_regdemand, SUM(LFMMCTAE_load) AS total_LFMMCTAE_load, SUM(LFMMCTAE_demand) AS total_LFMMCTAE_demand, SUM(LFMMCTAW_regdemand) AS total_LFMMCTAW_regdemand, SUM(LFMMCTAW_load) AS total_LFMMCTAW_load, SUM(LFMMCTAW_demand) AS total_LFMMCTAW_demand, SUM(RAE) AS total_RAE, SUM(SBAM) AS total_SBAM, SUM(GY) AS total_GY, SUM(AB) AS total_AB, SUM(EK) AS total_EK, SUM(RAW) AS total_RAW, SUM(MALY) AS total_MALY, SUM(WW) AS total_WW, SUM(MF) AS total_MF, SUM(DZ) AS total_DZ FROM $table WHERE week_year = '$year' GROUP BY week"; 
+        $req = "SELECT week, SUM(LFMMCTA_regdemand) AS total_LFMMCTA_regdemand, SUM(LFMMCTA_load) AS total_LFMMCTA_load, SUM(LFMMCTA_demand) AS total_LFMMCTA_demand, SUM(LFMMCTAE_regdemand) AS total_LFMMCTAE_regdemand, SUM(LFMMCTAE_load) AS total_LFMMCTAE_load, SUM(LFMMCTAE_demand) AS total_LFMMCTAE_demand, SUM(LFMMCTAW_regdemand) AS total_LFMMCTAW_regdemand, SUM(LFMMCTAW_load) AS total_LFMMCTAW_load, SUM(LFMMCTAW_demand) AS total_LFMMCTAW_demand, SUM(RAE) AS total_RAE, SUM(SBAM) AS total_SBAM, SUM(GY) AS total_GY, SUM(AB) AS total_AB, SUM(EK) AS total_EK, SUM(RAW) AS total_RAW, SUM(MALY) AS total_MALY, SUM(WW) AS total_WW, SUM(MF) AS total_MF, SUM(DZ) AS total_DZ FROM $table WHERE week_year = '$year' AND week <= '$week_max' GROUP BY week"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($resultat);
+    }
+
+    public function get_vols_app_by_month(string $year) {
+        $table = "vols_app";
+        $req = "SELECT month, SUM(flights) AS total_flights, SUM(LFKJ) AS total_LFKJ, SUM(LFKF) AS total_LFKF, SUM(LFKB) AS total_LFKB, SUM(LFKC) AS total_LFKC, SUM(LFMN) AS total_LFMN, SUM(LFMD) AS total_LFMD, SUM(LFTZ) AS total_LFTZ, SUM(LFTH) AS total_LFTH, SUM(LFML) AS total_LFML, SUM(LFMV) AS total_LFMV, SUM(LFMQ) AS total_LFMQ, SUM(LFLL) AS total_LFLL, SUM(LFLY) AS total_LFLY, SUM(LFLS) AS total_LFLS, SUM(LFLB) AS total_LFLB, SUM(LFLP) AS total_LFLP, SUM(LFLC) AS total_LFLC, SUM(LFMT) AS total_LFMT, SUM(LFTW) AS total_LFTW, SUM(LFMP) AS total_LFMP, SUM(LFMU) AS total_LFMU, SUM(LFLV) AS total_LFLV, SUM(LFLN) AS total_LFLN, SUM(LFLU) AS total_LFLU, SUM(LFMI) AS total_LFMI, SUM(LFMH) AS total_LFMH, SUM(LFMA) AS total_LFMA, SUM(LFLI) AS total_LFLI, SUM(LFMC) AS total_LFMC, SUM(LFKS) AS total_LFKS, SUM(LFMY) AS total_LFMY, SUM(LFMO) AS total_LFMO, SUM(LFKA) AS total_LFKA, SUM(LFKO) AS total_LFKO, SUM(LFMS) AS total_LFMS, SUM(LFMZ) AS total_LFMZ, SUM(LFMF) AS total_LFMF, SUM(LFTF) AS total_LFTF, SUM(LFLE) AS total_LFLE, SUM(LFLG) AS total_LFLG, SUM(LFLJ) AS total_LFLJ, SUM(LFLM) AS total_LFLM, SUM(LFLO) AS total_LFLO, SUM(LFNA) AS total_LFNA, SUM(LFNB) AS total_LFNB, SUM(LFNG) AS total_LFNG, SUM(LFNH) AS total_LFNH, SUM(LFXA) AS total_LFXA FROM $table WHERE week_year = '$year' GROUP BY month"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($resultat);
+    }
+
+    public function get_vols_crna_by_month(string $year, int $month_max=12) {
+        $table = "vols_crna";
+        $req = "SELECT month, SUM(LFMMCTA_regdemand) AS total_LFMMCTA_regdemand, SUM(LFMMCTA_load) AS total_LFMMCTA_load, SUM(LFMMCTA_demand) AS total_LFMMCTA_demand, SUM(LFMMCTAE_regdemand) AS total_LFMMCTAE_regdemand, SUM(LFMMCTAE_load) AS total_LFMMCTAE_load, SUM(LFMMCTAE_demand) AS total_LFMMCTAE_demand, SUM(LFMMCTAW_regdemand) AS total_LFMMCTAW_regdemand, SUM(LFMMCTAW_load) AS total_LFMMCTAW_load, SUM(LFMMCTAW_demand) AS total_LFMMCTAW_demand, SUM(RAE) AS total_RAE, SUM(SBAM) AS total_SBAM, SUM(GY) AS total_GY, SUM(AB) AS total_AB, SUM(EK) AS total_EK, SUM(RAW) AS total_RAW, SUM(MALY) AS total_MALY, SUM(WW) AS total_WW, SUM(MF) AS total_MF, SUM(DZ) AS total_DZ FROM $table WHERE week_year = '$year' AND week <= '$month_max' GROUP BY month"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -703,34 +737,53 @@ class bdd {
 
     /*  ----------------------------------------------------------------------------
             @param $zone (string) - "est", "west" ou "app"
+            @param $interval (string) - "week", "month" ou "year"
             trie par week puis par reason
-            @return [
+            $resultat = [
                 {"week": 1, "reason": "ATC_CAPACITY", "total_delay": 398 },
                 {"week": 1, "reason": "ATC_STAFFING", "total_delay": 402 },
                 {"week": 2, "reason": "WEATHER", "total_delay": 100 },
                 {"week": 2, "reason": "ATC_STAFFING", "total_delay": 200 },
                 }, {...}]
+            @return {
+                "1": {"ATC_CAPACITY": 398, "ATC_STAFFING": 402},
+                "2": {...},
+                ...
+            }
         ---------------------------------------------------------------------------- */
-    public function get_reguls_by_week_reason(string $zone, string $year) {
+       
+    public function get_reguls_by_interval_reason(string $zone, string $year, string $interval) {
+        $nb_week = idate('W', mktime(0, 0, 0, 12, 28, $year));
         $table = "reguls_$zone";
-        $req = "SELECT week, reason, SUM(delay) AS total_delay FROM $table WHERE week_year = '$year' GROUP BY week, reason"; 
+        $req = "SELECT $interval, reason, SUM(delay) AS total_delay FROM $table WHERE week_year = '$year' GROUP BY $interval, reason"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $response = new stdClass();
         foreach($resultat as $res) {
-            if (isset($response->{$res["week"]})) {
+            if (isset($response->{$res[$interval]})) {
                 if (isset($response->{$res["reason"]})) {
-                    $response->{$res["week"]}->{$res["reason"]} += (int) $res["total_delay"];
+                    $response->{$res["$interval"]}->{$res["reason"]} += (int) $res["total_delay"];
                 } else {
-                    $response->{$res["week"]}->{$res["reason"]} = (int) $res["total_delay"];
+                    $response->{$res[$interval]}->{$res["reason"]} = (int) $res["total_delay"];
                 }
 
             } else {
-                $response->{$res["week"]} = new stdClass();
-                $response->{$res["week"]}->{$res["reason"]} = (int) $res["total_delay"];
+                $response->{$res[$interval]} = new stdClass();
+                $response->{$res[$interval]}->{$res["reason"]} = (int) $res["total_delay"];
             }
             
+        }
+        // s'il n'y a pas de regul cette semaine/mois, alors on met un objet vide au lieu de rien
+        if ($interval === "week") {
+            for($i=1;$i<$nb_week+1;$i++) {
+                if(isset($response->{$i}) === false) $response->{$i} = new stdClass();
+            }
+        }
+        if ($interval === "month") {
+            for($i=1;$i<13;$i++) {
+                if(isset($response->{$i}) === false) $response->{$i} = new stdClass();
+            }
         }
         echo json_encode($response);
     }
