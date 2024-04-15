@@ -6,7 +6,7 @@ require_once("pdo.class.php");
 // ex ajout avec json
 // $req = "INSERT INTO $table (JX) VALUES ('$nom', '{\"category\": \"Landmark\", \"lastVisitDate\": \"11/10/2019\"}')";
 
-function getBetweenDates($startDate, $endDate) {
+function getBetweenDates(string $startDate, string $endDate) {
     $array = array();
     $interval = new DateInterval('P1D');
  
@@ -36,8 +36,8 @@ class bdd_tds {
 
     // @return JSON string - ["JX","J1","J3","S2","","","J2","S1","N","","",""]
     public function get_cycle() {
-        $table_cycle = "cycle_$this->zone";
-        $req = "SELECT * FROM $table_cycle"; 
+        $table_cycle = "cycle";
+        $req = "SELECT * FROM $table_cycle WHERE zone='$this->zone' ORDER BY 'jour' ASC"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
