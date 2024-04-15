@@ -233,7 +233,11 @@ class period_regul_bdd {
 				}
 				
 				if (creation !== null) {
-					contenu += "CREATION"+" on "+creation.time+"<br>"+extract_time(creation.debut)+"-"+extract_time(creation.fin)+" Rate: "+creation.rates[0].rate+"<br><br>";
+					let r = "";
+					creation.rates.forEach(rate => {
+						r += " *"+extract_time(rate.start)+"-"+extract_time(rate.end)+" Rate: "+rate.rate+"<br>";
+					})
+					contenu += "CREATION on " + creation.time + "<br>"+ r +"<br>";
 				}
 				if (update !== null) {
 					update.forEach(obj => {
@@ -241,11 +245,11 @@ class period_regul_bdd {
 						obj.rates.forEach(rate => {
 							r += " *"+extract_time(rate.start)+"-"+extract_time(rate.end)+" Rate: "+rate.rate+"<br>";
 						})
-						contenu += "UPDATE" + " on " + obj.time + "<br>" + r + "<br>";
+						contenu += "UPDATE on " + obj.time + "<br>" + r + "<br>";
 					})
 				}
 				if (deletion !== "") {
-					contenu += "DELETION" + " on " + deletion + "<br>";
+					contenu += "DELETION on " + deletion + "<br>";
 				}
 				contenu += "<br>";
 				
