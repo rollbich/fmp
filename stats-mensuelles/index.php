@@ -31,9 +31,11 @@ require("../php/check_ok.inc.php");
 			const d = new Date();
 			let month = d.getMonth()+1; // month de 0 à 11 => + 1
 			let year = d.getFullYear();
+			/*
 			const tabl = new monthly_briefing(year, month, "accueil_bilan");
 			await tabl.init();
 			tabl.show_data();
+			*/
 
       	});
     </script>
@@ -42,6 +44,7 @@ require("../php/check_ok.inc.php");
 <?php include("../php/nav.inc.php"); ?>
 <h1>LFMM-FMP - Stats Mensuelles</h1>
 <p class="center">Source trafic : données FPL (B2B)</p>
+<h2 style="text-align: center; color: yellow; font-size: 48px;">En maintenance</h2>
 <div id="glob_container">
 <div id='accueil' class='accueil'>
 	<div id="accueil_bilan"></div>
