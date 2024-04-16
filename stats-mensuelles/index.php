@@ -29,7 +29,7 @@ require("../php/check_ok.inc.php");
 			<?php include("../php/nav.js.inc.php"); ?>
 			<?php include("../php/upload.js.php"); ?>
 			const d = new Date();
-			let month = d.getMonth();
+			let month = d.getMonth()+1; // month de 0 à 11 => + 1
 			let year = d.getFullYear();
 			const tabl = new monthly_briefing(year, month, "accueil_bilan");
 			await tabl.init();
