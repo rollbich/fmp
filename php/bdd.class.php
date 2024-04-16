@@ -481,17 +481,17 @@ class bdd_tds {
     /*  ---------------------------------------------------------------
            uceso / Realise / i1
         --------------------------------------------------------------- */
-
+    
     public function save_uceso(string $day, string $typejour, int $i1, string $uceso, string $realise, int $maxsecteurs, string $tvh, string $nbpc, int $minutes_ucesa) {
-        $table = "i1_$this->zone";
-        $req = "INSERT IGNORE INTO $table (jour, typejour, uceso, realise, i1, maxsecteurs, tvh, nbpc, minutes_ucesa) VALUES ('$day', '$typejour', JSON_COMPACT('$uceso'), JSON_COMPACT('$realise'), '$i1', '$maxsecteurs', JSON_COMPACT('$tvh'), JSON_COMPACT('$nbpc'), '$minutes_ucesa')"; 
+        $table = "rh";
+        $req = "INSERT IGNORE INTO $table (id_rh, jour, typejour, zone, uceso, realise, i1, maxsecteurs, tvh, nbpc, minutes_ucesa) VALUES (null, '$day', '$typejour', '$this->zone', JSON_COMPACT('$uceso'), JSON_COMPACT('$realise'), '$i1', '$maxsecteurs', JSON_COMPACT('$tvh'), JSON_COMPACT('$nbpc'), '$minutes_ucesa')"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
     }
 
     public function get_ucesa(string $start_day, string $end_day) {
-        $table = "i1_$this->zone";
-        $req = "SELECT jour, typejour, realise, i1, maxsecteurs, tvh, nbpc, minutes_ucesa FROM $table WHERE jour <= '$end_day' AND jour >= '$start_day'"; 
+        $table = "rh";
+        $req = "SELECT jour, typejour, realise, i1, maxsecteurs, tvh, nbpc, minutes_ucesa FROM $table WHERE jour <= '$end_day' AND jour >= '$start_day' AND zone = '$this->zone'"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -499,16 +499,16 @@ class bdd_tds {
     }
 
     public function set_minutes_ucesa(string $day, int $minutes) {
-        $table = "i1_$this->zone";
-        $req = "UPDATE $table SET minutes_ucesa = '$minutes' WHERE jour = '$day'"; 
+        $table = "rh";
+        $req = "UPDATE $table SET minutes_ucesa = '$minutes' WHERE jour = '$day' AND zone = '$this->zone'"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
     }
 
     // pour Laurent Martinelli
     public function get_ucesa_daily(string $day) {
-        $table = "i1_$this->zone";
-        $req = "SELECT jour, realise, nbpc, minutes_ucesa FROM $table WHERE jour = '$day'"; 
+        $table = "rh";
+        $req = "SELECT jour, realise, nbpc, minutes_ucesa FROM $table WHERE jour = '$day' AND zone = '$this->zone'"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
