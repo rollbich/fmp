@@ -54,6 +54,7 @@ class editor {
 		$this->all_saisons = $this->bdd->get_saisons();
 		$this->beyond_saisons = $this->bdd->get_saisons(false);
 		$this->current_tds = $this->bdd->get_current_tds();
+		$this->current_tds_greve = $this->bdd->get_current_tds(true);
 		$this->tds_supp_local = $this->bdd->get_all_tds_supp();
 		$this->tds_repartition = $this->bdd->get_all_repartition();
 		$this->tds_greve = $this->bdd->get_all_tds(true);
@@ -86,6 +87,7 @@ class editor {
 		$res->all_saisons = $this->all_saisons;
 		$res->beyond_saisons = $this->beyond_saisons;
 		$res->current_tds = $this->current_tds;
+		$res->current_tds_greve = $this->current_tds_greve;
 		$res->tds_local = $this->tds_local;
 		$res->tds_supp_local = $this->tds_supp_local;
 		$res->repartition = $this->tds_repartition;

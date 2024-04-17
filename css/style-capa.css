@@ -966,20 +966,20 @@ ul.menu_tds_editor li {
 }
 
 /* --------- popup gestion tds --------- */
-#modal_tds, #modal_tds_supp, #modal_repartition {
+#modal_tds, #modal_tds_supp, #modal_repartition, #modal_greve {
 	position: absolute;
 	top: 120px;
 	left: 0;
 	right: 0;
 	margin-left: auto;
 	margin-right: auto;
-	width: 1400px;
+	width: 1440px;
 	background-color: white;
 	border-radius: 20px;
 	padding: 20px;
 }
 
-#modal_tds h1, #modal_tds_supp h1, #modal_repartition h1 {
+#modal_tds h1, #modal_tds_supp h1, #modal_repartition h1, #modal_greve h1 {
 	text-shadow: none;
 }
 
