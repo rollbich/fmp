@@ -39,6 +39,7 @@ if (!(isset($_SESSION['login_bureau'])) || $_SESSION['login_bureau'] === false) 
 <div id="modal_tds" class="off" role="dialog"></div>
 <div id="modal_tds_supp" class="off" role="dialog"></div>
 <div id="modal_repartition" class="off" role="dialog"></div>
+<div id="modal_greve" class="off" role="dialog"></div>
 <div id="popup-wrap" class="off" >
   <div class="popup-box">
     <h2></h2>

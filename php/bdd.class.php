@@ -48,11 +48,11 @@ class bdd_tds {
         return $arr;
     }
 
-    // @param string $type - "normal" ou "greve"
+    // @param int $greve - 0 ou 1
     // @return string - "nom de la saison" actuelle
-    public function get_current_tds(string $type = "normal") {
+    public function get_current_tds(int $greve = 0) {
         try {
-            $req = "SELECT nom_tds FROM `dates_saisons_$this->zone` WHERE debut <= '$this->day' AND fin >= '$this->day' AND type = '$type'"; 
+            $req = "SELECT nom_tds FROM `dates_saisons` WHERE debut <= '$this->day' AND fin >= '$this->day' AND greve = $greve AND zone = '$this->zone'"; 
             $stmt = Mysql::getInstance()->prepare($req);
             $stmt->execute();
             $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -300,8 +300,8 @@ class bdd_tds {
             ]
          -------------------------------------------------------------------------- */
     public function get_saisons($all = true) {
-        $req = "SELECT * FROM `dates_saisons_$this->zone`"; 
-        if ($all === false) $req = "SELECT * FROM `dates_saisons_$this->zone` WHERE fin >= '$this->day'"; 
+        $req = "SELECT * FROM `dates_saisons` WHERE zone = '$this->zone'"; 
+        if ($all === false) $req = "SELECT * FROM `dates_saisons` WHERE fin >= '$this->day' AND zone = '$this->zone'"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -316,22 +316,22 @@ class bdd_tds {
         return $obj;
     }
 
-    public function add_plage(string $debut, string $fin, string $tds) {
-        $table = "dates_saisons_$this->zone";
-        $req = "INSERT INTO $table VALUES(null, '$debut', '$fin', '$tds')";
+    public function add_plage(string $debut, string $fin, string $tds, int $greve) {
+        $table = "dates_saisons";
+        $req = "INSERT INTO $table VALUES(null, '$this->zone', $greve, '$debut', '$fin', '$tds')";
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
     }
 
     public function save_plage(string $id, string $saison, string $debut, string $fin) {
-        $table = "dates_saisons_$this->zone";
-        $req = "UPDATE $table SET debut = '$debut', fin = '$fin', nom_tds = '$saison' WHERE id = '$id'";
+        $table = "dates_saisons";
+        $req = "UPDATE $table SET debut = '$debut', fin = '$fin', nom_tds = '$saison' WHERE id = '$id' AND zone = '$this->zone'";
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
     }
 
     public function supprime_plage(string $id) {
-        $table = "dates_saisons_$this->zone";
+        $table = "dates_saisons";
         $req = "DELETE FROM $table WHERE id = '$id'";
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();

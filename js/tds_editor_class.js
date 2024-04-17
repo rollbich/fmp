@@ -2,10 +2,11 @@ class tds_editor {
 
     constructor(containerId) {
         this.containerId = containerId;
-        this.init();
+        this.init(); // saison = undefined au démarrage
     }
 
     async init(zone = "est", saison, open = "no") {
+        console.log("saison: "+saison);
         this.tour_vierge = new Array(96);
         this.tour_vierge.fill(0);
         this.zone = zone;
@@ -72,7 +73,10 @@ class tds_editor {
         </li>
         </ul>
         <ul class="menu_tds_editor">
-            <li class="feuille"><span><a href="./">back to TDS</a></span></li>
+        <li>
+            <button id="button_gestion_greve" type="button" class="button_tour">Gestion greve</button>
+            <span><a href="./">back to TDS</a></span>
+        </li>
         </ul>
         </div>
         <div id="plage" class=""></div>
@@ -104,6 +108,10 @@ class tds_editor {
             $('modal_repartition').classList.toggle('off');
             this.gestion_repartition();
         })
+        $('button_gestion_greve').addEventListener('click', e => {
+            $('modal_greve').classList.toggle('off');
+            this.gestion_greve();
+        })
     }
 
 /*  --------------------------------------------------------------------------------------------- 
@@ -122,9 +130,6 @@ class tds_editor {
         let saison = saison_select ?? $('saison').value;
         this.affiche_tds("result", saison);
         this.add_listener_tds_supprime();
-
-        this.affiche_tds("result_greve", saison, true);
-        this.add_listener_tds_supprime(true);
         
     }	
 
@@ -243,18 +248,23 @@ class tds_editor {
                     }
                 });
                 let tds = document.getElementById('add_plage_tds').value;
-                const plage = { "zone": this.zone, "debut": debut, "fin": fin, "tds": tds, "fonction": "add_plage"}
-                const data = {
-                    method: "post",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(plage)
-                };
-                const result = await fetch("tds_sql.php", data);
+                let greve = 0;
+                const plage = { "zone": this.zone, "debut": debut, "fin": fin, "tds": tds, "greve": greve, "fonction": "add_plage"}
+                await this.add_plage(plage);
                 show_popup(`Plage horaire ${debut} / ${fin}<br>${tds}`, "Cr&eacute;ation effectu&eacute;e");
                 this.init(this.zone);
             })
         })
         
+    }
+
+    async add_plage(plage) {
+        const data = {
+            method: "post",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(plage)
+        };
+        const result = await fetch("tds_sql.php", data);
     }
 
     /*  ------------------------------------------------------------------------------------------
@@ -1099,6 +1109,19 @@ class tds_editor {
             })
             await this.set_repartition(saison, vac, this.data.repartition[saison][vac]);
         })
+    }
+
+    /*  ------------------------------------------------------------------
+            Pop-up Gestion greve
+        ------------------------------------------------------------------ */
+
+    gestion_greve() {
+        
+        this.affiche_tds("modal_greve", this.data.current_tds_greve, true);
+        //this.add_listener_tds_supprime(true);
+        
+        
+        
     }
 
     /*  -------------------------------------------------

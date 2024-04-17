@@ -38,7 +38,7 @@ if ($contentType === "application/json") {
                 $bdd->change_cds($content->saison, $content->vac, (int) $content->nbcds, (bool) $content->greve);
                 break;
             case "add_plage":
-                $bdd->add_plage($content->debut, $content->fin, $content->tds);
+                $bdd->add_plage($content->debut, $content->fin, $content->tds, $content->greve);
                 break;
             case "save_plage":
                 $bdd->save_plage($content->id, $content->saison, $content->debut, $content->fin);
