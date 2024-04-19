@@ -32,6 +32,7 @@ class bdd_tds {
         if (strcmp($day, "") === 0) $this->day = date("Y-m-d");
         $this->zone = $zone;
         $this->saison = $this->get_current_tds();
+        $this->saison_greve = $this->get_current_tds(1);
     }
 
     // @return JSON string - ["JX","J1","J3","S2","","","J2","S1","N","","",""]
@@ -82,7 +83,9 @@ class bdd_tds {
         -------------------------------------------------------------------------- */
 
     public function get_tds(string $saison = "", bool $greve = false) {
-        if (strcmp($saison, "") === 0) $saison = $this->saison;
+        if (strcmp($saison, "") === 0) {
+            if ($greve) $saison = $this->saison_greve; else $saison = $this->saison;
+        }
         $table = "tds_$this->zone";
         if ($greve === true) $table = "tds_greve_$this->zone";
         $req = "SELECT * FROM $table WHERE nom_tds = '$saison'"; 
@@ -299,9 +302,9 @@ class bdd_tds {
                 {...}
             ]
          -------------------------------------------------------------------------- */
-    public function get_saisons($all = true) {
-        $req = "SELECT * FROM `dates_saisons` WHERE zone = '$this->zone'"; 
-        if ($all === false) $req = "SELECT * FROM `dates_saisons` WHERE fin >= '$this->day' AND zone = '$this->zone'"; 
+    public function get_saisons($all = true, int $greve = 0) {
+        $req = "SELECT * FROM `dates_saisons` WHERE zone = '$this->zone' AND greve = $greve"; 
+        if ($all === false) $req = "SELECT * FROM `dates_saisons` WHERE fin >= '$this->day' AND zone = '$this->zone' AND greve = $greve"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
