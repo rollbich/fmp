@@ -388,19 +388,19 @@ table.plage select {
 	margin: 0;
 }
 
-td.plage_validate {
+td.plage_validate, td.plage_greve_validate {
 	color: greenyellow;
 }
 
-td.plage_validate:hover {
+td.plage_validate:hover, td.plage_greve_validate:hover {
 	background-color: rgb(189, 189, 133);
 }
 
-td.plage_supprime {
+td.plage_supprime, td.plage_greve_supprime {
 	color: rgb(253, 3, 3);
 }
 
-td.plage_supprime:hover {
+td.plage_supprime:hover, td.plage_greve_supprime:hover {
 	background-color: rgba(226, 157, 68, 0.89);
 }
 
@@ -803,6 +803,15 @@ ul.menu_tds_editor {
 	margin: 12px auto 0;
 }
 
+ul.menu_tds_editor_greve {
+	display: grid;
+	padding-top: 8px;
+	height: 50px;
+	background-color: #34495e;
+	border-radius: 8px;
+	cursor: default;
+	margin: 12px auto 0;
+}
 
 ul.menu_tds_editor li {
 	line-height: 50px; /*permet le centrage vertical*/
@@ -829,6 +838,7 @@ ul.menu_tds_editor li {
 #modal_popup {
 	display: flex;
   	justify-content: center;
+	z-index: 99;
 }
 
 .modal-body {

@@ -121,6 +121,7 @@ class capa {
 		$this->tour_local = $this->bdd->get_tds();
 		$this->tour_local_greve = $this->bdd->get_tds("", true);
 		$this->saison = $this->bdd->get_current_tds();
+		$this->saison_greve = $this->bdd->get_current_tds(1);
 		$this->tds_supp_local = $this->bdd->get_tds_supp();
 		$this->instr = $this->bdd_instr->get_creneaux_day($this->day, $this->zone);
 		$this->repartition = $this->bdd->get_repartition();
@@ -282,16 +283,27 @@ class capa {
 				$this->pc->{$vac}->teamNominalList = new stdClass();
 				$this->pc->{$vac}->teamNominalList->agentsList = [];
 				foreach ( $userList as $idagent=>$value ) {
-					if (!(is_array($value->role))) { // soit array vide, soit objet que l'on convertit en array
-						$value->role = explode(",", $value->role);
+					// parfois role n'existe pas => utilisation de rolelist
+					$rolelist = null;
+					if (isset($value->role)) {
+						if (!(is_array($value->role))) { // soit array vide, soit objet que l'on convertit en array
+							$rolelist = explode(",", $value->role);
+						} else {
+							$rolelist = $value->role;
+						}
+					} else {
+						$rolelist = [];
+						foreach($value->rolelist as $role) {
+							array_push($rolelist, (int) $role->idrole);
+						}
 					}
-					if (!(in_array(14, $value->role) || in_array(37, $value->role))) { // 14 = détaché 37 = assistant sub, on ne les prend pas en compte (OLAF les compte)
+					if (!(in_array(14, $rolelist) || in_array(37, $rolelist))) { // 14 = détaché 37 = assistant sub, on ne les prend pas en compte (OLAF les compte)
 						$nc = $value->prenom." ".$value->nom;
 						$this->pc->{$vac}->teamNominalList->{$nc} = new stdClass();
 						$this->pc->{$vac}->teamNominalList->{$nc}->nom = $value->nom;
 						$this->pc->{$vac}->teamNominalList->{$nc}->prenom = $value->prenom;
 						$this->pc->{$vac}->teamNominalList->{$nc}->nomComplet = $nc;
-						$this->pc->{$vac}->teamNominalList->{$nc}->role = $value->role;
+						$this->pc->{$vac}->teamNominalList->{$nc}->role = $rolelist;
 						array_push($this->pc->{$vac}->teamNominalList->agentsList, $value->nom);
 					}
 				}
@@ -381,13 +393,18 @@ class capa {
 						$this->pc->{$vac}->renfortAgent->{$nomComplet}->nom = $renf->agent->nom;
 						$this->pc->{$vac}->renfortAgent->{$nomComplet}->prenom = $renf->agent->prenom;
 						$this->pc->{$vac}->renfortAgent->{$nomComplet}->nomComplet = $nomComplet;
-						$pc_RD = "PC-DET";
-						$label_RD = strtolower($renf->contextmenuType->label);
-						if (str_contains($label_RD, "bleu")) $pc_RD = "RD bleu";
-						if (str_contains($label_RD, "jaune")) $pc_RD = "RD jaune";
-						if (str_contains($label_RD, "vert")) $pc_RD = "RD vert";
-						if (str_contains($label_RD, "rouge")) $pc_RD = "RD rouge";
-						$this->pc->{$vac}->renfortAgent->{$nomComplet}->fonction = $pc_RD;
+						$pc = "PC-DET";
+						if (is_array($renf->contextmenuType)) {
+							// Recyclage classique
+						} else {
+							// recyclage RD
+							$label_RD = strtolower($renf->contextmenuType->label);
+							if (str_contains($label_RD, "bleu")) $pc = "RD bleu";
+							if (str_contains($label_RD, "jaune")) $pc = "RD jaune";
+							if (str_contains($label_RD, "vert")) $pc = "RD vert";
+							if (str_contains($label_RD, "rouge")) $pc = "RD rouge";
+						}
+						$this->pc->{$vac}->renfortAgent->{$nomComplet}->fonction = $pc;
 					}
 				}
 

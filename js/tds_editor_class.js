@@ -80,8 +80,7 @@ class tds_editor {
         </ul>
         </div>
         <div id="plage" class=""></div>
-        <div id="result" class=""></div>
-        <div id="result_greve" class=""></div>`;
+        <div id="result" class=""></div>`;
 
         $(this.containerId).innerHTML = html;
 
@@ -94,10 +93,15 @@ class tds_editor {
             this.zone = $('zone').value;
             this.init(this.zone, $('saison').value, open);
         })
-
         $('button_gestion_tds').addEventListener('click', e => {
             $('modal_tds').classList.toggle('off');
             this.gestion_tds();
+        })
+
+        $('zone').addEventListener('change', async e => {
+            this.zone = e.target.value;
+            await this.init(this.zone, undefined, open);
+            if ($('modal_greve').innerHTML !== "") this.gestion_greve();
         })
         $('button_gestion_tds_supp').addEventListener('click', e => {
             $('modal_tds_supp').classList.toggle('off');
@@ -110,6 +114,9 @@ class tds_editor {
         })
         $('button_gestion_greve').addEventListener('click', e => {
             $('modal_greve').classList.toggle('off');
+            document.querySelector('.popup-box h2').innerHTML = "";
+            document.querySelector('.popup-box h3').innerHTML = "";
+            document.querySelector('.popup-close').click();
             this.gestion_greve();
         })
     }
@@ -133,13 +140,31 @@ class tds_editor {
         
     }	
 
-    affiche_saisons(containerId) {
-        const dates_saisons = this.data["beyond_saisons"];
-        let arr_saisons = Object.keys(this.data.tds_local).sort(this.compare_tds_name);
-        console.log("Saisons::");
+    affiche_saisons(containerId, greve = false) {
+        let dates_saisons;
+        let arr_saisons;
+        let class_val;
+        let class_sup;
+        let button_add;
+
+        if (greve) { 
+            dates_saisons = this.data["beyond_saisons_greve"]; 
+            arr_saisons = Object.keys(this.data.tds_greve).sort(this.compare_tds_name);
+            class_val = "plage_greve_validate";
+            class_sup = "plage_greve_supprime";
+            button_add = "button_add_plage_greve";
+        } else { 
+            dates_saisons = this.data["beyond_saisons"]; 
+            arr_saisons = Object.keys(this.data.tds_local).sort(this.compare_tds_name);
+            class_val = "plage_validate";
+            class_sup = "plage_supprime";
+            button_add =  "button_add_plage";
+        }
+        if (greve) console.log("Saisons::greve"); else console.log("Saisons:");
+        console.log(dates_saisons);
         console.log(arr_saisons);
         let res = '<table class="plage sortable">';
-        res += `<caption>Plages temporelles des saisons - Zone ${this.zone}  <button id='button_add_plage' type="button" class="button_tour">Add</button></caption>`;
+        res += `<caption>Plages temporelles des saisons - Zone ${this.zone}  <button id='${button_add}' type="button" class="button_tour">Add</button></caption>`;
         res += '<thead><tr><th>D&eacute;but</th><th class="fin">Fin</th><th>Saison</th><th class="px80">Save&nbsp;</th><th class="px80">Delete</th></tr></thead>';
         res += '<tbody>';
         for (const [id, value] of Object.entries(dates_saisons)) {
@@ -151,14 +176,14 @@ class tds_editor {
                         <input type="date" value="${value.fin}" data-col="fin" data-id='${value.id}'/>
                     </td>
                     <td class="pl" data-zone="${this.zone}">
-                        <select id="${saison}" data-id='${value.id}' data-col="nom_tds" class="select">`;
+                        <select data-id='${value.id}' data-col="nom_tds" class="select">`;
                         arr_saisons.forEach(s => {
                             if (s === value.nom_tds) res += `<option selected value="${s}">${s}</option>`; else res += `<option value="${s}">${s}</option>`;
                         });
                 res += `</select>
                     </td>
-                    <td class='plage_validate px80' data-saison='${saison}' data-zone="${this.zone}" data-id=${value.id}>&check;</td>
-                    <td class='plage_supprime px80' data-saison='${saison}' data-zone="${this.zone}" data-id=${value.id}>x</td>
+                    <td class='${class_val} px80' data-zone="${this.zone}" data-id=${value.id}>&check;</td>
+                    <td class='${class_sup} px80' data-zone="${this.zone}" data-id=${value.id}>x</td>
                     </tr>`;
         };
         res += '</tbody></table>';
@@ -174,8 +199,28 @@ class tds_editor {
         @param {string} saison      - "hiver-2024" ...
     --------------------------------------------------------------------------------------------- */
 
-    add_listener_plage() {
-        const cases_validate = document.querySelectorAll(`td.plage_validate`);
+    add_listener_plage(greve = false) {
+        let plage_val;
+        let plage_sup;
+        let button_add;
+        let dates_saisons;
+        let arr_saisons;
+
+        if (greve) {
+            plage_val = 'td.plage_greve_validate';
+            plage_sup = 'td.plage_greve_supprime';
+            button_add = "button_add_plage_greve";
+            dates_saisons = this.data["all_saisons_greve"]; 
+            arr_saisons = Object.keys(this.data.tds_greve).sort(this.compare_tds_name);
+        } else {
+            plage_val = 'td.plage_validate';
+            plage_sup = 'td.plage_supprime';
+            button_add = "button_add_plage";
+            dates_saisons = this.data["all_saisons"];
+            arr_saisons = Object.keys(this.data.tds_local).sort(this.compare_tds_name); 
+        }
+
+        const cases_validate = document.querySelectorAll(`${plage_val}`);
         for (const td of cases_validate) {
             td.addEventListener('click', async (event) => {
                 let id = parseInt(td.dataset.id);
@@ -195,7 +240,7 @@ class tds_editor {
                 show_popup(`Plage horaire: ${zone}`, "Modification effectu&eacute;e");
             });
         }
-        const cases_suppr = document.querySelectorAll(`td.plage_supprime`);
+        const cases_suppr = document.querySelectorAll(`${plage_sup}`);
         for (const td of cases_suppr) {
             td.addEventListener('click', async (event) => {
                 let id = parseInt(td.dataset.id);
@@ -210,14 +255,13 @@ class tds_editor {
                 };
                 await fetch("tds_sql.php", data);
                 show_popup(`Plage horaire: ${zone}`, "Suppression effectu&eacute;e");
-                this.init(zone);
+                await this.init(zone);
+                if (greve) this.gestion_greve();
             });
         }
-        $('button_add_plage').addEventListener('click', (e) => {
-            const dates_saisons = this.data["all_saisons"];    
-            let arr_saisons = Object.keys(this.data.tds_local).sort(this.compare_tds_name);
+        $(`${button_add}`).addEventListener('click', (e) => {   
             let ih = ` 
-            <div id="modif">
+            <div>
                 <form><div class="form-group" style="text-align: left">
                     <label for="add_plage_debut" >D&eacute;but: </label>
                     <input style="display: block" type="date" id="add_plage_debut" data-col="debut" required />
@@ -248,11 +292,12 @@ class tds_editor {
                     }
                 });
                 let tds = document.getElementById('add_plage_tds').value;
-                let greve = 0;
-                const plage = { "zone": this.zone, "debut": debut, "fin": fin, "tds": tds, "greve": greve, "fonction": "add_plage"}
+                let gr = greve === false ? 0 : 1;
+                const plage = { "zone": this.zone, "debut": debut, "fin": fin, "tds": tds, "greve": gr, "fonction": "add_plage"}
                 await this.add_plage(plage);
                 show_popup(`Plage horaire ${debut} / ${fin}<br>${tds}`, "Cr&eacute;ation effectu&eacute;e");
-                this.init(this.zone);
+                await this.init(this.zone);
+                this.gestion_greve();
             })
         })
         
@@ -399,7 +444,8 @@ class tds_editor {
                 
                 await fetch("tds_sql.php", data);
                 show_popup(`Tour ${saison}<br>Vac ${vac}`, `Suppression sousvac ${sousvac} OK`);
-                this.init(zone, saison);
+                await this.init(zone);
+                if (greve) this.gestion_greve();
             })
         }
     }
@@ -500,7 +546,9 @@ class tds_editor {
                     //show_popup(`Cr&eacute;tion sous-vac: ${sousvac}`, "Op&eacute;ration effectu&eacute;e");
                     $('modal_text_sousvac').innerHTML = `Sous-vac: ${sousvac} cr&eacute;&eacute;e`;
                     $('modal_text_sousvac').classList.toggle("off");
-                    this.init(this.zone, saison);
+                    //this.init(this.zone, saison);
+                    await this.init(this.zone);
+                    if (greve) this.gestion_greve();
                 })
 
                 $('change_CDS_button').addEventListener('click', async (e) => {
@@ -1115,13 +1163,50 @@ class tds_editor {
             Pop-up Gestion greve
         ------------------------------------------------------------------ */
 
-    gestion_greve() {
+    edit_tds_greve(saison_select = this.data.current_tds_greve) {
         
-        this.affiche_tds("modal_greve", this.data.current_tds_greve, true);
-        //this.add_listener_tds_supprime(true);
+        this.affiche_saisons("plage_greve", true);
+        this.add_listener_plage(true);
+
+        this.affiche_tds("container_greve", saison_select, true);
+        this.add_listener_tds_supprime(true);
         
+    }
+
+    gestion_greve(saison_select = this.data.current_tds_greve) {
         
+        let saisons = Object.keys(this.data.tds_greve).sort(this.compare_tds_name);
+
+        let modal = `<h1>Gestion du TDS gr&egrave;ve</h1>`;
+        modal += `
+        <div id="tds_editor_glob_greve">
+        <ul class="menu_tds_editor_greve">
+            <li>
+                <select id="saison_greve" class="select">`;
+                    saisons.forEach(s => {
+                        if (s === saison_select) modal += `<option selected value="${s}">${s}</option>`; else modal += `<option value="${s}">${s}</option>`;
+                    })
+                modal += `
+                </select>
+                <button id="button_show_greve" type="button" class="button_tour">Show TDS Greve</button>
+            </li>
+            
+        </ul>
+        </div>`;
+        modal += '<div id="plage_greve"></div>';
+        modal += '<div id="container_greve"></div>';
+        modal += `<a id='close_modal_greve' class='close_modal'></a>`;
+        $('modal_greve').innerHTML = modal;
+
+        this.edit_tds_greve();
+
+        $('button_show_greve').addEventListener('click', (e) => {
+            this.edit_tds_greve($('saison_greve').value);
+        });
         
+        $('close_modal_greve').addEventListener('click', (e) => {
+            $('modal_greve').classList.toggle('off');
+        })
     }
 
     /*  -------------------------------------------------
