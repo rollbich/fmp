@@ -12,43 +12,10 @@ include_once("path.inc.php");
 include_once(__DIR__."/../php/bdd.class.php");
 
 /*  ----------------------------------------------------
-		LFMM-FMP.FR : tâche CRON à 05h20, 6h20
-		08h20, 10h20, 12h20, 14h20, 16h20 et 18h20 loc
+		LFMM-FMP.FR : tâche CRON périodique
     ---------------------------------------------------- */
 
-/*  ------------------------------------------
-		Ecriture du fichier générique json
-		$arr : tableau contenant les données
-		$zone : est ou west
-		$type : H20, Occ, Reg
-		$wef : pour la date du jour
-		ex : 20210621-H20-est.csv
-	------------------------------------------ */
-function write_json($arr, $zone, $type, $wef) {
-	
-	try {
-		$date = new DateTime($wef);
-		$d = $date->format('Ymd');
-		$y = $date->format('Y');
-		$m = $date->format('m');
-		$h = $date->format('H');
-		$dir = WRITE_PATH."/json/$y/$m/";
-		
-		if (!file_exists($dir)) {
-			mkdir($dir, 0777, true);
-		}
-		
-		$fp = fopen($dir.$d.$type.$zone.$h."20.json", 'w');
-		fwrite($fp, json_encode($arr));
-		fclose($fp);
-	}
-	catch (Exception $e) {
-		$err = "Erreur counts-reg-journee.php, verifier les sauvegardes\n"."Exception reçue : ".$e->getMessage()."\n";
-		echo "Erreur counts-reg-journee.php, verifier les sauvegardes\n<br>";
-		echo 'Exception reçue : ',  $e->getMessage(), "\n<br>\n<br>";
-	}
 
-}
 /*  ------------------------------------------
 		Ecriture d'un log
 		ex : 20210621-log.csv
@@ -117,7 +84,6 @@ echo "get regulation OK<br>\n";
 
 try {	
 	$day = substr($wef_counts, 0, 10);
-	write_json($json_reg, "", "-reg", $wef_counts);
 	$bdd = new bdd();
 	$bdd->set_reguls($day, $json_reg, "LFMMFMPE");
 	$bdd->set_reguls($day, $json_reg, "LFMMFMPW");
