@@ -120,7 +120,23 @@ class overload {
     
     }
 
-    /* day = "2023-07-02" */
+    /*  ----------------------------------------------------------------------------------
+            Les données h20 et occ sont classées par TV ouvert (les autres sont ignorés)
+            @return {
+                "2024-05-02": {
+                    "mvotmv-b2b": {},
+                    "h20": {
+                        date: { tv: [ ["heure:min": trafic], ... ] },
+                        ...
+                    },
+                    "occ": {
+                        date: { tv: [ ["heure:min": trafic], ... ] },
+                        ...
+                    }
+                },
+                ...
+            } 
+        ---------------------------------------------------------------------------------- */
     async get_fichiers() {
         const days = get_dates_array(new Date(this.start_day), new Date(this.end_day));
 
@@ -152,8 +168,8 @@ class overload {
             const t = new schema_rea(day, this.zone);
             donnees[day].rea = await t.read_schema_realise();
             if (typeof donnees[day].rea !== 'undefined') {
-                const temp_h20 = await get_h20_b2b(day, this.zone, donnees[day].rea);
-                const temp_occ = await get_occ_b2b(day, this.zone, donnees[day].rea);	
+                const temp_h20 = await get_h20_b2b(day, this.zone, donnees[day].rea); // seuls les TVs ouverts sont récupérés
+                const temp_occ = await get_occ_b2b(day, this.zone, donnees[day].rea); // seuls les TVs ouverts sont récupérés
                 donnees[day].h20 = temp_h20;
                 donnees[day].occ = temp_occ;
             } else {
