@@ -43,8 +43,9 @@ async function loadJsonB2B(url, type, zone) {
 const graph_margin = 15;
 
 /*	---------------------------------------------------------------------------------------------------
-	 get H20 depuis nos fichiers récupérés en B2B à partir de 06:00 local (05:00 ou 04:00 UTC) 
-		 on charge le tableau [ [TV, yyyy-mm-dd, hh:mm, mv, h20], ...] du json H20
+	 get H20 des TVs ouverts, classés par date puis TVs ouverts
+	 	depuis nos fichiers récupérés en B2B à partir de 06:00 local (05:00 ou 04:00 UTC) 
+		on charge le tableau [ [TV, yyyy-mm-dd, hh:mm, mv, h20], ...] du json H20
 		@param {string} day - "yyyy-mm-dd"
 		@param {string} zone - "AE" ou "AW"
 		@returns {object} 
@@ -100,8 +101,9 @@ async function get_h20_b2b(day, zone, schema = undefined) {
 }
 
 /*	---------------------------------------------------------------------------------------------------
-	 get Occ depuis nos fichiers récupérés en B2B à partir de 06:00 local (05:00 ou 04:00 UTC) 
-		 on charge le tableau [ [TV, yyyy-mm-dd, hh:mm, peak, sustain, occ], ...] du json Occ
+	 get Occ des TVs ouverts, classés par date puis TVs ouverts
+	 	depuis nos fichiers récupérés en B2B à partir de 06:00 local (05:00 ou 04:00 UTC) 
+		on charge le tableau [ [TV, yyyy-mm-dd, hh:mm, peak, sustain, occ], ...] du json Occ
 		@param {string} day - "yyyy-mm-dd"
 		@param {string} zone - "AE" ou "AW"
 		@returns {object} 
