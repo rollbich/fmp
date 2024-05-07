@@ -124,14 +124,13 @@ $mv_file_content_west = json_decode(get_data($url_west));
 echo "Fichier $today_y$today_m$today_d-mv_otmv-ouest.json OK<br>";
 
 // récupère les TV que l'on veut compter en H/20 et Occ
-// données du fichier TV_count.json
-// Attention, il faut que le TV ait une MV, OTMV dans MV.json
-$fichier_tv_count = file_get_contents(dirname(__FILE__)."/TV_count.json");
+// données du fichier TV_count-h20-occ.json
+$fichier_tv_count = file_get_contents(dirname(__FILE__)."/TV_count-h20-occ.json");
 $obj2 = json_decode($fichier_tv_count, true);
 $tvs_est = $obj2["TV-EST"];
 $tvs_west = $obj2["TV-OUEST"];
 
-echo "Fichier TV_count.json OK<br>";
+echo "Fichier TV_count-h20-occ.json OK<br>";
 
 // ---------------------------------------
 // 		récupère les données H20, Occ
