@@ -1,8 +1,7 @@
 <?php
 ini_set('memory_limit', '1G');
 require_once("xlsxwriter.class.php");
-include_once("config.inc.php");
-include_once("hour_config".$config.".inc.php");
+include_once("hour_config-vps.inc.php");
 include_once("path.inc.php");
 
 /*  ------------------------------------------
