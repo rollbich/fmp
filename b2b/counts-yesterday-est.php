@@ -5,8 +5,7 @@ require_once("B2B-Service.php");
 require_once("B2B-AirspaceServices.php");
 require_once("B2B-FlightServices.php");
 require_once("B2B-FlowServices.php");
-include_once("config.inc.php");
-include_once("hour_config".$config.".inc.php");
+include_once("hour_config-vps.inc.php");
 include_once("path.inc.php");
 /* 16 mai 2021 15h
 $wef=gmdate("Y-m-d H:i", mktime(15, 0, 0, 5, 16, 2021));

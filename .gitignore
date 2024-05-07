@@ -14,14 +14,10 @@ overload/xls/
 nmir/
 js/base.js
 b2b/config.inc.php
-b2b/counts-app.php
-b2b/aup.php
-b2b/mapd.php
 test/
 smtp/
 php/config_olaf
 b2b/get_aup.php
-b2b/hour_config-fmp-journee.inc.php
-b2b/hour_config-fmp.inc.php
 b2b/path.inc.php
-b2b/test*.php
+b2b/test
+doc/
