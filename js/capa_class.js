@@ -735,7 +735,7 @@ class feuille_capa extends capa {
 
 	// Tri dans l'ordre du tableau de valeurs
 	tri_equipe(arr_eq) {
-		const tab_valeurs = ["CDS", "PC-CDS", "PC-ACDS", "PC", "PC-RPL", "RD bleu", "RD jaune", "RD rouge", "RD vert", "PC-DET", "stagiaire", "RO", "stage", "conge"];
+		const tab_valeurs = ["CDS", "PC-CDS", "PC-ACDS", "PC", "PC-RPL", "RD bleu", "RD jaune", "RD rouge", "RD vert", "PC-DET", "requalif", "stagiaire", "RO", "stage", "conge"];
 		let arr = [];
         tab_valeurs.forEach(valeur => {
             arr_eq.forEach(t => {

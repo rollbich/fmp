@@ -341,26 +341,23 @@ class capa {
 									$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC";
 									$this->pc->{$vac}->teamToday->{$nc}->hasCDSCapability = false; 
 									$this->pc->{$vac}->teamToday->{$nc}->hasACDSCapability = false; 
-
-									if (isset($pers->agent->role)) {
-										if (is_array($pers->agent->role)) {
-											$this->pc->{$vac}->teamToday->{$nc}->role = $pers->agent->role;
-										}else {
-											$this->pc->{$vac}->teamToday->{$nc}->role = explode(",", $pers->agent->role);
-										}
-										
-										if (in_array(82, $this->pc->{$vac}->teamToday->{$nc}->role)) {
-											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-CDS";
-											$this->pc->{$vac}->teamToday->{$nc}->hasCDSCapability = true; 
-										}
-										if (in_array(80, $this->pc->{$vac}->teamToday->{$nc}->role)) {
-											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-ACDS";
-											$this->pc->{$vac}->teamToday->{$nc}->hasACDSCapability = true;
-										} 
+									
+									if (isset($this->pc->{$vac}->teamNominalList->{$nc}->role)) {
+										$this->pc->{$vac}->teamToday->{$nc}->role = $this->pc->{$vac}->teamNominalList->{$nc}->role;
 									} else {
 										$this->pc->{$vac}->teamToday->{$nc}->role = [];
 									}
+									
+									if (in_array(82, $this->pc->{$vac}->teamToday->{$nc}->role)) {
+										$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-CDS";
+										$this->pc->{$vac}->teamToday->{$nc}->hasCDSCapability = true; 
+									}
+									if (in_array(80, $this->pc->{$vac}->teamToday->{$nc}->role)) {
+										$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-ACDS";
+										$this->pc->{$vac}->teamToday->{$nc}->hasACDSCapability = true;
+									} 
 									if ($cds) $this->pc->{$vac}->teamToday->{$nc}->fonction = "CDS";
+									if (in_array(183, $this->pc->{$vac}->teamToday->{$nc}->role)) $this->pc->{$vac}->teamToday->{$nc}->fonction = "requalif";
 									if (in_array(10, $this->pc->{$vac}->teamToday->{$nc}->role)) $this->pc->{$vac}->teamToday->{$nc}->fonction = "stagiaire";
 								} else {
 									foreach($contextmenu_today as $key) {
