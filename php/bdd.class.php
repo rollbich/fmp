@@ -487,9 +487,16 @@ class bdd_tds {
     
     public function save_uceso(string $day, string $typejour, int $i1, string $uceso, string $realise, int $maxsecteurs, string $tvh, string $nbpc, int $minutes_ucesa) {
         $table = "rh";
-        $req = "INSERT IGNORE INTO $table (id_rh, jour, typejour, zone, uceso, realise, i1, maxsecteurs, tvh, nbpc, minutes_ucesa) VALUES (null, '$day', '$typejour', '$this->zone', JSON_COMPACT('$uceso'), JSON_COMPACT('$realise'), '$i1', '$maxsecteurs', JSON_COMPACT('$tvh'), JSON_COMPACT('$nbpc'), '$minutes_ucesa')"; 
-        $stmt = Mysql::getInstance()->prepare($req);
-        $stmt->execute();
+        $r0 = "SELECT * FROM $table WHERE jour = '$day' AND zone = '$this->zone'";
+        $stmt0 = Mysql::getInstance()->prepare($r0);
+        $stmt0->execute();
+        $resultat0 = $stmt0->fetchAll(PDO::FETCH_ASSOC);
+        if (count($resultat0) === 0) {
+            //$req = "INSERT INTO $table (id_rh, jour, typejour, zone, uceso, realise, i1, maxsecteurs, tvh, nbpc, minutes_ucesa) VALUES (null, '$day', '$typejour', '$this->zone', JSON_COMPACT('$uceso'), JSON_COMPACT('$realise'), '$i1', '$maxsecteurs', JSON_COMPACT('$tvh'), JSON_COMPACT('$nbpc'), '$minutes_ucesa') WHERE NOT EXISTS (SELECT * FROM $table WHERE jour = '$day' AND zone = '$this->zone')"; 
+            $req = "INSERT INTO $table (id_rh, jour, typejour, zone, uceso, realise, i1, maxsecteurs, tvh, nbpc, minutes_ucesa) VALUES (null, '$day', '$typejour', '$this->zone', JSON_COMPACT('$uceso'), JSON_COMPACT('$realise'), '$i1', '$maxsecteurs', JSON_COMPACT('$tvh'), JSON_COMPACT('$nbpc'), '$minutes_ucesa')"; 
+            $stmt = Mysql::getInstance()->prepare($req);
+            $stmt->execute();
+        }
     }
 
     public function get_ucesa(string $start_day, string $end_day) {
