@@ -131,10 +131,19 @@ const addDays_toString = (day, nb_day) => {
 }
 
 // return 28, 29, 30 ou 31
+// 1 < m < 12
 const lastDayOfMonth = function(y, m){
     // Create a new Date object representing the last day of the specified month
     // By passing m + 1 as the month parameter and 0 as the day parameter, it represents the last day of the specified month
+	m--; // en js, le mois est compris entre 0 et 11
     return new Date(y, m + 1, 0).getDate();
+}
+
+// objet date
+const get_last_month = d => {
+	let month = d.getMonth()+1; // month de 0 à 11 => + 1
+	let year = d.getFullYear();
+	return month === 1 ? [year-1, 12] : [year, month-1];
 }
 
 const jplus1 = day => {

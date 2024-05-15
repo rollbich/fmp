@@ -47,7 +47,7 @@ if ($contentType === "application/json") {
                 $bdd->get_vols_app_by_week($content->year);
                 break;
             case "get_vols_crna_by_month":
-                $bdd->get_vols_crna_by_week($content->year, $content->week_max);
+                $bdd->get_vols_crna_by_month($content->year, $content->week_max);
                 break;
             case "get_reguls_by_interval_reason":
                 $bdd->get_reguls_by_interval_reason($content->zone, $content->year, $content->interval);

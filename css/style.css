@@ -126,7 +126,7 @@ nav.navbar{
 	overflow-x: scroll;
 }
 
-#validate_week {
+#validate_week, #validate_button {
 	margin-left: 30px;
 	width: 60px;
 }
