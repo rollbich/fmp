@@ -572,11 +572,12 @@ function show_occ_graph(containerId, dataAxis, data, peak, sustain, tv, time_vis
 /*	--------------------------------------------------------------------------
 	 	Affiche le graph Traffic Year
 			@param {string} containerId - Id de l'HTML Element conteneur
-			@param {array} dataAxis - [1, 2, 3, week...]
+			@param {array} xAxis - [1, 2, 3, week ou month...]
 			@param {array} data - [load,...]
 			@param {string} zon - "nom du titre de la zone" (ex : LFMMCTA)
+			@param {string} type - "Weeks", "Months" 
 	-------------------------------------------------------------------------- */
-function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, dataRef = null, zon) {
+function show_traffic_graph(containerId, year, xAxis, data, data_lastyear, dataRef = null, zon, type) {
 
 	let chartDom = $(containerId);
 	chartDom.style.height = "350px";
@@ -587,7 +588,7 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 	
 	option = {
 		title: {
-			text: `Trafic semaine sur l'année - ${zon}`,
+			text: `Trafic sur l'année - ${zon}`,
 			textStyle: {
 				color: '#FFF',
 				fontSize: '1.5rem'
@@ -629,7 +630,7 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 		calculable: true,
 		xAxis: {
 			type: 'category',
-			name: 'Semaines',
+			name: type,
 			nameLocation: 'middle',
 			axisLabel: {
 				show: true,
@@ -644,7 +645,7 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 				color: '#fff',
 				fontSize: '1.2rem'
 			},
-			data: listWeek
+			data: xAxis
 		},
 		yAxis: {
 			type: 'value',
@@ -683,127 +684,6 @@ function show_traffic_graph(containerId, year, listWeek, data, data_lastyear, da
 				color: '#4CC417',
 				areaStyle: {},
 				data: data,
-			}]
-	};
-	
-	myChart.setOption(option);
-	
-}
-
-/*	--------------------------------------------------------------------------
-	 	Affiche le graph Traffic Year - par mois
-			@param {string} containerId - Id de l'HTML Element conteneur
-			@param {array} dataAxis - [1, 2, 3, month...]
-			@param {array} data - [load,...]
-			@param {string} zon - "nom du titre de la zone" (ex : LFMMCTA)
-	-------------------------------------------------------------------------- */
-function show_traffic_graph_mois(containerId, year, listMonth, data, data_lastyear, dataRef = null, zon) {
-
-	let chartDom = $(containerId);
-	chartDom.style.height = "400px";
-	chartDom.style.width = "870px";
-	let myChart = echarts.init(chartDom);
-	
-	let option;
-	
-	option = {
-		title: {
-			text: `Trafic mois sur l'année ${year} - ${zon}`,
-			textStyle: {
-				color: '#FFF',
-				fontSize: '1.5rem'
-			},
-			x: 'center',
-			y: 'top'
-		},
-		tooltip: {
-			trigger: 'axis',
-			axisPointer: {
-				type: 'shadow',
-				label: {
-					show: true
-				}
-			}
-		},
-		/*
-		toolbox: {
-			feature: {
-				saveAsImage: {
-					name: `Trafic semaine sur l'année - ${zon}`,
-					title: 'PNG',
-					show: true
-				}
-			}
-		},
-		*/
-		grid: {
-			containLabel: true
-		},
-		legend: {
-			x: 'center', // 'center' | 'left' | {number},
-			y: 'top' | 30, // 'center' | 'bottom' | {number}
-			padding: -1,
-			textStyle: {
-				color: '#fff'
-			}
-		},
-		calculable: true,
-		xAxis: {
-			type: 'category',
-			name: 'Mois',
-			nameLocation: 'middle',
-			axisLabel: {
-				show: true,
-				interval: 'auto',    // {number}
-				margin: 8,
-				textStyle: {
-					color: '#fff'
-				}
-			},
-			nameGap: 30,
-			nameTextStyle: {
-				color: '#fff',
-				fontSize: '1.2rem'
-			},
-			data: listMonth
-		},
-		yAxis: {
-			type: 'value',
-			axisLabel: {
-				formatter: '{value}'
-			},
-			name: 'Nombre de vols',
-			nameTextStyle: {
-				color: '#fff',
-				fontSize: '1.2rem'
-			},
-			nameRotate: 90,
-			nameGap: 60,
-			nameLocation: 'middle'
-		},
-		series: [
-			/*
-			{
-				name: "2019",
-				type: 'line',
-				color : '#339dff',
-				areaStyle: {},
-				data: dataRef
-			},
-			*/
-			{
-				name: year-1,
-				type: 'line',
-				color: 'yellow',
-				areaStyle: {},
-				data: data_lastyear
-			},
-			{
-				name: year,
-				type: 'line',
-				color: '#4CC417',
-				areaStyle: {},
-				data: data
 			}]
 	};
 	
@@ -933,13 +813,14 @@ function show_traffic_graph_mois_cumule(containerId, year, listMonth, data, data
 }
 
 /*	--------------------------------------------------------------------------
-	 	Affiche le graph delay - Year
+	 	Affiche le graph en barre delay - Year
 			@param {string} containerId - Id de l'HTML Element conteneur
-			@param {array} dataAxis - [1, 2, 3, week...]
+			@param {array} dataAxis - [1, 2, 3, week ou month]
 			@param {array} data - [load,...]
 			@param {string} zon - "nom du titre de la zone" (ex : LFMMCTA)
+			@param {string} type - "Weeks", "Months" 
 	-------------------------------------------------------------------------- */
-function show_delay_graph(containerId, year, listWeek, data, data_lastyear, dataRef = null, zon) {
+function show_delay_graph(containerId, year, xAxis, data, data_lastyear, dataRef = null, zon, type) {
 
 	let chartDom = $(containerId);
 	chartDom.style.height = "400px";
@@ -950,7 +831,7 @@ function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data
 	
 	option = {
 		title: {
-			text: `Delay semaine sur l'année ${year} - ${zon}`,
+			text: `Delay sur l'année ${year} - ${zon}`,
 			textStyle: {
 				color: '#FFF',
 				fontSize: '1.5rem'
@@ -992,7 +873,7 @@ function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data
 		calculable: true,
 		xAxis: {
 			type: 'category',
-			name: 'Semaines',
+			name: type,
 			nameLocation: 'middle',
 			axisLabel: {
 				show: true,
@@ -1007,7 +888,7 @@ function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data
 				color: '#fff',
 				fontSize: '1.2rem'
 			},
-			data: listWeek
+			data: xAxis
 		},
 		yAxis: {
 			type: 'value',
@@ -1021,7 +902,8 @@ function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data
 			},
 			nameRotate: 90,
 			nameGap: 60,
-			nameLocation: 'middle'
+			nameLocation: 'middle'//,
+			//max: maxi
 		},
 		series: [
 			/*
@@ -1054,255 +936,23 @@ function show_delay_graph(containerId, year, listWeek, data, data_lastyear, data
 }
 
 /*	--------------------------------------------------------------------------
-	 	Affiche le graph delay - Year - par mois
+	 	Affiche le graph Delay par causes de la semaine 
 			@param {string} containerId - Id de l'HTML Element conteneur
-			@param {array} dataAxis - [1, 2, 3, month...]
-			@param {array} data - [load,...]
-			@param {string} zon - "nom du titre de la zone" (ex : LFMMCTAE)
-	-------------------------------------------------------------------------- */
-function show_delay_graph_month(containerId, year, listMonth, data, data_lastyear, dataRef = null, zon, maxi) {
-
-	let chartDom = $(containerId);
-	chartDom.style.height = "440px";
-	chartDom.style.width = "870px";
-	let myChart = echarts.init(chartDom);
-	
-	let option;
-	
-	option = {
-		title: {
-			text: `Delay mois sur l'année ${year} - ${zon}`,
-			textStyle: {
-				color: '#FFF',
-				fontSize: '1.5rem'
-			},
-			x: 'center',
-			y: 'top'
-		},
-		tooltip: {
-			trigger: 'axis',
-			axisPointer: {
-				type: 'shadow',
-				label: {
-					show: true
-				}
-			}
-		},
-		/*
-		toolbox: {
-			feature: {
-				saveAsImage: {
-					name: `Delay mois sur l'année - ${zon}`,
-					title: 'PNG',
-					show: true
-				}
-			}
-		},
-		*/
-		grid: {
-			containLabel: true
-		},
-		legend: {
-			x: 'center', // 'center' | 'left' | {number},
-			y: 'top' | 30, // 'center' | 'bottom' | {number}
-			padding: -1,
-			textStyle: {
-				color: '#fff'
-			}
-		},
-		calculable: true,
-		xAxis: {
-			type: 'category',
-			name: 'Mois',
-			nameLocation: 'middle',
-			axisLabel: {
-				show: true,
-				interval: 'auto',    // {number}
-				margin: 8,
-				textStyle: {
-					color: '#fff'
-				}
-			},
-			nameGap: 30,
-			nameTextStyle: {
-				color: '#fff',
-				fontSize: '1.2rem'
-			},
-			data: listMonth
-		},
-		yAxis: {
-			type: 'value',
-			axisLabel: {
-				formatter: '{value}'
-			},
-			name: 'Delay en min',
-			nameTextStyle: {
-				color: '#fff',
-				fontSize: '1.2rem'
-			},
-			nameRotate: 90,
-			nameGap: 60,
-			nameLocation: 'middle',
-			max: maxi
-		},
-		series: [
-			/*
-			{
-				name: "2019",
-				type: 'bar',
-				color : '#339dff',
-				areaStyle: {},
-				data: dataRef,
-			},
-			*/
-			{
-				name: year-1,
-				type: 'bar',
-				color: 'yellow',
-				areaStyle: {},
-				data: data_lastyear,
-			},
-			{
-				name: year,
-				type: 'bar',
-				color: '#4CC417',
-				areaStyle: {},
-				data: data,
-			}]
-	};
-	
-	myChart.setOption(option);
-	
-}
-
-/*	--------------------------------------------------------------------------
-	 	Affiche le graph Delay Cumulé Year par mois
-			@param {string} containerId - Id de l'HTML Element conteneur
-			@param {array} dataAxis - [1, 2, 3, month...]
-			@param {array} data - [load,...]
-			@param {string} zon - "nom du titre de la zone" (ex : LFMMCTA)
-	-------------------------------------------------------------------------- */
-function show_delay_graph_mois_cumule(containerId, year, listMonth, data, data_lastyear, dataRef = null, zon) {
-
-	let chartDom = $(containerId);
-	chartDom.style.height = "350px";
-	chartDom.style.width = "870px";
-	let myChart = echarts.init(chartDom);
-	
-	let option;
-	
-	option = {
-		title: {
-			text: `Délai cumulé sur l'année ${year} - ${zon}`,
-			textStyle: {
-				color: '#FFF',
-				fontSize: '1.5rem'
-			},
-			x: 'center',
-			y: 'top'
-		},
-		tooltip: {
-			trigger: 'axis',
-			axisPointer: {
-				type: 'shadow',
-				label: {
-					show: true
-				}
-			}
-		},
-		toolbox: {
-			feature: {
-				saveAsImage: {
-					name: `Trafic semaine sur l'année - ${zon}`,
-					title: 'PNG',
-					show: true
-				}
-			}
-		},
-		grid: {
-			containLabel: true
-		},
-		legend: {
-			x: 'center', // 'center' | 'left' | {number},
-			y: 'top' | 30, // 'center' | 'bottom' | {number}
-			padding: -1,
-			textStyle: {
-				color: '#fff'
-			}
-		},
-		calculable: true,
-		xAxis: {
-			type: 'category',
-			name: 'Mois',
-			nameLocation: 'middle',
-			axisLabel: {
-				show: true,
-				interval: 'auto',    // {number}
-				margin: 8,
-				textStyle: {
-					color: '#fff'
-				}
-			},
-			nameGap: 30,
-			nameTextStyle: {
-				color: '#fff',
-				fontSize: '1.2rem'
-			},
-			data: listMonth
-		},
-		yAxis: {
-			type: 'value',
-			axisLabel: {
-				formatter: '{value}'
-			},
-			name: 'Cumul des délais',
-			nameTextStyle: {
-				color: '#fff',
-				fontSize: '1.2rem'
-			},
-			nameRotate: 90,
-			nameGap: 60,
-			nameLocation: 'middle'
-		},
-		series: [
-			/*
-			{
-				name: "2019",
-				type: 'line',
-				color : '#339dff',
-				//areaStyle: {},
-				data: dataRef,
-			},
-			*/
-			{
-				name: year-1,
-				type: 'line',
-				color: 'yellow',
-				//areaStyle: {},
-				data: data_lastyear,
-			},
-			{
-				name: year,
-				type: 'line',
-				color: '#4CC417',
-				//areaStyle: {},
-				data: data,
-			}]
-	};
-	
-	myChart.setOption(option);
-	
-}
-
-/*	--------------------------------------------------------------------------
-	 	Affiche le graph Delay par causes du mois 
-			@param {string} containerId - Id de l'HTML Element conteneur
-			@param {array} month - numéro du mois
-			@param {array} data - [...]
+			@param {array} numero - numéro de la semaine ou du mois
+			@param {array} data - [{
+				"ATC_STAFFING":1953,
+				"SPECIAL_EVENT":311,
+				"ATC_INDUSTRIAL_ACTION":2000,
+				"cause": delai
+				}, 
+				{idem semaine i}, ...] ]
 			@param {string} titre - "nom du titre de la zone"
+			@param {string} type - "Sem", "Mois"
+      ]
 	-------------------------------------------------------------------------- */
-function show_delay_graph_mois_par_causes(containerId, year, month, data, titre) {
+function show_delay_graph_par_causes(containerId, year, numero, data, titre, type) {
 	const nom_mois = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+	if (typeof data === 'undefined') return;
 	let chartDom = $(containerId);
 	chartDom.style.height = "400px";
 	chartDom.style.width = "870px";
@@ -1310,15 +960,17 @@ function show_delay_graph_mois_par_causes(containerId, year, month, data, titre)
 	let total = 0;
 	let option;
 	const result = [];
-	data.forEach(cause_obj => {
-		for (cause in cause_obj) {
-			let obj = {};
-			obj["value"] = cause_obj[cause];
-			total += cause_obj[cause];
-			obj["name"] = cause;
-			result.push(obj);
-		}
+
+	Object.keys(data).forEach(cause => {
+		let obj = {};
+		obj["value"] = data[cause];
+		total += data[cause];
+		obj["name"] = cause;
+		result.push(obj);
 	}) 
+
+	if (type === "Mois") type = nom_mois[numero-1];
+	if (type === "Sem") type = type + " " + numero;
 	
 	option = {
 		// Global palette:
@@ -1336,7 +988,7 @@ function show_delay_graph_mois_par_causes(containerId, year, month, data, titre)
 			'#c4ccd3'
 		  ],
 		title: {
-			text: `Délai par cause - ${nom_mois[month-1]} ${year} - ${titre}`,
+			text: `Délai par cause - ${type} ${year} - ${titre}`,
 			textStyle: {
 				fontSize: '1.5rem',
 				color: '#FFF'
@@ -1408,124 +1060,14 @@ function show_delay_graph_mois_par_causes(containerId, year, month, data, titre)
 }
 
 /*	--------------------------------------------------------------------------
-	 	Affiche le graph Delay par causes du mois 
+	 	Affiche le graph Delay par causes  
 			@param {string} containerId - Id de l'HTML Element conteneur
-			@param {array} week - numéro de la semaine
+			@param {array} numero - numéro du mois ou de la semaine
 			@param {array} data - [...]
 			@param {string} titre - "nom du titre de la zone"
+			@param {string} type - "Sem", "Mois", "Année"
 	-------------------------------------------------------------------------- */
-function show_delay_graph_week_par_tvs(containerId, year, week, data, titre) {
-	console.log(data);
-	let chartDom = $(containerId);
-	chartDom.style.height = "400px";
-	chartDom.style.width = "870px";
-	let myChart = echarts.init(chartDom);
-	let total = 0;
-	let option;
-	const result = [];
-	for(let [tv, delay] of Object.entries(data)) {
-		let obj = {};
-		obj["value"] = delay;
-		total += delay;
-		obj["name"] = tv;
-		result.push(obj);
-	}
-	
-	option = {
-		// Global palette:
-		color: [
-			'#d66',
-			'#6b6',
-			'lightblue',
-			'orange',
-			'pink',
-			'yellow',
-			'white',
-			'#bda29a',
-			'#6e7074',
-			'#546570',
-			'#c4ccd3'
-			],
-		title: {
-			text: `Délai par TVs - Week ${week} - ${year} - ${titre}`,
-			textStyle: {
-				fontSize: '1.5rem',
-				color: '#FFF'
-			},
-			x: 'center',
-			y: 'top',
-			padding: 10
-		},
-		tooltip: {
-			trigger: 'item'
-		},
-		legend: {
-			top: 'center',
-			left: 'left',
-			textStyle: {
-			fontSize: '1.2rem',
-			color: '#eee'
-			},
-			orient: 'vertical'
-		},
-		series: [
-			{
-			name: 'TVs',
-			type: 'pie',
-			radius: ['60%', '90%'],
-			avoidLabelOverlap: false,
-			itemStyle : {
-				borderRadius: 10,
-				borderColor: '#eee',
-					borderWidth: 2,
-				normal : {
-						label : {
-						show: true, position: 'inner',
-						formatter : function (params){
-							var val = ((parseInt(params.value)/parseInt(total))*100).toFixed(1);
-							return  val.toString() + '%\n'
-						},
-						textStyle : {
-							color: 'black'
-						}
-					},
-					labelLine : {
-						show : false
-					}
-				}
-			},
-			top: '20%',
-			label: {
-				show: false,
-				position: 'center'
-			},
-			emphasis: {
-				label: {
-				show: true,
-				fontSize: '20',
-				fontWeight: 'bold'
-				}
-			},
-			labelLine: {
-				show: false
-			},
-			data: result
-			}
-		]
-	};
-	
-	myChart.setOption(option);
-	
-}
-
-/*	--------------------------------------------------------------------------
-	 	Affiche le graph Delay par causes du mois 
-			@param {string} containerId - Id de l'HTML Element conteneur
-			@param {array} month - numéro du mois
-			@param {array} data - [...]
-			@param {string} titre - "nom du titre de la zone"
-	-------------------------------------------------------------------------- */
-function show_delay_graph_mois_par_tvs(containerId, year, month, data, titre) {
+function show_delay_graph_par_tvs(containerId, year, numero, data, titre, type) {
 	const nom_mois = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 	let chartDom = $(containerId);
 	chartDom.style.height = "400px";
@@ -1534,15 +1076,17 @@ function show_delay_graph_mois_par_tvs(containerId, year, month, data, titre) {
 	let total = 0;
 	let option;
 	const result = [];
-	data.forEach(tvs_obj => {
-		for (tv in tvs_obj) {
-			let obj = {};
-			obj["value"] = tvs_obj[tv];
-			total += tvs_obj[tv];
-			obj["name"] = tv;
-			result.push(obj);
-		}
-	}) 
+
+	for(let [tv, delay] of Object.entries(data)) {
+		let obj = {};
+		obj["value"] = delay;
+		total += delay;
+		obj["name"] = tv;
+		result.push(obj);
+	}
+
+	if (type === "Mois") type = nom_mois[numero-1];
+	if (type === "Sem") type = type + " " + numero;
 	
 	option = {
 		// Global palette:
@@ -1560,7 +1104,7 @@ function show_delay_graph_mois_par_tvs(containerId, year, month, data, titre) {
 			'#c4ccd3'
 			],
 		title: {
-			text: `Délai par TVs - ${nom_mois[month-1]} ${year} - ${titre}`,
+			text: `Délai par TVs - ${type} ${year} - ${titre}`,
 			textStyle: {
 				fontSize: '1.5rem',
 				color: '#FFF'
@@ -1584,126 +1128,6 @@ function show_delay_graph_mois_par_tvs(containerId, year, month, data, titre) {
 		series: [
 			{
 			name: 'TVs',
-			type: 'pie',
-			radius: ['60%', '90%'],
-			avoidLabelOverlap: false,
-			itemStyle : {
-				borderRadius: 10,
-				borderColor: '#eee',
-					borderWidth: 2,
-				normal : {
-						label : {
-						show: true, position: 'inner',
-						formatter : function (params){
-							var val = ((parseInt(params.value)/parseInt(total))*100).toFixed(1);
-							return  val.toString() + '%\n'
-						},
-						textStyle : {
-							color: 'black'
-						}
-					},
-					labelLine : {
-						show : false
-					}
-				}
-			},
-			top: '20%',
-			label: {
-				show: false,
-				position: 'center'
-			},
-			emphasis: {
-				label: {
-				show: true,
-				fontSize: '20',
-				fontWeight: 'bold'
-				}
-			},
-			labelLine: {
-				show: false
-			},
-			data: result
-			}
-		]
-	};
-	
-	myChart.setOption(option);
-	
-}
-
-/*	--------------------------------------------------------------------------
-	 	Affiche le graph Delay par causes de la semaine 
-			@param {string} containerId - Id de l'HTML Element conteneur
-			@param {array} week - numéro de la semaine
-			@param {array} data - [{
-				"ATC_STAFFING":1953,
-				"SPECIAL_EVENT":311,
-				"ATC_INDUSTRIAL_ACTION":2000,
-				"cause": delai
-				}, 
-				{idem semaine i}, ...] ]
-			@param {string} titre - "nom du titre de la zone"
-      ]
-	-------------------------------------------------------------------------- */
-
-function show_delay_graph_week_par_causes(containerId, year, week, data, titre) {
-	if (typeof data === 'undefined') return;
-	let chartDom = $(containerId);
-	chartDom.style.height = "400px";
-	chartDom.style.width = "870px";
-	let myChart = echarts.init(chartDom);
-	let total = 0;
-	let option;
-	const result = [];
-
-	Object.keys(data).forEach(cause => {
-		let obj = {};
-		obj["value"] = data[cause];
-		total += data[cause];
-		obj["name"] = cause;
-		result.push(obj);
-	}) 
-
-	option = {
-		// Global palette:
-		color: [
-			'#d66',
-			'#6b6',
-			'lightblue',
-			'orange',
-			'pink',
-			'yellow',
-			'white',
-			'#bda29a',
-			'#6e7074',
-			'#546570',
-			'#c4ccd3'
-			],
-		title: {
-			text: `Délai par cause - Sem ${week} ${year} - ${titre}`,
-			textStyle: {
-				fontSize: '1.5rem',
-				color: '#FFF'
-			},
-			x: 'center',
-			y: 'top',
-			padding: 10
-		},
-		tooltip: {
-			trigger: 'item'
-		},
-		legend: {
-			top: 'center',
-			left: 'left',
-			textStyle: {
-			fontSize: '1.2rem',
-			color: '#eee'
-			},
-			orient: 'vertical'
-		},
-		series: [
-			{
-			name: 'Reason',
 			type: 'pie',
 			radius: ['60%', '90%'],
 			avoidLabelOverlap: false,
@@ -1756,23 +1180,21 @@ function show_delay_graph_week_par_causes(containerId, year, week, data, titre) 
 			@param {string} containerId - Id de l'HTML Element conteneur
 			@param {array} data - [load,...]
 			@param {string} zon - "nom du titre de la zone"
+			@param {string} titre - "CRSTMP" par ex
+			@param {string} type - "Weeks", "Months"
 	-------------------------------------------------------------------------- */
-function show_delay_graph_week_cumule(containerId, year, data, data_lastyear, dataRef = null, zon, title = "") {
+function show_delay_graph_cumule(containerId, year, xAxis, data, data_lastyear, dataRef = null, zon, titre = "", type) {
 
 	let chartDom = $(containerId);
 	chartDom.style.height = "350px";
 	chartDom.style.width = "870px";
 	let myChart = echarts.init(chartDom);
-	
-	// dataAxis
-	const listWeek = [];
-	for(let i=1;i<54;i++) {listWeek.push(i)}
 
 	let option;
 	
 	option = {
 		title: {
-			text: `Délai ${title} cumulé sur l'année ${year} - ${zon}`,
+			text: `Délai ${titre} cumulé sur l'année ${year} - ${zon}`,
 			textStyle: {
 				color: '#FFF',
 				fontSize: '1.5rem'
@@ -1792,7 +1214,7 @@ function show_delay_graph_week_cumule(containerId, year, data, data_lastyear, da
 		toolbox: {
 			feature: {
 				saveAsImage: {
-					name: `Trafic ${title} semaine sur l'année - ${zon}`,
+					name: `Trafic ${titre} semaine sur l'année - ${zon}`,
 					title: 'PNG',
 					show: true
 				}
@@ -1812,7 +1234,7 @@ function show_delay_graph_week_cumule(containerId, year, data, data_lastyear, da
 		calculable: true,
 		xAxis: {
 			type: 'category',
-			name: 'Semaine',
+			name: type,
 			nameLocation: 'middle',
 			axisLabel: {
 				show: true,
@@ -1827,7 +1249,7 @@ function show_delay_graph_week_cumule(containerId, year, data, data_lastyear, da
 				color: '#fff',
 				fontSize: '1.2rem'
 			},
-			data: listWeek
+			data: xAxis
 		},
 		yAxis: {
 			type: 'value',

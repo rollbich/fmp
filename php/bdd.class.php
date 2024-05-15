@@ -491,8 +491,7 @@ class bdd_tds {
         $stmt0 = Mysql::getInstance()->prepare($r0);
         $stmt0->execute();
         $resultat0 = $stmt0->fetchAll(PDO::FETCH_ASSOC);
-        if (count($resultat0) === 0) {
-            //$req = "INSERT INTO $table (id_rh, jour, typejour, zone, uceso, realise, i1, maxsecteurs, tvh, nbpc, minutes_ucesa) VALUES (null, '$day', '$typejour', '$this->zone', JSON_COMPACT('$uceso'), JSON_COMPACT('$realise'), '$i1', '$maxsecteurs', JSON_COMPACT('$tvh'), JSON_COMPACT('$nbpc'), '$minutes_ucesa') WHERE NOT EXISTS (SELECT * FROM $table WHERE jour = '$day' AND zone = '$this->zone')"; 
+        if (count($resultat0) === 0) { 
             $req = "INSERT INTO $table (id_rh, jour, typejour, zone, uceso, realise, i1, maxsecteurs, tvh, nbpc, minutes_ucesa) VALUES (null, '$day', '$typejour', '$this->zone', JSON_COMPACT('$uceso'), JSON_COMPACT('$realise'), '$i1', '$maxsecteurs', JSON_COMPACT('$tvh'), JSON_COMPACT('$nbpc'), '$minutes_ucesa')"; 
             $stmt = Mysql::getInstance()->prepare($req);
             $stmt->execute();
@@ -663,7 +662,7 @@ class bdd {
 
     public function get_vols_app_by_month(string $year) {
         $table = "vols_app";
-        $req = "SELECT month, SUM(flights) AS total_flights, SUM(LFKJ) AS total_LFKJ, SUM(LFKF) AS total_LFKF, SUM(LFKB) AS total_LFKB, SUM(LFKC) AS total_LFKC, SUM(LFMN) AS total_LFMN, SUM(LFMD) AS total_LFMD, SUM(LFTZ) AS total_LFTZ, SUM(LFTH) AS total_LFTH, SUM(LFML) AS total_LFML, SUM(LFMV) AS total_LFMV, SUM(LFMQ) AS total_LFMQ, SUM(LFLL) AS total_LFLL, SUM(LFLY) AS total_LFLY, SUM(LFLS) AS total_LFLS, SUM(LFLB) AS total_LFLB, SUM(LFLP) AS total_LFLP, SUM(LFLC) AS total_LFLC, SUM(LFMT) AS total_LFMT, SUM(LFTW) AS total_LFTW, SUM(LFMP) AS total_LFMP, SUM(LFMU) AS total_LFMU, SUM(LFLV) AS total_LFLV, SUM(LFLN) AS total_LFLN, SUM(LFLU) AS total_LFLU, SUM(LFMI) AS total_LFMI, SUM(LFMH) AS total_LFMH, SUM(LFMA) AS total_LFMA, SUM(LFLI) AS total_LFLI, SUM(LFMC) AS total_LFMC, SUM(LFKS) AS total_LFKS, SUM(LFMY) AS total_LFMY, SUM(LFMO) AS total_LFMO, SUM(LFKA) AS total_LFKA, SUM(LFKO) AS total_LFKO, SUM(LFMS) AS total_LFMS, SUM(LFMZ) AS total_LFMZ, SUM(LFMF) AS total_LFMF, SUM(LFTF) AS total_LFTF, SUM(LFLE) AS total_LFLE, SUM(LFLG) AS total_LFLG, SUM(LFLJ) AS total_LFLJ, SUM(LFLM) AS total_LFLM, SUM(LFLO) AS total_LFLO, SUM(LFNA) AS total_LFNA, SUM(LFNB) AS total_LFNB, SUM(LFNG) AS total_LFNG, SUM(LFNH) AS total_LFNH, SUM(LFXA) AS total_LFXA FROM $table WHERE week_year = '$year' GROUP BY month"; 
+        $req = "SELECT MONTH(jour) AS mois, SUM(flights) AS total_flights, SUM(LFKJ) AS total_LFKJ, SUM(LFKF) AS total_LFKF, SUM(LFKB) AS total_LFKB, SUM(LFKC) AS total_LFKC, SUM(LFMN) AS total_LFMN, SUM(LFMD) AS total_LFMD, SUM(LFTZ) AS total_LFTZ, SUM(LFTH) AS total_LFTH, SUM(LFML) AS total_LFML, SUM(LFMV) AS total_LFMV, SUM(LFMQ) AS total_LFMQ, SUM(LFLL) AS total_LFLL, SUM(LFLY) AS total_LFLY, SUM(LFLS) AS total_LFLS, SUM(LFLB) AS total_LFLB, SUM(LFLP) AS total_LFLP, SUM(LFLC) AS total_LFLC, SUM(LFMT) AS total_LFMT, SUM(LFTW) AS total_LFTW, SUM(LFMP) AS total_LFMP, SUM(LFMU) AS total_LFMU, SUM(LFLV) AS total_LFLV, SUM(LFLN) AS total_LFLN, SUM(LFLU) AS total_LFLU, SUM(LFMI) AS total_LFMI, SUM(LFMH) AS total_LFMH, SUM(LFMA) AS total_LFMA, SUM(LFLI) AS total_LFLI, SUM(LFMC) AS total_LFMC, SUM(LFKS) AS total_LFKS, SUM(LFMY) AS total_LFMY, SUM(LFMO) AS total_LFMO, SUM(LFKA) AS total_LFKA, SUM(LFKO) AS total_LFKO, SUM(LFMS) AS total_LFMS, SUM(LFMZ) AS total_LFMZ, SUM(LFMF) AS total_LFMF, SUM(LFTF) AS total_LFTF, SUM(LFLE) AS total_LFLE, SUM(LFLG) AS total_LFLG, SUM(LFLJ) AS total_LFLJ, SUM(LFLM) AS total_LFLM, SUM(LFLO) AS total_LFLO, SUM(LFNA) AS total_LFNA, SUM(LFNB) AS total_LFNB, SUM(LFNG) AS total_LFNG, SUM(LFNH) AS total_LFNH, SUM(LFXA) AS total_LFXA FROM $table WHERE YEAR(jour) = '$year' GROUP BY mois"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -672,7 +671,7 @@ class bdd {
 
     public function get_vols_crna_by_month(string $year, int $month_max=12) {
         $table = "vols_crna";
-        $req = "SELECT month, SUM(LFMMCTA_regdemand) AS total_LFMMCTA_regdemand, SUM(LFMMCTA_load) AS total_LFMMCTA_load, SUM(LFMMCTA_demand) AS total_LFMMCTA_demand, SUM(LFMMCTAE_regdemand) AS total_LFMMCTAE_regdemand, SUM(LFMMCTAE_load) AS total_LFMMCTAE_load, SUM(LFMMCTAE_demand) AS total_LFMMCTAE_demand, SUM(LFMMCTAW_regdemand) AS total_LFMMCTAW_regdemand, SUM(LFMMCTAW_load) AS total_LFMMCTAW_load, SUM(LFMMCTAW_demand) AS total_LFMMCTAW_demand, SUM(RAE) AS total_RAE, SUM(SBAM) AS total_SBAM, SUM(GY) AS total_GY, SUM(AB) AS total_AB, SUM(EK) AS total_EK, SUM(RAW) AS total_RAW, SUM(MALY) AS total_MALY, SUM(WW) AS total_WW, SUM(MF) AS total_MF, SUM(DZ) AS total_DZ FROM $table WHERE week_year = '$year' AND week <= '$month_max' GROUP BY month"; 
+        $req = "SELECT MONTH(jour) AS mois, SUM(LFMMCTA_regdemand) AS total_LFMMCTA_regdemand, SUM(LFMMCTA_load) AS total_LFMMCTA_load, SUM(LFMMCTA_demand) AS total_LFMMCTA_demand, SUM(LFMMCTAE_regdemand) AS total_LFMMCTAE_regdemand, SUM(LFMMCTAE_load) AS total_LFMMCTAE_load, SUM(LFMMCTAE_demand) AS total_LFMMCTAE_demand, SUM(LFMMCTAW_regdemand) AS total_LFMMCTAW_regdemand, SUM(LFMMCTAW_load) AS total_LFMMCTAW_load, SUM(LFMMCTAW_demand) AS total_LFMMCTAW_demand, SUM(RAE) AS total_RAE, SUM(SBAM) AS total_SBAM, SUM(GY) AS total_GY, SUM(AB) AS total_AB, SUM(EK) AS total_EK, SUM(RAW) AS total_RAW, SUM(MALY) AS total_MALY, SUM(WW) AS total_WW, SUM(MF) AS total_MF, SUM(DZ) AS total_DZ FROM $table WHERE YEAR(jour) = '$year' AND MONTH(jour) <= '$month_max' GROUP BY mois"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -683,12 +682,11 @@ class bdd {
         $date = new DateTime($day);
         $week_number = intval($date->format("W")); // sinon on a un string avec un éventuel 0 devant le numéro
         $week_year = $date->format('o'); // année correspondant à la semaine (peut être différent de l'année en cours => des jours de la semaine 53 de 2023 peuvent être en 2024)
-        $month = intval($date->format('m'));
         $js = $date->format('w');
         $tab_jour = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
         $jour_semaine = $tab_jour[$js];
         $table = "vols_crna";
-        $req = "INSERT INTO $table VALUES ('$day', '$jour_semaine', '$week_year', '$week_number', '$month', '$LFMMCTA_regdemand', '$LFMMCTA_load', '$LFMMCTA_demand', '$LFMMCTAE_regdemand', '$LFMMCTAE_load', '$LFMMCTAE_demand', '$LFMMCTAW_regdemand', '$LFMMCTAW_load', '$LFMMCTAW_demand', '$RAE', '$SBAM', '$EK', '$AB', '$GY', '$RAW', '$MALY', '$WW', '$MF', '$DZ', JSON_COMPACT('$vols_RAE'), JSON_COMPACT('$vols_RAW'))"; 
+        $req = "INSERT INTO $table VALUES ('$day', '$jour_semaine', '$week_year', '$week_number', '$LFMMCTA_regdemand', '$LFMMCTA_load', '$LFMMCTA_demand', '$LFMMCTAE_regdemand', '$LFMMCTAE_load', '$LFMMCTAE_demand', '$LFMMCTAW_regdemand', '$LFMMCTAW_load', '$LFMMCTAW_demand', '$RAE', '$SBAM', '$EK', '$AB', '$GY', '$RAW', '$MALY', '$WW', '$MF', '$DZ', JSON_COMPACT('$vols_RAE'), JSON_COMPACT('$vols_RAW'))"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
     }
@@ -698,14 +696,13 @@ class bdd {
         $date = new DateTime($day);
         $week_number = intval($date->format("W")); // sinon on a un string avec un éventuel 0 devant le numéro
         $week_year = $date->format('o'); // année correspondant à la semaine (peut être différent de l'année en cours => des jours de la semaine 53 de 2023 peuvent être en 2024)
-        $month = intval($date->format('m'));
         $js = $date->format('w');
         $tab_jour = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
         $jour_semaine = $tab_jour[$js];
         $table = "vols_app";
         $keys = array_keys(get_object_vars($LFMMAPP));
         $nb_flights = $LFMMAPP->flights;
-        $req = "INSERT INTO $table VALUES ('$day', '$jour_semaine', '$week_year', '$week_number', '$month', '$nb_flights'";
+        $req = "INSERT INTO $table VALUES ('$day', '$jour_semaine', '$week_year', '$week_number', '$nb_flights'";
         foreach($keys as $ad) {
             if ($ad != "flights") {
                 $data = $LFMMAPP->{$ad};
@@ -747,7 +744,7 @@ class bdd {
 
     /*  ----------------------------------------------------------------------------
             @param $zone (string) - "est", "west" ou "app"
-            @param $interval (string) - "week", "month" ou "year"
+            @param $interval (string) - "week", "month" 
             trie par week puis par reason
             $resultat = [
                 {"week": 1, "reason": "ATC_CAPACITY", "total_delay": 398 },
@@ -765,7 +762,12 @@ class bdd {
     public function get_reguls_by_interval_reason(string $zone, string $year, string $interval) {
         $nb_week = idate('W', mktime(0, 0, 0, 12, 28, $year));
         $table = "reguls_$zone";
-        $req = "SELECT $interval, reason, SUM(delay) AS total_delay FROM $table WHERE week_year = '$year' GROUP BY $interval, reason"; 
+        if ($interval === "week") {
+            $req = "SELECT $interval, reason, SUM(delay) AS total_delay FROM $table WHERE week_year = '$year' GROUP BY $interval, reason"; 
+        }
+        if ($interval === "month") {
+            $req = "SELECT MONTH(jour) AS month, reason, SUM(delay) AS total_delay FROM $table WHERE YEAR(jour) = '$year' GROUP BY month, reason"; 
+        }
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -798,6 +800,7 @@ class bdd {
         echo json_encode($response);
     }
 
+    // redondant, à vérifier utilité
     public function get_reguls_by_week(string $zone, string $year) {
         $table = "reguls_$zone";
         $req = "SELECT week, SUM(delay) AS total_delay FROM $table WHERE week_year = '$year' GROUP BY week"; 
@@ -902,7 +905,6 @@ class bdd {
         $date = new DateTime($jour);
         $week_number = intval($date->format("W")); // sinon on a un string avec un éventuel 0 devant le numéro
         $week_year = $date->format('o'); // année correspondant à la semaine (peut être différent de l'année en cours => des jours de la semaine 53 de 2023 peuvent être en 2024)
-        $month = intval($date->format('m'));
 
         if ($tvset === "LFMMFMPE") $table = "reguls_est";
         if ($tvset === "LFMMFMPW") $table = "reguls_west";
@@ -1024,7 +1026,7 @@ class bdd {
                     $creation_time = '[{"time":"'.$last_update_time.'","debut":"'.$debut.'","fin":"'.$fin.'","rates":'.$rates_str.'}]';
                     $update_obj = '[]';
                     $deletion_time = '';
-                    $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$week_year', '$week_number', '$month', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'))";
+                    $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$week_year', '$week_number', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'))";
                     $stmt = Mysql::getInstance()->prepare($req);
                     $stmt->execute();
                 }
@@ -1032,7 +1034,7 @@ class bdd {
                     $deletion_time = $last_update_time;
                     $update_obj = '[]';
                     $creation_time = '{}';
-                    $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$week_year', '$week_number', '$month', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'))";
+                    $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$week_year', '$week_number', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'))";
                     $stmt = Mysql::getInstance()->prepare($req);
                     $stmt->execute();
                 }
@@ -1040,7 +1042,7 @@ class bdd {
                     $deletion_time = '';
                     $update_obj = '[{"time":"'.$last_update_time.'","debut":"'.$debut.'","fin":"'.$fin.'","rates":'.$rates_str.'}]';
                     $creation_time = '{}';
-                    $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$week_year', '$week_number', '$month', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'))";
+                    $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$week_year', '$week_number', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'))";
                     $stmt = Mysql::getInstance()->prepare($req);
                     $stmt->execute();
                 }

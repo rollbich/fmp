@@ -20,8 +20,8 @@ require("../php/check_ok.inc.php");
 	<script type="text/javascript" src="../js/list-component.js"></script>
 	<script type="text/javascript" src="../js/upload.js"></script>
     <script type="text/javascript" src="../js/graph.js"></script>
-    <script type="text/javascript" src="../js/vols_class.js"></script>
-    <script type="text/javascript" src="../js/regulations_class.js"></script>
+    <script type="text/javascript" src="../js/vols_bdd_class.js"></script>
+    <script type="text/javascript" src="../js/regulations_bdd_class.js"></script>
 	<script type="text/javascript" src="../js/bilans_class.js"></script>
 	<script type="text/javascript" src="../js/stats-period.js"></script>
     <script src="../js/echarts.min.js"></script>
@@ -155,6 +155,7 @@ require("../php/check_ok.inc.php");
 </div>
 </header>
 <div id="glob_container">
+<h2 style="color: red">En maintenance</h2>
 <div id='accueil' class='accueil'>
 	<div id="accueil_bilan">
 		<div id="accueil_bilan1"></div>

@@ -20,6 +20,7 @@ class period_vols_bdd {
         } else {
             this.vols = await this.get_vols_crna(this.start_day, this.end_day);
         }
+        
         this.vols_by_day = this.get_vols_by_day();
         this.check_dates();
 	}
@@ -29,7 +30,7 @@ class period_vols_bdd {
         const dates = get_dates_array(new Date(this.start_day), new Date(this.end_day));
         const vols_dates = this.vols.map(obj => obj.jour);
         dates.forEach(day => {
-            if (vols_dates.includes(day) === false) alert(`La stat totale est fausse. Il manque la date ${day} dans la bdd`);
+            if (vols_dates.includes(day) === false) alert(`La stat totale est fausse. Il manque la date ${day} dans la bdd vols ${this.zone}`);
         });
     }
 
