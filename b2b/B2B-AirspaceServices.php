@@ -244,7 +244,7 @@ class AirspaceServices extends Service {
 		$planned_rsa = [];
 		foreach ($airspaces as $air) {
             $d = $air->getDesignator();
-            if (substr($d, -1) !== "Z") { // supprime les FBZ
+            if (substr($d, -1) !== "Z" && substr($d, -2) !== "Z1" && substr($d, -2) !== "Z2") { // supprime les FBZ
                 $rsa = new StdClass();
                 $rsa->designator = $air->getDesignator();
                 $rsa->beginDate = substr($air->getTimeBegin(), 0, 10);
