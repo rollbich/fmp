@@ -794,8 +794,6 @@ span.back {
 }
 
 ul.menu_tds_editor {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
 	height: 50px;
 	background-color: #34495e;
 	border-radius: 8px;
@@ -824,6 +822,7 @@ ul.menu_tds_editor li {
 	text-transform: uppercase;
 	color: #ecf0f1;
 	margin-left: -30px;
+	margin-right: 10px;
 }
 
 .click_jx {
