@@ -6,7 +6,7 @@
 
 class weekly_briefing {
 
-    #tab_CRSTMP = ["ATC_CAPACITY", "ATC_ROUTINGS", "ATC_STAFFING", "ATC_EQUIPMENT", "AIRSPACE_MANAGEMENT", "SPECIAL_EVENT"];
+    #tab_CRSTMP = ["ATC_CAPACITY", "ATC_ROUTINGS", "ATC_STAFFING", "ATC_EQUIPMENT", "AIRSPACE_MANAGEMENT", "SPECIAL_EVENT", "OTHERS"];
 
     constructor(year, week, containerId_vols, containerId_reguls, containerId_causes) {
         this.container_vols = $(containerId_vols);
@@ -762,7 +762,7 @@ class weekly_briefing {
 
 class monthly_briefing {
 
-    #tab_CRSTMP = ["ATC_CAPACITY", "ATC_ROUTINGS", "ATC_STAFFING", "ATC_EQUIPMENT", "AIRSPACE_MANAGEMENT", "SPECIAL_EVENT"];
+    #tab_CRSTMP = ["ATC_CAPACITY", "ATC_ROUTINGS", "ATC_STAFFING", "ATC_EQUIPMENT", "AIRSPACE_MANAGEMENT", "SPECIAL_EVENT", "OTHERS"];
     #tab_mois = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 
     constructor(year, month, containerId_vols, containerId_reguls, containerId_causes) {
