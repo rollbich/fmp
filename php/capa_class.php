@@ -298,13 +298,13 @@ class capa {
 						}
 					}
 					if (!(in_array(14, $rolelist) || in_array(37, $rolelist))) { // 14 = détaché 37 = assistant sub, on ne les prend pas en compte (OLAF les compte)
-						$nc = $value->prenom." ".$value->nom;
+						$nc = $value->nom." ".$value->prenom;
 						$this->pc->{$vac}->teamNominalList->{$nc} = new stdClass();
 						$this->pc->{$vac}->teamNominalList->{$nc}->nom = $value->nom;
 						$this->pc->{$vac}->teamNominalList->{$nc}->prenom = $value->prenom;
 						$this->pc->{$vac}->teamNominalList->{$nc}->nomComplet = $nc;
 						$this->pc->{$vac}->teamNominalList->{$nc}->role = $rolelist;
-						array_push($this->pc->{$vac}->teamNominalList->agentsList, $value->nom);
+						array_push($this->pc->{$vac}->teamNominalList->agentsList, $value->nom." ".$value->prenom);
 					}
 				}
 				
@@ -315,7 +315,7 @@ class capa {
 				foreach ( $aTeamComposition as $key=>$value ) {
 					if ($key !== "lesrenforts") {
 						foreach ($value as $pers) {
-							$nc = $pers->agent->prenom." ".$pers->agent->nom;
+							$nc = $pers->agent->nom." ".$pers->agent->prenom;
 							$ro = false;
 							$cds = false;
 							if (is_array($pers->contextmenuType) === false) { // alors c'est un objet et non un array vide
@@ -417,9 +417,22 @@ class capa {
 				$this->pc->{$vac}->RPL = new stdClass();
 				if (isset($teamData->autre_agent)) {
 					foreach ($teamData->autre_agent as $nom=>$html_value) { // nom du remplaçant
-						if (str_contains($nom, " ")) $nom = explode(" ", $nom)[0];
-						foreach ($this->pc->{$vac}->teamNominalList->agentsList as $agent) { // agent remplacé
-							if (str_contains($html_value, $agent)) $this->pc->{$vac}->RPL->{$nom} = $agent;
+						if (str_contains($nom, " ") === false) {
+							//$nom = explode(" ", $nom)[0];
+							$tab_teamToday = array_keys(get_object_vars($this->pc->{$vac}->teamToday));
+							foreach($tab_teamToday as $nom_comp) {
+								if (str_contains($nom_comp, $nom)) $nom = $nom_comp;
+							}
+						}
+						
+						$h = explode(">", $html_value)[2];
+						$remplace = explode("<", $h)[0]; // nom du remplacé
+						
+						foreach ($this->pc->{$vac}->teamNominalList->agentsList as $ncomp_agent) { // pour trouver agent remplacé
+							$n_agent = explode(" ", $ncomp_agent)[0]; // nom uniquement
+							if (str_contains($ncomp_agent, $remplace)) {
+								$this->pc->{$vac}->RPL->{$nom} = $ncomp_agent;
+							} 
 						}
 					}
 				}
@@ -427,7 +440,7 @@ class capa {
 				// Précise la fonction RPL des Remplacant dans teamToday
 				foreach ($this->pc->{$vac}->RPL as $remplacant => $remplace) {
 					foreach ($this->pc->{$vac}->teamToday as $fullname => $obj) {
-						if (strcmp($remplacant, $obj->nom) === 0) {
+						if (strcmp($remplacant, $obj->nomComplet) === 0) {
 							$this->pc->{$vac}->teamToday->{$obj->nomComplet}->fonction = "PC-RPL";
 						}
 					}
@@ -441,7 +454,22 @@ class capa {
 				}
 				if (is_array($teamData->conge) === false) { // alors c'est bien un objet sinon array vide
 					//$this->pc->{$vac}->conge = array_map('firstElem', array_keys(get_object_vars($teamData->conge)));
-					$this->pc->{$vac}->conge = array_keys(get_object_vars($teamData->conge));
+					$cge = [];
+					$arr_conge = array_keys(get_object_vars($teamData->conge));
+					foreach($arr_conge as $nom) {
+						if (!str_contains($nom, " ")) {
+							foreach ($this->pc->{$vac}->teamNominalList->agentsList as $ncomp_agent) { // pour trouver agent remplacé
+								$n_agent = explode(" ", $ncomp_agent)[0]; // nom uniquement
+								$p_agent = explode(" ", $ncomp_agent)[1]; // nom uniquement
+								if (str_contains($ncomp_agent, $nom)) {
+									array_push($cge, $n_agent." ".$p_agent);
+								} 
+							}
+						} else {
+							array_push($cge, $nom);
+						}
+					}
+					$this->pc->{$vac}->conge = $cge;
 				} else {
 					$this->pc->{$vac}->conge = [];
 				}
