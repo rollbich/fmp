@@ -92,7 +92,7 @@ input {
 	height: 24px;
 	margin-top: 0;
 	z-index: 1;
-	width: 100px;
+	width: 140px;
 }
 
 /* ------- Date Picker ------- */
@@ -753,10 +753,13 @@ label {
     white-space: nowrap;
 }
 
-/* ------- TDS editor ------- */
+/*	--------------------------------------------------------
+			TDS editor 
+	-------------------------------------------------------- */
+
 body.editor header {
 	margin: 0 auto;
-	width: 180px;
+	width:290px;
 	font-size: 36px;
 }
 
@@ -798,7 +801,8 @@ ul.menu_tds_editor {
 	background-color: #34495e;
 	border-radius: 8px;
 	cursor: default;
-	margin: 12px auto 0;
+	margin-left: 12px;
+	margin-right: 12px;
 }
 
 ul.menu_tds_editor_greve {
@@ -1013,11 +1017,11 @@ ul.menu_tds_editor li {
 	margin-left: 5px;
 }
 
-#modal_tds label, #modal_tds_supp label {
+#modal_tds label, #modal_tds_supp label, #container_gestion_greve label {
 	margin-left: 15px;
 }
 
-#modal_tds .form-group, #modal_tds_supp .form-group {
+#modal_tds .form-group, #modal_tds_supp .form-group, #container_gestion_greve .form-group {
 	display: inline;
 }
 

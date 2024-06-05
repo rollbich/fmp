@@ -1,19 +1,41 @@
 class tds_editor {
 
-    constructor(containerId) {
+    constructor(containerId, greve = false) {
         this.containerId = containerId;
-        this.init(); // saison = undefined au démarrage
+        this.greve = greve;
+        this.init(); 
     }
 
     async init(zone = "est", saison, open = "no") {
-        console.log("saison: "+saison);
         this.tour_vierge = new Array(96);
         this.tour_vierge.fill(0);
         this.zone = zone;
         const d = await fetch(`../php/editor-API.php?zone=${this.zone}`);
         this.data = await d.json();
+        if (this.greve) {
+            this.tds = this.data.tds_greve;
+            this.repartition = this.data.repartition_greve;
+            this.current_tds = this.data.current_tds_greve;
+            this.beyond_saisons = this.data["beyond_saisons_greve"]; 
+            this.all_saisons = this.data["all_saisons_greve"];
+            this.grev = 1;
+            this.str_greve = "yes";
+            this.type_tds = "tds_greve";
+            this.titre = " greve";
+        } else {
+            this.tds = this.data.tds_local;
+            this.repartition = this.data.repartition;
+            this.current_tds = this.data.current_tds;
+            this.beyond_saisons = this.data["beyond_saisons"]; 
+            this.all_saisons = this.data["all_saisons"];
+            this.grev = 0;
+            this.str_greve = "no";
+            this.type_tds = "tds_local";
+            this.titre = "";
+        }
+        this.arr_saisons = Object.keys(this.tds).sort(this.compare_tds_name);
         this.insert_header(saison, open);
-        this.edit_tds(saison);
+        this.edit_tds(saison); // si saison non définie, prends la saison courante
         console.log(this.data);
     }
 
@@ -39,11 +61,13 @@ class tds_editor {
         @param {string} saison      - "hiver-2024" ...
     --------------------------------------------------------------------------------------------- */
 
-    insert_header(saison = this.data.current_tds, open) { 
+    insert_header(saison = this.current_tds, open) { 
    
-        let saisons = Object.keys(this.data.tds_local).sort(this.compare_tds_name);
+        let saisons = Object.keys(this.tds).sort(this.compare_tds_name);
+        let titre = "TDS Editor";
+        if (this.greve) titre += " Gr&egrave;ve";
         let html = `
-        <header>TDS Editor</header>
+        <header>${titre}</header>
         <div id="tds_editor_glob">
         <ul class="menu_tds_editor">
             <li>
@@ -67,14 +91,20 @@ class tds_editor {
         </ul>
         <ul class="menu_tds_editor">
         <li>
-            <button id="button_gestion_tds" type="button" class="button_tour">Gestion des TDS</button>
-            <button id="button_gestion_tds_supp" type="button" class="button_tour">Gestion des TDS suppl</button>
+            <button id="button_gestion_tds" type="button" class="button_tour">Gestion des TDS</button>`;
+            if (this.greve === false) html +=`
+            <button id="button_gestion_tds_supp" type="button" class="button_tour">Gestion des TDS suppl</button>`;
+            html +=`
             <button id="button_gestion_repartition" type="button" data-open=${open} class="button_tour">Gestion des r&eacute;partitions</button>
         </li>
         </ul>
         <ul class="menu_tds_editor">
-        <li>
-            <button id="button_gestion_greve" type="button" class="button_tour">Gestion greve</button>
+        <li>`;
+        if (this.greve === false) html += `
+            <span><a href="./edit_greve.php" target="_blank">Edit TDS greve</a></span>`; else 
+            html += `
+            <span><a href="./edit.php" target="_blank">Edit TDS std</a></span>`;
+        html += `
             <span><a href="./">back to TDS</a></span>
         </li>
         </ul>
@@ -101,23 +131,19 @@ class tds_editor {
         $('zone').addEventListener('change', async e => {
             this.zone = e.target.value;
             await this.init(this.zone, undefined, open);
-            if ($('modal_greve').innerHTML !== "") this.gestion_greve();
         })
-        $('button_gestion_tds_supp').addEventListener('click', e => {
-            $('modal_tds_supp').classList.toggle('off');
-            this.gestion_tds_supp();
-        })
+
+        if (document.getElementById('button_gestion_tds_supp') !== null) { // ce bouton n'existe pas sur la page grève
+            $('button_gestion_tds_supp').addEventListener('click', e => {
+                $('modal_tds_supp').classList.toggle('off');
+                this.gestion_tds_supp();
+            })
+        }
+
         $('button_gestion_repartition').addEventListener('click', e => {
             $('button_gestion_repartition').setAttribute('data-open', "yes");
             $('modal_repartition').classList.toggle('off');
             this.gestion_repartition();
-        })
-        $('button_gestion_greve').addEventListener('click', e => {
-            $('modal_greve').classList.toggle('off');
-            document.querySelector('.popup-box h2').innerHTML = "";
-            document.querySelector('.popup-box h3').innerHTML = "";
-            document.querySelector('.popup-close').click();
-            this.gestion_greve();
         })
     }
 
@@ -129,9 +155,9 @@ class tds_editor {
         @param {string} saison      - "hiver-2024" ...
     --------------------------------------------------------------------------------------------- */
 
-    async edit_tds(saison_select = this.data.current_tds) {
+    async edit_tds(saison_select = this.current_tds) {
             
-        this.affiche_saisons("plage");
+        this.affiche_plage_saisons("plage");
         this.add_listener_plage();
         
         let saison = saison_select ?? $('saison').value;
@@ -140,34 +166,14 @@ class tds_editor {
         
     }	
 
-    affiche_saisons(containerId, greve = false) {
-        let dates_saisons;
-        let arr_saisons;
-        let class_val;
-        let class_sup;
-        let button_add;
-
-        if (greve) { 
-            dates_saisons = this.data["beyond_saisons_greve"]; 
-            arr_saisons = Object.keys(this.data.tds_greve).sort(this.compare_tds_name);
-            class_val = "plage_greve_validate";
-            class_sup = "plage_greve_supprime";
-            button_add = "button_add_plage_greve";
-        } else { 
-            dates_saisons = this.data["beyond_saisons"]; 
-            arr_saisons = Object.keys(this.data.tds_local).sort(this.compare_tds_name);
-            class_val = "plage_validate";
-            class_sup = "plage_supprime";
-            button_add =  "button_add_plage";
-        }
-        if (greve) console.log("Saisons::greve"); else console.log("Saisons:");
-        console.log(dates_saisons);
-        console.log(arr_saisons);
+    affiche_plage_saisons(containerId) {
+        console.log(this.beyond_saisons);
+        console.log(this.arr_saisons);
         let res = '<table class="plage sortable">';
-        res += `<caption>Plages temporelles des saisons - Zone ${this.zone}  <button id='${button_add}' type="button" class="button_tour">Add</button></caption>`;
+        res += `<caption>Plages temporelles des saisons - Zone ${this.zone}  <button id='button_add_plage' type="button" class="button_tour">Add</button></caption>`;
         res += '<thead><tr><th>D&eacute;but</th><th class="fin">Fin</th><th>Saison</th><th class="px80">Save&nbsp;</th><th class="px80">Delete</th></tr></thead>';
         res += '<tbody>';
-        for (const [id, value] of Object.entries(dates_saisons)) {
+        for (const [id, value] of Object.entries(this.beyond_saisons)) {
             res += `<tr>
                     <td class="pl" data-zone="${this.zone}">
                         <input type="date" value="${value.debut}" data-col="debut" data-id='${value.id}'/>
@@ -177,13 +183,13 @@ class tds_editor {
                     </td>
                     <td class="pl" data-zone="${this.zone}">
                         <select data-id='${value.id}' data-col="nom_tds" class="select">`;
-                        arr_saisons.forEach(s => {
+                        this.arr_saisons.forEach(s => {
                             if (s === value.nom_tds) res += `<option selected value="${s}">${s}</option>`; else res += `<option value="${s}">${s}</option>`;
                         });
                 res += `</select>
                     </td>
-                    <td class='${class_val} px80' data-zone="${this.zone}" data-id=${value.id}>&check;</td>
-                    <td class='${class_sup} px80' data-zone="${this.zone}" data-id=${value.id}>x</td>
+                    <td class='plage_validate px80' data-greve="${this.grev}" data-zone="${this.zone}" data-id=${value.id}>&check;</td>
+                    <td class='plage_supprime px80' data-greve="${this.grev}" data-zone="${this.zone}" data-id=${value.id}>x</td>
                     </tr>`;
         };
         res += '</tbody></table>';
@@ -199,28 +205,8 @@ class tds_editor {
         @param {string} saison      - "hiver-2024" ...
     --------------------------------------------------------------------------------------------- */
 
-    add_listener_plage(greve = false) {
-        let plage_val;
-        let plage_sup;
-        let button_add;
-        let dates_saisons;
-        let arr_saisons;
-
-        if (greve) {
-            plage_val = 'td.plage_greve_validate';
-            plage_sup = 'td.plage_greve_supprime';
-            button_add = "button_add_plage_greve";
-            dates_saisons = this.data["all_saisons_greve"]; 
-            arr_saisons = Object.keys(this.data.tds_greve).sort(this.compare_tds_name);
-        } else {
-            plage_val = 'td.plage_validate';
-            plage_sup = 'td.plage_supprime';
-            button_add = "button_add_plage";
-            dates_saisons = this.data["all_saisons"];
-            arr_saisons = Object.keys(this.data.tds_local).sort(this.compare_tds_name); 
-        }
-
-        const cases_validate = document.querySelectorAll(`${plage_val}`);
+    add_listener_plage() {
+        const cases_validate = document.querySelectorAll(`td.plage_validate`);
         for (const td of cases_validate) {
             td.addEventListener('click', async (event) => {
                 let id = parseInt(td.dataset.id);
@@ -240,7 +226,7 @@ class tds_editor {
                 show_popup(`Plage horaire: ${zone}`, "Modification effectu&eacute;e");
             });
         }
-        const cases_suppr = document.querySelectorAll(`${plage_sup}`);
+        const cases_suppr = document.querySelectorAll(`td.plage_supprime`);
         for (const td of cases_suppr) {
             td.addEventListener('click', async (event) => {
                 let id = parseInt(td.dataset.id);
@@ -256,10 +242,9 @@ class tds_editor {
                 await fetch("tds_sql.php", data);
                 show_popup(`Plage horaire: ${zone}`, "Suppression effectu&eacute;e");
                 await this.init(zone);
-                if (greve) this.gestion_greve();
             });
         }
-        $(`${button_add}`).addEventListener('click', (e) => {   
+        $(`button_add_plage`).addEventListener('click', (e) => {   
             let ih = ` 
             <div>
                 <form><div class="form-group" style="text-align: left">
@@ -270,7 +255,7 @@ class tds_editor {
                     <br>
                     <label for="add_plage_tds">Choix du TDS: </label>
                     <select id="add_plage_tds" data-col="nom_tds" class="select" style="margin-left: 0">`;
-                        arr_saisons.forEach(s => {
+                        this.arr_saisons.forEach(s => {
                             ih += `<option value="${s}">${s}</option>`;
                         });
              ih += `</select>
@@ -285,19 +270,19 @@ class tds_editor {
                     show_popup(`Problème`, "Il faut que :<br>Date de fin > date de d&eacute;but");
                     return;
                 }
-                Object.values(dates_saisons).forEach(obj => {
+                Object.values(this.all_saisons).forEach(obj => {
                     if ((debut> obj.debut && debut<obj.fin) || (fin> obj.debut && fin<obj.fin)) {
                         show_popup(`Problème`, "Il y a un chevauchement de date");
                         return;
                     }
                 });
                 let tds = document.getElementById('add_plage_tds').value;
-                let gr = greve === false ? 0 : 1;
-                const plage = { "zone": this.zone, "debut": debut, "fin": fin, "tds": tds, "greve": gr, "fonction": "add_plage"}
+               
+                const plage = { "zone": this.zone, "debut": debut, "fin": fin, "tds": tds, "greve": this.grev, "fonction": "add_plage"}
                 await this.add_plage(plage);
                 show_popup(`Plage horaire ${debut} / ${fin}<br>${tds}`, "Cr&eacute;ation effectu&eacute;e");
                 await this.init(this.zone);
-                this.gestion_greve();
+                
             })
         })
         
@@ -317,23 +302,16 @@ class tds_editor {
         @param {string} vac         - "J1" "J3" "N" (nuit soirée) "N1" (nuit du matin) etc...
         @param {string} saison      - "hiver" "ete" "mi-saison-basse" "mi-saison-haute"
         @param {string} zone        - "est" ou "ouest"
+        this.str_greve : "yes" ou "no"
     ------------------------------------------------------------------------------------------ */
-    affiche_vac(vac, saison, greve = false) {
+    affiche_vac(vac, saison) {
         let res = "";
         let ligne = 1;
-        let g;
-        let type_tds;
-        if (greve === true) {
-            g = "yes";
-            type_tds = "tds_greve";
-        } else {
-            g = "no";
-            type_tds = "tds_local";
-        }
-        const nb_cds = this.data[type_tds][saison][vac]["nb_cds"];
-        const nbr_sousvac = Object.keys(this.data[type_tds][saison][vac]).length - 1;
+        
+        const nb_cds = this.data[this.type_tds][saison][vac]["nb_cds"];
+        const nbr_sousvac = Object.keys(this.data[this.type_tds][saison][vac]).length - 1;
 
-        for (const [sousvac, tds] of Object.entries(this.data[type_tds][saison][vac])) {
+        for (const [sousvac, tds] of Object.entries(this.data[this.type_tds][saison][vac])) {
             
             res += '<tr>';
             if (sousvac !== "nb_cds") { // && sousvac !== "cds"
@@ -343,7 +321,7 @@ class tds_editor {
                 if (sousvac !== "cds") {
                     res += `<td class='${cla}'></td><td class='${cla2}'>${sousvac}</td>`;
                 } else {
-                    res += `<td class='${cla} add_sousvac' data-greve='${g}' data-saison='${saison}' data-vac='${vac}' data-nbcds='${nb_cds}'>${vac}</td><td class='pc ${cla2}' data-saison='${saison}' data-nbcds='${nb_cds}' data-vac='${vac}'>cds: ${nb_cds}</td>`;
+                    res += `<td class='${cla} add_sousvac' data-greve='${this.str_greve}' data-saison='${saison}' data-vac='${vac}' data-nbcds='${nb_cds}'>${vac}</td><td class='pc ${cla2}' data-saison='${saison}' data-nbcds='${nb_cds}' data-vac='${vac}'>cds: ${nb_cds}</td>`;
                 }
                 for(let index=0;index<96;index++) {
                     let case_tds = tds[index];
@@ -352,13 +330,13 @@ class tds_editor {
                     if (index === 95) { cl += " right_2px";}
                     if (index%4 === 0) { cl += " left_2px";}
                     if (ligne > nbr_sousvac) { cl += " bottom_2px";}
-                    res += `<td class='${cl} standard' data-vac='${vac}' data-sousvac='${sousvac}' data-col='${index}' data-saison='${saison}' data-greve='${g}'>${case_tds || ''}</td>`;
+                    res += `<td class='${cl} standard' data-vac='${vac}' data-sousvac='${sousvac}' data-col='${index}' data-saison='${saison}' data-greve='${this.str_greve}'>${case_tds || ''}</td>`;
                 }
                 let cl = "right_2px";
                 if (ligne > nbr_sousvac) { cl += " bottom_2px";}
                 if (sousvac !== "cds") { 
                     cl += " vac_tds_delete"
-                    res += `<td class='${cl}' data-zone='${this.zone}' data-saison='${saison}' data-vac='${vac}' data-sousvac='${sousvac}' data-greve='${g}'>x</td>`;
+                    res += `<td class='${cl}' data-zone='${this.zone}' data-saison='${saison}' data-vac='${vac}' data-sousvac='${sousvac}' data-greve='${this.str_greve}'>x</td>`;
                 } else {
                     res += `<td class='${cl}'></td>`;
                 }
@@ -369,18 +347,16 @@ class tds_editor {
         return res;
     }
 
-    affiche_tds(containerId, saison, greve = false) {
+    affiche_tds(containerId, saison) {
         let res = "";
-        let titre = "";
-        let g = "";
         let bg = "";
-        if (greve === true) {
+        let titre = "";
+        if (this.greve === true) {
             titre = "- Greve";
-            g = "greve_";
             bg = "#F005";
         }
         res += `<table class="ouverture">
-        <caption style="background-color: ${bg}">TDS ${saison} - ${capitalizeFirstLetter(this.zone)} ${titre} <button id='button_tds_${g}${saison}' type="button" class="button_tour">Save</button> -  <span style="font-size: 1.3rem; background-color: yellow;">Cliquez sur les cases jaunes pour g&eacute;rer les sous-vac et le cds</span></caption>
+        <caption style="background-color: ${bg}">TDS ${saison} - ${capitalizeFirstLetter(this.zone)} ${titre} <button id='button_tds_${saison}' type="button" class="button_tour">Save</button> -  <span style="font-size: 1.3rem; background-color: yellow;">Cliquez sur les cases jaunes pour g&eacute;rer les sous-vac et le cds</span></caption>
         <thead>
             <tr class="titre">
                 <th class="top_2px left_2px right_1px bottom_2px">Vac</th>
@@ -391,14 +367,14 @@ class tds_editor {
         </thead>
         <tbody>`;
         this.data["cycle"].forEach(vac => {
-            if (vac != "") res += `${this.affiche_vac(vac, saison, greve)}`;
+            if (vac != "") res += `${this.affiche_vac(vac, saison)}`;
         })
         res += `<tr class="titre"><td class='bottom_2px left_2px right_1px' colspan="2">Heures loc</td>${this.heure()}`;
         res += '</tbody></table>';
         $(containerId).innerHTML = res;
-        this.add_listener(saison, greve);
-        this.add_create_sousvac_listener(greve);
-        this.add_save_listener(saison, greve);
+        this.add_listener(saison);
+        this.add_create_sousvac_listener();
+        this.add_save_listener(saison);
     }
 
     /*  ------------------------------------------------------------------------
@@ -418,15 +394,12 @@ class tds_editor {
             Ajout la gestion des clicks sur la croix pour supprimer une sousvac d'un tds   
         --------------------------------------------------------------------------------------------- */
 
-    add_listener_tds_supprime(greve = false) {
+    add_listener_tds_supprime() {
         let cases;
-        let tds;
-        if (greve === true) {
+        if (this.greve) {
             cases = document.querySelectorAll(`td.vac_tds_delete[data-greve='yes']`);
-            tds = "tds_greve";
         } else {
             cases = document.querySelectorAll(`td.vac_tds_delete[data-greve='no']`);
-            tds = "tds_local";
         }
     
         for (const td of cases) {
@@ -435,7 +408,7 @@ class tds_editor {
                 let saison = td.dataset.saison;	
                 let vac = td.dataset.vac;
                 let sousvac = td.dataset.sousvac;	
-                const tour = {"fonction": "delete_sousvac", "zone": zone, "saison": saison, "greve": greve, "vac": vac, "sousvac":sousvac}	
+                const tour = {"fonction": "delete_sousvac", "zone": zone, "saison": saison, "greve": this.greve, "vac": vac, "sousvac":sousvac}	
                 var data = {
                     method: "post",
                     headers: { "Content-Type": "application/json" },
@@ -444,8 +417,7 @@ class tds_editor {
                 
                 await fetch("tds_sql.php", data);
                 show_popup(`Tour ${saison}<br>Vac ${vac}`, `Suppression sousvac ${sousvac} OK`);
-                await this.init(zone);
-                if (greve) this.gestion_greve();
+                await this.init(zone, saison);
             })
         }
     }
@@ -455,14 +427,12 @@ class tds_editor {
             @param {string} saison      - "hiver-2024" ...
         --------------------------------------------------------------------------------------------- */
 
-    add_listener(saison, greve) {
-        let cases, tds;
-        if (greve === true) {
+    add_listener(saison) {
+        let cases;
+        if (this.greve) {
             cases = document.querySelectorAll(`td.standard[data-saison=${saison}][data-greve='yes']`);
-            tds = "tds_greve";
         } else {
             cases = document.querySelectorAll(`td.standard[data-saison=${saison}][data-greve='no']`);
-            tds = "tds_local";
         }
         for (const td of cases) {
             td.addEventListener('click', (event) => {
@@ -472,14 +442,14 @@ class tds_editor {
                 const val = (td.innerHTML === '1') ? 0 : 1;
                 td.innerHTML = (td.innerHTML === '1') ? '' : '1';
                 td.classList.toggle('bg');
-                this.data[tds][saison][vac][sousvac][col] = val;
+                this.data[this.type_tds][saison][vac][sousvac][col] = val;
             });
         }
     }
 
-    add_create_sousvac_listener(greve = false) {
+    add_create_sousvac_listener() {
     let elems;
-    if (greve === true) elems = document.querySelectorAll(`td.add_sousvac[data-greve='yes']`); else elems = document.querySelectorAll(`td.add_sousvac[data-greve='no']`);
+    if (this.greve) elems = document.querySelectorAll(`td.add_sousvac[data-greve='yes']`); else elems = document.querySelectorAll(`td.add_sousvac[data-greve='no']`);
         for (const td of elems) {
             td.addEventListener('click', (event) => {
                 const vac = td.dataset.vac;
@@ -536,24 +506,21 @@ class tds_editor {
                 
                 $('create_sousvac_button').addEventListener('click', async (e) => {
                     const sousvac = $('sousvacInputName').value;
-                    const save_sousvac = { "zone": this.zone, "saison": saison, "greve": greve, "vac": vac, "sousvac": sousvac, "fonction": "add_sousvac"}
+                    const save_sousvac = { "zone": this.zone, "saison": saison, "greve": this.greve, "vac": vac, "sousvac": sousvac, "fonction": "add_sousvac"}
                     const data = {
                         method: "post",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(save_sousvac)
                     };
                     await fetch("tds_sql.php", data);
-                    //show_popup(`Cr&eacute;tion sous-vac: ${sousvac}`, "Op&eacute;ration effectu&eacute;e");
                     $('modal_text_sousvac').innerHTML = `Sous-vac: ${sousvac} cr&eacute;&eacute;e`;
                     $('modal_text_sousvac').classList.toggle("off");
-                    //this.init(this.zone, saison);
-                    await this.init(this.zone);
-                    if (greve) this.gestion_greve();
+                    await this.init(this.zone, saison);
                 })
 
                 $('change_CDS_button').addEventListener('click', async (e) => {
                     const nbcds = $('cdsInputNumber').value;
-                    const save_cds = { "zone": this.zone, "saison": saison, "greve": greve, "vac": vac, "nbcds": nbcds, "fonction": "change_cds"}
+                    const save_cds = { "zone": this.zone, "saison": saison, "greve": this.greve, "vac": vac, "nbcds": nbcds, "fonction": "change_cds"}
                     const data = {
                         method: "post",
                         headers: { "Content-Type": "application/json" },
@@ -569,16 +536,11 @@ class tds_editor {
         }
     }
 
-    // Met en place les listeners des boutons save des différents tds
-    add_save_listener(saison, greve = false) {
-        let tds = "tds_local";
-        let g = "";
-        if (greve === true) {
-            tds = "tds_greve";
-            g = "greve_";
-        }
-        const tour = { "zone": this.zone, "saison": saison, "greve": greve, "tds": this.data[tds][saison], "fonction": "save_tds"}
-        $(`button_tds_${g}${saison}`).addEventListener('click', async (e) => {
+    // Met en place des listeners des boutons save des différents tds
+    add_save_listener(saison) {
+        console.log(saison);
+        const tour = { "zone": this.zone, "saison": saison, "greve": this.greve, "tds": this.data[this.type_tds][saison], "fonction": "save_tds"}
+        $(`button_tds_${saison}`).addEventListener('click', async (e) => {
             var data = {
                 method: "post",
                 headers: { "Content-Type": "application/json" },
@@ -595,7 +557,7 @@ class tds_editor {
         ------------------------------------------------------------------ */
 
     gestion_tds() {
-        let saisons = Object.keys(this.data.tds_local);
+        let saisons = Object.keys(this.tds);
         const tds_par_annee = {};
         let nb_tds_max_par_an = 0;
         saisons.forEach(saison => {
@@ -608,9 +570,9 @@ class tds_editor {
             nb_tds_max_par_an = Math.max(nb_tds_max_par_an, tds_par_annee[annee].length);
         })
         let modal = `
-        <h1>Gestion des TDS des saisons</h1>
+        <h1>Gestion des TDS des saisons ${this.titre}</h1>
         <table class="plage sortable">`;
-        modal += `<caption>Saisons - Zone ${this.zone}</caption>`;
+        modal += `<caption>Saisons ${this.titre} - Zone ${this.zone}</caption>`;
         modal += '<thead><tr><th>Ann&eacute;e</th>';
         modal += `<th colspan=${nb_tds_max_par_an}>TDS des saisons</th>`;
         modal += '</tr></thead>';
@@ -634,7 +596,7 @@ class tds_editor {
                 <form>
                     <div class="form-group">
                     <label for="cree_saison">Saison: </label>
-                    <input type="text" id="cree_saison" name="cree_saison" required minlength="2" maxlength="11" size="11" placeholder="nom du tds"/>
+                    <input type="text" id="cree_saison" name="cree_saison" required minlength="2" maxlength="17" size="17" placeholder="nom du tds"/>
                     </div>
                     <p>Le nom du TDS doit se terminer par un underscore suivi de l'ann&eacute;e</p>
                     <button id="add_TDS_button" type="button" class="btn btn-primary">Ajouter TDS</button>
@@ -645,7 +607,7 @@ class tds_editor {
                 <h2>Suppression d'un TDS</h2>
                 <form>
                     <div class="form-group">
-                    <label for="cree_saison">Saison: </label>
+                    <label for="delete_TDS">Saison: </label>
                     <select id="delete_TDS" class="select">`;
                     saisons.forEach(s => {
                         modal += `<option value="${s}">${s}</option>`;
@@ -662,15 +624,15 @@ class tds_editor {
                 <h2>Dupliquer un TDS</h2>
                 <form>
                     <div class="form-group">
-                        <label for="cree_saison">Saison: </label>
+                        <label for="duplicate_old_TDS">Saison: </label>
                         <select id="duplicate_old_TDS" class="select">`;
                         saisons.forEach(s => {
                             modal += `<option value="${s}">${s}</option>`;
                         })
                         modal += `
                         </select>
-                        <label for="duplicate_saison">TDS: </label>
-                        <input type="text" id="duplicate_new_TDS" name="duplicate_saison" required minlength="2" maxlength="11" size="11" placeholder="nouveau nom"/>
+                        <label for="duplicate_new_TDS">TDS: </label>
+                        <input type="text" id="duplicate_new_TDS" name="duplicate_new_TDS" required minlength="2" maxlength="17" size="17" placeholder="nouveau nom"/>
                     </div>
                     <p>&nbsp;</p>
                     <button id="duplicate_TDS_button" type="button" class="btn btn-primary">Dupliquer TDS</button>
@@ -853,157 +815,187 @@ class tds_editor {
 
     gestion_repartition(selected_vac_fixe = "J1") {  
         const saison = $('saison').value;
-        let vacs = Object.keys(this.data.tds_local[saison]);
+        console.log("SSS: "+saison);
+        let vacs = Object.keys(this.tds[saison]);
         const max_pc = 14;
         const jours = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
         console.log("Repartition");
-        console.log(this.data.repartition);
+        console.log(this.repartition);
 
         let modal = `<h1>Gestion des r&eacute;partitions</h1>`;
         modal += `<table class="gestion sortable">`;
-        modal += `<caption>TDS ${saison} - Zone ${this.zone} - Choix de la R&eacute;partition</caption>`;
+        modal += `<caption>Choix de la R&eacute;partition<br>TDS ${saison} - Zone ${this.zone}</caption>`;
         modal += '<thead><tr><th>Vac</th>';
         modal += `<th>R&eacute;partition Actuelle</th>`;
         modal += `<th>R&eacute;partition</th>`;
         modal += '</tr></thead>';
         modal += '<tbody>';
+        // true si le nombre de toutes les sous-vacs = 1
+        let sousvacs_egales_1 = true;
+
         vacs.forEach(vac => {
+            let nbr_sousvac = Object.keys(this.data[this.type_tds][saison][vac]).length - 2; // on enlève le cds et la clé nb_cds
             modal += `<tr><td>${vac}</td>`;
-            modal += `<td>${this.data.repartition[saison][vac]["type_repartition"]}</td>`;
-            modal += `<td><select data-vac="${vac}" class="type_repartition select">`;
-            if (this.data.repartition[saison][vac]["type_repartition"] === "standard") modal += `<option selected value="standard">standard</option><option value="fixe">fixe</option>`;
-            if (this.data.repartition[saison][vac]["type_repartition"] === "fixe") modal += `<option value="standard">standard</option><option selected value="fixe">fixe</option>`;
-            modal += `</select></td>`;
-            modal += `<td><button class="repartition_type_save_button" type="button" data-vac="${vac}" data-saison="${saison}">Save</button></td>`;
+            if (nbr_sousvac === 1) {
+                modal += `<td>-</td>`;
+                modal += `<td>1 seule sous-vac</td>`;
+                modal += `<td>-</td>`;
+            } else {
+                sousvacs_egales_1 = false;
+                modal += `<td>${this.repartition[saison][vac]["type_repartition"]}</td>`;
+                modal += `<td><select data-vac="${vac}" class="type_repartition select">`;
+                if (this.repartition[saison][vac]["type_repartition"] === "standard") modal += `<option selected value="standard">standard</option><option value="fixe">fixe</option>`;
+                if (this.repartition[saison][vac]["type_repartition"] === "fixe") modal += `<option value="standard">standard</option><option selected value="fixe">fixe</option>`;
+                modal += `</select></td>`;
+                modal += `<td><button class="repartition_type_save_button" type="button" data-vac="${vac}" data-saison="${saison}">Save</button></td></tr>`;
+            }
         });
         modal += '</tbody>';
-        modal += '<table>';
+        modal += '</table>';
 
-        modal += `<table class="gestion sortable">`;
-        modal += `<caption>TDS ${saison} - Zone ${this.zone} - R&eacute;partition &eacute;quitable (standard)</caption>`;
-        modal += '<thead><tr><th>Vac</th>';
-        modal += `<th>2 sousvacs<br>Reste 1</th>`;
-        modal += `<th>3 sousvacs<br>Reste 1</th>`;
-        modal += `<th>3 sousvacs<br>Reste 2</th>`;
-        modal += '</tr></thead>';
-        modal += '<tbody>';
-        
-        vacs.forEach(vac => {
-            const s2A = this.data.repartition[saison][vac]["standard"]["sousvac2"]["reste1"]["A"];
-            const s2B = this.data.repartition[saison][vac]["standard"]["sousvac2"]["reste1"]["B"];
-            const s3A_1 = this.data.repartition[saison][vac]["standard"]["sousvac3"]["reste1"]["A"];
-            const s3B_1 = this.data.repartition[saison][vac]["standard"]["sousvac3"]["reste1"]["B"];
-            const s3C_1 = this.data.repartition[saison][vac]["standard"]["sousvac3"]["reste1"]["C"];
-            const s3A_2 = this.data.repartition[saison][vac]["standard"]["sousvac3"]["reste2"]["A"];
-            const s3B_2 = this.data.repartition[saison][vac]["standard"]["sousvac3"]["reste2"]["B"];
-            const s3C_2 = this.data.repartition[saison][vac]["standard"]["sousvac3"]["reste2"]["C"];
+        if (sousvacs_egales_1 === false) {
+            modal += `<table class="gestion sortable">`;
+            modal += `<caption>R&eacute;partition &eacute;quitable (standard)<br>TDS ${saison} - Zone ${this.zone}</caption>`;
+            modal += '<thead><tr><th>Vac</th>';
+            modal += `<th>2 sousvacs<br>Reste 1</th>`;
+            modal += `<th>3 sousvacs<br>Reste 1</th>`;
+            modal += `<th>3 sousvacs<br>Reste 2</th>`;
+            modal += '</tr></thead>';
+            modal += '<tbody>';
             
-            let select2A = `
-            <label for="repartition_sousvac2A">A:${s2A}</label>
-            <select data-vac="${vac}" data-nbsv="sousvac2" data-reste="reste1" data-sv="A" class="repartition_std select">
-                <option value="0">0</option>
-                <option value="1">1</option>
-            </select><br>`;
-            let select2B = `
-            <label for="repartition_sousvac2B">B:${s2B}</label>
-            <select data-vac="${vac}" data-nbsv="sousvac2" data-reste="reste1" data-sv="B" class="repartition_std select">
-                <option value="0">0</option>
-                <option value="1">1</option>
-            </select>`;
+            vacs.forEach(vac => {
+                let nbr_sousvac = Object.keys(this.data[this.type_tds][saison][vac]).length - 2; // on enlève le cds et la clé nb_cds
+                if (nbr_sousvac === 1) {
+                    modal += `<tr><td>${vac}</td>`;
+                    modal += `<td>-</td>`;
+                    modal += `<td>-</td>`;
+                    modal += `<td>-</td>`;
+                    modal += `<td>-</td>`;
+                    modal += `</tr>`;
+                } else {
+                    const s2A = this.repartition[saison][vac]["standard"]["sousvac2"]["reste1"]["A"];
+                    const s2B = this.repartition[saison][vac]["standard"]["sousvac2"]["reste1"]["B"];
+                    const s3A_1 = this.repartition[saison][vac]["standard"]["sousvac3"]["reste1"]["A"];
+                    const s3B_1 = this.repartition[saison][vac]["standard"]["sousvac3"]["reste1"]["B"];
+                    const s3C_1 = this.repartition[saison][vac]["standard"]["sousvac3"]["reste1"]["C"];
+                    const s3A_2 = this.repartition[saison][vac]["standard"]["sousvac3"]["reste2"]["A"];
+                    const s3B_2 = this.repartition[saison][vac]["standard"]["sousvac3"]["reste2"]["B"];
+                    const s3C_2 = this.repartition[saison][vac]["standard"]["sousvac3"]["reste2"]["C"];
+                
+                    let select2A = `
+                    <label for="repartition_sousvac2A">A:${s2A}</label>
+                    <select data-vac="${vac}" data-nbsv="sousvac2" data-reste="reste1" data-sv="A" class="repartition_std select">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                    </select><br>`;
+                    let select2B = `
+                    <label for="repartition_sousvac2B">B:${s2B}</label>
+                    <select data-vac="${vac}" data-nbsv="sousvac2" data-reste="reste1" data-sv="B" class="repartition_std select">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                    </select>`;
 
-            let select3A_1 = `
-            <label for="repartition_sousvac3A_1">A:${s3A_1}</label>
-            <select data-vac="${vac}" data-nbsv="sousvac3" data-reste="reste1" data-sv="A" class="repartition_std select">
-                <option value="0">0</option>
-                <option value="1">1</option>
-            </select><br>`;
-            let select3B_1 = `
-            <label for="repartition_sousvac3B_1">B:${s3B_1}</label>
-            <select data-vac="${vac}" data-nbsv="sousvac3" data-reste="reste1" data-sv="B" class="repartition_std select">
-                <option value="0">0</option>
-                <option value="1">1</option>
-            </select><br>`;
-            let select3C_1 = `
-            <label for="repartition_sousvac3C_1">C:${s3C_1}</label>
-            <select data-vac="${vac}" data-nbsv="sousvac3" data-reste="reste1" data-sv="C" class="repartition_std select">
-                <option value="0">0</option>
-                <option value="1">1</option>
-            </select>`;
-            let select3A_2 = `
-            <label for="repartition_sousvac3A_2">A:${s3A_2}</label>
-            <select data-vac="${vac}" data-nbsv="sousvac3" data-reste="reste2" data-sv="A"class="repartition_std select">
-                <option value="0">0</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-            </select><br>`;
-            let select3B_2 = `
-            <label for="repartition_sousvac3B_2">B:${s3B_2}</label>
-            <select data-vac="${vac}" data-nbsv="sousvac3" data-reste="reste2" data-sv="B" class="repartition_std select">
-                <option value="0">0</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-            </select><br>`;
-            let select3C_2 = `
-            <label for="repartition_sousvac3C_2">C:${s3C_2}</label>
-            <select data-vac="${vac}" data-nbsv="sousvac3" data-reste="reste2" data-sv="C" class="repartition_std select">
-                <option value="0">0</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-            </select>`;
+                    let select3A_1 = `
+                    <label for="repartition_sousvac3A_1">A:${s3A_1}</label>
+                    <select data-vac="${vac}" data-nbsv="sousvac3" data-reste="reste1" data-sv="A" class="repartition_std select">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                    </select><br>`;
+                    let select3B_1 = `
+                    <label for="repartition_sousvac3B_1">B:${s3B_1}</label>
+                    <select data-vac="${vac}" data-nbsv="sousvac3" data-reste="reste1" data-sv="B" class="repartition_std select">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                    </select><br>`;
+                    let select3C_1 = `
+                    <label for="repartition_sousvac3C_1">C:${s3C_1}</label>
+                    <select data-vac="${vac}" data-nbsv="sousvac3" data-reste="reste1" data-sv="C" class="repartition_std select">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                    </select>`;
+                    let select3A_2 = `
+                    <label for="repartition_sousvac3A_2">A:${s3A_2}</label>
+                    <select data-vac="${vac}" data-nbsv="sousvac3" data-reste="reste2" data-sv="A"class="repartition_std select">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                    </select><br>`;
+                    let select3B_2 = `
+                    <label for="repartition_sousvac3B_2">B:${s3B_2}</label>
+                    <select data-vac="${vac}" data-nbsv="sousvac3" data-reste="reste2" data-sv="B" class="repartition_std select">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                    </select><br>`;
+                    let select3C_2 = `
+                    <label for="repartition_sousvac3C_2">C:${s3C_2}</label>
+                    <select data-vac="${vac}" data-nbsv="sousvac3" data-reste="reste2" data-sv="C" class="repartition_std select">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                    </select>`;
 
-            modal += `<tr><td>${vac}</td>`;
-            modal += `<td>${select2A}${select2B}</td>`;
-            modal += `<td>${select3A_1}${select3B_1}${select3C_1}</td>`;
-            modal += `<td>${select3A_2}${select3B_2}${select3C_2}</td>`;
-            modal += `<td><button class="repartition_std_save_button" type="button" data-vac="${vac}" data-saison="${saison}">Save</button></td>`;
-            modal += `</tr>`;
+                    modal += `<tr><td>${vac}</td>`;
+                    modal += `<td>${select2A}${select2B}</td>`;
+                    modal += `<td>${select3A_1}${select3B_1}${select3C_1}</td>`;
+                    modal += `<td>${select3A_2}${select3B_2}${select3C_2}</td>`;
+                    modal += `<td><button class="repartition_std_save_button" type="button" data-vac="${vac}" data-saison="${saison}">Save</button></td>`;
+                    modal += `</tr>`;
+                }
+            })
+            modal += '</tbody>';
             
-        })
-        modal += '</tbody>';
+            modal += '</table>';
         
-        modal += '<table>';
-        modal += '<hr>';
-        modal += '<h2>Vacation :';
-        modal += '<select id="repartition_fixe_vac" class="select">';
+        // repartition fixe 
+        
+            modal += '<hr>';
+            modal += '<h2>Vacation :';
+            modal += '<select id="repartition_fixe_vac" class="select">';
                 vacs.forEach(vac => {
-                    if (vac === selected_vac_fixe) modal += `<option selected value="${vac}">${vac}</option>`; else modal += `<option value="${vac}">${vac}</option>`;
+                    let nbr_sousvac = Object.keys(this.data[this.type_tds][saison][vac]).length - 2; // on enlève le cds et la clé nb_cds
+                    if (nbr_sousvac !== 1) {
+                        if (vac === selected_vac_fixe) modal += `<option selected value="${vac}">${vac}</option>`; else modal += `<option value="${vac}">${vac}</option>`;
+                    }
                 })
-        modal += `</select></h2>`;
-        modal += `<div class="modif">
-            <div class="saison"> 
-                <h2>Dupliquer une journ&eacute;e vers d'autres</h2>
-                    <div class="">
-                    <label for="cree_tds_supp">Copier </label>
-                    <select class="repartition_fixe_duplicate select">`;
-                    jours.forEach(jour => {
-                        modal += `<option value="${jour}">${jour}</option>`;
-                    })
-        modal +=   `</select>`;
-        modal += `  <span>&nbsp;&nbsp;vers</span>
-                    <span class="weekDays-selector">
-                        <input type="checkbox" id="weekday-mon" class="weekday" data-journee="lundi" />
-                        <label for="weekday-mon">L</label>
-                        <input type="checkbox" id="weekday-tue" class="weekday" data-journee="mardi" />
-                        <label for="weekday-tue">M</label>
-                        <input type="checkbox" id="weekday-wed" class="weekday" data-journee="mercredi" />
-                        <label for="weekday-wed">M</label>
-                        <input type="checkbox" id="weekday-thu" class="weekday" data-journee="jeudi" />
-                        <label for="weekday-thu">J</label>
-                        <input type="checkbox" id="weekday-fri" class="weekday" data-journee="vendredi" />
-                        <label for="weekday-fri">V</label>
-                        <input type="checkbox" id="weekday-sat" class="weekday" data-journee="samedi" />
-                        <label for="weekday-sat">S</label>
-                        <input type="checkbox" id="weekday-sun" class="weekday" data-journee="dimanche" />
-                        <label for="weekday-sun">D</label>
-                    </span>
-                    </div>
-                    <button id="duplicate_day_repartition_button" type="button" class="btn btn-primary" data-saison="${saison}">Dupliquer</button>
-                <div id="modal_text_create_tds_supp" class="modal_text off"></div>
-            </div>
-        </div>`;
-        
+            modal += `</select></h2>`;
+            modal += `<div class="modif">
+                <div class="saison"> 
+                    <h2>Dupliquer une journ&eacute;e vers d'autres</h2>
+                        <div class="">
+                        <label for="cree_tds_supp">Copier </label>
+                        <select class="repartition_fixe_duplicate select">`;
+                        jours.forEach(jour => {
+                            modal += `<option value="${jour}">${jour}</option>`;
+                        })
+            modal +=   `</select>`;
+            modal += `  <span>&nbsp;&nbsp;vers</span>
+                        <span class="weekDays-selector">
+                            <input type="checkbox" id="weekday-mon" class="weekday" data-journee="lundi" />
+                            <label for="weekday-mon">L</label>
+                            <input type="checkbox" id="weekday-tue" class="weekday" data-journee="mardi" />
+                            <label for="weekday-tue">M</label>
+                            <input type="checkbox" id="weekday-wed" class="weekday" data-journee="mercredi" />
+                            <label for="weekday-wed">M</label>
+                            <input type="checkbox" id="weekday-thu" class="weekday" data-journee="jeudi" />
+                            <label for="weekday-thu">J</label>
+                            <input type="checkbox" id="weekday-fri" class="weekday" data-journee="vendredi" />
+                            <label for="weekday-fri">V</label>
+                            <input type="checkbox" id="weekday-sat" class="weekday" data-journee="samedi" />
+                            <label for="weekday-sat">S</label>
+                            <input type="checkbox" id="weekday-sun" class="weekday" data-journee="dimanche" />
+                            <label for="weekday-sun">D</label>
+                        </span>
+                        </div>
+                        <button id="duplicate_day_repartition_button" type="button" class="btn btn-primary" data-saison="${saison}">Dupliquer</button>
+                    <div id="modal_text_create_tds_supp" class="modal_text off"></div>
+                </div>
+            </div>`;
+            
+            
+        }
         modal += '<div id="table_fixe"></div>';
-
+        modal += `<a id='close_modal_repartition' class='close_modal'></a>`;
         const m = $('modal_repartition');
         m.innerHTML = modal;
         
@@ -1013,7 +1005,7 @@ class tds_editor {
             const nbsv = elem.dataset.nbsv;
             const reste = elem.dataset.reste;
             const sv = elem.dataset.sv;
-            const data = this.data.repartition[saison][vac]["standard"][nbsv][reste][sv];
+            const data = this.repartition[saison][vac]["standard"][nbsv][reste][sv];
             for (var i=0; i<elem.options.length; i++) {
                 let option = elem.options[i];
                 if (option.value == data) {
@@ -1023,42 +1015,46 @@ class tds_editor {
         })
         
         // Vac sélectée
-        const vac = $('repartition_fixe_vac').value;
         modal = "";
-        modal += `<table class="gestion sortable">`;
-        modal += `<caption>TDS ${saison} - Zone ${this.zone} - R&eacute;partition fixe - ${vac} <button class="repartition_fixe_save_button" type="button" data-vac="${vac}" data-saison="${saison}">Save</button></caption>`;
-        modal += '<thead><tr><th>Jour</th>';
-        for(let i=2;i<max_pc;i++) {
-            modal += `<th>${i} pc</th>`;
-        }
-        modal += '</tr></thead>';
-        modal += '<tbody>';
-        
-        console.log("VAC fixe: "+vac);
-        jours.forEach(jour => {
-            let nbr_sousvac = Object.keys(this.data["tds_local"][saison][vac]).length - 2;
-            const temp_sv = Object.keys(this.data["tds_local"][saison][vac]);
-            const sv = temp_sv.filter(sv => (sv !== "cds") && (sv !== "nb_cds")); // enlève les clés cds et nb_cds du tableau
-            modal += `<tr><td>${jour}</td>`;
-            for(let i=2;i<max_pc;i++) {
-                modal += '<td class="fixe">';
-                for(let j=0;j<nbr_sousvac;j++) { 
-                    const cle_pc = "pc"+i;
-                    //const sv = String.fromCharCode('A'.charCodeAt(0) + j);
-                    const svcle = "sousvac"+nbr_sousvac;
-                    const val = this.data.repartition[saison][vac]["fixe"][svcle][jour][cle_pc][sv[j]];
-                    modal += `${sv[j]}:&nbsp;<input type="number" class="repartition_fixe form-control" data-saison="${saison}" data-vac="${vac}" data-sousvac="${sv[j]}" data-svcle="${svcle}" data-jour="${jour}" data-clepc="${cle_pc}" value="${val}" placeholder="Nbr" min="0" max="${i}" size="5" /><br>`; 
+        if (sousvacs_egales_1 === false) {
+            const vac = $('repartition_fixe_vac').value;
+            
+            if (vac !== '') {
+                modal += `<table class="gestion sortable">`;
+                modal += `<caption>TDS ${saison} - Zone ${this.zone} - R&eacute;partition fixe - ${vac} <button class="repartition_fixe_save_button" type="button" data-vac="${vac}" data-saison="${saison}">Save</button></caption>`;
+                modal += '<thead><tr><th>Jour</th>';
+                for(let i=2;i<max_pc;i++) {
+                    modal += `<th>${i} pc</th>`;
                 }
-                modal += '</td>';
+                modal += '</tr></thead>';
+                modal += '<tbody>';
+                
+                console.log("VAC fixe: "+vac);
+                let nbr_sousvac = Object.keys(this.tds[saison][vac]).length - 2; // on enlève le cds et la clé nb_cds
+                const temp_sv = Object.keys(this.tds[saison][vac]);
+                const sv = temp_sv.filter(sv => (sv !== "cds") && (sv !== "nb_cds")); // enlève les clés cds et nb_cds du tableau
+                
+                jours.forEach(jour => { 
+                    modal += `<tr><td>${jour}</td>`;
+                    for(let i=2;i<max_pc;i++) {
+                        modal += '<td class="fixe">';
+                        for(let j=0;j<nbr_sousvac;j++) { 
+                            const cle_pc = "pc"+i;
+                            //const sv = String.fromCharCode('A'.charCodeAt(0) + j);
+                            const svcle = "sousvac"+nbr_sousvac;
+                            const val = this.repartition[saison][vac]["fixe"][svcle][jour][cle_pc][sv[j]];
+                            modal += `${sv[j]}:&nbsp;<input type="number" class="repartition_fixe form-control" data-saison="${saison}" data-vac="${vac}" data-sousvac="${sv[j]}" data-svcle="${svcle}" data-jour="${jour}" data-clepc="${cle_pc}" value="${val}" placeholder="Nbr" min="0" max="${i}" size="5" /><br>`; 
+                        }
+                        modal += '</td>';
+                    }
+                    modal += '</tr>';
+                })
+                
+                modal += '</tbody>';
+                modal += '<table>';
             }
-            modal += '</tr>';
-        })
+        }
         
-        modal += '</tbody>';
-        modal += '<table>';
-       
-        modal += `<a id='close_modal_repartition' class='close_modal'></a>`;
-       
         const m2 = $('table_fixe');
         m2.innerHTML = modal;
         
@@ -1067,10 +1063,12 @@ class tds_editor {
             $('modal_repartition').classList.toggle('off');
         })
         
-        $('repartition_fixe_vac').addEventListener('change', (e) => {
-            const selected_vac = e.target.value;
-            this.gestion_repartition(selected_vac);
-        })
+        if ($('repartition_fixe_vac') !== null) {
+            $('repartition_fixe_vac').addEventListener('change', (e) => {
+                const selected_vac = e.target.value;
+                this.gestion_repartition(selected_vac);
+            })
+        }
 
         document.querySelectorAll(`select.repartition_std`).forEach(elem => {
             const vac = elem.dataset.vac;
@@ -1078,7 +1076,7 @@ class tds_editor {
             const reste = elem.dataset.reste;
             const sv = elem.dataset.sv;
             elem.addEventListener('change', (e) => {
-                this.data.repartition[saison][vac]["standard"][nbsv][reste][sv] = parseInt(e.target.value);
+                this.repartition[saison][vac]["standard"][nbsv][reste][sv] = parseInt(e.target.value);
             })
         })
         
@@ -1109,7 +1107,7 @@ class tds_editor {
                     show_popup('Sauvegarde impossible', 'Avec 3 sous-vacs et 2 restes,<br>le total des restes doit &ecirc;tre = 2');
                     return;
                 }
-                await this.set_repartition(saison, vac, this.data.repartition[saison][vac]);
+                await this.set_repartition(saison, vac, this.repartition[saison][vac]);
             })
         })
 
@@ -1119,7 +1117,7 @@ class tds_editor {
                 const saison = elem.dataset.saison;
                 const vac = elem.dataset.vac;
                 const value = document.querySelector(`select.type_repartition[data-vac="${vac}"]`).value;
-                this.data.repartition[saison][vac]["type_repartition"] = value;
+                this.repartition[saison][vac]["type_repartition"] = value;
                 await this.change_type_repartition(saison, vac, value);
             })
         })
@@ -1132,90 +1130,47 @@ class tds_editor {
                 const clepc = elem.dataset.clepc; // "pc2" ou "pc3" ....
                 const svcle = elem.dataset.svcle; // sousvac2 ou sousvac3 ...
                 const sousvac = elem.dataset.sousvac; // A ou B ou C ...
-                this.data.repartition[saison][vac]["fixe"][svcle][jour][clepc][sousvac] = parseInt(e.target.value);
+                this.repartition[saison][vac]["fixe"][svcle][jour][clepc][sousvac] = parseInt(e.target.value);
             })
         })
 
-        document.querySelector(`button.repartition_fixe_save_button`).addEventListener('click', async (e) => {
-            const vac = e.target.dataset.vac;
-            const saison = e.target.dataset.saison;
-            await this.set_repartition(saison, vac, this.data.repartition[saison][vac]);
-        })
-        
-        document.getElementById(`duplicate_day_repartition_button`).addEventListener('click', async (e) => {
-            const saison = e.target.dataset.saison;
-            const jour_ini = document.querySelector('select.repartition_fixe_duplicate').value;
-            const nbr_sv_ini = Object.keys(this.data["tds_local"][saison][vac]).length - 2;
-            const svcle = "sousvac"+nbr_sv_ini;
-            let jours = [];
-            document.querySelectorAll('input.weekday').forEach(elem => {
-                if(elem.checked === true) jours.push(elem.dataset.journee);
+        // Si au moins une vac a un nbr de sous-vac > 1
+        if (sousvacs_egales_1 === false) {
+            document.querySelector(`button.repartition_fixe_save_button`).addEventListener('click', async (e) => {
+                const vac = e.target.dataset.vac;
+                const saison = e.target.dataset.saison;
+                await this.set_repartition(saison, vac, this.repartition[saison][vac]);
             })
-            jours = jours.filter(jour => jour !== jour_ini); // ne garde que les jours différent de celui à copier
-            jours.forEach(jour => {
-                this.data.repartition[saison][vac]["fixe"][svcle][jour] = this.data.repartition[saison][vac]["fixe"][svcle][jour_ini];
-            })
-            await this.set_repartition(saison, vac, this.data.repartition[saison][vac]);
-        })
-    }
-
-    /*  ------------------------------------------------------------------
-            Pop-up Gestion greve
-        ------------------------------------------------------------------ */
-
-    edit_tds_greve(saison_select = this.data.current_tds_greve) {
+        }
         
-        this.affiche_saisons("plage_greve", true);
-        this.add_listener_plage(true);
-
-        this.affiche_tds("container_greve", saison_select, true);
-        this.add_listener_tds_supprime(true);
-        
-    }
-
-    gestion_greve(saison_select = this.data.current_tds_greve) {
-        
-        let saisons = Object.keys(this.data.tds_greve).sort(this.compare_tds_name);
-
-        let modal = `<h1>Gestion du TDS gr&egrave;ve</h1>`;
-        modal += `
-        <div id="tds_editor_glob_greve">
-        <ul class="menu_tds_editor_greve">
-            <li>
-                <select id="saison_greve" class="select">`;
-                    saisons.forEach(s => {
-                        if (s === saison_select) modal += `<option selected value="${s}">${s}</option>`; else modal += `<option value="${s}">${s}</option>`;
+        if (document.getElementById(`duplicate_day_repartition_button`) !== null) {
+            document.getElementById(`duplicate_day_repartition_button`).addEventListener('click', async (e) => {
+                if ($('repartition_fixe_vac') !== null) {
+                    const vac = $('repartition_fixe_vac').value;
+                    const saison = e.target.dataset.saison;
+                    const jour_ini = document.querySelector('select.repartition_fixe_duplicate').value;
+                    const nbr_sv_ini = Object.keys(this.tds[saison][vac]).length - 2;
+                    const svcle = "sousvac"+nbr_sv_ini;
+                    let jours = [];
+                    document.querySelectorAll('input.weekday').forEach(elem => {
+                        if(elem.checked === true) jours.push(elem.dataset.journee);
                     })
-                modal += `
-                </select>
-                <button id="button_show_greve" type="button" class="button_tour">Show TDS Greve</button>
-            </li>
-            
-        </ul>
-        </div>`;
-        modal += '<div id="plage_greve"></div>';
-        modal += '<div id="container_greve"></div>';
-        modal += `<a id='close_modal_greve' class='close_modal'></a>`;
-        $('modal_greve').innerHTML = modal;
-
-        this.edit_tds_greve();
-
-        $('button_show_greve').addEventListener('click', (e) => {
-            this.edit_tds_greve($('saison_greve').value);
-        });
-        
-        $('close_modal_greve').addEventListener('click', (e) => {
-            $('modal_greve').classList.toggle('off');
-        })
+                    jours = jours.filter(jour => jour !== jour_ini); // ne garde que les jours différent de celui à copier
+                    jours.forEach(jour => {
+                        this.repartition[saison][vac]["fixe"][svcle][jour] = this.repartition[saison][vac]["fixe"][svcle][jour_ini];
+                    })
+                    await this.set_repartition(saison, vac, this.repartition[saison][vac]);
+                }
+            })
+        }
     }
 
     /*  -------------------------------------------------
             Appel vers MariaDb
         ------------------------------------------------- */
     async add_tds(nom_saison) {
-        //const tour_vierge = new Array(96);
-        //tour_vierge.fill(0);
-        const tour = { "zone": this.zone, "saison": nom_saison, "fonction": "add_tds"}
+        
+        const tour = { "zone": this.zone, "saison": nom_saison, "greve": this.greve, "fonction": "add_tds"}
         var data = {
             method: "post",
             headers: { "Content-Type": "application/json" },
@@ -1223,15 +1178,15 @@ class tds_editor {
         };
         await fetch("tds_sql.php", data);
         show_popup(`Cr&eacute;ation du TDS: ${nom_saison}`, "La cr&eacute;ation est effectu&eacute;e");
+        
         await this.init(this.zone, nom_saison);
         this.gestion_tds();
-        
+
     }
     
     async delete_tds(nom_saison) {
-        //const tour_vierge = new Array(96);
-        //tour_vierge.fill(0);
-        const tour = { "zone": this.zone, "saison": nom_saison, "fonction": "delete_tds"}
+
+        const tour = { "zone": this.zone, "saison": nom_saison, "greve": this.greve, "fonction": "delete_tds"}
         var data = {
             method: "post",
             headers: { "Content-Type": "application/json" },
@@ -1241,10 +1196,12 @@ class tds_editor {
         show_popup(`Suppression du TDS: ${nom_saison}`, "La suppression est effectu&eacute;e");
         await this.init(this.zone);
         this.gestion_tds();
+
     }
 
     async duplicate_tds(tds_to_copy, new_tds_name) {
-        const tour = { "zone": this.zone, "tds_to_copy": tds_to_copy, "new_tds_name": new_tds_name, "fonction": "duplicate_tds"}
+
+        const tour = { "zone": this.zone, "tds_to_copy": tds_to_copy, "new_tds_name": new_tds_name, "greve": this.greve, "fonction": "duplicate_tds"}
         var data = {
             method: "post",
             headers: { "Content-Type": "application/json" },
@@ -1254,6 +1211,7 @@ class tds_editor {
         show_popup(`Copie du TDS: ${tds_to_copy}`, `La copie ${new_tds_name} est effectu&eacute;e`);
         await this.init(this.zone, new_tds_name);
         this.gestion_tds();
+
     }
 
     async add_tds_supp(nom_tds, tds_associe) {
@@ -1296,7 +1254,7 @@ class tds_editor {
     }
 
     async change_type_repartition(nom_tds, vac, value) {
-        const json = { "zone": this.zone, "nom_tds": nom_tds, "vac": vac, "type": value, "fonction": "change_type_repartition"}
+        const json = { "zone": this.zone, "nom_tds": nom_tds, "vac": vac, "greve": this.greve, "type": value, "fonction": "change_type_repartition"}
         var data = {
             method: "post",
             headers: { "Content-Type": "application/json" },
@@ -1309,7 +1267,7 @@ class tds_editor {
     }
 
     async set_repartition(nom_tds, vac, json) {
-        const tour = { "zone": this.zone, "nom_tds": nom_tds, "vac": vac, "json": JSON.stringify(json), "fonction": "set_repartition"}
+        const tour = { "zone": this.zone, "nom_tds": nom_tds, "vac": vac, "greve": this.greve, "json": JSON.stringify(json), "fonction": "set_repartition"}
         var data = {
             method: "post",
             headers: { "Content-Type": "application/json" },

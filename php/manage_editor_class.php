@@ -32,6 +32,8 @@ class editor {
     private $saisons;
     private $tds_supp_local;
 	private $tds_repartition;
+	private $tds_greve_repartition;
+
 
     // $zone : "est" ou "ouest"
     public function __construct(string $zone) {
@@ -59,6 +61,7 @@ class editor {
 		$this->current_tds_greve = $this->bdd->get_current_tds(true);
 		$this->tds_supp_local = $this->bdd->get_all_tds_supp();
 		$this->tds_repartition = $this->bdd->get_all_repartition();
+		$this->tds_greve_repartition = $this->bdd->get_all_repartition(true);
 		$this->tds_greve = $this->bdd->get_all_tds(true);
 	}
 
@@ -95,6 +98,7 @@ class editor {
 		$res->tds_local = $this->tds_local;
 		$res->tds_supp_local = $this->tds_supp_local;
 		$res->repartition = $this->tds_repartition;
+		$res->repartition_greve = $this->tds_greve_repartition;
 		$res->cycle = $this->cycle;
 		$res->clean_cycle = $this->clean_cycle;
 		$res->tds_greve = $this->tds_greve;

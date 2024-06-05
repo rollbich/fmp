@@ -60,10 +60,6 @@ class bdd_tds {
             return $resultat[0]["nom_tds"];
         }
         catch(Exception $e){
-            echo "Day: $this->day<br>";
-            echo "Resultat:<br>";
-            var_dump($resultat[0]);
-            echo "<br>";
             print_r($e);
         }
     }
@@ -133,42 +129,26 @@ class bdd_tds {
         return $obj;
     }
 
-    public function add_tds(string $nom) {
+    public function add_tds(string $nom, bool $greve) {
         $table = "tds_$this->zone";
+        if ($greve === true) $table = "tds_greve_$this->zone";
         $req = "INSERT INTO $table (nom_tds) VALUES ('$nom')"; // simple quote autour de $nom obligatoire
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
-        $table2 = "tds_repartition_$this->zone";
-        $req2 = "INSERT INTO $table2 (nom_tds) VALUES ('$nom')"; 
-        $stmt2 = Mysql::getInstance()->prepare($req2);
-        $stmt2->execute();
-        $table3 = "tds_greve_$this->zone";
-        $req3 = "INSERT INTO $table3 (nom_tds) VALUES ('$nom')"; 
-        $stmt3 = Mysql::getInstance()->prepare($req3);
-        $stmt3->execute();
-        $table4 = "tds_repartition_greve_$this->zone";
-        $req4 = "INSERT INTO $table4 (nom_tds) VALUES ('$nom')"; 
-        $stmt4 = Mysql::getInstance()->prepare($req4);
-        $stmt4->execute();
+        $this->create_tds_repartition($nom, $greve);
     }
 
-    public function delete_tds(string $nom) {
+    public function delete_tds(string $nom, bool $greve) {
         $table = "tds_$this->zone";
+        if ($greve === true) $table = "tds_greve_$this->zone";
         $req = "DELETE FROM $table WHERE nom_tds = '$nom'";
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
         $table2 = "tds_repartition_$this->zone";
+        if ($greve === true) $table2 = "tds_repartition_greve_$this->zone";
         $req2 = "DELETE FROM $table2 WHERE nom_tds = '$nom'";
         $stmt2 = Mysql::getInstance()->prepare($req2);
         $stmt2->execute();
-        $table3 = "tds_greve_$this->zone";
-        $req3 = "DELETE FROM $table3 WHERE nom_tds = '$nom'";
-        $stmt3 = Mysql::getInstance()->prepare($req3);
-        $stmt3->execute();
-        $table4 = "tds_repartition_greve_$this->zone";
-        $req4 = "DELETE FROM $table4 WHERE nom_tds = '$nom'"; 
-        $stmt4 = Mysql::getInstance()->prepare($req4);
-        $stmt4->execute();
     }
 
     /*  ------------------------------------------------------------------------------------------------------------
@@ -185,12 +165,16 @@ class bdd_tds {
 
     }
 
-    public function duplicate_tds(string $nom, string $new_name) {
-        $tds = $this->get_tds($nom);
-        $tds_greve = $this->get_tds($nom, true);
-        $this->add_tds($new_name);
-        $this->set_tds($new_name, $tds);
-        $this->set_tds($new_name, $tds_greve, true);
+    /*  ------------------------------------------------------------------------------------------------------------
+            copie un TDS classique ou de greve
+                @param $nom         - TDS à copier
+                @param $new_name    - nom du nouveau TDS
+                @param $greve       - TDS de greve ?
+        ------------------------------------------------------------------------------------------------------------ */
+    public function duplicate_tds(string $nom, string $new_name, bool $greve) {
+        $tds = $this->get_tds($nom, $greve);
+        $this->add_tds($new_name, $greve);
+        $this->set_tds($new_name, $tds, $greve);
     }
 
    /*  ------------------------------------------------------------------------------------------------------------
@@ -393,9 +377,10 @@ class bdd_tds {
             Répartition
         --------------------------------------------------------------- */
 
-    public function get_all_repartition() {
+    public function get_all_repartition(bool $greve = false) {
         $cycle = $this->get_cycle();
         $table = "tds_repartition_$this->zone";
+        if ($greve === true) $table = "tds_repartition_greve_$this->zone";
         $req = "SELECT * FROM $table"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
@@ -458,24 +443,27 @@ class bdd_tds {
     // @param $saison   - String - "hiver_2024"
     // @param $vac      - String - "J1"
     // @param $saison   - Int    - "standard" ou "fixe"
-    public function change_type_repartition(string $saison, string $vac, string $value) {
+    public function change_type_repartition(string $saison, string $vac, string $value, bool $greve = false) {
         if (strcmp($value, "standard") !== 0 && strcmp($value, "fixe") !== 0) return;
         $table = "tds_repartition_$this->zone";
+        if ($greve === true) $table = "tds_repartition_greve_$this->zone";
         $req = "UPDATE $table SET $vac = JSON_SET($vac, '$.type_repartition', '$value') WHERE nom_tds = '$saison'";
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
     }
 
-    public function set_repartition(string $saison, string $vac, string $json) {
+    public function set_repartition(string $saison, string $vac, string $json, bool $greve = false) {
         $table = "tds_repartition_$this->zone";
+        if ($greve === true) $table = "tds_repartition_greve_$this->zone";
         $req = "UPDATE $table SET $vac = JSON_COMPACT('$json') WHERE nom_tds = '$saison'";
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
     }
 
     // lorsqu'un nouveau tds est créé, il faut créer une ligne dans la table de répartition
-    public function create_tds_repartition(string $saison) {
+    public function create_tds_repartition(string $saison, bool $greve = false) {
         $table = "tds_repartition_$this->zone";
+        if ($greve === true) $table = "tds_repartition_greve_$this->zone";
         $req = "INSERT IGNORE INTO $table (nom_tds) VALUES ('$saison')"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();

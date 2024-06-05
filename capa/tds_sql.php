@@ -20,13 +20,13 @@ if ($contentType === "application/json") {
                 $bdd->set_tds($content->saison, $content->tds, (bool) $content->greve);
                 break;
             case "add_tds":
-                $bdd->add_tds($content->saison);
+                $bdd->add_tds($content->saison, (bool) $content->greve);
                 break;
             case "delete_tds":
-                $bdd->delete_tds($content->saison);
+                $bdd->delete_tds($content->saison, (bool) $content->greve);
                 break;
             case "duplicate_tds":
-                $bdd->duplicate_tds($content->tds_to_copy, $content->new_tds_name);
+                $bdd->duplicate_tds($content->tds_to_copy, $content->new_tds_name, (bool) $content->greve);
                 break;
             case "delete_sousvac":
                 $bdd->remove_sous_vac($content->saison, $content->vac, $content->sousvac, (bool) $content->greve);
@@ -59,10 +59,10 @@ if ($contentType === "application/json") {
                 $bdd->insert_realise($content->day, $content->realise);
                 break;
             case "set_repartition":
-                $bdd->set_repartition($content->nom_tds, $content->vac, $content->json);
+                $bdd->set_repartition($content->nom_tds, $content->vac, $content->json, (bool) $content->greve);
                 break;
             case "change_type_repartition":
-                $bdd->change_type_repartition($content->nom_tds, $content->vac, $content->type);
+                $bdd->change_type_repartition($content->nom_tds, $content->vac, $content->type, (bool) $content->greve);
                 break;
             case "save_uceso":
                 $bdd->save_uceso($content->day, $content->typejour, (int) $content->i1, $content->uceso, $content->realise, (int) $content->maxsecteurs, $content->tvh, $content->nbpc, (int) $content->minutes_ucesa);
