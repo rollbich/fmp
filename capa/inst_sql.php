@@ -14,8 +14,14 @@ if ($contentType === "application/json") {
     $fonction = $content->fonction;
     $bdd_instr = new bdd_instr();
     switch($fonction){
+        case "get_clean_cycle":
+            $bdd_instr->get_clean_cycle($content->zone); // "est" ou "ouest"
+            break;
         case "add":
             $bdd_instr->add_creneau_supp($content->date, $content->debut, $content->fin, $content->zone, $content->type, $content->comm);
+            break;
+        case "add_greve":
+            $bdd_instr->add_creneau_supp_greve($content->date, $content->vac, $content->sousvac, $content->zone, $content->type, $content->comm);
             break;
         case "delete":
             $bdd_instr->delete_creneau_supp($content->id);

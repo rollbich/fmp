@@ -631,6 +631,22 @@ header.instr span a:link, header.instr span a:visited {
 	height: 700px;
 }
 
+#div_checkbox_greve {
+	border: black 2px solid;
+	border-radius : 10px;
+	padding: 5px;
+	margin-top: 20px;
+	width: 100%;
+}
+
+#vac_in, #sousvac_in {
+	margin-left: 0;
+}
+
+#div_checkbox_greve input {
+	margin-top: 9px;
+}
+
 a:link, a:visited {
 	color: var(--main-color);
 }

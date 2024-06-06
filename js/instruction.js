@@ -13,6 +13,21 @@ async function get_instr_sql(zone) {
     
 }
 
+async function get_clean_cycle(zone) {
+    
+    const obj = {"fonction": "get_clean_cycle", "zone": zone};
+
+    const data = {
+        method: "post",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(obj)
+    };
+
+   const result = await fetch("inst_sql.php", data);
+   return result.json();
+    
+}
+
 async function inst(containerId) {
     const zone = document.getElementById('zone').value;
     let instr = await get_instr_sql(zone);
@@ -85,10 +100,10 @@ function affiche(containerId, instr) {
     $$('.titre').firstChild.click();
 } 
 
-async function ajoute_sql(containerId, ajout) {
+async function ajoute_sql(containerId, ajout, greve) {
     
     ajout["zone"] = ajout["zone"].toLowerCase();
-    ajout["fonction"] = "add";
+    if (greve) ajout["fonction"] = "add_greve"; else ajout["fonction"] = "add";
     
     const data = {
         method: "post",
