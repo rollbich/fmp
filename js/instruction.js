@@ -49,14 +49,7 @@ async function inst(containerId) {
                 cancelText: "Annuler"
             }).then(async(e)=>{
                 if ( e == ("confirm")){
-                    /*
-                    let ind;
-                    instr[zone][day].forEach( (el, index) => {
-                        if (id == el["id"]) ind = index;
-                    })
-                    */
                     parent.parentNode.removeChild(parent);
-                    //instr[zone][day].splice(ind,1);
                     const content = {"fonction": "delete", "id": id};
                     const data = {
                         method: "post",

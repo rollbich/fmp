@@ -76,17 +76,8 @@
                         "type": $('type_in').value,
                         "comm": $('com_in').value
                     }
-                    cuteAlert({
-                        type: "question",
-                        title: "Date et Vac",
-                        message: "Je confirme la date et la vac",
-                        confirmText: "Okay",
-                        cancelText: "Annuler"
-                        }).then((e)=>{
-                        if ( e == ("confirm")){
-                            ajoute_sql("result", ajout, true);
-                        } 
-                    })
+                    ajoute_sql("result", ajout, true);
+
                 } else {
                     const day = $('date_in').value;
                     const debut =  $('debut_in').value;
@@ -182,6 +173,7 @@
                     <option value="Simu1PC">Simu 1 PC</option>
                     <option value="Simu2PC">Simu 2 PC</option>
                     <option value="-1PC">-1 PC</option>
+                    <option value="-2PC">-2 PC</option>
                 </select>
             </div>
             <div class="form-group">
