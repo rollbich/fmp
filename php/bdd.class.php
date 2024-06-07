@@ -22,6 +22,32 @@ function getBetweenDates(string $startDate, string $endDate) {
     return $array;
 }
 
+// Récupère le décalage horaire en heures à 6h
+function get_decalage(string $day) {
+    $d = new DateTime($day);
+    $d->modify('+ 6 hours');
+    $timeZoneParis = new DateTimeZone("Europe/Paris");
+    $timeOffset = abs(($timeZoneParis->getOffset($d)) / 3600);
+    return $timeOffset;
+}
+
+// récupère les 2 chiffres après la virgule
+function get_decimale(float $nombre) {
+	return sprintf("%02d", ($nombre - (int) $nombre) * 100) ;
+}
+
+/*  ------------------------------------------------------------------------------
+	  récupère l'heure en fonction du numéro de colonne 
+	 	@param {integer} col - Numéro de la colonne du tds
+		@returns {string} - "hh:mm"
+	------------------------------------------------------------------------------ */
+function get_time($col) {
+    $h = sprintf("%02d", floor($col/4));
+    $minut = $col%4 === 0 ? "00" : get_decimale($col/4)*15/25;
+    $minut = $minut === 3 ? "30" : $minut;
+    return $h.":".strval($minut);
+}
+
 class bdd_tds {
 
     private $client;
@@ -528,6 +554,7 @@ class bdd_instr {
             if ($value["vacation"] !== "") array_push($arr, $value["vacation"]);
         }
         echo json_encode($arr);
+        return $arr;
     }
 
     // @return string - "nom de la saison" actuelle
@@ -579,19 +606,85 @@ class bdd_instr {
         $stmt->execute();
     }
 
+    // 	retourne les sous-vacs d'une vac
+	// $sv = ["A", "B"]
+	public function get_sv(string $vacation, $tour_local) {
+		$vac = $vacation;
+		if ($vacation === "N-1") $vac = "N";
+		$temp_sv = array_keys(get_object_vars($tour_local->{$vac}));
+		$sv = array_filter($temp_sv, static function ($element) {
+			return ($element !== "cds" && $element !== "nb_cds");
+		});
+		return $sv;
+	}
+
+    // objet : passage par référence par défaut
+	private function push_utc($vac, $tour_utc, $timeOffset, $tour_local) {
+        
+		$index_deb = $timeOffset*4 - 1;	
+		$sousvacs = $this->get_sv($vac, $tour_local);
+		
+		foreach($sousvacs as $sousvac) {
+			$tour_utc->{$vac}->{$sousvac} = $tour_local->{$vac}->{$sousvac};
+		}
+		
+		if ($timeOffset === 2) {
+			for($i=0;$i<4;$i++) {
+				foreach($sousvacs as $sousvac) {
+					$z = array_shift($tour_utc->{$vac}->{$sousvac});
+					array_push($tour_utc->{$vac}->{$sousvac}, $z);
+				}
+			}
+		}
+
+		for($i=0;$i<4;$i++) {
+			foreach($sousvacs as $sousvac) {
+				$z = array_shift($tour_utc->{$vac}->{$sousvac});
+				array_push($tour_utc->{$vac}->{$sousvac}, $z);
+			}
+		}		
+
+	}
+
     // enlève 1PC sur toutes les plages de la vac
     public function add_creneau_supp_greve(string $day, string $vac, string $sousvac, string $zone, string $type, string $comm) {
         $tds_name = $this->get_tds_name($day, $zone);
         $tds = $this->get_tds($tds_name, $zone);
-        echo "<pre>";
-        var_dump($tds);
-        echo "</pre>";
-        /*
-        $table = "creneaux_supp";
-        $req = "INSERT INTO $table VALUES (NULL, '$day', '$debut', '$fin', '$zone', '$type', '$comm')"; 
-        $stmt = Mysql::getInstance()->prepare($req);
-        $stmt->execute();
-        */
+        $workingCycle = $this->get_clean_cycle($zone);
+        var_dump($workingCycle);
+        $timeOffset = get_decalage($day);
+        echo "<br>".$timeOffset."<br>";
+
+        $tour_utc = new stdClass();
+		foreach($workingCycle as $vacation) {
+			$tour_utc->$vacation = new stdClass();
+			$this->push_utc($vac, $tour_utc, $timeOffset, $tds);
+		}
+
+        $arr_sousvac = $tour_utc->{$vac}->$sousvac;
+        $compacted_plages = [];
+        $index_debut = null;
+        $index_fin = null;
+        if ($arr_sousvac[0] === 1) {
+            $index_debut = 0;
+        }
+		for($j=1;$j<95;$j++) {
+            if ($arr_sousvac[$j] === 1) {
+                if ($arr_sousvac[$j-1] === 0 || $arr_sousvac[$j-1] === null) {
+                    $index_debut = $j;
+                } 
+            }
+            if ($arr_sousvac[$j] === 0) {
+                if ($arr_sousvac[$j-1] === 1) {
+                    $index_fin = $j;
+                    array_push($compacted_plages, [get_time($index_debut), get_time($index_fin)]);
+                } 
+            }
+		}
+        foreach($compacted_plages as $plage) {
+            $this->add_creneau_supp($day, $plage[0], $plage[1], $zone, $type, $comm);
+        }
+        
     }
     
     public function delete_creneau_supp(int $id) {

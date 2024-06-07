@@ -56,23 +56,6 @@ function strtime_to_min(string $str_time) {
 	$t = explode(":", $str_time);
 	return intval($t[0])*60+intval($t[1]);
 }
-
-// récupère les 2 chiffres après la virgule
-function get_decimale(float $nombre) {
-	return sprintf("%02d", ($nombre - (int) $nombre) * 100) ;
-}
-
-/*  ------------------------------------------------------------------------------
-	  récupère l'heure en fonction du numéro de colonne 
-	 	@param {integer} col - Numéro de la colonne du tds
-		@returns {string} - "hh:mm"
-	------------------------------------------------------------------------------ */
-function get_time($col) {
-	$h = sprintf("%02d", floor($col/4));
-	$minut = $col%4 === 0 ? "00" : get_decimale($col/4)*15/25;
-	$minut = $minut === 3 ? "30" : $minut;
-	return $h.":".strval($minut);
-}
 	
 // return nom famille pour les congé et stage
 function firstElem($elem) {
@@ -117,7 +100,7 @@ class capa {
     }
 
 	public function init() {
-		$this->timeOffset = $this->get_decalage();
+		$this->timeOffset = get_decalage($this->day);
 		$this->tour_local = $this->bdd->get_tds();
 		$this->tour_local_greve = $this->bdd->get_tds("", true);
 		$this->saison = $this->bdd->get_current_tds();
@@ -139,15 +122,6 @@ class capa {
 			if ($value !== "") array_push($clean_vacs, $value);
 		}
 		return $clean_vacs;
-	}
-
-	// Récupère le décalage horaire en heures à 6h
-	public function get_decalage() {
-		$d = new DateTime($this->day);
-		$d->modify('+ 6 hours');
-		$timeZoneParis = new DateTimeZone("Europe/Paris");
-		$timeOffset = abs(($timeZoneParis->getOffset($d)) / 3600);
-		return $timeOffset;
 	}
 
     /* ----------------------------------------------------------------------------------------------------------------
@@ -713,6 +687,7 @@ class capa {
 						if ($type === "Simu1PC") { $in15mn[$i-1][0] -= 1; $nb_pc -= 1; array_push($in15mn[$i-1][1], $z); }
 						if ($type === "Simu2PC") { $in15mn[$i-1][0] -= 2; $nb_pc -= 2; array_push($in15mn[$i-1][1], $z); }
 						if ($type === "-1PC") { $in15mn[$i-1][0] -= 1; $nb_pc -= 1; array_push($in15mn[$i-1][1], $z); }
+						if ($type === "-2PC") { $in15mn[$i-1][0] -= 2; $nb_pc -= 2; array_push($in15mn[$i-1][1], $z); }
 					} 
 				}
 			};
