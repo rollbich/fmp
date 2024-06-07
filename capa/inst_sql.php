@@ -17,6 +17,9 @@ if ($contentType === "application/json") {
         case "get_clean_cycle":
             $bdd_instr->get_clean_cycle($content->zone); // "est" ou "ouest"
             break;
+        case "get_clean_cycle_json":
+            $bdd_instr->get_clean_cycle_json($content->zone); // "est" ou "ouest"
+            break;
         case "add":
             $bdd_instr->add_creneau_supp($content->date, $content->debut, $content->fin, $content->zone, $content->type, $content->comm);
             break;

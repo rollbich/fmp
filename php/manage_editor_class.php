@@ -2,23 +2,6 @@
 require_once("config_olaf.php");
 require_once("bdd.class.php");
 
-// récupère les 2 chiffres après la virgule
-function get_decimale(float $nombre) {
-	return sprintf("%02d", ($nombre - (int) $nombre) * 100) ;
-}
-
-/*  ------------------------------------------------------------------------------
-	  récupère l'heure en fonction du numéro de colonne 
-	 	@param {integer} col - Numéro de la colonne du tds
-		@returns {string} - "hh:mm"
-	------------------------------------------------------------------------------ */
-function get_time($col) {
-	$h = sprintf("%02d", floor($col/4));
-	$minut = $col%4 === 0 ? "00" : get_decimale($col/4)*15/25;
-	$minut = $minut === 3 ? "30" : $minut;
-	return $h.":".strval($minut);
-}
-	
 class editor {
 
 	/* ------------------------------------------------------

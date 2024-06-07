@@ -15,7 +15,7 @@ async function get_instr_sql(zone) {
 
 async function get_clean_cycle(zone) {
     
-    const obj = {"fonction": "get_clean_cycle", "zone": zone};
+    const obj = {"fonction": "get_clean_cycle_json", "zone": zone};
 
     const data = {
         method: "post",
@@ -104,8 +104,8 @@ async function ajoute_sql(containerId, ajout, greve) {
         body: JSON.stringify(ajout)
     };
 
-    fetch("inst_sql.php", data).then(function(response) {
-        inst(containerId);
-    })
+    const response = await fetch("inst_sql.php", data);
+    const resp = await response.json();
+    if (resp.status === "error") { alert(resp.texte); } else { inst("result");}
     
 }
