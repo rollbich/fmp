@@ -553,8 +553,11 @@ class bdd_instr {
         foreach($resultat as $key=>$value) {
             if ($value["vacation"] !== "") array_push($arr, $value["vacation"]);
         }
-        echo json_encode($arr);
         return $arr;
+    }
+
+    public function get_clean_cycle_json(string $zone) {
+        echo json_encode($this->get_clean_cycle($zone)); 
     }
 
     // @return string - "nom de la saison" actuelle
@@ -620,7 +623,7 @@ class bdd_instr {
 
     // objet : passage par référence par défaut
 	private function push_utc($vac, $tour_utc, $timeOffset, $tour_local) {
-        
+
 		$index_deb = $timeOffset*4 - 1;	
 		$sousvacs = $this->get_sv($vac, $tour_local);
 		
@@ -651,40 +654,46 @@ class bdd_instr {
         $tds_name = $this->get_tds_name($day, $zone);
         $tds = $this->get_tds($tds_name, $zone);
         $workingCycle = $this->get_clean_cycle($zone);
-        var_dump($workingCycle);
         $timeOffset = get_decalage($day);
-        echo "<br>".$timeOffset."<br>";
 
         $tour_utc = new stdClass();
 		foreach($workingCycle as $vacation) {
-			$tour_utc->$vacation = new stdClass();
-			$this->push_utc($vac, $tour_utc, $timeOffset, $tds);
+			$tour_utc->{$vacation} = new stdClass();
+			$this->push_utc($vacation, $tour_utc, $timeOffset, $tds);
 		}
-
-        $arr_sousvac = $tour_utc->{$vac}->$sousvac;
-        $compacted_plages = [];
-        $index_debut = null;
-        $index_fin = null;
-        if ($arr_sousvac[0] === 1) {
-            $index_debut = 0;
-        }
-		for($j=1;$j<95;$j++) {
-            if ($arr_sousvac[$j] === 1) {
-                if ($arr_sousvac[$j-1] === 0 || $arr_sousvac[$j-1] === null) {
-                    $index_debut = $j;
-                } 
+        if (isset($tour_utc->{$vac}->$sousvac)) {
+            $arr_sousvac = $tour_utc->{$vac}->$sousvac;
+            $compacted_plages = [];
+            $index_debut = null;
+            $index_fin = null;
+            if ($arr_sousvac[0] === 1) {
+                $index_debut = 0;
             }
-            if ($arr_sousvac[$j] === 0) {
-                if ($arr_sousvac[$j-1] === 1) {
-                    $index_fin = $j;
-                    array_push($compacted_plages, [get_time($index_debut), get_time($index_fin)]);
-                } 
+            for($j=1;$j<95;$j++) {
+                if ($arr_sousvac[$j] === 1) {
+                    if ($arr_sousvac[$j-1] === 0 || $arr_sousvac[$j-1] === null) {
+                        $index_debut = $j;
+                    } 
+                }
+                if ($arr_sousvac[$j] === 0) {
+                    if ($arr_sousvac[$j-1] === 1) {
+                        $index_fin = $j;
+                        array_push($compacted_plages, [get_time($index_debut), get_time($index_fin)]);
+                    } 
+                }
             }
-		}
-        foreach($compacted_plages as $plage) {
-            $this->add_creneau_supp($day, $plage[0], $plage[1], $zone, $type, $comm);
+            foreach($compacted_plages as $plage) {
+                $this->add_creneau_supp($day, $plage[0], $plage[1], $zone, $type, $comm);
+            }
+            $obj = new stdClass();
+            $obj->status = "ok";
+            $obj->texte = "";
+        } else {
+            $obj = new stdClass();
+            $obj->status = "error";
+            $obj->texte = "La sous-vac $sousvac n'existe pas dans la vac $vac";
         }
-        
+        echo json_encode($obj);
     }
     
     public function delete_creneau_supp(int $id) {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Créneaux Instruction</title>
+    <title>Créneaux Suppl&eacute;mentaires</title>
     <script type="text/javascript" src="../js/utils.js"></script>
     <script type="text/javascript" src="../js/cute-alert.js"></script>
     <script type="text/javascript" src="../js/instruction.js"></script>
