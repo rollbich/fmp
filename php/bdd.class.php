@@ -607,6 +607,10 @@ class bdd_instr {
         $req = "INSERT INTO $table VALUES (NULL, '$day', '$debut', '$fin', '$zone', '$type', '$comm')"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
+        $obj = new stdClass();
+        $obj->status = "ok";
+        $obj->texte = "";
+        echo json_encode($obj);
     }
 
     // 	retourne les sous-vacs d'une vac
