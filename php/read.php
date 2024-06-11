@@ -138,7 +138,10 @@ class Lister {
 }
 
 $lister = new Lister("Realise");
-$lister->listdir($_SERVER['DOCUMENT_ROOT']."/Realise");
+// prod
+ $lister->listdir($_SERVER['DOCUMENT_ROOT']."/Realise");
+// localhost : DOCUMENT_ROOT = c:/xampp/htdocs
+// $lister->listdir($_SERVER['DOCUMENT_ROOT']."/fmp/Realise"); 
 $json = json_encode($lister->arr);
 echo $json;
 	
