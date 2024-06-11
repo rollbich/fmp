@@ -106,6 +106,10 @@ async function ajoute_sql(containerId, ajout, greve) {
 
     const response = await fetch("inst_sql.php", data);
     const resp = await response.json();
-    if (resp.status === "error") { alert(resp.texte); } else { inst(containerId);}
+    if (resp.status === "error") { 
+        show_popup("Warning", `${resp.texte}`);
+    } else { 
+        inst(containerId);
+    }
     
 }

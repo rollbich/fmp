@@ -602,15 +602,18 @@ class bdd_instr {
         return $obj;
     }
 
-    public function add_creneau_supp(string $day, string $debut, string $fin, string $zone, string $type, string $comm) {
+    // $greve permet de savoir que add_creneau_supp est appelé depuis add_creneau_supp_greve
+    public function add_creneau_supp(string $day, string $debut, string $fin, string $zone, string $type, string $comm, $greve = false) {
         $table = "creneaux_supp";
         $req = "INSERT INTO $table VALUES (NULL, '$day', '$debut', '$fin', '$zone', '$type', '$comm')"; 
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
-        $obj = new stdClass();
-        $obj->status = "ok";
-        $obj->texte = "";
-        echo json_encode($obj);
+        if (!$greve) {
+            $obj = new stdClass();
+            $obj->status = "ok";
+            $obj->texte = "";
+            echo json_encode($obj);
+        }
     }
 
     // 	retourne les sous-vacs d'une vac
@@ -687,7 +690,7 @@ class bdd_instr {
                 }
             }
             foreach($compacted_plages as $plage) {
-                $this->add_creneau_supp($day, $plage[0], $plage[1], $zone, $type, $comm);
+                $this->add_creneau_supp($day, $plage[0], $plage[1], $zone, $type, $comm, true);
             }
             $obj = new stdClass();
             $obj->status = "ok";
@@ -695,7 +698,7 @@ class bdd_instr {
         } else {
             $obj = new stdClass();
             $obj->status = "error";
-            $obj->texte = "La sous-vac $sousvac n'existe pas dans la vac $vac";
+            $obj->texte = "La sous-vac $vac-$sousvac n'existe pas";
         }
         echo json_encode($obj);
     }
