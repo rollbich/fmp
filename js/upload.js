@@ -138,7 +138,6 @@ async function init_dir(containerId) {
 						} else {
 							type = "Courage";
 							zone = nom.substr(14,2);
-							console.log("Zone Courage: "+zone);
 							day = get_date_from_courage_file(nom);
 							z = zone === "AE" ? "EST" : "OUEST";
 						}
@@ -152,7 +151,12 @@ async function init_dir(containerId) {
 		}
 		inner += '</ul>';
 		document.getElementById('schema_dir').innerHTML = inner;
-		
+
+		// déploiement de l'arborescence : année et mois en cours
+		let year_elem = document.querySelector('[is="expanding-list"]').lastChild; // <li> de la dernière année
+		year_elem.firstChild.click(); // <span> de l'année
+		let month_elem = year_elem.lastChild.lastChild; // <li> du dernier mois
+		month_elem.firstChild.click();
 	}
 	catch (error) {
 		alert("Erreur, en listant les fichiers "+error);
