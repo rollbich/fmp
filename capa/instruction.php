@@ -61,6 +61,7 @@
                     const day = $('date_in').value;
                     const vac = $('vac_in').value;
                     const sousvac = $('sousvac_in').value;
+                    $('com_in').value = `Greve ${vac}-${sousvac}`;
                     console.log(day);
                     
                     if ( day === "") {
