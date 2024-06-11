@@ -1,5 +1,6 @@
-// Alert box design by Igor Ferrão de Souza: https://www.linkedin.com/in/igor-ferr%C3%A3o-de-souza-4122407b/
-
+// https://github.com/gustavosmanc/cute-alert
+// https://gustavosmanc.github.io/cute-alert/docs/alerts/
+// type : 'error', 'info', 'question', 'success', 'warning'
 const cuteAlert = ({type, title, message, img, buttonText = 'OK', confirmText = 'OK', vibrate = [], playSound = null, cancelText = 'Cancel', closeStyle,}) => {
   return new Promise(resolve => {
     const existingAlert = document.querySelector('.alert-wrapper');
