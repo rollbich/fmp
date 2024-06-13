@@ -449,7 +449,10 @@ class bdd_tds {
         ------------------------------------------------------------------------------------------- */
 
     public function get_repartition(string $saison = "", bool $greve = false) {
-        if (strcmp($saison, "") === 0) $saison = $this->saison;
+        if (strcmp($saison, "") === 0) {
+            $saison = $this->saison;
+            if ($greve) $saison = $this->saison_greve;
+        }
         $cycle = $this->get_cycle();
         $table = "tds_repartition_$this->zone";
         if ($greve === true) $table = "tds_repartition_greve_$this->zone";
