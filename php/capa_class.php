@@ -390,12 +390,15 @@ class capa {
 					$nomComplet ="";
 					foreach ($aTeamComposition->lesrenforts as $renf) {
 						$nomComplet = $renf->agent->nom." ".$renf->agent->prenom;
+						$pc = $this->pc->{$vac}->teamToday->{$nomComplet}->fonction;
+						// parfois RH force un PC RPL dans les renforts, dans ce cas on laisse la fonction "PC" intacte et on ne le met pas dans renfortAgent
+						if ($pc !== "PC") {
 						$this->pc->{$vac}->renfortAgent->{$nomComplet} = new stdClass();
 						$this->pc->{$vac}->renfortAgent->{$nomComplet}->nom = $renf->agent->nom;
 						$this->pc->{$vac}->renfortAgent->{$nomComplet}->prenom = $renf->agent->prenom;
 						$this->pc->{$vac}->renfortAgent->{$nomComplet}->nomComplet = $nomComplet;
 						//$pc = $this->pc->{$vac}->teamNominalList->{$nc}->fonction;
-						$pc = $this->pc->{$vac}->teamToday->{$nomComplet}->fonction;
+										
 						if (is_array($renf->contextmenuType)) {
 							// Recyclage classique
 						} else {
@@ -407,6 +410,8 @@ class capa {
 							if (str_contains($label_RD, "rouge")) $pc = "RD rouge";
 						}
 						$this->pc->{$vac}->renfortAgent->{$nomComplet}->fonction = $pc;
+						}
+						
 					}
 				}
 
