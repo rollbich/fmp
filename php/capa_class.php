@@ -256,6 +256,7 @@ class capa {
 				$userList = $this->effectif->{$jour}->{$p}->userList;
 				$this->pc->{$vac}->teamNominalList = new stdClass();
 				$this->pc->{$vac}->teamNominalList->agentsList = [];
+				
 				foreach ( $userList as $idagent=>$value ) {
 					// parfois role n'existe pas => utilisation de rolelist
 					$rolelist = null;
@@ -278,8 +279,13 @@ class capa {
 						$this->pc->{$vac}->teamNominalList->{$nc}->prenom = $value->prenom;
 						$this->pc->{$vac}->teamNominalList->{$nc}->nomComplet = $nc;
 						$this->pc->{$vac}->teamNominalList->{$nc}->role = $rolelist;
+						$this->pc->{$vac}->teamNominalList->{$nc}->fonction = "PC";
 						array_push($this->pc->{$vac}->teamNominalList->agentsList, $value->nom." ".$value->prenom);
-					}
+					} 
+					if (in_array(82, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "PC-CDS";
+					if (in_array(80, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "PC-ACDS"; 
+					if (in_array(183, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "requalif";
+					if (in_array(10, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "stagiaire";
 				}
 				
 				$aTeamComposition = $this->effectif->{$jour}->{$p}->aTeamComposition;
@@ -287,7 +293,7 @@ class capa {
 				$this->pc->{$vac}->CDS = "";
 				$this->pc->{$vac}->teamToday = new stdClass();
 				foreach ( $aTeamComposition as $key=>$value ) {
-					if ($key !== "lesrenforts") {
+					//if ($key !== "lesrenforts") {
 						foreach ($value as $pers) {
 							$nc = $pers->agent->nom." ".$pers->agent->prenom;
 							$ro = false;
@@ -312,27 +318,29 @@ class capa {
 									$this->pc->{$vac}->teamToday->{$nc}->prenom = $pers->agent->prenom;
 									$this->pc->{$vac}->teamToday->{$nc}->nom = $pers->agent->nom;
 									$this->pc->{$vac}->teamToday->{$nc}->nomComplet = $nc;
-									$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC";
 									$this->pc->{$vac}->teamToday->{$nc}->hasCDSCapability = false; 
 									$this->pc->{$vac}->teamToday->{$nc}->hasACDSCapability = false; 
-									
-									if (isset($this->pc->{$vac}->teamNominalList->{$nc}->role)) {
-										$this->pc->{$vac}->teamToday->{$nc}->role = $this->pc->{$vac}->teamNominalList->{$nc}->role;
+									$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC";
+									$rolelist = null;
+									if (isset($pers->agent->role)) {
+										if (!(is_array($pers->agent->role))) { // soit array vide, soit objet que l'on convertit en array
+											$rolelist = explode(",", $pers->agent->role);
+										} else {
+											$rolelist = $pers->agent->role;
+										}
 									} else {
-										$this->pc->{$vac}->teamToday->{$nc}->role = [];
+										$rolelist = [];
+										if (isset($pers->agent->rolelist)) {
+											foreach($pers->agent->rolelist as $role) {
+												array_push($rolelist, (int) $role->idrole);
+											}
+										} 
 									}
-									
-									if (in_array(82, $this->pc->{$vac}->teamToday->{$nc}->role)) {
-										$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-CDS";
-										$this->pc->{$vac}->teamToday->{$nc}->hasCDSCapability = true; 
+									if (in_array(14, $rolelist) || in_array(37, $rolelist)) { // 14 = détaché 37 = assistant sub
+										$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-DET";
 									}
-									if (in_array(80, $this->pc->{$vac}->teamToday->{$nc}->role)) {
-										$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-ACDS";
-										$this->pc->{$vac}->teamToday->{$nc}->hasACDSCapability = true;
-									} 
 									if ($cds) $this->pc->{$vac}->teamToday->{$nc}->fonction = "CDS";
-									if (in_array(183, $this->pc->{$vac}->teamToday->{$nc}->role)) $this->pc->{$vac}->teamToday->{$nc}->fonction = "requalif";
-									if (in_array(10, $this->pc->{$vac}->teamToday->{$nc}->role)) $this->pc->{$vac}->teamToday->{$nc}->fonction = "stagiaire";
+									
 								} else {
 									foreach($contextmenu_today as $key) {
 										if ($this->effectif->{$this->day}->contextmenutype->{$key}->idagent == $pers->agent->id) { // == car un est un int et l'autre string
@@ -340,17 +348,39 @@ class capa {
 											$this->pc->{$vac}->teamToday->{$nc}->prenom = $pers->agent->prenom;
 											$this->pc->{$vac}->teamToday->{$nc}->nom = $pers->agent->nom;
 											$this->pc->{$vac}->teamToday->{$nc}->nomComplet = $nc;
-											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC";
 											$this->pc->{$vac}->teamToday->{$nc}->hasCDSCapability = false; 
 											$this->pc->{$vac}->teamToday->{$nc}->hasACDSCapability = false;
+											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC";
+											$rolelist = null;
+											if (isset($pers->agent->role)) {
+												if (!(is_array($pers->agent->role))) { // soit array vide, soit objet que l'on convertit en array
+													$rolelist = explode(",", $pers->agent->role);
+												} else {
+													$rolelist = $pers->agent->role;
+												}
+											} else {
+												$rolelist = [];
+												if (isset($pers->agent->rolelist)) {
+													foreach($pers->agent->rolelist as $role) {
+														array_push($rolelist, (int) $role->idrole);
+													}
+												} 
+											}
+											if (in_array(14, $rolelist) || in_array(37, $rolelist)) { // 14 = détaché 37 = assistant sub
+												$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-DET";
+											}
 										}
 									}
 								}
 							}
 						}
-					}
+					//}
 				}
-
+				/*
+				echo "<pre>";
+				var_dump($this->pc->{$vac}->teamToday);
+				echo "</pre>";
+				*/
 				//	Recyclage en équipes
 				$this->pc->{$vac}->renfortAgent = new stdClass();
 				if (property_exists($aTeamComposition, "lesrenforts") === false) {
@@ -359,12 +389,13 @@ class capa {
 					$this->pc->{$vac}->renfort = count(array_keys(get_object_vars($aTeamComposition->lesrenforts)));
 					$nomComplet ="";
 					foreach ($aTeamComposition->lesrenforts as $renf) {
-						$nomComplet = $renf->agent->nomComplet;
+						$nomComplet = $renf->agent->nom." ".$renf->agent->prenom;
 						$this->pc->{$vac}->renfortAgent->{$nomComplet} = new stdClass();
 						$this->pc->{$vac}->renfortAgent->{$nomComplet}->nom = $renf->agent->nom;
 						$this->pc->{$vac}->renfortAgent->{$nomComplet}->prenom = $renf->agent->prenom;
 						$this->pc->{$vac}->renfortAgent->{$nomComplet}->nomComplet = $nomComplet;
-						$pc = "PC-DET";
+						//$pc = $this->pc->{$vac}->teamNominalList->{$nc}->fonction;
+						$pc = $this->pc->{$vac}->teamToday->{$nomComplet}->fonction;
 						if (is_array($renf->contextmenuType)) {
 							// Recyclage classique
 						} else {
@@ -390,10 +421,12 @@ class capa {
 
 				$this->pc->{$vac}->RPL = new stdClass();
 				if (isset($teamData->autre_agent)) {
+					// Array des nom complet (NOM Prenom)
+					$tab_teamToday = array_keys(get_object_vars($this->pc->{$vac}->teamToday));
 					foreach ($teamData->autre_agent as $nom=>$html_value) { // nom du remplaçant
+						// Si pas NOM Prenom, ie que le NOM alors on le transforme en NOM Prenom
 						if (str_contains($nom, " ") === false) {
 							//$nom = explode(" ", $nom)[0];
-							$tab_teamToday = array_keys(get_object_vars($this->pc->{$vac}->teamToday));
 							foreach($tab_teamToday as $nom_comp) {
 								if (str_contains($nom_comp, $nom)) $nom = $nom_comp;
 							}
@@ -403,10 +436,16 @@ class capa {
 						$remplace = explode("<", $h)[0]; // nom du remplacé
 						
 						foreach ($this->pc->{$vac}->teamNominalList->agentsList as $ncomp_agent) { // pour trouver agent remplacé
-							$n_agent = explode(" ", $ncomp_agent)[0]; // nom uniquement
-							if (str_contains($ncomp_agent, $remplace)) {
-								$this->pc->{$vac}->RPL->{$nom} = $ncomp_agent;
-							} 
+							if (str_contains($remplace, " ")) {
+								if (str_contains($ncomp_agent, $remplace)) {
+									$this->pc->{$vac}->RPL->{$nom} = $remplace;
+								} 
+							} else {
+								$n_agent = explode(" ", $ncomp_agent)[0]; // nom uniquement
+								if (str_contains($ncomp_agent, $remplace)) {
+									$this->pc->{$vac}->RPL->{$nom} = $ncomp_agent;
+								} 
+							}
 						}
 					}
 				}
