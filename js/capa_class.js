@@ -651,9 +651,11 @@ class feuille_capa extends capa {
 		for (let [nom, obj] of Object.entries(this.pc_vac[vac]["teamToday"])) {
 			personnel.push([nom, obj.fonction]);
 		}
+		/*
 		for (let [nom, obj] of Object.entries(this.pc_vac[vac]["renfortAgent"])) {
 			personnel.push([nom, obj.fonction]);
 		}
+			*/
 		//console.log("VAC :");
 		//console.log(personnel);
 	}
