@@ -256,6 +256,8 @@ class capa {
 				$userList = $this->effectif->{$jour}->{$p}->userList;
 				$this->pc->{$vac}->teamNominalList = new stdClass();
 				$this->pc->{$vac}->teamNominalList->agentsList = [];
+				$this->pc->{$vac}->grevistes = [];
+				$this->pc->{$vac}->non_grevistes = [];
 				
 				foreach ( $userList as $idagent=>$value ) {
 					// parfois role n'existe pas => utilisation de rolelist
