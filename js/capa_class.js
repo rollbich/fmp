@@ -650,6 +650,7 @@ class feuille_capa extends capa {
 	add_travailleurs(vac, personnel) {
 		for (let [nom, obj] of Object.entries(this.pc_vac[vac]["teamToday"])) {
 			personnel.push([nom, obj.fonction]);
+			this.pc_vac[vac]["non_grevistes"].push(nom);
 		}
 		/*
 		for (let [nom, obj] of Object.entries(this.pc_vac[vac]["renfortAgent"])) {
@@ -807,6 +808,124 @@ class feuille_capa extends capa {
 		counts.push([index_ini, 95, pcs[95][ind]]);
 
 		return counts;
+	}
+
+	/* --------------------------------------------------------------------------------------------------
+		Tag grève
+	-------------------------------------------------------------------------------------------------- */
+	imprimer(titre, vac) {
+		var zone = document.querySelector(`.table_container[data-vac=${vac}]`).innerHTML;
+		var fen = window.open("", "", "height=500, width=600,toolbar=0, menubar=0, scrollbars=1, resizable=1,status=0, location=0, left=10, top=10");
+		
+		let doc = `<html>
+					 <head>
+					 <meta charset="UTF-8">
+					 <meta name="viewport" content="width=device-width">
+					 <title>${titre}</title>    
+					 <link rel="stylesheet" href="../css/bulma.css">
+					 <link rel="stylesheet" type="text/css" href="../css/style.css" /> 
+					 <link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
+					 </head>
+					 <body>
+					 <table class="table_greve">
+						<caption>Présents ${vac}</caption>
+						<thead>
+							<tr><th>Nom</th></tr>
+						</thead>
+						<tbody>`;
+							this.pc_vac[vac]["non_grevistes"].forEach( nom => {
+								doc += `<tr><td>${nom}</td><tr>`;
+							})
+						doc += `	
+						</tbody>
+					</table>
+					<table class="table_greve">
+						<caption>Grévistes ${vac}</caption>
+						<thead>
+							<tr><th>Nom</th></tr>
+						</thead>
+						<tbody>`;
+							this.pc_vac[vac]["grevistes"].forEach( nom => {
+								doc += `<tr><td>${nom}</td><tr>`;
+							})
+						doc += `	
+						</tbody>
+					</table>
+					</body>
+					</html>`;
+		fen.document.write(doc);
+	 
+		//fen.document.title = titre;
+		//fen.document.body.innerHTML += `<h1>${titre}</h1>${zone} `;
+	 
+		//fen.window.print();
+		//fen.window.close();
+		return true;
+	}
+
+	show_tab_personnels(containerId) {
+		let ih = "";
+		this.workingVacs.forEach(vac => {
+			ih += `${this.add_pers_greve(vac)}`;
+		})
+		$(containerId).innerHTML = ih;
+
+		const input_elems = document.querySelectorAll('.table_greve input');
+		input_elems.forEach( checkbox => {
+			checkbox.addEventListener('change', (e) => {
+				if (checkbox.checked) {
+					this.pc_vac[checkbox.dataset.vac]["grevistes"].push(checkbox.dataset.nom);
+				} else {
+					const index = this.pc_vac[checkbox.dataset.vac]["grevistes"].indexOf(checkbox.dataset.nom);
+					this.pc_vac[checkbox.dataset.vac]["grevistes"].splice(index, 1);
+				}
+			});
+			
+		})
+
+		const extract_buttons = document.querySelectorAll('button[data-vac]');
+		console.log(extract_buttons);
+		extract_buttons.forEach ( bouton => {
+			bouton.addEventListener('click', (e) => {
+				const vac = bouton.dataset.vac;
+				this.imprimer(`Extract ${vac}`, vac);
+			});
+		})
+	}
+
+	add_pers_greve (vac) {
+		let res = `
+		<div class="table_container" data-vac=${vac}>
+		<table class="table_greve">
+			<caption>${vac}<button class='button_extract' data-vac='${vac}'>Extract</button></caption>
+			<thead>
+				<tr><th>Nom</th><th>Type</th><th>Requis<th>Gréviste</th></tr>
+			</thead>
+			<tbody>`;
+		const arr = [];
+		this.add_travailleurs(vac, arr);
+		this.add_RO(vac, arr);
+		this.add_stage(vac, arr);
+		this.add_conge(vac, arr);
+		const personnel = this.tri_equipe(arr);
+		const requis = [];
+		this.pc_vac[vac]["requis"].forEach(obj => {
+			requis.push(obj.nom+" "+obj.prenom);
+		})
+		// personnel : [ [nom, fonction], [...]]
+		for (const p of personnel) {
+			const nom = p[0];
+			const fonction = p[1];
+			let cl = `type${fonction}`, cl_previous;
+			if (fonction === "CDS") { cl_previous = 'surligne_cds'; cl += ' surligne_cds'; }
+			if (fonction.includes("PC") || fonction.includes("RD")) { cl_previous = 'pc_color'; cl += ' pc_color'; }
+			if (fonction === "stage" || fonction === "conge") { cl_previous = 'off_color'; cl += ' off_color'; }
+			res += `<tr data-nom='${nom}' data-vac='${vac}'><td class='${cl_previous}' data-nom='${nom}' data-vac='${vac}'>${nom}</td><td class='${cl}'>${fonction}</td>`;
+			if (requis.includes(nom)) res += `<td>x</td>`; else res += "<td></td>";
+			if (fonction === "CDS" || fonction === "conge") res += `<td>-</td>`; else res += `<td><input type="checkbox" data-nom='${nom}' data-vac=${vac}></td></tr>`;
+		}
+		res += `</tbody></table></div>`;
+		return res;
 	}
 }
 
