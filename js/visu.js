@@ -1,5 +1,7 @@
 class visu {
 
+    // Nécessite le fichier TV_count-h20-occ.json
+
     /*  -------------------------------------------------------------
         @param {string} containerId - Id du conteneur
             @param {string} day - "yyyy-mm-dd"
@@ -52,7 +54,7 @@ class visu {
     }
 
     async show_tvs() {
-        const url_tvs = "../b2b/TV_count.json";
+        const url_tvs = "../b2b/TV_count-h20-occ.json";
         const liste_tvs =  await loadJson(url_tvs);
         const tv_zone = this.zone === "AE" ? "TV-EST" : "TV-OUEST";
         let tvs = liste_tvs[tv_zone];
