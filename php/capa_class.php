@@ -258,6 +258,7 @@ class capa {
 				$this->pc->{$vac}->teamNominalList->agentsList = [];
 				$this->pc->{$vac}->grevistes = [];
 				$this->pc->{$vac}->non_grevistes = [];
+				$this->pc->{$vac}->stagiaires = [];
 				
 				foreach ( $userList as $idagent=>$value ) {
 					// parfois role n'existe pas => utilisation de rolelist
@@ -287,7 +288,10 @@ class capa {
 					if (in_array(82, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "PC-CDS";
 					if (in_array(80, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "PC-ACDS"; 
 					if (in_array(183, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "requalif";
-					if (in_array(10, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "stagiaire";
+					if (in_array(10, $rolelist)) {
+						$this->pc->{$vac}->teamNominalList->{$nc}->fonction = "stagiaire";
+						array_push($this->pc->{$vac}->stagiaires, $nc);
+					}
 				}
 				
 				$aTeamComposition = $this->effectif->{$jour}->{$p}->aTeamComposition;
@@ -479,6 +483,7 @@ class capa {
 					foreach($arr_conge as $nom) {
 						if (!str_contains($nom, " ")) {
 							foreach ($this->pc->{$vac}->teamNominalList->agentsList as $ncomp_agent) { // pour trouver agent remplacé
+								// Attention problème avec les nom comprtant des espaces : ex : LE NEST ou BRUNEAU DE LA SALLE
 								$n_agent = explode(" ", $ncomp_agent)[0]; // nom uniquement
 								$p_agent = explode(" ", $ncomp_agent)[1]; // nom uniquement
 								if (str_contains($ncomp_agent, $nom)) {
