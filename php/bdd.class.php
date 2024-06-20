@@ -318,12 +318,14 @@ class bdd_tds {
         $stmt = Mysql::getInstance()->prepare($req);
         $stmt->execute();
         $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $col = array_column($resultat, 'debut');
+        array_multisort($col, SORT_ASC, $resultat);
         
         $arr = [];
         $obj = new stdClass();
         foreach($resultat as $value) {
-            //$prop = substr($value["Renfort"], 0, -5); // pour enlever -2023
-            $obj->{$value["id"]} = $value;
+            $obj->{$value["debut"]} = $value;
             array_push($arr, $obj);
         }
         return $obj;
