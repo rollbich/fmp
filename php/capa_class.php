@@ -124,6 +124,56 @@ class capa {
 		return $clean_vacs;
 	}
 
+	/* --------------------------------------------------------------------
+        Calcule les équipes qui travaillent et leur vac sans utiliser OLAF
+			2021-01-13 :  13 janv 2021, equipe 9 en JX
+            @returns {object} { "J1": 5, "vac": n°eq ... }
+    ----------------------------------------------------------------------- */
+    public function get_vac_eq () {
+		$dep = new DateTime('2021-01-13');
+        $eq_dep = 9;
+        $ecartj = $dep->diff(new DateTime($this->day))->days;
+        $tab = new stdClass();
+        for ($eq=1;$eq<13;$eq++) {
+            $debvac = ($ecartj - $eq + $eq_dep) % 12;
+			$z = $this->cycle[$debvac];
+            if ($z !== "" && $z !== "N") {
+				$tab->$z = $eq;
+			}
+            if ($z === "N") {
+                $tab->$z = $eq;
+                $eqN1 = $eq === 1 ? 12 : $eq - 1; // equipe de nuit de la veille
+                $tab->{'N-1'} = $eqN1; 
+            }
+        }
+        return $tab;
+    }
+
+	/* -----------------------------------------------------------------
+        Récupère les équipes qui travaillent depuis OLAF avec le 'N-1'
+            @returns {object} { "J1": 5, "vac": n°eq ... }
+    -------------------------------------------------------------------- */
+    public function get_vac_eq_olaf () {
+		$tab = new stdClass();
+        $keys = array_keys(get_object_vars($this->effectif->{$this->day}));
+		foreach($keys as $eq) {
+			// si "-E" ou "-W" est dans la chaine
+			if(strpos($eq, "-E") !== false || strpos($eq, "-W") !== false){
+				$numero = (int) explode("-", $eq)[0];
+				// 2è test, on vérifie si c'est un nombre
+				if (is_numeric($numero)) {
+					$vac = $this->effectif->{$this->day}->{$eq}->vacation->label;
+					$tab->{$vac} = $numero;
+					if ($vac === "N") {
+						$eqN1 = $numero === 1 ? 12 : $numero - 1; // equipe de nuit de la veille
+						$tab->{'N-1'} = $eqN1;
+					}
+				}
+			}
+		}
+        return $tab;
+    }
+
     /* ----------------------------------------------------------------------------------------------------------------
         *Calcul du nbre de PC total par vac
         *Calcul du nbre de PC total dispo par pas de 15mn à la date choisie
@@ -178,6 +228,17 @@ class capa {
 	/*  -------------------------------------------------------------------
 				Gestion TDS Supp
 				Dans OLAF, Renfort contient les tours supplémentaires
+				contextmenutype = tagged people
+				contextmenutype: {
+					"xxxxxx": {
+						"id_licence": "4000889",
+						"idagent": "4000889",
+						"label": "JX",
+						"prenom": "Coco",
+						"nom": "LAPIN"
+					},
+					...
+				}
 		------------------------------------------------------------------- */
 		$Renfort = $this->effectif->{$this->day}->Renfort;
 		// Renfort hors vacation d'équipe
@@ -202,25 +263,11 @@ class capa {
 				}
 				$RD->{$label}->agent->{$agent} = $agent_type;
 				$RD->{$label}->nombre++;
-				
 			}
 		}
 		
 		$tds_suppl = new stdClass();
 
-		/*	-----------------------------------------------------------------------
-					Get contextmenutype = tagged people
-				contextmenutype: {
-					"xxxxxx": {
-						"id_licence": "4000889",
-						"idagent": "4000889",
-						"label": "JX",
-						"prenom": "Coco",
-						"nom": "LAPIN"
-					},
-					...
-				}
-			----------------------------------------------------------------------- */
 		if (is_array($this->effectif->{$this->day}->contextmenutype)) {
 			$contextmenu_today = [];
 		} else {
@@ -234,13 +281,13 @@ class capa {
 
 
 		foreach ($this->tab_vac_eq as $vac => $value) {
-			$p = $value."-".$this->zone_olaf;
+			$equipe_zone = $value."-".$this->zone_olaf;
 			$jour = $this->day;
 			if ($vac === "N-1") $jour = $this->yesterday;
-			// lorsque la colonne JX d'OLAF n'existe pas, $p n'existe pas
-			if (isset($this->effectif->{$jour}->{$p})) {
+			// lorsque la colonne JX d'OLAF n'existe pas, $equipe_zone n'existe pas
+			if (isset($this->effectif->{$jour}->{$equipe_zone})) {
 				// Le RO induit apparait si detachés > 1 et plus que 1 n'est pas Expert Ops, ACDS ou Assistant sub
-				$this->pc->{$vac}->ROinduit = (int) $this->effectif->{$jour}->{$p}->teamReserve->roInduction;
+				$this->pc->{$vac}->ROinduit = (int) $this->effectif->{$jour}->{$equipe_zone}->teamReserve->roInduction;
 				if ($vac === "N-1") {
 					$this->pc->{$vac}->nbcds = (int) $this->tour_local->N->nb_cds;
 					$this->pc->{$vac}->nbcds_greve = (int) $this->tour_local_greve->N->nb_cds;
@@ -248,12 +295,12 @@ class capa {
 					$this->pc->{$vac}->nbcds = (int) $this->tour_local->{$vac}->nb_cds;
 					$this->pc->{$vac}->nbcds_greve = (int) $this->tour_local_greve->{$vac}->nb_cds;
 				}
-				$this->pc->{$vac}->nbpc = (int) $this->effectif->{$jour}->{$p}->teamReserve->teamQuantity - (int) $this->pc->{$vac}->nbcds; 
-				$this->pc->{$vac}->BV = (int) $this->effectif->{$jour}->{$p}->teamReserve->BV;
+				
+				$this->pc->{$vac}->BV = (int) $this->effectif->{$jour}->{$equipe_zone}->teamReserve->BV;
 				$this->pc->{$vac}->RO = 0;
-				//$this->pc->{$vac}->RO = (int) $this->effectif->{$jour}->{$p}->teamReserve->roQuantity;
-				$this->pc->{$vac}->equipe = (int) explode("-", $p)[0];
-				$userList = $this->effectif->{$jour}->{$p}->userList;
+				//$this->pc->{$vac}->RO = (int) $this->effectif->{$jour}->{$equipe_zone}->teamReserve->roQuantity;
+				$this->pc->{$vac}->equipe = (int) explode("-", $equipe_zone)[0];
+				$userList = $this->effectif->{$jour}->{$equipe_zone}->userList;
 				$this->pc->{$vac}->teamNominalList = new stdClass();
 				$this->pc->{$vac}->teamNominalList->agentsList = [];
 				$this->pc->{$vac}->grevistes = [];
@@ -288,105 +335,167 @@ class capa {
 					if (in_array(82, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "PC-CDS";
 					if (in_array(80, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "PC-ACDS"; 
 					if (in_array(183, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "requalif";
-					if (in_array(10, $rolelist)) {
-						$this->pc->{$vac}->teamNominalList->{$nc}->fonction = "stagiaire";
-						array_push($this->pc->{$vac}->stagiaires, $nc);
-					}
+					if (in_array(10, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "stagiaire";
 				}
 				
-				$aTeamComposition = $this->effectif->{$jour}->{$p}->aTeamComposition;
+				$aTeamComposition = $this->effectif->{$jour}->{$equipe_zone}->aTeamComposition;
 				$this->pc->{$vac}->RoList = [];
 				$this->pc->{$vac}->CDS = "";
+
 				$this->pc->{$vac}->teamToday = new stdClass();
+
 				foreach ( $aTeamComposition as $key=>$value ) {
-					//if ($key !== "lesrenforts") {
-						foreach ($value as $pers) {
-							$nc = $pers->agent->nom." ".$pers->agent->prenom;
-							$ro = false;
-							$cds = false;
-							if (is_array($pers->contextmenuType) === false) { // alors c'est un objet et non un array vide
-								if ($pers->contextmenuType->type === "reserve_operationnelle") {
-									$ro = true;
-								}
-								if ($pers->contextmenuType->type === "fonction" && $pers->contextmenuType->label === "CDS") {
-									$this->pc->{$vac}->CDS = $nc;
-									$cds = true;
-								}
+					
+					foreach ($value as $pers) {
+						$nc = $pers->agent->nom." ".$pers->agent->prenom;
+						$ro = false;
+						$cds = false;
+						if (is_array($pers->contextmenuType) === false) { // alors c'est un objet et non un array vide
+							if ($pers->contextmenuType->type === "reserve_operationnelle") {
+								$ro = true;
 							}
-							if ($ro) {
-								array_push($this->pc->{$vac}->RoList, $nc);
-								$this->pc->{$vac}->RO += 1;
-							} 
-							if ($ro === false) {
-								//echo "$vac<br>";
-								if ($vac !== "JX") {
-									$this->pc->{$vac}->teamToday->{$nc} = new stdClass();
-									$this->pc->{$vac}->teamToday->{$nc}->prenom = $pers->agent->prenom;
-									$this->pc->{$vac}->teamToday->{$nc}->nom = $pers->agent->nom;
-									$this->pc->{$vac}->teamToday->{$nc}->nomComplet = $nc;
-									$this->pc->{$vac}->teamToday->{$nc}->hasCDSCapability = false; 
-									$this->pc->{$vac}->teamToday->{$nc}->hasACDSCapability = false; 
-									$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC";
-									$rolelist = null;
-									if (isset($pers->agent->role)) {
-										if (!(is_array($pers->agent->role))) { // soit array vide, soit objet que l'on convertit en array
-											$rolelist = explode(",", $pers->agent->role);
-										} else {
-											$rolelist = $pers->agent->role;
-										}
+							if ($pers->contextmenuType->type === "fonction" && $pers->contextmenuType->label === "CDS") {
+								$this->pc->{$vac}->CDS = $nc;
+								$cds = true;
+							}
+						}
+						if ($ro) {
+							array_push($this->pc->{$vac}->RoList, $nc);
+							$this->pc->{$vac}->RO += 1;
+						} 
+						if ($ro === false) {
+							if ($vac !== "JX") {
+								$this->pc->{$vac}->teamToday->{$nc} = new stdClass();
+								$this->pc->{$vac}->teamToday->{$nc}->prenom = $pers->agent->prenom;
+								$this->pc->{$vac}->teamToday->{$nc}->nom = $pers->agent->nom;
+								$this->pc->{$vac}->teamToday->{$nc}->nomComplet = $nc;
+								$this->pc->{$vac}->teamToday->{$nc}->hasCDSCapability = false; 
+								$this->pc->{$vac}->teamToday->{$nc}->hasACDSCapability = false; 
+								$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC";
+								$rolelist = null;
+								if (isset($pers->agent->role)) {
+									if (!(is_array($pers->agent->role))) { // soit array vide, soit objet que l'on convertit en array
+										$rolelist = explode(",", $pers->agent->role);
 									} else {
-										$rolelist = [];
-										if (isset($pers->agent->rolelist)) {
-											foreach($pers->agent->rolelist as $role) {
-												array_push($rolelist, (int) $role->idrole);
-											}
-										} 
+										$rolelist = $pers->agent->role;
 									}
-									if (in_array(14, $rolelist) || in_array(37, $rolelist)) { // 14 = détaché 37 = assistant sub
-										$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-DET";
-									}
-									if ($cds) $this->pc->{$vac}->teamToday->{$nc}->fonction = "CDS";
-									
 								} else {
-									foreach($contextmenu_today as $key) {
-										if ($this->effectif->{$this->day}->contextmenutype->{$key}->idagent == $pers->agent->id) { // == car un est un int et l'autre string
-											$this->pc->{$vac}->teamToday->{$nc} = new stdClass();
-											$this->pc->{$vac}->teamToday->{$nc}->prenom = $pers->agent->prenom;
-											$this->pc->{$vac}->teamToday->{$nc}->nom = $pers->agent->nom;
-											$this->pc->{$vac}->teamToday->{$nc}->nomComplet = $nc;
-											$this->pc->{$vac}->teamToday->{$nc}->hasCDSCapability = false; 
-											$this->pc->{$vac}->teamToday->{$nc}->hasACDSCapability = false;
-											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC";
-											$rolelist = null;
-											if (isset($pers->agent->role)) {
-												if (!(is_array($pers->agent->role))) { // soit array vide, soit objet que l'on convertit en array
-													$rolelist = explode(",", $pers->agent->role);
-												} else {
-													$rolelist = $pers->agent->role;
-												}
+									$rolelist = [];
+									if (isset($pers->agent->rolelist)) {
+										foreach($pers->agent->rolelist as $role) {
+											array_push($rolelist, (int) $role->idrole);
+										}
+									} 
+								}
+								if (in_array(14, $rolelist) || in_array(37, $rolelist)) { // 14 = détaché 37 = assistant sub
+									$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-DET";
+								}
+								if (in_array(80, $rolelist)) { // 80 = acds
+									$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-ACDS";
+								}
+								if (in_array(82, $rolelist)) { // 82 = cds
+									$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-CDS";
+								}
+								if (in_array(10, $rolelist)) { // 10 = stagiaire
+									$this->pc->{$vac}->teamToday->{$nc}->fonction = "stagiaire";
+								}
+								if ($cds) $this->pc->{$vac}->teamToday->{$nc}->fonction = "CDS";
+								
+							} else {
+								// on récupère les JX travaillant (ils sont taggués mais qq'un peut s'inscrire sans tag pour l'instant)
+								foreach($contextmenu_today as $key) {
+									if ($this->effectif->{$this->day}->contextmenutype->{$key}->idagent == $pers->agent->id) { // == car un est un int et l'autre string
+										$this->pc->{$vac}->teamToday->{$nc} = new stdClass();
+										$this->pc->{$vac}->teamToday->{$nc}->prenom = $pers->agent->prenom;
+										$this->pc->{$vac}->teamToday->{$nc}->nom = $pers->agent->nom;
+										$this->pc->{$vac}->teamToday->{$nc}->nomComplet = $nc;
+										$this->pc->{$vac}->teamToday->{$nc}->hasCDSCapability = false; 
+										$this->pc->{$vac}->teamToday->{$nc}->hasACDSCapability = false;
+										$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC";
+										$rolelist = null;
+										if (isset($pers->agent->role)) {
+											if (!(is_array($pers->agent->role))) { // soit array vide, soit objet que l'on convertit en array
+												$rolelist = explode(",", $pers->agent->role);
 											} else {
-												$rolelist = [];
-												if (isset($pers->agent->rolelist)) {
-													foreach($pers->agent->rolelist as $role) {
-														array_push($rolelist, (int) $role->idrole);
-													}
-												} 
+												$rolelist = $pers->agent->role;
 											}
-											if (in_array(14, $rolelist) || in_array(37, $rolelist)) { // 14 = détaché 37 = assistant sub
-												$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-DET";
+										} else {
+											$rolelist = [];
+											if (isset($pers->agent->rolelist)) {
+												foreach($pers->agent->rolelist as $role) {
+													array_push($rolelist, (int) $role->idrole);
+												}
+											} 
+										}
+										if (in_array(14, $rolelist) || in_array(37, $rolelist)) { // 14 = détaché 37 = assistant sub
+											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-DET";
+										}
+										if (in_array(80, $rolelist)) { // 80 = acds
+											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-ACDS";
+										}
+										if (in_array(82, $rolelist)) { // 82 = cds
+											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-CDS";
+										}
+									}
+								}
+								// on ajoute les renforts non taggué de JX car ils ne sont pas dans le contextMenuType
+								// si le renfort est taggué, il existe déjà mais pas de pb, cela va l'écraser
+								if (isset($aTeamComposition->lesrenforts)) {
+									foreach ($aTeamComposition->lesrenforts as $renf) {
+										//var_dump($renf);
+										$nc = $renf->agent->nom." ".$renf->agent->prenom;
+										$this->pc->{$vac}->teamToday->{$nc} = new stdClass();
+										$this->pc->{$vac}->teamToday->{$nc}->prenom = $renf->agent->prenom;
+										$this->pc->{$vac}->teamToday->{$nc}->nom = $renf->agent->nom;
+										$this->pc->{$vac}->teamToday->{$nc}->nomComplet = $nc;
+										$this->pc->{$vac}->teamToday->{$nc}->hasCDSCapability = false; 
+										$this->pc->{$vac}->teamToday->{$nc}->hasACDSCapability = false;
+										$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC";
+										$rolelist = null;
+										if (isset($renf->agent->role)) {
+											if (!(is_array($renf->agent->role))) { // soit array vide, soit objet que l'on convertit en array
+												$rolelist = explode(",", $renf->agent->role);
+											} else {
+												$rolelist = $renf->agent->role;
 											}
+										} else {
+											$rolelist = [];
+											if (isset($renf->agent->rolelist)) {
+												foreach($renf->agent->rolelist as $role) {
+													array_push($rolelist, (int) $role->idrole);
+												}
+											} 
+										}
+										if (in_array(14, $rolelist) || in_array(37, $rolelist)) { // 14 = détaché 37 = assistant sub
+											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-DET";
+										}
+										if (in_array(80, $rolelist)) { // 80 = acds
+											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-ACDS";
+										}
+										if (in_array(82, $rolelist)) { // 82 = cds
+											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-CDS";
 										}
 									}
 								}
 							}
 						}
-					//}
+					}
 				}
-				/*
-				echo "<pre>";
-				var_dump($this->pc->{$vac}->teamToday);
-				echo "</pre>";
-				*/
+
+				/*  --------------------------------------------------------------------------------------------------------------------------
+						Comptage des présents
+						On n'utilise plus la clé teamQuantity de teamReserve car lorsque qq'un s'inscrit en JX sans tag, il n'est pas compté
+					-------------------------------------------------------------------------------------------------------------------------- */
+				$this->pc->{$vac}->nbpc = count(array_keys(get_object_vars($this->pc->{$vac}->teamToday))) - $this->pc->{$vac}->nbcds;
+				// on enlève les stagiaires présents du comptage
+				$nb_stagiaire_presents = 0;
+				foreach(array_keys(get_object_vars($this->pc->{$vac}->teamToday)) as $cle_nom) {
+					if ($this->pc->{$vac}->teamToday->$cle_nom->fonction === "stagiaire") {
+						$this->pc->{$vac}->nbpc--;
+						array_push($this->pc->{$vac}->stagiaires, $cle_nom);
+					}
+				}
+
 				//	Recyclage en équipes
 				$this->pc->{$vac}->renfortAgent = new stdClass();
 				if (property_exists($aTeamComposition, "lesrenforts") === false) {
@@ -396,32 +505,35 @@ class capa {
 					$nomComplet ="";
 					foreach ($aTeamComposition->lesrenforts as $renf) {
 						$nomComplet = $renf->agent->nom." ".$renf->agent->prenom;
-						$pc = $this->pc->{$vac}->teamToday->{$nomComplet}->fonction;
-						// parfois RH force un PC RPL dans les renforts, dans ce cas on laisse la fonction "PC" intacte et on ne le met pas dans renfortAgent
-						if ($pc !== "PC") {
-						$this->pc->{$vac}->renfortAgent->{$nomComplet} = new stdClass();
-						$this->pc->{$vac}->renfortAgent->{$nomComplet}->nom = $renf->agent->nom;
-						$this->pc->{$vac}->renfortAgent->{$nomComplet}->prenom = $renf->agent->prenom;
-						$this->pc->{$vac}->renfortAgent->{$nomComplet}->nomComplet = $nomComplet;
-						//$pc = $this->pc->{$vac}->teamNominalList->{$nc}->fonction;
-										
-						if (is_array($renf->contextmenuType)) {
-							// Recyclage classique
+						if (isset($this->pc->{$vac}->teamToday->{$nomComplet})) {
+							$pc = $this->pc->{$vac}->teamToday->{$nomComplet}->fonction;
+							// parfois RH force un PC RPL dans les renforts, dans ce cas on laisse la fonction "PC" intacte et on ne le met pas dans renfortAgent
+							if ($pc !== "PC") {
+							$this->pc->{$vac}->renfortAgent->{$nomComplet} = new stdClass();
+							$this->pc->{$vac}->renfortAgent->{$nomComplet}->nom = $renf->agent->nom;
+							$this->pc->{$vac}->renfortAgent->{$nomComplet}->prenom = $renf->agent->prenom;
+							$this->pc->{$vac}->renfortAgent->{$nomComplet}->nomComplet = $nomComplet;
+							$pc = $this->pc->{$vac}->teamToday->{$nc}->fonction;
+											
+							if (is_array($renf->contextmenuType)) {
+								// Recyclage classique
+							} else {
+								// recyclage RD
+								$label_RD = strtolower($renf->contextmenuType->label);
+								if (str_contains($label_RD, "bleu")) $pc = "RD bleu";
+								if (str_contains($label_RD, "jaune")) $pc = "RD jaune";
+								if (str_contains($label_RD, "vert")) $pc = "RD vert";
+								if (str_contains($label_RD, "rouge")) $pc = "RD rouge";
+							}
+							$this->pc->{$vac}->renfortAgent->{$nomComplet}->fonction = $pc;
+							}
 						} else {
-							// recyclage RD
-							$label_RD = strtolower($renf->contextmenuType->label);
-							if (str_contains($label_RD, "bleu")) $pc = "RD bleu";
-							if (str_contains($label_RD, "jaune")) $pc = "RD jaune";
-							if (str_contains($label_RD, "vert")) $pc = "RD vert";
-							if (str_contains($label_RD, "rouge")) $pc = "RD rouge";
+							//echo "Le $this->day, en $vac teamToday->$nomComplet est null<br>";
 						}
-						$this->pc->{$vac}->renfortAgent->{$nomComplet}->fonction = $pc;
-						}
-						
 					}
 				}
 
-				$teamData = $this->effectif->{$jour}->{$p}->teamData;
+				$teamData = $this->effectif->{$jour}->{$equipe_zone}->teamData;
 
 				/*
 				autre_agent: {
@@ -429,35 +541,30 @@ class capa {
 					"FREZOULS": "<tr ki=4001030 class='conge'>\n\t\t<td class=w150p>BEAUDONNET</td>\n    <td class=w250p>RPL par &lt;b&gt;FREZOULS&lt;/b&gt;</td>\n    <td class=w250p>\n\t\n\tLe <b>02/07/2023</b>\n    </td>\n</tr>\n"
 				}
 				*/
+				$regex_minuscule = '/[a-z]/';
 
 				$this->pc->{$vac}->RPL = new stdClass();
 				if (isset($teamData->autre_agent)) {
-					// Array des nom complet (NOM Prenom)
-					$tab_teamToday = array_keys(get_object_vars($this->pc->{$vac}->teamToday));
 					foreach ($teamData->autre_agent as $nom=>$html_value) { // nom du remplaçant
-						// Si pas NOM Prenom, ie que le NOM alors on le transforme en NOM Prenom
-						if (str_contains($nom, " ") === false) {
-							//$nom = explode(" ", $nom)[0];
-							foreach($tab_teamToday as $nom_comp) {
-								if (str_contains($nom_comp, $nom)) $nom = $nom_comp;
+						// si pas de minuscule renvoyé par OLAF alors le nom de famille est unique et il faut compléter avec le prénom
+						if (!preg_match($regex_minuscule, $nom)) {
+							foreach (array_keys(get_object_vars($this->pc->{$vac}->teamToday)) as $ncomp_agent) { 
+								if (str_contains($ncomp_agent, $nom)) $nom = $ncomp_agent;
 							}
 						}
 						
 						$h = explode(">", $html_value)[2];
 						$remplace = explode("<", $h)[0]; // nom du remplacé
-						
-						foreach ($this->pc->{$vac}->teamNominalList->agentsList as $ncomp_agent) { // pour trouver agent remplacé
-							if (str_contains($remplace, " ")) {
-								if (str_contains($ncomp_agent, $remplace)) {
-									$this->pc->{$vac}->RPL->{$nom} = $remplace;
-								} 
-							} else {
-								$n_agent = explode(" ", $ncomp_agent)[0]; // nom uniquement
-								if (str_contains($ncomp_agent, $remplace)) {
-									$this->pc->{$vac}->RPL->{$nom} = $ncomp_agent;
-								} 
+						if (!preg_match($regex_minuscule, $remplace)) {
+							foreach ($this->pc->{$vac}->teamNominalList->agentsList as $ncomp_agent) { // pour trouver agent remplacé
+								if ($this->pc->{$vac}->teamNominalList->$ncomp_agent->nom === $remplace) {
+									$remplace = $ncomp_agent;
+								}
 							}
 						}
+							
+						$this->pc->{$vac}->RPL->{$nom} = $remplace;
+								
 					}
 				}
 
@@ -471,26 +578,23 @@ class capa {
 				}
 
 				if (is_array($teamData->stage) === false) { // alors c'est bien un objet sinon array vide
-					//$this->pc->{$vac}->stage = array_map('firstElem', array_keys(get_object_vars($teamData->stage)));
 					$this->pc->{$vac}->stage = array_keys(get_object_vars($teamData->stage));
 				} else {
 					$this->pc->{$vac}->stage = [];
 				}
 				if (is_array($teamData->conge) === false) { // alors c'est bien un objet sinon array vide
-					//$this->pc->{$vac}->conge = array_map('firstElem', array_keys(get_object_vars($teamData->conge)));
 					$cge = [];
 					$arr_conge = array_keys(get_object_vars($teamData->conge));
 					foreach($arr_conge as $nom) {
-						if (!str_contains($nom, " ")) {
+						// si pas de minuscule renvoyé par OLAF alors le nom de famille est unique et il faut compléter avec le prénom
+						if (!preg_match($regex_minuscule, $nom)) {
 							foreach ($this->pc->{$vac}->teamNominalList->agentsList as $ncomp_agent) { // pour trouver agent remplacé
-								// Attention problème avec les nom comprtant des espaces : ex : LE NEST ou BRUNEAU DE LA SALLE
-								$n_agent = explode(" ", $ncomp_agent)[0]; // nom uniquement
-								$p_agent = explode(" ", $ncomp_agent)[1]; // nom uniquement
-								if (str_contains($ncomp_agent, $nom)) {
-									array_push($cge, $n_agent." ".$p_agent);
-								} 
+								if ($this->pc->{$vac}->teamNominalList->$ncomp_agent->nom === $nom) {
+									array_push($cge, $this->pc->{$vac}->teamNominalList->$ncomp_agent->nomComplet);
+								}
 							}
 						} else {
+							// minuscule trouvée dans le nom => le nom est déjà complet
 							array_push($cge, $nom);
 						}
 					}
@@ -510,12 +614,7 @@ class capa {
 						nom: "AUBERT"
 					},...
 				*/
-				/*
-				echo "<pre>";
-				var_dump(get_object_vars($this->effectif->{$this->day}->contextmenutype));
-				var_dump(get_object_vars($this->effectif->{$this->yesterday}->contextmenutype));
-				echo "</pre>";
-				*/
+				
 				// Si c'est un array c'est qu'il n'y a pas de données contextmenutype
 				// normalement, il y a au moins les tags CDS
 				if (is_array($this->effectif->{$this->day}->contextmenutype)) {
@@ -1009,56 +1108,6 @@ class capa {
 		}	
 		return $result;
 	}
-
-    /* ---------------------------------------------------
-        Calcule les équipes qui travaillent et leur vac
-			2021-01-13 :  13 janv 2021, equipe 9 en JX
-            @returns {object} { "J1": 5, "vac": n°eq ... }
-    ---------------------------------------------------- */
-    public function get_vac_eq () {
-		$dep = new DateTime('2021-01-13');
-        $eq_dep = 9;
-        $ecartj = $dep->diff(new DateTime($this->day))->days;
-        $tab = new stdClass();
-        for ($eq=1;$eq<13;$eq++) {
-            $debvac = ($ecartj - $eq + $eq_dep) % 12;
-			$z = $this->cycle[$debvac];
-            if ($z !== "" && $z !== "N") {
-				$tab->$z = $eq;
-			}
-            if ($z === "N") {
-                $tab->$z = $eq;
-                $eqN1 = $eq === 1 ? 12 : $eq - 1; // equipe de nuit de la veille
-                $tab->{'N-1'} = $eqN1; 
-            }
-        }
-        return $tab;
-    }
-
-	/* -----------------------------------------------------------------
-        Récupère les équipes qui travaillent depuis OLAF avec le 'N-1'
-            @returns {object} { "J1": 5, "vac": n°eq ... }
-    -------------------------------------------------------------------- */
-    public function get_vac_eq_olaf () {
-		$tab = new stdClass();
-        $keys = array_keys(get_object_vars($this->effectif->{$this->day}));
-		foreach($keys as $eq) {
-			// si "-E" ou "-W" est dans la chaine
-			if(strpos($eq, "-E") !== false || strpos($eq, "-W") !== false){
-				$numero = (int) explode("-", $eq)[0];
-				// 2è test, on vérifie si c'est un nombre
-				if (is_numeric($numero)) {
-					$vac = $this->effectif->{$this->day}->{$eq}->vacation->label;
-					$tab->{$vac} = $numero;
-					if ($vac === "N") {
-						$eqN1 = $numero === 1 ? 12 : $numero - 1; // equipe de nuit de la veille
-						$tab->{'N-1'} = $eqN1;
-					}
-				}
-			}
-		}
-        return $tab;
-    }
 
 	// objet : passage par référence par défaut
 	private function push_utc($vac, $tour_utc, $greve = false) {
