@@ -1,7 +1,7 @@
 <?php
   session_start();
   require("../php/check_ok.inc.php");
-  if (!(isset($_SESSION['login_bureau'])) || $_SESSION['login_bureau'] === false || !(isset($_SESSION['login_encadrement'])) || $_SESSION['login_encadrement']) header("Location: index.php");
+  if (!(isset($_SESSION['login_encadrement']) && $_SESSION['login_encadrement'] === true)) header("Location: index.php");
 ?>
 <!DOCTYPE html>
 <html>
@@ -82,11 +82,20 @@
 			}
 			}, true);
 			
+			let capa;
             $('bouton_tag_greve').addEventListener('click', async e => {
 				let zone = $('zone').value;
 				let day = $('start').value;
-				const capa = await new feuille_capa("feuille_capa_tour", day, zone);
+				capa = await new feuille_capa("feuille_capa_tour", day, zone);
                 await capa.show_tab_personnels('tag_personnels');
+			});
+
+			$('bouton_extr_grev').addEventListener('click', async e => {
+                capa.imprimer($('start').value,"grevistes");
+			});
+
+			$('bouton_extr_non_grev').addEventListener('click', async e => {
+				capa.imprimer($('start').value,"non_grevistes");
 			});
 
 		});		
@@ -113,12 +122,10 @@
 </div>
 <ul class="menu">
 	<li id="bouton_feuille" class="pointer"><span>Feuille</span></li>
-	<?php
-	if ($_SESSION['login_bureau'] === true || $_SESSION['login_encadrement'] === true) {
-		echo '<li id="bouton_simucapa" class="pointer"><span>Simu</span></li>';
-	}
-	?>
+	<li id="bouton_simucapa" class="pointer"><span>Simu</span></li>
     <li id="bouton_tag_greve" class="pointer"><span>Greve</span></li>
+	<li><button id='bouton_extr_grev' class='button_extract'>Extract Grévistes</button></li>
+	<li><button id='bouton_extr_non_grev' class='button_extract'>Extract Non Grévistes</button></li>
 	<li>
 	<!--<label for="start" class="dates">Date:</label>-->
 	<button id="arrow_left"><</button>

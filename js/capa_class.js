@@ -812,11 +812,11 @@ class feuille_capa extends capa {
 
 	/* --------------------------------------------------------------------------------------------------
 		Tag grève
+		@param type : "grevistes" ou "non_grevistes"
 	-------------------------------------------------------------------------------------------------- */
-	imprimer(titre, vac) {
-		var zone = document.querySelector(`.table_container[data-vac=${vac}]`).innerHTML;
+	imprimer(day, type) {
 		var fen = window.open("", "", "height=500, width=600,toolbar=0, menubar=0, scrollbars=1, resizable=1,status=0, location=0, left=10, top=10");
-		
+		const titre = type.charAt(0).toUpperCase() + type.slice(1);
 		let doc = `<html>
 					 <head>
 					 <meta charset="UTF-8">
@@ -827,30 +827,25 @@ class feuille_capa extends capa {
 					 <link rel="stylesheet" type="text/css" href="../css/style-capa.css" />
 					 </head>
 					 <body>
+					 <h1 class='imprimer'>${titre} - ${day}</h1>
+					 <div style="display: inline-block;">`;
+					 this.workingVacs.forEach(vac => {
+						doc += `<div>
 					 <table class="table_greve">
-						<caption>Présents ${vac}</caption>
+						<caption>${vac}</caption>
 						<thead>
 							<tr><th>Nom</th></tr>
 						</thead>
 						<tbody>`;
-							this.pc_vac[vac]["non_grevistes"].forEach( nom => {
+							this.pc_vac[vac][type].forEach( nom => {
 								doc += `<tr><td>${nom}</td><tr>`;
 							})
 						doc += `	
 						</tbody>
-					</table>
-					<table class="table_greve">
-						<caption>Grévistes ${vac}</caption>
-						<thead>
-							<tr><th>Nom</th></tr>
-						</thead>
-						<tbody>`;
-							this.pc_vac[vac]["grevistes"].forEach( nom => {
-								doc += `<tr><td>${nom}</td><tr>`;
-							})
-						doc += `	
-						</tbody>
-					</table>
+					</table></div>`;
+						})
+					doc += `
+					</div>
 					</body>
 					</html>`;
 		fen.document.write(doc);
@@ -882,22 +877,13 @@ class feuille_capa extends capa {
 			});
 			
 		})
-
-		const extract_buttons = document.querySelectorAll('button[data-vac]');
-		console.log(extract_buttons);
-		extract_buttons.forEach ( bouton => {
-			bouton.addEventListener('click', (e) => {
-				const vac = bouton.dataset.vac;
-				this.imprimer(`Extract ${vac}`, vac);
-			});
-		})
 	}
 
 	add_pers_greve (vac) {
 		let res = `
 		<div class="table_container" data-vac=${vac}>
 		<table class="table_greve">
-			<caption>${vac}<button class='button_extract' data-vac='${vac}'>Extract</button></caption>
+			<caption>${vac}</caption>
 			<thead>
 				<tr><th>Nom</th><th>Type</th><th>Requis<th>Gréviste</th></tr>
 			</thead>
