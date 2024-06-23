@@ -8,21 +8,28 @@ function clean($data) {
 }
   
 $_SESSION['loginOK'] = false;
-$_SESSION['login_bureau'] = false;
 $_SESSION['login_encadrement'] = false;
+$_SESSION['login_bureau'] = false;
+$_SESSION['login_admin'] = false;
   
 if (isset($_POST) && (!empty($_POST['pwd']))) {
 	$pwd = clean($_POST['pwd']);
 	if (password_verify($pwd, $hash_general)) {
 		$_SESSION['loginOK'] = true; 
 	} 
+	if (password_verify($pwd, $hash_encadrement)) {
+		$_SESSION['loginOK'] = true;
+		$_SESSION['login_encadrement'] = true; 
+	}
 	if (password_verify($pwd, $hash_bureau)) {
 		$_SESSION['loginOK'] = true;
 		$_SESSION['login_bureau'] = true; 
 	}
-	if (password_verify($pwd, $hash_encadrement)) {
+	if (password_verify($pwd, $hash_admin)) {
 		$_SESSION['loginOK'] = true;
 		$_SESSION['login_encadrement'] = true; 
+		$_SESSION['login_bureau'] = true;
+		$_SESSION['login_admin'] = true; 
 	}
 }
 ?>
