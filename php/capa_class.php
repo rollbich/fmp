@@ -89,7 +89,6 @@ class capa {
     // $zone : "est" ou "ouest"
     public function __construct(string $day, string $zone, bool $use_bdd = false) {
 		$this->bdd = new bdd_tds($day, $zone);
-		$this->bdd_instr = new bdd_instr();
         $this->day = $day;
         $this->zone = $zone;
 		$this->use_bdd = $use_bdd;
@@ -106,7 +105,7 @@ class capa {
 		$this->saison = $this->bdd->get_current_tds();
 		$this->saison_greve = $this->bdd->get_current_tds(1);
 		$this->tds_supp_local = $this->bdd->get_tds_supp();
-		$this->instr = $this->bdd_instr->get_creneaux_day($this->day, $this->zone);
+		$this->instr = $this->bdd->get_creneaux_day($this->day, $this->zone);
 		$this->repartition = $this->bdd->get_repartition();
 		$this->repartition_greve = $this->bdd->get_repartition("", true);
 		$yesterday = new DateTime($this->day);
