@@ -93,6 +93,7 @@ if ($contentType === "application/json") {
                 break;
             case "save_g":
                 $bdd->save_g($content->zone, $content->day, $content->g);
+                break;
             default: 
                 echo "";
         }
