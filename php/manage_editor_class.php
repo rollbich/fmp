@@ -23,7 +23,7 @@ class editor {
 		$this->zone = $zone;
 		$this->bdd = new bdd_tds("",  $zone);
         $this->cycle = $this->bdd->get_cycle();   // ["JX","J1","J3","S2","","","J2","S1","N","","",""]; 
-		$this->clean_cycle = $this->get_clean_cycle();
+		$this->clean_cycle = $this->bdd->get_clean_cycle();
         $this->init();
     }
 
@@ -46,16 +46,6 @@ class editor {
 		$this->tds_repartition = $this->bdd->get_all_repartition();
 		$this->tds_greve_repartition = $this->bdd->get_all_repartition(true);
 		$this->tds_greve = $this->bdd->get_all_tds(true);
-	}
-
-	// @return ["JX", "J1", "J3", "S2", "J2", "S1", "N"]
-	private function get_clean_cycle() {
-		$clean_vacs = [];
-		$vacs = $this->cycle;
-		foreach ($vacs as $value) {
-			if ($value !== "") array_push($clean_vacs, $value);
-		}
-		return $clean_vacs;
 	}
 
     /* ----------------------------------------------------------------------------------------------------------------

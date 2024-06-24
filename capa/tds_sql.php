@@ -73,6 +73,26 @@ if ($contentType === "application/json") {
             case "set_minutes_ucesa":
                 $bdd->set_minutes_ucesa($content->day, $content->minutes_ucesa);
                 break;
+            case "get_clean_cycle":
+                $bdd->get_clean_cycle($content->zone); // "est" ou "ouest"
+                break;
+            case "get_clean_cycle_json":
+                $bdd->get_clean_cycle_json($content->zone); // "est" ou "ouest"
+                break;
+            case "add":
+                $bdd->add_creneau_supp($content->date, $content->debut, $content->fin, $content->zone, $content->type, $content->comm);
+                break;
+            case "add_greve":
+                $bdd->add_creneau_supp_greve($content->date, $content->vac, $content->sousvac, $content->zone, $content->type, $content->comm);
+                break;
+            case "delete":
+                $bdd->delete_creneau_supp($content->id);
+                break;
+            case "get_all_creneaux": // get_all
+                echo json_encode($bdd->get_creneaux_supp($content->zone));
+                break;
+            case "save_g":
+                $bdd->save_g($content->zone, $content->day, $content->g);
             default: 
                 echo "";
         }

@@ -75,6 +75,203 @@ class bdd_tds {
         return $arr;
     }
 
+    // @return JSON string - ["JX","J1","J3","S2","J2","S1","N"]
+    public function get_clean_cycle(string $zone) {
+        $table_cycle = "cycle";
+        $req = "SELECT * FROM $table_cycle WHERE zone='$zone' ORDER BY 'jour' ASC"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $arr = [];
+        foreach($resultat as $key=>$value) {
+            if ($value["vacation"] !== "") array_push($arr, $value["vacation"]);
+        }
+        return $arr;
+    }
+
+    /*  ---------------------------------------------------------------------------
+            Page créneaux supp
+        --------------------------------------------------------------------------- */
+
+    public function get_clean_cycle_json(string $zone) {
+        echo json_encode($this->get_clean_cycle($zone)); 
+    }
+
+    // @return string - "nom de la saison" correspondante au jour et à la zone
+    public function get_tds_name(string $day, string $zone) {
+        try {
+            $req = "SELECT nom_tds FROM `dates_saisons` WHERE debut <= '$day' AND fin >= '$day' AND zone = '$zone'"; 
+            $stmt = Mysql::getInstance()->prepare($req);
+            $stmt->execute();
+            $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $resultat[0]["nom_tds"];
+        }
+        catch(Exception $e){
+            print_r($e);
+        }
+    }
+
+    // sert pour la page instr
+    public function get_tds_zone(string $saison, string $zone) {
+        $table = "tds_$zone";
+        $req = "SELECT * FROM $table WHERE nom_tds = '$saison'"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
+        unset($resultat["nom_tds"]);
+        $obj = new stdClass();
+        foreach($resultat as $key=>$value) {
+            $obj->{$key} = json_decode($value);
+        }
+        return $obj;
+    }
+
+    // $greve permet de savoir que add_creneau_supp est appelé depuis add_creneau_supp_greve
+    public function add_creneau_supp(string $day, string $debut, string $fin, string $zone, string $type, string $comm, $greve = false) {
+        $table = "creneaux_supp";
+        $req = "INSERT INTO $table VALUES (NULL, '$day', '$debut', '$fin', '$zone', '$type', '$comm')"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        if (!$greve) {
+            $obj = new stdClass();
+            $obj->status = "ok";
+            $obj->texte = "";
+            echo json_encode($obj);
+        }
+    }
+
+    // 	retourne les sous-vacs d'une vac
+	// $sv = ["A", "B"]
+	public function get_sv(string $vacation, $tour_local) {
+		$vac = $vacation;
+		if ($vacation === "N-1") $vac = "N";
+		$temp_sv = array_keys(get_object_vars($tour_local->{$vac}));
+		$sv = array_filter($temp_sv, static function ($element) {
+			return ($element !== "cds" && $element !== "nb_cds");
+		});
+		return $sv;
+	}
+
+    // objet : passage par référence par défaut
+	private function push_utc($vac, $tour_utc, $timeOffset, $tour_local) {
+
+		$index_deb = $timeOffset*4 - 1;	
+		$sousvacs = $this->get_sv($vac, $tour_local);
+		
+		foreach($sousvacs as $sousvac) {
+			$tour_utc->{$vac}->{$sousvac} = $tour_local->{$vac}->{$sousvac};
+		}
+		
+		if ($timeOffset === 2) {
+			for($i=0;$i<4;$i++) {
+				foreach($sousvacs as $sousvac) {
+					$z = array_shift($tour_utc->{$vac}->{$sousvac});
+					array_push($tour_utc->{$vac}->{$sousvac}, $z);
+				}
+			}
+		}
+
+		for($i=0;$i<4;$i++) {
+			foreach($sousvacs as $sousvac) {
+				$z = array_shift($tour_utc->{$vac}->{$sousvac});
+				array_push($tour_utc->{$vac}->{$sousvac}, $z);
+			}
+		}		
+
+	}
+
+    // enlève 1PC sur toutes les plages de la vac
+    public function add_creneau_supp_greve(string $day, string $vac, string $sousvac, string $zone, string $type, string $comm) {
+        $tds_name = $this->get_tds_name($day, $zone);
+        $tds = $this->get_tds_zone($tds_name, $zone);
+        $workingCycle = $this->get_clean_cycle($zone);
+        $timeOffset = get_decalage($day);
+
+        $tour_utc = new stdClass();
+		foreach($workingCycle as $vacation) {
+			$tour_utc->{$vacation} = new stdClass();
+			$this->push_utc($vacation, $tour_utc, $timeOffset, $tds);
+		}
+        if (isset($tour_utc->{$vac}->$sousvac)) {
+            $arr_sousvac = $tour_utc->{$vac}->$sousvac;
+            $compacted_plages = [];
+            $index_debut = null;
+            $index_fin = null;
+            if ($arr_sousvac[0] === 1) {
+                $index_debut = 0;
+            }
+            for($j=1;$j<95;$j++) {
+                if ($arr_sousvac[$j] === 1) {
+                    if ($arr_sousvac[$j-1] === 0 || $arr_sousvac[$j-1] === null) {
+                        $index_debut = $j;
+                    } 
+                }
+                if ($arr_sousvac[$j] === 0) {
+                    if ($arr_sousvac[$j-1] === 1) {
+                        $index_fin = $j;
+                        array_push($compacted_plages, [get_time($index_debut), get_time($index_fin)]);
+                    } 
+                }
+            }
+            foreach($compacted_plages as $plage) {
+                $this->add_creneau_supp($day, $plage[0], $plage[1], $zone, $type, $comm, true);
+            }
+            $obj = new stdClass();
+            $obj->status = "ok";
+            $obj->texte = "";
+        } else {
+            $obj = new stdClass();
+            $obj->status = "error";
+            $obj->texte = "La sous-vac $vac-$sousvac n'existe pas";
+        }
+        echo json_encode($obj);
+    }
+    
+    public function delete_creneau_supp(int $id) {
+        $table = "creneaux_supp";
+        $req = "DELETE FROM $table WHERE id = '$id'"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+    }
+
+    /*  --------------------------------------------------------------------------
+            @return  :
+            [ 
+                [
+                ["id"]=>int(612), 
+                ["day"]=>string(10) "2023-09-12", 
+                ["debut"]=>string(8) "07:00:00",
+                ["fin"]=>string(8) "09:00:00",
+                ["zone"]=>string(3) "Est",
+                ["type"]=>string(5) "Eleve",
+                ["comment"]=>string(2) "EK"]
+                ],
+                [...]
+            ]
+        -------------------------------------------------------------------------- */
+
+    public function get_creneaux_day($day, $zone) {
+        $table = "creneaux_supp";
+        $req = "SELECT * FROM $table WHERE day = '$day' AND zone = '$zone'"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $resultat;
+    }
+
+    // récupère les créneaux supp à partir de J-2 et après
+    public function get_creneaux_supp($zone) {
+        $day_min = new DateTime('now');
+        $day_min->modify('-2 days');
+        $day_min_str = $day_min->format('Y-m-d');
+        $table = "creneaux_supp";
+        $req = "SELECT * FROM $table WHERE day > '$day_min_str' AND zone = '$zone'"; 
+        $stmt = Mysql::getInstance()->prepare($req);
+        $stmt->execute();
+        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $resultat;
+    }
+
     // @param int $greve - 0 ou 1
     // @return string - "nom de la saison" actuelle
     public function get_current_tds(int $greve = 0) {
@@ -89,6 +286,7 @@ class bdd_tds {
             print_r($e);
         }
     }
+    /* -------------------- FIN partie créneaux supp ----------------------------- */
 
     /*  --------------------------------------------------------------------------
             @return  :
@@ -200,6 +398,9 @@ class bdd_tds {
     public function duplicate_tds(string $nom, string $new_name, bool $greve) {
         $tds = $this->get_tds($nom, $greve);
         $this->add_tds($new_name, $greve);
+        // lors de la duplication, copier la répartition aussi => correctif
+        //$repartition = $this->get_repartition($nom, $greve);
+        //set_repartition($new_name, $vac, $json, $greve);
         $this->set_tds($new_name, $tds, $greve);
     }
 
@@ -543,214 +744,10 @@ class bdd_tds {
         echo json_encode($resultat);
     }
 
-}
+    public function save_g(string $zone, string $day, bool $g) {
 
-class bdd_instr {
-
-    // @return JSON string - ["JX","J1","J3","S2","J2","S1","N"]
-    public function get_clean_cycle(string $zone) {
-        $table_cycle = "cycle";
-        $req = "SELECT * FROM $table_cycle WHERE zone='$zone' ORDER BY 'jour' ASC"; 
-        $stmt = Mysql::getInstance()->prepare($req);
-        $stmt->execute();
-        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $arr = [];
-        foreach($resultat as $key=>$value) {
-            if ($value["vacation"] !== "") array_push($arr, $value["vacation"]);
-        }
-        return $arr;
     }
 
-    public function get_clean_cycle_json(string $zone) {
-        echo json_encode($this->get_clean_cycle($zone)); 
-    }
-
-    // @return string - "nom de la saison" actuelle
-    public function get_tds_name(string $day, string $zone) {
-        try {
-            $req = "SELECT nom_tds FROM `dates_saisons` WHERE debut <= '$day' AND fin >= '$day' AND zone = '$zone'"; 
-            $stmt = Mysql::getInstance()->prepare($req);
-            $stmt->execute();
-            $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            return $resultat[0]["nom_tds"];
-        }
-        catch(Exception $e){
-            print_r($e);
-        }
-    }
-
-/*  --------------------------------------------------------------------------
-        @return  :
-        object(stdClass)#26 (3) {
-            "vac" : {
-                "nb_cds": ...,
-                "cds" : [ 0, 0, 0, 0, 0, 0 ... ],   96 valeurs
-                "sous-vac1" : [ 0, 0, 1, 1, 0, 0 ... ],   96 valeurs
-                "sous-vac2" : [ 0, 0, 1, 1, 0, 0 ... ],   96 valeurs
-                ...
-            }
-            ...
-        }
-    -------------------------------------------------------------------------- */
-
-    public function get_tds(string $saison, string $zone) {
-        $table = "tds_$zone";
-        $req = "SELECT * FROM $table WHERE nom_tds = '$saison'"; 
-        $stmt = Mysql::getInstance()->prepare($req);
-        $stmt->execute();
-        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
-        unset($resultat["nom_tds"]);
-        $obj = new stdClass();
-        foreach($resultat as $key=>$value) {
-            $obj->{$key} = json_decode($value);
-        }
-        return $obj;
-    }
-
-    // $greve permet de savoir que add_creneau_supp est appelé depuis add_creneau_supp_greve
-    public function add_creneau_supp(string $day, string $debut, string $fin, string $zone, string $type, string $comm, $greve = false) {
-        $table = "creneaux_supp";
-        $req = "INSERT INTO $table VALUES (NULL, '$day', '$debut', '$fin', '$zone', '$type', '$comm')"; 
-        $stmt = Mysql::getInstance()->prepare($req);
-        $stmt->execute();
-        if (!$greve) {
-            $obj = new stdClass();
-            $obj->status = "ok";
-            $obj->texte = "";
-            echo json_encode($obj);
-        }
-    }
-
-    // 	retourne les sous-vacs d'une vac
-	// $sv = ["A", "B"]
-	public function get_sv(string $vacation, $tour_local) {
-		$vac = $vacation;
-		if ($vacation === "N-1") $vac = "N";
-		$temp_sv = array_keys(get_object_vars($tour_local->{$vac}));
-		$sv = array_filter($temp_sv, static function ($element) {
-			return ($element !== "cds" && $element !== "nb_cds");
-		});
-		return $sv;
-	}
-
-    // objet : passage par référence par défaut
-	private function push_utc($vac, $tour_utc, $timeOffset, $tour_local) {
-
-		$index_deb = $timeOffset*4 - 1;	
-		$sousvacs = $this->get_sv($vac, $tour_local);
-		
-		foreach($sousvacs as $sousvac) {
-			$tour_utc->{$vac}->{$sousvac} = $tour_local->{$vac}->{$sousvac};
-		}
-		
-		if ($timeOffset === 2) {
-			for($i=0;$i<4;$i++) {
-				foreach($sousvacs as $sousvac) {
-					$z = array_shift($tour_utc->{$vac}->{$sousvac});
-					array_push($tour_utc->{$vac}->{$sousvac}, $z);
-				}
-			}
-		}
-
-		for($i=0;$i<4;$i++) {
-			foreach($sousvacs as $sousvac) {
-				$z = array_shift($tour_utc->{$vac}->{$sousvac});
-				array_push($tour_utc->{$vac}->{$sousvac}, $z);
-			}
-		}		
-
-	}
-
-    // enlève 1PC sur toutes les plages de la vac
-    public function add_creneau_supp_greve(string $day, string $vac, string $sousvac, string $zone, string $type, string $comm) {
-        $tds_name = $this->get_tds_name($day, $zone);
-        $tds = $this->get_tds($tds_name, $zone);
-        $workingCycle = $this->get_clean_cycle($zone);
-        $timeOffset = get_decalage($day);
-
-        $tour_utc = new stdClass();
-		foreach($workingCycle as $vacation) {
-			$tour_utc->{$vacation} = new stdClass();
-			$this->push_utc($vacation, $tour_utc, $timeOffset, $tds);
-		}
-        if (isset($tour_utc->{$vac}->$sousvac)) {
-            $arr_sousvac = $tour_utc->{$vac}->$sousvac;
-            $compacted_plages = [];
-            $index_debut = null;
-            $index_fin = null;
-            if ($arr_sousvac[0] === 1) {
-                $index_debut = 0;
-            }
-            for($j=1;$j<95;$j++) {
-                if ($arr_sousvac[$j] === 1) {
-                    if ($arr_sousvac[$j-1] === 0 || $arr_sousvac[$j-1] === null) {
-                        $index_debut = $j;
-                    } 
-                }
-                if ($arr_sousvac[$j] === 0) {
-                    if ($arr_sousvac[$j-1] === 1) {
-                        $index_fin = $j;
-                        array_push($compacted_plages, [get_time($index_debut), get_time($index_fin)]);
-                    } 
-                }
-            }
-            foreach($compacted_plages as $plage) {
-                $this->add_creneau_supp($day, $plage[0], $plage[1], $zone, $type, $comm, true);
-            }
-            $obj = new stdClass();
-            $obj->status = "ok";
-            $obj->texte = "";
-        } else {
-            $obj = new stdClass();
-            $obj->status = "error";
-            $obj->texte = "La sous-vac $vac-$sousvac n'existe pas";
-        }
-        echo json_encode($obj);
-    }
-    
-    public function delete_creneau_supp(int $id) {
-        $table = "creneaux_supp";
-        $req = "DELETE FROM $table WHERE id = '$id'"; 
-        $stmt = Mysql::getInstance()->prepare($req);
-        $stmt->execute();
-    }
-
-    /*  --------------------------------------------------------------------------
-            @return  :
-            [ 
-                [
-                ["id"]=>int(612), 
-                ["day"]=>string(10) "2023-09-12", 
-                ["debut"]=>string(8) "07:00:00",
-                ["fin"]=>string(8) "09:00:00",
-                ["zone"]=>string(3) "Est",
-                ["type"]=>string(5) "Eleve",
-                ["comment"]=>string(2) "EK"]
-                ],
-                [...]
-            ]
-        -------------------------------------------------------------------------- */
-
-    public function get_creneaux_day($day, $zone) {
-        $table = "creneaux_supp";
-        $req = "SELECT * FROM $table WHERE day = '$day' AND zone = '$zone'"; 
-        $stmt = Mysql::getInstance()->prepare($req);
-        $stmt->execute();
-        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return $resultat;
-    }
-
-    public function get_creneaux_supp($zone) {
-        $day_min = new DateTime('now');
-        $day_min->modify('-2 days');
-        $day_min_str = $day_min->format('Y-m-d');
-        $table = "creneaux_supp";
-        $req = "SELECT * FROM $table WHERE day > '$day_min_str' AND zone = '$zone'"; 
-        $stmt = Mysql::getInstance()->prepare($req);
-        $stmt->execute();
-        $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return $resultat;
-    }
 }
 
 class bdd_admin {

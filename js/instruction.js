@@ -1,6 +1,6 @@
 async function get_instr_sql(zone) {
     
-    const obj = {"fonction": "get_all", "zone": zone};
+    const obj = {"fonction": "get_all_creneaux", "zone": zone};
 
     const data = {
         method: "post",
@@ -8,7 +8,7 @@ async function get_instr_sql(zone) {
         body: JSON.stringify(obj)
     };
 
-   const result = await fetch("inst_sql.php", data);
+   const result = await fetch("tds_sql.php", data);
    return result.json();
     
 }
@@ -23,7 +23,7 @@ async function get_clean_cycle(zone) {
         body: JSON.stringify(obj)
     };
 
-   const result = await fetch("inst_sql.php", data);
+   const result = await fetch("tds_sql.php", data);
    return result.json();
     
 }
@@ -50,13 +50,13 @@ async function inst(containerId) {
             }).then(async(e)=>{
                 if ( e == ("confirm")){
                     parent.parentNode.removeChild(parent);
-                    const content = {"fonction": "delete", "id": id};
+                    const content = {"fonction": "delete", "id": id, "zone": zone};
                     const data = {
                         method: "post",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(content)
                     };
-                    const result = await fetch("inst_sql.php", data);
+                    const result = await fetch("tds_sql.php", data);
                     inst(containerId);
                 } else {
                 }
@@ -104,7 +104,7 @@ async function ajoute_sql(containerId, ajout, greve) {
         body: JSON.stringify(ajout)
     };
 
-    const response = await fetch("inst_sql.php", data);
+    const response = await fetch("tds_sql.php", data);
     const resp = await response.json();
     if (resp.status === "error") { 
         show_popup("Warning", `${resp.texte}`);
