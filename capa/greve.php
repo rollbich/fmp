@@ -88,14 +88,7 @@
 				let day = $('start').value;
 				capa = await new feuille_capa("feuille_capa_tour", day, zone);
                 await capa.show_tab_personnels('tag_personnels');
-			});
-
-			$('bouton_extr_grev').addEventListener('click', async e => {
-                capa.imprimer($('start').value,"grevistes");
-			});
-
-			$('bouton_extr_non_grev').addEventListener('click', async e => {
-				capa.imprimer($('start').value,"non_grevistes");
+				$('extract').classList.remove('off');
 			});
 
 		});		
@@ -124,8 +117,6 @@
 	<li id="bouton_feuille" class="pointer"><span>Feuille</span></li>
 	<li id="bouton_simucapa" class="pointer"><span>Simu</span></li>
     <li id="bouton_tag_greve" class="pointer"><span>Greve</span></li>
-	<li><button id='bouton_extr_grev' class='button_extract'>Extract Grévistes</button></li>
-	<li><button id='bouton_extr_non_grev' class='button_extract'>Extract Non Grévistes</button></li>
 	<li>
 	<!--<label for="start" class="dates">Date:</label>-->
 	<button id="arrow_left"><</button>

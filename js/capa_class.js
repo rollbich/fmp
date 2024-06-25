@@ -815,7 +815,7 @@ class feuille_capa extends capa {
 		@param type : "grevistes" ou "non_grevistes"
 	-------------------------------------------------------------------------------------------------- */
 	imprimer(day, type) {
-		var fen = window.open("", "", "height=500, width=600,toolbar=0, menubar=0, scrollbars=1, resizable=1,status=0, location=0, left=10, top=10");
+		var fen = window.open("", "", "height=800, width=860,toolbar=0, menubar=0, scrollbars=1, resizable=1,status=0, location=0, left=10, top=10");
 		const titre = type.charAt(0).toUpperCase() + type.slice(1);
 		let doc = `<html>
 					 <head>
@@ -828,7 +828,7 @@ class feuille_capa extends capa {
 					 </head>
 					 <body>
 					 <h1 class='imprimer'>${titre} - ${day}</h1>
-					 <div style="display: inline-block;">`;
+					 <div style="display: flex; flex-wrap:wrap;">`;
 					 this.workingVacs.forEach(vac => {
 						doc += `<div>
 					 <table class="table_greve">
@@ -859,7 +859,13 @@ class feuille_capa extends capa {
 	}
 
 	show_tab_personnels(containerId) {
-		let ih = "";
+		let ih = `
+		<div id='extract' class='off'>
+			<span>
+				<button id='bouton_extr_grev' class='button_extract'>Extract Grévistes</button>
+				<button id='bouton_extr_non_grev' class='button_extract'>Extract Non Grévistes</button>
+			</span>
+		</div>`;
 		this.workingVacs.forEach(vac => {
 			ih += `${this.add_pers_greve(vac)}`;
 		})
@@ -877,6 +883,14 @@ class feuille_capa extends capa {
 			});
 			
 		})
+
+		$('bouton_extr_grev').addEventListener('click', async e => {
+			this.imprimer($('start').value,"grevistes");
+		});
+
+		$('bouton_extr_non_grev').addEventListener('click', async e => {
+			this.imprimer($('start').value,"non_grevistes");
+		});
 	}
 
 	add_pers_greve (vac) {
@@ -912,6 +926,23 @@ class feuille_capa extends capa {
 		}
 		res += `</tbody></table></div>`;
 		return res;
+	}
+
+	async save_data(zone, day, g) {
+		const save = {
+			"fonction": "save_g", 
+			"zone": zone, 
+			"day": day, 
+			"g": g
+		}	
+		var data = {
+			method: "post",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(save)
+		};
+		
+		await fetch("../capa/tds_sql.php", data);
+	
 	}
 }
 
