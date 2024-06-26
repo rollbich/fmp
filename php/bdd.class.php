@@ -1139,8 +1139,12 @@ class bdd {
             if ($exist_in_bdd) {
 
                 // la regul peut exister et les données récupérées indiquent toujours une CREATION, donc les données sont identiques sauf que les delay et vols impactés, doivent être mis à jour
-                $suivi = json_encode('{"time":"'.$nowTexte.'","delay":'.$delay.',"impactedFlights":'.$impactedFlights.'}');
+                $suivi = new stdClass();
+                $suivi->time = $nowTexte;
+                $suivi->delay = $delay;
+                $suivi->impactedFlights = $impactedFlights;
                 array_push($s, $suivi);
+                $s = json_encode($s);
                 if ($last_update === "CREATION") {
                     // Vérif que la regul est bien du jour et non de la veille (Si c'est une regul débutant la veille, il ne faut pas mettre à jour les delay et les vols impactés)
                     if ($jour === $day) {
