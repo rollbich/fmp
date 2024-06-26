@@ -16,7 +16,9 @@ js/base.js
 b2b/config.inc.php
 test/
 smtp/
-php/config_olaf
+php/check_login.inc.php
+php/check_ok.inc.php
+php/config.inc.php
 b2b/get_aup.php
 b2b/path.inc.php
 b2b/test
