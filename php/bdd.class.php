@@ -1078,8 +1078,6 @@ class bdd {
         $date = new DateTime($jour);
         $week_number = intval($date->format("W")); // sinon on a un string avec un éventuel 0 devant le numéro
         $week_year = $date->format('o'); // année correspondant à la semaine (peut être différent de l'année en cours => des jours de la semaine 53 de 2023 peuvent être en 2024)
-        $now = new DateTime();
-        $nowTexte = $now->format('H:i');
 
         if ($tvset === "LFMMFMPE") $table = "reguls_est";
         if ($tvset === "LFMMFMPW") $table = "reguls_west";
@@ -1124,27 +1122,22 @@ class bdd {
             $rates_str = json_encode($rates);
 
             $id = null;
-            $s = null; // suivi
             // la regul existe-t-elle dans la BDD
             foreach($table_reg as $treg) {
                 // regul trouvée
                 if ($treg["regId"] === $regId) {
                     $exist_in_bdd = true;
                     $id = $treg["id"];
-                    $s = json_decode($treg["suivi"]); // transforme l'array string en array
                     $update_obj = $treg["updates"]; 
                 } 
             }  
 
             if ($exist_in_bdd) {
-
                 // la regul peut exister et les données récupérées indiquent toujours une CREATION, donc les données sont identiques sauf que les delay et vols impactés, doivent être mis à jour
-                $suivi = json_encode('{"time":"'.$nowTexte.'","delay":'.$delay.',"impactedFlights":'.$impactedFlights.'}');
-                array_push($s, $suivi);
                 if ($last_update === "CREATION") {
                     // Vérif que la regul est bien du jour et non de la veille (Si c'est une regul débutant la veille, il ne faut pas mettre à jour les delay et les vols impactés)
                     if ($jour === $day) {
-                        $req = "UPDATE $table SET debut = '$debut', fin= '$fin', rates = JSON_COMPACT('$rates_str'), delay = '$delay', impactedFlights = '$impactedFlights', suivi = JSON_COMPACT('$s') WHERE id = '$id'";
+                        $req = "UPDATE $table SET debut = '$debut', fin= '$fin', rates = JSON_COMPACT('$rates_str'), delay = '$delay', impactedFlights = '$impactedFlights' WHERE id = '$id'";
                         $stmt = Mysql::getInstance()->prepare($req);
                         $stmt->execute();
                     } 
@@ -1153,7 +1146,7 @@ class bdd {
                     // Vérif que la regul est bien du jour et non de la veille. Si c'est une regul débutant la veille, il ne faut pas mettre à jour les délais
                     if ($jour === $day) {
                         $deletion_time = $last_update_time;
-                        $req = "UPDATE $table SET debut = '$debut', fin= '$fin', deletion = '$deletion_time', rates = JSON_COMPACT('$rates_str'), delay = '$delay', impactedFlights = '$impactedFlights', suivi = JSON_COMPACT('$s') WHERE id = '$id'";
+                        $req = "UPDATE $table SET debut = '$debut', fin= '$fin', deletion = '$deletion_time', rates = JSON_COMPACT('$rates_str'), delay = '$delay', impactedFlights = '$impactedFlights' WHERE id = '$id'";
                         $stmt = Mysql::getInstance()->prepare($req);
                         $stmt->execute();
                     } else {
@@ -1184,7 +1177,7 @@ class bdd {
                             $new_obj->rates = $rates;
                             array_push($upd, $new_obj);
                             $obj_upd = json_encode($upd);
-                            $req = "UPDATE $table SET debut = '$debut', fin= '$fin', rates = JSON_COMPACT('$rates_str'), updates = JSON_COMPACT('$obj_upd'), delay = '$delay', impactedFlights = '$impactedFlights', suivi = JSON_COMPACT('$s') WHERE id = '$id'";
+                            $req = "UPDATE $table SET debut = '$debut', fin= '$fin', rates = JSON_COMPACT('$rates_str'), updates = JSON_COMPACT('$obj_upd'), delay = '$delay', impactedFlights = '$impactedFlights' WHERE id = '$id'";
                             $stmt = Mysql::getInstance()->prepare($req);
                             $stmt->execute();
                         }  else { // un update identique existait déjà dans la BDD, on ne met à jour que les delay et les vols impactés
@@ -1195,19 +1188,18 @@ class bdd {
                             $new_obj->rates = $rates;
                             array_push($upd, $new_obj);
                             $obj_upd = json_encode($upd);
-                            $req = "UPDATE $table SET delay = '$delay', impactedFlights = '$impactedFlights', suivi = JSON_COMPACT('$s') WHERE id = '$id'";
+                            $req = "UPDATE $table SET delay = '$delay', impactedFlights = '$impactedFlights' WHERE id = '$id'";
                             $stmt = Mysql::getInstance()->prepare($req);
                             $stmt->execute();
                         }
                     } 
                 } 
             } else {
-                $suivi = '[{"time":"'.$nowTexte.'","delay":'.$delay.',"impactedFlights":'.$impactedFlights.'}]';
                 if ($last_update === "CREATION") {
                     $creation_time = '[{"time":"'.$last_update_time.'","debut":"'.$debut.'","fin":"'.$fin.'","rates":'.$rates_str.'}]';
                     $update_obj = '[]';
                     $deletion_time = '';
-                    $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$week_year', '$week_number', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'), JSON_COMPACT('$suivi') )";
+                    $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$week_year', '$week_number', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'))";
                     $stmt = Mysql::getInstance()->prepare($req);
                     $stmt->execute();
                 }
@@ -1215,7 +1207,7 @@ class bdd {
                     $deletion_time = $last_update_time;
                     $update_obj = '[]';
                     $creation_time = '{}';
-                    $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$week_year', '$week_number', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'), JSON_COMPACT('$suivi') )";
+                    $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$week_year', '$week_number', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'))";
                     $stmt = Mysql::getInstance()->prepare($req);
                     $stmt->execute();
                 }
@@ -1223,11 +1215,12 @@ class bdd {
                     $deletion_time = '';
                     $update_obj = '[{"time":"'.$last_update_time.'","debut":"'.$debut.'","fin":"'.$fin.'","rates":'.$rates_str.'}]';
                     $creation_time = '{}';
-                    $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$week_year', '$week_number', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'), JSON_COMPACT('$suivi') )";
+                    $req = "INSERT INTO $table VALUES (null, '$day', '$jour_semaine', '$week_year', '$week_number', '$regId', '$tv', '$debut', '$fin', '$delay', '$reason', '$impactedFlights', JSON_COMPACT('$creation_time'), JSON_COMPACT('$update_obj'), '$deletion_time', JSON_COMPACT('$rates_str'))";
                     $stmt = Mysql::getInstance()->prepare($req);
                     $stmt->execute();
                 }
             }
+           
         }
     }
 
