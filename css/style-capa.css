@@ -17,7 +17,7 @@ input:invalid {
 	border: none;
 	outline: 2px solid red;
 	border-radius: 5px;
-  }
+}
 
 /* sert pour sélectionner les colonnes masquées (ne pas remplacer par .off) */
 .masque {
@@ -287,6 +287,12 @@ td.typePC:hover, td.typePC-DET:hover, td.typePC-RPL:hover {
 }
 
 /* feuille capa */
+.button_tour {
+	margin-left: 20px;
+	margin-right: 20px;
+}
+
+/* feuille capa */
 
 td.f8px {
 	font-size: 8px;
@@ -370,6 +376,7 @@ table.plage th, table.plage td {
 	width: 160px;
 	border: 1px solid rgb(20, 20, 20);
 	padding: 5px;
+	padding: 5px;
 }
 
 table.plage th {
@@ -377,7 +384,39 @@ table.plage th {
 }
 
 table.plage td:hover, td.save_supp, td.delete_supp {
+	background-color: #00caff;
+}
+
+table.plage td:hover, td.save_supp, td.delete_supp {
 	cursor: pointer;
+}
+
+table.plage th.px80, table.plage td.px80 {
+	width: 80px;
+}
+
+table.plage select {
+	margin: 0;
+}
+
+td.plage_validate, td.plage_greve_validate {
+	color: greenyellow;
+}
+
+td.plage_validate:hover, td.plage_greve_validate:hover {
+	background-color: rgb(189, 189, 133);
+}
+
+td.plage_supprime, td.plage_greve_supprime {
+	color: rgb(253, 3, 3);
+}
+
+td.plage_supprime:hover, td.plage_greve_supprime:hover {
+	background-color: rgba(226, 157, 68, 0.89);
+}
+
+.sortable tbody tr:nth-child(2n) {
+	background: #b8b7b7;
 }
 
 table.plage th.px80, table.plage td.px80 {
@@ -1192,7 +1231,7 @@ table.gestion td.fixe {
 	margin-left: 10px;
 }
 
-.switch3{
+.switch3 {
 	position: relative;
 	display: inline-block;
 	width: 100px;
@@ -1204,43 +1243,42 @@ table.gestion td.fixe {
 	overflow: hidden;
 	box-shadow: 0px 0px 2px rgba(0,0,0, .3);
 	top: 9px;
-  }
-  .switch3 input{
-	display: none;
-  }
-  .switch3 input:checked + div{
-	left: calc(100px - 26px);
-	box-shadow: 0px 0px 2px rgba(0,0,0,.4);
-  }
-  .switch3 div{
-	position: absolute;
-	width: 16px;
-	height: 16px;
-	border-radius: 16px;
-	background-color: white;
-	top: 5px;
-	left: 5px;
-	box-shadow: 0px 0px 1px rgb(150,150,150);
-	transition: all .3s;
-  }
-  .switch3 div:before, .switch3 div:after{
-	position: absolute;
-	width: calc(100px - 40px);
-	height: 26px;
-	line-height: 26px;
-	font-family: 'Varela Round';
-	font-size: 14px;
-	font-weight: bold;
-	top: -5px;
-  }
-  .switch3 div:before{
-	content: 'STD';
-	color: rgb(120,120,120);
-	left: 30px;
-  }
-  .switch3 div:after{
-	content: 'GREVE';
-	right: 100%;
-	color: rgb(153, 39, 39);
-  }
-  
+}
+.switch3 input{
+display: none;
+}
+.switch3 input:checked + div{
+left: calc(100px - 26px);
+box-shadow: 0px 0px 2px rgba(0,0,0,.4);
+}
+.switch3 div{
+position: absolute;
+width: 16px;
+height: 16px;
+border-radius: 16px;
+background-color: white;
+top: 5px;
+left: 5px;
+box-shadow: 0px 0px 1px rgb(150,150,150);
+transition: all .3s;
+}
+.switch3 div:before, .switch3 div:after{
+position: absolute;
+width: calc(100px - 40px);
+height: 26px;
+line-height: 26px;
+font-family: 'Varela Round';
+font-size: 14px;
+font-weight: bold;
+top: -5px;
+}
+.switch3 div:before{
+content: 'STD';
+color: rgb(120,120,120);
+left: 30px;
+}
+.switch3 div:after{
+content: 'GREVE';
+right: 100%;
+color: rgb(153, 39, 39);
+}
