@@ -97,10 +97,10 @@ class bdd_tds {
         echo json_encode($this->get_clean_cycle($zone)); 
     }
 
-    // @return string - "nom de la saison" correspondante au jour et à la zone
+    // @return string - "nom du tds standard" correspondante au jour et à la zone
     public function get_tds_name(string $day, string $zone) {
         try {
-            $req = "SELECT nom_tds FROM `dates_saisons` WHERE debut <= '$day' AND fin >= '$day' AND zone = '$zone'"; 
+            $req = "SELECT nom_tds FROM `dates_saisons` WHERE debut <= '$day' AND fin >= '$day' AND zone = '$zone' AND greve = 0"; 
             $stmt = Mysql::getInstance()->prepare($req);
             $stmt->execute();
             $resultat = $stmt->fetchAll(PDO::FETCH_ASSOC);
