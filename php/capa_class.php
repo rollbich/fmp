@@ -278,6 +278,17 @@ class capa {
 			$contextmenu_yesterday = array_keys(get_object_vars($this->effectif->{$this->yesterday}->contextmenutype));
 		}
 
+		$roles = new stdClass();
+		$roles->CDS = 82;
+		$roles->ACDS = 80;
+		$roles->DETACHE = 14;
+		$roles->ASS_SUB = 37;
+		$roles->STAGIAIRE = 10;
+		$roles->REQUALIF = 183;
+		$roles->EXP_OPS = 145;
+		$roles->PC_MU = 98;
+		$roles->PC_salle = 9;
+		$roles->CE = 25;
 
 		foreach ($this->tab_vac_eq as $vac => $value) {
 			$equipe_zone = $value."-".$this->zone_olaf;
@@ -306,6 +317,7 @@ class capa {
 				$this->pc->{$vac}->non_grevistes = [];
 				$this->pc->{$vac}->stagiaires = [];
 				
+				// teamNominalList : données des agents de la salle de l'équipe
 				foreach ( $userList as $idagent=>$value ) {
 					// parfois role n'existe pas => utilisation de rolelist
 					$rolelist = null;
@@ -321,7 +333,7 @@ class capa {
 							array_push($rolelist, (int) $role->idrole);
 						}
 					}
-					if (!(in_array(14, $rolelist) || in_array(37, $rolelist))) { // 14 = détaché 37 = assistant sub, on ne les prend pas en compte (OLAF les compte)
+					if (!(in_array($roles->DETACHE, $rolelist) || in_array($roles->ASS_SUB, $rolelist))) { // détaché & assistant sub, on ne les prend pas en compte (OLAF les compte)
 						$nc = $value->nom." ".$value->prenom;
 						$this->pc->{$vac}->teamNominalList->{$nc} = new stdClass();
 						$this->pc->{$vac}->teamNominalList->{$nc}->nom = $value->nom;
@@ -331,10 +343,10 @@ class capa {
 						$this->pc->{$vac}->teamNominalList->{$nc}->fonction = "PC";
 						array_push($this->pc->{$vac}->teamNominalList->agentsList, $value->nom." ".$value->prenom);
 					} 
-					if (in_array(82, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "PC-CDS";
-					if (in_array(80, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "PC-ACDS"; 
-					if (in_array(183, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "requalif";
-					if (in_array(10, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "stagiaire";
+					if (in_array($roles->CDS, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "PC-CDS";
+					if (in_array($roles->ACDS, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "PC-ACDS"; 
+					if (in_array($roles->REQUALIF, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "requalif";
+					if (in_array($roles->STAGIAIRE, $rolelist)) $this->pc->{$vac}->teamNominalList->{$nc}->fonction = "stagiaire";
 				}
 				
 				$aTeamComposition = $this->effectif->{$jour}->{$equipe_zone}->aTeamComposition;
@@ -386,16 +398,19 @@ class capa {
 										}
 									} 
 								}
-								if (in_array(14, $rolelist) || in_array(37, $rolelist)) { // 14 = détaché 37 = assistant sub
+								if (in_array($roles->DETACHE, $rolelist) || in_array($roles->ASS_SUB, $rolelist)) { 
 									$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-DET";
 								}
-								if (in_array(80, $rolelist)) { // 80 = acds
+								if (in_array($roles->ACDS, $rolelist)) { 
 									$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-ACDS";
 								}
-								if (in_array(82, $rolelist)) { // 82 = cds
+								if (in_array($roles->CDS, $rolelist)) { 
 									$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-CDS";
 								}
-								if (in_array(10, $rolelist)) { // 10 = stagiaire
+								if (in_array($roles->REQUALIF, $rolelist)) { // doit être placé avant le test stagiaire
+									$this->pc->{$vac}->teamToday->{$nc}->fonction = "requalif";
+								}
+								if (in_array($roles->STAGIAIRE, $rolelist)) { 
 									$this->pc->{$vac}->teamToday->{$nc}->fonction = "stagiaire";
 								}
 								if ($cds) $this->pc->{$vac}->teamToday->{$nc}->fonction = "CDS";
@@ -426,13 +441,13 @@ class capa {
 												}
 											} 
 										}
-										if (in_array(14, $rolelist) || in_array(37, $rolelist)) { // 14 = détaché 37 = assistant sub
+										if (in_array($roles->DETACHE, $rolelist) || in_array($roles->ASS_SUB, $rolelist)) { 
 											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-DET";
 										}
-										if (in_array(80, $rolelist)) { // 80 = acds
+										if (in_array($roles->ACDS, $rolelist)) { 
 											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-ACDS";
 										}
-										if (in_array(82, $rolelist)) { // 82 = cds
+										if (in_array($roles->CDS, $rolelist)) { 
 											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-CDS";
 										}
 									}
@@ -465,14 +480,17 @@ class capa {
 												}
 											} 
 										}
-										if (in_array(14, $rolelist) || in_array(37, $rolelist)) { // 14 = détaché 37 = assistant sub
+										if (in_array($roles->DETACHE, $rolelist) || in_array($roles->ASS_SUB, $rolelist)) { 
 											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-DET";
 										}
-										if (in_array(80, $rolelist)) { // 80 = acds
+										if (in_array($roles->ACDS, $rolelist)) { 
 											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-ACDS";
 										}
-										if (in_array(82, $rolelist)) { // 82 = cds
+										if (in_array($roles->CDS, $rolelist)) { 
 											$this->pc->{$vac}->teamToday->{$nc}->fonction = "PC-CDS";
+										}
+										if (in_array($roles->REQUALIF, $rolelist)) { 
+											$this->pc->{$vac}->teamToday->{$nc}->fonction = "requalif";
 										}
 									}
 								}
@@ -486,10 +504,10 @@ class capa {
 						On n'utilise plus la clé teamQuantity de teamReserve car lorsque qq'un s'inscrit en JX sans tag, il n'est pas compté
 					-------------------------------------------------------------------------------------------------------------------------- */
 				$this->pc->{$vac}->nbpc = count(array_keys(get_object_vars($this->pc->{$vac}->teamToday))) - $this->pc->{$vac}->nbcds;
-				// on enlève les stagiaires présents du comptage
+				// on enlève les stagiaires et les requalifs présents du comptage
 				$nb_stagiaire_presents = 0;
 				foreach(array_keys(get_object_vars($this->pc->{$vac}->teamToday)) as $cle_nom) {
-					if ($this->pc->{$vac}->teamToday->$cle_nom->fonction === "stagiaire") {
+					if ($this->pc->{$vac}->teamToday->$cle_nom->fonction === "stagiaire" || $this->pc->{$vac}->teamToday->$cle_nom->fonction === "requalif") {
 						$this->pc->{$vac}->nbpc--;
 						array_push($this->pc->{$vac}->stagiaires, $cle_nom);
 					}
@@ -505,6 +523,7 @@ class capa {
 					foreach ($aTeamComposition->lesrenforts as $renf) {
 						$nomComplet = $renf->agent->nom." ".$renf->agent->prenom;
 						if (isset($this->pc->{$vac}->teamToday->{$nomComplet})) {
+							if ($this->pc->{$vac}->teamToday->$cle_nom->fonction === "requalif") $this->pc->{$vac}->renfort--;
 							$pc = $this->pc->{$vac}->teamToday->{$nomComplet}->fonction;
 							// parfois RH force un PC RPL dans les renforts, dans ce cas on laisse la fonction "PC" intacte et on ne le met pas dans renfortAgent
 							if ($pc !== "PC") {
@@ -894,17 +913,6 @@ class capa {
 
 		$heures_ucesos = floor($minutes_ucesos/60);
 		$reste_minutes = $minutes_ucesos%60;
-
-		$roles = new stdClass();
-		$roles->CDS = 82;
-		$roles->ACDS = 80;
-		$roles->DET = 14;
-		$roles->ASS_SUB = 37;
-		$roles->STAGIAIRE = 10;
-		$roles->EXP_OPS = 145;
-		$roles->PC_MU = 98;
-		$roles->PC_salle = 9;
-		$roles->CE = 25;
 
 		$res = new stdClass();
 		$res->day= $this->day;
